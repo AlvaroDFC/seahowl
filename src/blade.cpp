@@ -79,7 +79,7 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         blade_section->SetSectionA(section);
 
         // make second section for tapered section
-        auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+        section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
         // offsets
         blade_section->SetSectionB(section);
         section->SetCenterOfMass(offsets_gravity[ii].y(), -offsets_gravity[ii].x());
@@ -89,7 +89,7 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetMassPerUnitLength(element_densities[ii]);
         section->SetAxialRigidity(stiffness_axial[ii]);
         // take structural twist into account trough trogonometry
-        double twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
+        twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
         // flap
         section->SetYbendingRigidity(stiffness_edge[ii] * abs(sin(twist)) + stiffness_flap[ii] * abs(cos(twist)));
         // edge
