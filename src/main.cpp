@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     // blade
     auto blade = Blade();
 
-    blade.centers_reference = key_points2;
+    blade.centers_reference = key_points;
     blade.offsets_elastic = offsets_elastic;
     blade.offsets_gravity = offsets_gravity;
     blade.element_densities = density;

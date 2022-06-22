@@ -44,10 +44,11 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
 
     // make first section for tapered section
     auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
-    // material properties
+    // offsets
     section->SetCenterOfMass(offsets_gravity[0].y(), -offsets_gravity[0].x());
     section->SetCentroidY(offsets_elastic[0].y());
     section->SetCentroidZ(-offsets_elastic[0].x());
+    // material properties
     section->SetMassPerUnitLength(element_densities[0]);
     section->SetAxialRigidity(stiffness_axial[0]);
     // take structural twist into account trough trogonometry
@@ -67,6 +68,8 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         mesh->AddElement(element);
         // set element nodes
         element->SetNodes(nodes[ii - 1], nodes[ii]);
+        // apply prebend
+        element->SetNodeBreferenceRot((nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized());
 
         // create blade section
         auto blade_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
@@ -77,11 +80,12 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
 
         // make second section for tapered section
         auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+        // offsets
         blade_section->SetSectionB(section);
-        // material properties
         section->SetCenterOfMass(offsets_gravity[ii].y(), -offsets_gravity[ii].x());
         section->SetCentroidY(offsets_elastic[ii].y());
         section->SetCentroidZ(-offsets_elastic[ii].x());
+        // material properties
         section->SetMassPerUnitLength(element_densities[ii]);
         section->SetAxialRigidity(stiffness_axial[ii]);
         // take structural twist into account trough trogonometry
@@ -92,4 +96,4 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetZbendingRigidity(stiffness_edge[ii] * abs(cos(twist)) + stiffness_flap[ii] * abs(sin(twist)));
         section->SetXtorsionRigidity(stiffness_torsion[ii]);
     }
-};
+}
