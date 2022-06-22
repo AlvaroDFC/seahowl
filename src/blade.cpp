@@ -26,6 +26,9 @@ void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
             node_axis = (centers_reference[ii + 1] - centers_reference[ii - 1]).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         }
+        double twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
+        ChMatrix33<> twist_matrix(Q_from_AngAxis(twist, node_axis));
+        node_rotation = twist_matrix * node_rotation;
 
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
@@ -51,12 +54,10 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     // material properties
     section->SetMassPerUnitLength(element_densities[0]);
     section->SetAxialRigidity(stiffness_axial[0]);
-    // take structural twist into account trough trogonometry
-    double twist = structural_twist[0] * CH_C_PI / 180.0;  // convert degrees->radians
     // flap
-    section->SetYbendingRigidity(stiffness_edge[0] * abs(sin(twist)) + stiffness_flap[0] * abs(cos(twist)));
+    section->SetYbendingRigidity(stiffness_flap[0]);
     // edge
-    section->SetZbendingRigidity(stiffness_edge[0] * abs(cos(twist)) + stiffness_flap[0] * abs(sin(twist)));
+    section->SetZbendingRigidity(stiffness_edge[0]);
     section->SetXtorsionRigidity(stiffness_torsion[0]);
 
     for (int ii = 1; ii < nelements + 1; ii++) {
@@ -68,8 +69,6 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         mesh->AddElement(element);
         // set element nodes
         element->SetNodes(nodes[ii - 1], nodes[ii]);
-        // apply prebend
-        element->SetNodeBreferenceRot((nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized());
 
         // create blade section
         auto blade_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
@@ -88,12 +87,17 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         // material properties
         section->SetMassPerUnitLength(element_densities[ii]);
         section->SetAxialRigidity(stiffness_axial[ii]);
-        // take structural twist into account trough trogonometry
-        twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
         // flap
-        section->SetYbendingRigidity(stiffness_edge[ii] * abs(sin(twist)) + stiffness_flap[ii] * abs(cos(twist)));
+        section->SetYbendingRigidity(stiffness_flap[ii]);
         // edge
-        section->SetZbendingRigidity(stiffness_edge[ii] * abs(cos(twist)) + stiffness_flap[ii] * abs(sin(twist)));
+        section->SetZbendingRigidity(stiffness_edge[ii]);
         section->SetXtorsionRigidity(stiffness_torsion[ii]);
+
+        // apply prebend and structural twist
+        auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
+        // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
+        rotation_relative =
+            ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+        element->SetNodeBreferenceRot(rotation_relative);
     }
 }
