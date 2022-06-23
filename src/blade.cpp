@@ -8,6 +8,7 @@ Blade::Blade() {
 }
 
 void Blade::make_blade(std::shared_ptr<ChMesh> mesh) {
+    check_variables_integrity();
     make_nodes(mesh);
     make_elements_tapered_timoshenko(mesh);
 };
@@ -34,7 +35,6 @@ void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
         double twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
         ChMatrix33<> twist_matrix(Q_from_AngAxis(twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
-
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
         // make node
@@ -142,3 +142,47 @@ void Blade::set_damping_coefficients(double axial, double edge, double flap, dou
         section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
+
+void Blade::check_variables_integrity() {
+    unsigned int npoints = centers_reference.size();
+    if (element_densities.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade densities defined does not match the number of reference points (" +
+            std::to_string(element_densities.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (stiffness_axial.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade axial stiffnesses defined does not match the number of reference points (" +
+            std::to_string(stiffness_axial.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (stiffness_edge.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade edge stiffnesses defined does not match the number of reference points (" +
+            std::to_string(stiffness_edge.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (stiffness_flap.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade flap stiffnesses defined does not match the number of reference points (" +
+            std::to_string(stiffness_flap.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (stiffness_axial.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade axial stiffnesses defined does not match the number of reference points (" +
+            std::to_string(stiffness_axial.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (stiffness_torsion.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade torsion stiffnesses defined does not match the number of reference points (" +
+            std::to_string(stiffness_torsion.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (offsets_elastic.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade center of elasticity offsets defined does not match the number of reference points (" +
+            std::to_string(offsets_elastic.size()) + " vs " + std::to_string(npoints) + ").");
+    }
+    if (offsets_gravity.size() != npoints) {
+        throw std::runtime_error(
+            "The number of blade center of gravity offsets defined does not match the number of reference points (" +
+            std::to_string(offsets_gravity.size()) + " vs " + std::to_string(npoints) + ".");
+    }
+};
