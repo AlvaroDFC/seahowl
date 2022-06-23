@@ -101,3 +101,21 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
+
+void Blade::rotate(double angle, ChVector<double> axis) {
+    auto rotation = Q_from_AngAxis(angle, axis);
+    for (int ii = 0; ii < nodes.size(); ii++) {
+        auto node = nodes[ii];
+        auto new_position = rotation.Rotate(node->GetPos());
+        node->SetPos(new_position);
+        auto new_rotation = (rotation * node->GetRot()).GetNormalized();
+        node->SetRot(new_rotation);
+    }
+}
+
+void Blade::translate(ChVector<double> translation_vector) {
+    for (int ii = 0; ii < nodes.size(); ii++) {
+        auto node = nodes[ii];
+        node->SetPos(node->GetPos() + translation_vector);
+    }
+}

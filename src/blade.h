@@ -10,7 +10,6 @@ class Blade {
     std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
     std::vector<ChVector<double>> centers_reference;
     std::vector<ChVector2<double>> offsets_elastic;
-
     std::vector<ChVector2<double>> offsets_gravity;
     std::vector<double> structural_twist;
     std::vector<double> element_densities;
@@ -24,4 +23,6 @@ class Blade {
     void make_blade(std::shared_ptr<ChMesh> mesh);
     void make_nodes(std::shared_ptr<ChMesh> mesh);
     void make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh);
+    void translate(ChVector<double> translation_vector);
+    void rotate(double angle, ChVector<double> axis);
 };
