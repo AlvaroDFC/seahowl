@@ -17,6 +17,7 @@ class Blade {
     std::vector<double> stiffness_edge;
     std::vector<double> stiffness_flap;
     std::vector<double> stiffness_torsion;
+    DampingCoefficients damping_coefficients;
 
     Blade();
 
@@ -25,4 +26,5 @@ class Blade {
     void make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh);
     void translate(ChVector<double> translation_vector);
     void rotate(double angle, ChVector<double> axis);
+    void set_damping_coefficients(double axial, double edge, double flap, double torsion);
 };

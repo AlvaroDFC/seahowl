@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
     blade.stiffness_axial = stiffness_axial;
     std::vector<double> stiffness_torsion(50, 1e11);
     blade.stiffness_torsion = stiffness_torsion;
+    blade.set_damping_coefficients(0.03, 0.03, 0.03, 0.06);
 
     blade.make_blade(blades_mesh);
 

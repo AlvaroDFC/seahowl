@@ -1,6 +1,11 @@
 #include "blade.h"
 
-Blade::Blade() {}
+Blade::Blade() {
+    damping_coefficients.bx = 0.001;
+    damping_coefficients.by = 0.001;
+    damping_coefficients.bz = 0.001;
+    damping_coefficients.bt = 0.001;
+}
 
 void Blade::make_blade(std::shared_ptr<ChMesh> mesh) {
     make_nodes(mesh);
@@ -53,12 +58,15 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     section->SetCentroidZ(-offsets_elastic[0].x());
     // material properties
     section->SetMassPerUnitLength(element_densities[0]);
+    // axial
     section->SetAxialRigidity(stiffness_axial[0]);
+    section->SetXtorsionRigidity(stiffness_torsion[0]);
     // flap
     section->SetZbendingRigidity(stiffness_flap[0]);
     // edge
     section->SetYbendingRigidity(stiffness_edge[0]);
-    section->SetXtorsionRigidity(stiffness_torsion[0]);
+    // damping
+    section->SetBeamRaleyghDamping(damping_coefficients);
 
     for (int ii = 1; ii < nelements + 1; ii++) {
         // create element
@@ -86,12 +94,15 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetCentroidZ(-offsets_elastic[ii].x());
         // material properties
         section->SetMassPerUnitLength(element_densities[ii]);
+        // axial
         section->SetAxialRigidity(stiffness_axial[ii]);
+        section->SetXtorsionRigidity(stiffness_torsion[ii]);
         // flap
         section->SetZbendingRigidity(stiffness_flap[ii]);
         // edge
         section->SetYbendingRigidity(stiffness_edge[ii]);
-        section->SetXtorsionRigidity(stiffness_torsion[ii]);
+        // damping
+        section->SetBeamRaleyghDamping(damping_coefficients);
 
         // apply prebend and structural twist
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
@@ -117,5 +128,17 @@ void Blade::translate(ChVector<double> translation_vector) {
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
         node->SetPos(node->GetPos() + translation_vector);
+    }
+}
+
+void Blade::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
+    damping_coefficients.bx = axial;
+    damping_coefficients.by = edge;
+    damping_coefficients.bz = flap;
+    damping_coefficients.bt = torsion;
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto section = elements[ii]->GetTaperedSection();
+        section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
+        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
