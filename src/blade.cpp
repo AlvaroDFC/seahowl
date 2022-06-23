@@ -55,9 +55,9 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     section->SetMassPerUnitLength(element_densities[0]);
     section->SetAxialRigidity(stiffness_axial[0]);
     // flap
-    section->SetYbendingRigidity(stiffness_flap[0]);
+    section->SetZbendingRigidity(stiffness_flap[0]);
     // edge
-    section->SetZbendingRigidity(stiffness_edge[0]);
+    section->SetYbendingRigidity(stiffness_edge[0]);
     section->SetXtorsionRigidity(stiffness_torsion[0]);
 
     for (int ii = 1; ii < nelements + 1; ii++) {
@@ -88,9 +88,9 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetMassPerUnitLength(element_densities[ii]);
         section->SetAxialRigidity(stiffness_axial[ii]);
         // flap
-        section->SetYbendingRigidity(stiffness_flap[ii]);
+        section->SetZbendingRigidity(stiffness_flap[ii]);
         // edge
-        section->SetZbendingRigidity(stiffness_edge[ii]);
+        section->SetYbendingRigidity(stiffness_edge[ii]);
         section->SetXtorsionRigidity(stiffness_torsion[ii]);
 
         // apply prebend and structural twist
