@@ -7,6 +7,10 @@
   - repo: https://github.com/projectchrono/chrono
   - version: 7.0.3
 
+- json:
+  - repo: https://github.com/nlohmann/json
+  - version: 3.10.5
+
   
 ### Compilation
 

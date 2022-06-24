@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "blade.h"
-#include "blade_properties.h"
+#include "read_json.h"
 
 using namespace chrono;
 using namespace chrono::irrlicht;
@@ -34,21 +34,7 @@ int main(int argc, char* argv[]) {
     system.AddMesh(blades_mesh);
 
     // blade
-    auto blade = Blade();
-
-    blade.centers_reference = key_points;
-    blade.offsets_elastic = offsets_elastic;
-    blade.offsets_gravity = offsets_gravity;
-    blade.element_densities = density;
-    blade.structural_twist = structural_twist;
-    blade.stiffness_flap = stiffness_flap;
-    blade.stiffness_edge = stiffness_edge;
-    // TODO: change to actual values
-    std::vector<double> stiffness_axial(50, 210e9);
-    blade.stiffness_axial = stiffness_axial;
-    std::vector<double> stiffness_torsion(50, 1e11);
-    blade.stiffness_torsion = stiffness_torsion;
-    blade.set_damping_coefficients(0.03, 0.03, 0.03, 0.06);
+    auto blade = blade_from_json("../data/IEA15MW_blade.json");
 
     blade.make_blade(blades_mesh);
 

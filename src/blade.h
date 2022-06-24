@@ -1,3 +1,6 @@
+#ifndef BLADE_H_
+#define BLADE_H_
+
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
 #include "chrono/fea/ChMesh.h"
 
@@ -29,3 +32,5 @@ class Blade {
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
     void check_variables_integrity();
 };
+
+#endif  // BLADE_H_
