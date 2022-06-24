@@ -1,38 +1,33 @@
 #include "blade.h"
 
-Blade::Blade() {
-    damping_coefficients.bx = 0.001;
-    damping_coefficients.by = 0.001;
-    damping_coefficients.bz = 0.001;
-    damping_coefficients.bt = 0.001;
-}
+Blade::Blade() {}
 
 void Blade::make_blade(std::shared_ptr<ChMesh> mesh) {
-    check_variables_integrity();
     make_nodes(mesh);
     make_elements_tapered_timoshenko(mesh);
 };
 
 void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
-    int nnodes = centers_reference.size();
+    int nnodes = reference_points.size();
     for (int ii = 0; ii < nnodes; ii++) {
-        auto node_pos = centers_reference[ii];
+        auto reference_point = reference_points[ii];
+        auto node_pos = reference_point.coordinates;
 
         // get node coordinate system
         ChVector<> node_axis;
         ChMatrix33<> node_rotation;
         if (ii == 0) {
-            node_axis = (centers_reference[ii + 1] - node_pos).GetNormalized();
+            node_axis = (reference_points[ii + 1].coordinates - node_pos).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         } else if (ii == nnodes - 1) {
-            node_axis = (node_pos - centers_reference[ii - 1]).GetNormalized();
+            node_axis = (node_pos - reference_points[ii - 1].coordinates).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         } else {
-            node_axis = (centers_reference[ii + 1] - centers_reference[ii - 1]).GetNormalized();
+            node_axis = (reference_points[ii + 1].coordinates - reference_points[ii - 1].coordinates).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         }
-        double twist = structural_twist[ii] * CH_C_PI / 180.0;  // convert degrees->radians
+        double twist = reference_point.structural_twist * CH_C_PI / 180.0;  // convert degrees->radians
         ChMatrix33<> twist_matrix(Q_from_AngAxis(twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
         auto node_frame = ChFrame<>(node_pos, node_rotation);
@@ -52,21 +47,22 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
 
     // make first section for tapered section
     auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto reference_point = reference_points[0];
     // offsets
-    section->SetCenterOfMass(offsets_gravity[0].y(), -offsets_gravity[0].x());
-    section->SetCentroidY(offsets_elastic[0].y());
-    section->SetCentroidZ(-offsets_elastic[0].x());
+    section->SetCenterOfMass(reference_point.offset_gravity.y(), -reference_point.offset_gravity.x());
+    section->SetCentroidY(reference_point.offset_elastic.y());
+    section->SetCentroidZ(-reference_point.offset_elastic.x());
     // material properties
-    section->SetMassPerUnitLength(element_densities[0]);
+    section->SetMassPerUnitLength(reference_point.density);
     // axial
-    section->SetAxialRigidity(stiffness_axial[0]);
-    section->SetXtorsionRigidity(stiffness_torsion[0]);
+    section->SetAxialRigidity(reference_point.stiffness_axial);
+    section->SetXtorsionRigidity(reference_point.stiffness_torsion);
     // flap
-    section->SetZbendingRigidity(stiffness_flap[0]);
+    section->SetZbendingRigidity(reference_point.stiffness_flap);
     // edge
-    section->SetYbendingRigidity(stiffness_edge[0]);
+    section->SetYbendingRigidity(reference_point.stiffness_edge);
     // damping
-    section->SetBeamRaleyghDamping(damping_coefficients);
+    section->SetBeamRaleyghDamping(reference_point.damping_coefficients);
 
     for (int ii = 1; ii < nelements + 1; ii++) {
         // create element
@@ -87,22 +83,23 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
 
         // make second section for tapered section
         section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
-        // offsets
         blade_section->SetSectionB(section);
-        section->SetCenterOfMass(offsets_gravity[ii].y(), -offsets_gravity[ii].x());
-        section->SetCentroidY(offsets_elastic[ii].y());
-        section->SetCentroidZ(-offsets_elastic[ii].x());
+        auto reference_point = reference_points[ii];
+        // offsets
+        section->SetCenterOfMass(reference_point.offset_gravity.y(), -reference_point.offset_gravity.x());
+        section->SetCentroidY(reference_point.offset_elastic.y());
+        section->SetCentroidZ(-reference_point.offset_elastic.x());
         // material properties
-        section->SetMassPerUnitLength(element_densities[ii]);
+        section->SetMassPerUnitLength(reference_point.density);
         // axial
-        section->SetAxialRigidity(stiffness_axial[ii]);
-        section->SetXtorsionRigidity(stiffness_torsion[ii]);
+        section->SetAxialRigidity(reference_point.stiffness_axial);
+        section->SetXtorsionRigidity(reference_point.stiffness_torsion);
         // flap
-        section->SetZbendingRigidity(stiffness_flap[ii]);
+        section->SetZbendingRigidity(reference_point.stiffness_flap);
         // edge
-        section->SetYbendingRigidity(stiffness_edge[ii]);
+        section->SetYbendingRigidity(reference_point.stiffness_edge);
         // damping
-        section->SetBeamRaleyghDamping(damping_coefficients);
+        section->SetBeamRaleyghDamping(reference_point.damping_coefficients);
 
         // apply prebend and structural twist
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
@@ -132,57 +129,18 @@ void Blade::translate(ChVector<double> translation_vector) {
 }
 
 void Blade::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
+    DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
     damping_coefficients.bz = flap;
     damping_coefficients.bt = torsion;
+    for (int ii = 0; ii < reference_points.size(); ii++) {
+        auto reference_point = reference_points[ii];
+        reference_point.damping_coefficients = damping_coefficients;
+    }
     for (int ii = 0; ii < elements.size(); ii++) {
         auto section = elements[ii]->GetTaperedSection();
         section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
         section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
-
-void Blade::check_variables_integrity() {
-    unsigned int npoints = centers_reference.size();
-    if (element_densities.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade densities defined does not match the number of reference points (" +
-            std::to_string(element_densities.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (stiffness_axial.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade axial stiffnesses defined does not match the number of reference points (" +
-            std::to_string(stiffness_axial.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (stiffness_edge.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade edge stiffnesses defined does not match the number of reference points (" +
-            std::to_string(stiffness_edge.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (stiffness_flap.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade flap stiffnesses defined does not match the number of reference points (" +
-            std::to_string(stiffness_flap.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (stiffness_axial.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade axial stiffnesses defined does not match the number of reference points (" +
-            std::to_string(stiffness_axial.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (stiffness_torsion.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade torsion stiffnesses defined does not match the number of reference points (" +
-            std::to_string(stiffness_torsion.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (offsets_elastic.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade center of elasticity offsets defined does not match the number of reference points (" +
-            std::to_string(offsets_elastic.size()) + " vs " + std::to_string(npoints) + ").");
-    }
-    if (offsets_gravity.size() != npoints) {
-        throw std::runtime_error(
-            "The number of blade center of gravity offsets defined does not match the number of reference points (" +
-            std::to_string(offsets_gravity.size()) + " vs " + std::to_string(npoints) + ".");
-    }
-};

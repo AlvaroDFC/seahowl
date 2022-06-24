@@ -7,14 +7,15 @@
 
 using json = nlohmann::json;
 
-Blade blade_from_json(std::string filepath) {
+std::vector<BladeReferencePoint> blade_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    // extract blade information
+    // EXTRACT INFO
+    //
     std::vector<double> blade_fraction = json_obj["fraction"];
     std::vector<std::vector<double>> centers_reference_vec = json_obj["centers_reference"];
     std::vector<std::vector<double>> offsets_elastic_vec;
@@ -40,35 +41,33 @@ Blade blade_from_json(std::string filepath) {
     std::vector<double> densities = json_obj["densities"];
     std::vector<double> structural_twist = json_obj["structural_twist"];
     std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
-    // std::vector<double> pitch_angles = json_obj["pitch_angles"];
 
-    // populate blade
-    auto blade = Blade();
-    std::vector<ChVector<double>> centers_reference;
-    std::vector<ChVector2<double>> offsets_elastic;
-    std::vector<ChVector2<double>> offsets_gravity;
-    for (int ii = 0; ii < centers_reference_vec.size(); ii++) {
-        auto cr = centers_reference_vec[ii];
-        centers_reference.push_back(ChVector<double>(cr[0], cr[1], cr[2]));
+    // MAKE BLADE REFERENCE POINTS
+    //
+    std::vector<BladeReferencePoint> reference_points;
+    for (int ii = 0; ii < blade_fraction.size(); ii++) {
+        BladeReferencePoint reference_point;
+        reference_point.fraction = blade_fraction[ii];
+        auto coords = centers_reference_vec[ii];
+        reference_point.coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
         auto oe = offsets_elastic_vec[ii];
-        offsets_elastic.push_back(ChVector2<double>(oe[0], oe[1]));
+        reference_point.offset_elastic = ChVector2<double>(oe[0], oe[1]);
         auto og = offsets_gravity_vec[ii];
-        offsets_gravity.push_back(ChVector2<double>(og[0], og[1]));
-    }
-    blade.centers_reference = centers_reference;
-    blade.offsets_elastic = offsets_elastic;
-    blade.offsets_gravity = offsets_gravity;
-    blade.element_densities = densities;
-    blade.structural_twist = structural_twist;
-    blade.stiffness_flap = stiffness_flap;
-    blade.stiffness_edge = stiffness_edge;
-    blade.set_damping_coefficients(damping_coefficients[0], damping_coefficients[1], damping_coefficients[2],
-                                   damping_coefficients[3]);
-    // TODO: change to actual values
-    std::vector<double> stiffness_axial(50, 210e9);
-    blade.stiffness_axial = stiffness_axial;
-    std::vector<double> stiffness_torsion(50, 1e11);
-    blade.stiffness_torsion = stiffness_torsion;
+        reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
+        reference_point.density = densities[ii];
+        reference_point.structural_twist = structural_twist[ii];
+        reference_point.stiffness_edge = stiffness_edge[ii];
+        reference_point.stiffness_flap = stiffness_flap[ii];
+        reference_point.damping_coefficients.bx = damping_coefficients[0];
+        reference_point.damping_coefficients.by = damping_coefficients[1];
+        reference_point.damping_coefficients.bz = damping_coefficients[2];
+        reference_point.damping_coefficients.bt = damping_coefficients[3];
+        // TODO: change to actual values
+        reference_point.stiffness_axial = 210e9;
+        reference_point.stiffness_torsion = 1e11;
 
-    return blade;
+        reference_points.push_back(reference_point);
+    }
+
+    return reference_points;
 }
