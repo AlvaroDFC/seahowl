@@ -7,7 +7,7 @@
 
 using json = nlohmann::json;
 
-std::vector<BladeReferencePoint> blade_reference_points_from_json(std::string filepath) {
+std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -16,7 +16,7 @@ std::vector<BladeReferencePoint> blade_reference_points_from_json(std::string fi
 
     // EXTRACT INFO
     //
-    std::vector<double> blade_fraction = json_obj["fraction"];
+    std::vector<double> blade_fractions = json_obj["fractions"];
     std::vector<std::vector<double>> centers_reference_vec = json_obj["centers_reference"];
     std::vector<std::vector<double>> offsets_elastic_vec;
     if (json_obj.contains("offsets_elastic")) {
@@ -45,9 +45,9 @@ std::vector<BladeReferencePoint> blade_reference_points_from_json(std::string fi
     // MAKE BLADE REFERENCE POINTS
     //
     std::vector<BladeReferencePoint> reference_points;
-    for (int ii = 0; ii < blade_fraction.size(); ii++) {
+    for (int ii = 0; ii < blade_fractions.size(); ii++) {
         BladeReferencePoint reference_point;
-        reference_point.fraction = blade_fraction[ii];
+        reference_point.fraction = blade_fractions[ii];
         auto coords = centers_reference_vec[ii];
         reference_point.coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
         auto oe = offsets_elastic_vec[ii];
@@ -70,4 +70,20 @@ std::vector<BladeReferencePoint> blade_reference_points_from_json(std::string fi
     }
 
     return reference_points;
+}
+
+Blade get_blade_from_json(std::string filepath) {
+    std::ifstream json_file(filepath);
+
+    // populate json object
+    json json_obj;
+    json_file >> json_obj;
+
+    std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
+
+    Blade blade = Blade();
+    blade.reference_points = get_blade_reference_points_from_json(filepath);
+    blade.discretization_fractions = discretization_fractions;
+
+    return blade;
 }

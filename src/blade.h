@@ -11,21 +11,71 @@ struct BladeReferencePoint {
     ChVector<double> coordinates;
     ChVector2<double> offset_elastic = ChVector2<double>(0.0, 0.0);
     ChVector2<double> offset_gravity = ChVector2<double>(0.0, 0.0);
-    ChVector<double> fraction;
+    double fraction;
     double structural_twist;
     double density;
     double stiffness_axial;
     double stiffness_edge;
     double stiffness_flap;
     double stiffness_torsion;
-    DampingCoefficients damping_coefficients = {0.001, 0.001, 0.001, 0.0};
+    DampingCoefficients damping_coefficients = {0.001, 0.001, 0.001, 0.001, 0.0};
+
+    BladeReferencePoint operator*(const double factor) const {
+        BladeReferencePoint new_point;
+        new_point.coordinates = coordinates * factor;
+        new_point.offset_elastic = offset_elastic * factor;
+        new_point.offset_gravity = offset_gravity * factor;
+        new_point.fraction = fraction * factor;
+        new_point.structural_twist = structural_twist * factor;
+        new_point.density = density * factor;
+        new_point.stiffness_axial = stiffness_axial * factor;
+        new_point.stiffness_edge = stiffness_edge * factor;
+        new_point.stiffness_flap = stiffness_flap * factor;
+        new_point.stiffness_torsion = stiffness_torsion * factor;
+        new_point.damping_coefficients.bx = damping_coefficients.bx * factor;
+        new_point.damping_coefficients.bx = damping_coefficients.bx * factor;
+        new_point.damping_coefficients.bx = damping_coefficients.bx * factor;
+        new_point.damping_coefficients.bx = damping_coefficients.bx * factor;
+        new_point.damping_coefficients.by = damping_coefficients.by * factor;
+        new_point.damping_coefficients.bz = damping_coefficients.bz * factor;
+        new_point.damping_coefficients.bt = damping_coefficients.bt * factor;
+        new_point.damping_coefficients.alpha = damping_coefficients.alpha * factor;
+        return new_point;
+    };
+    BladeReferencePoint operator+(const BladeReferencePoint& other) const {
+        BladeReferencePoint new_point = *this;
+        new_point.coordinates += other.coordinates;
+        new_point.offset_elastic += other.offset_elastic;
+        new_point.offset_gravity += other.offset_gravity;
+        new_point.fraction += other.fraction;
+        new_point.structural_twist += other.structural_twist;
+        new_point.density += other.density;
+        new_point.stiffness_axial += other.stiffness_axial;
+        new_point.stiffness_edge += other.stiffness_edge;
+        new_point.stiffness_flap += other.stiffness_flap;
+        new_point.stiffness_torsion += other.stiffness_torsion;
+        new_point.damping_coefficients.bx += other.damping_coefficients.bx;
+        new_point.damping_coefficients.bx += other.damping_coefficients.bx;
+        new_point.damping_coefficients.bx += other.damping_coefficients.bx;
+        new_point.damping_coefficients.bx += other.damping_coefficients.bx;
+        new_point.damping_coefficients.by += other.damping_coefficients.by;
+        new_point.damping_coefficients.bz += other.damping_coefficients.bz;
+        new_point.damping_coefficients.bt += other.damping_coefficients.bt;
+        new_point.damping_coefficients.alpha += other.damping_coefficients.alpha;
+        return new_point;
+    };
 };
+
+std::vector<BladeReferencePoint> get_discretized_points(std::vector<double>& discretization_fractions,
+                                                        std::vector<BladeReferencePoint>& reference_points);
 
 class Blade {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
     std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
     std::vector<BladeReferencePoint> reference_points;
+    std::vector<BladeReferencePoint> discretized_points;
+    std::vector<double> discretization_fractions;
 
     Blade();
 

@@ -34,9 +34,7 @@ int main(int argc, char* argv[]) {
     system.AddMesh(blades_mesh);
 
     // blade
-    auto reference_points = blade_reference_points_from_json("../data/IEA15MW_blade.json");
-    auto blade = Blade();
-    blade.reference_points = reference_points;
+    auto blade = get_blade_from_json("../data/IEA15MW_blade.json");
 
     blade.make_blade(blades_mesh);
 
