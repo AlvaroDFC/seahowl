@@ -4,6 +4,7 @@
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/solver/ChIterativeSolverLS.h"
 #include "chrono_irrlicht/ChIrrApp.h"
+#include "chrono/physics/ChLinkMotorRotationSpeed.h"
 #include <cmath>
 
 #include "blade.h"
@@ -45,18 +46,26 @@ int main(int argc, char* argv[]) {
         auto blade = blades[ii];
         blade->make_blade(blades_mesh);
         for (int jj = 0; jj < blade->elements.size(); jj++) {
-            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.1, 0.1);
-            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.1, 0.1);
+            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
+            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
         }
     }
 
     // rotor
     std::vector<double> precones{0.1, 0.1, 0.1};
-    std::vector<double> offsets{2.0, 2.0, 2.0};
+    std::vector<double> offsets{5.0, 5.0, 5.0};
     auto rotor = Rotor(blades, offsets, precones);
     rotor.make_rotor(system);
     // fix body shaft hub
     rotor.body_shaft_hub->SetBodyFixed(true);
+
+    auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
+    link_motor->Initialize(rotor.body_shaft_hub, rotor.body_hub_apex, rotor.body_shaft_hub->GetAssetsFrame());
+    system.AddLink(link_motor);
+    auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
+    link_motor->SetSpeedFunction(my_speed_function);
+
+    link_motor->SetDisabled(false);
 
     // VISUALIZATION
 
@@ -64,7 +73,7 @@ int main(int argc, char* argv[]) {
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     application.AddTypicalLights();
     application.AddTypicalSky();
-    application.AddTypicalCamera(core::vector3df(10, 3, -10));
+    application.AddTypicalCamera(core::vector3df(50, 3, -50));
 
     auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
@@ -75,7 +84,7 @@ int main(int argc, char* argv[]) {
     auto visualize_nodes = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_nodes->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
     visualize_nodes->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
-    visualize_nodes->SetSymbolsThickness(0.2);
+    visualize_nodes->SetSymbolsThickness(1.0);
     visualize_nodes->SetSymbolsScale(1.0);
     visualize_nodes->SetZbufferHide(false);
     blades_mesh->AddAsset(visualize_nodes);
@@ -84,7 +93,7 @@ int main(int argc, char* argv[]) {
     auto visualize_nodes_coordsys = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_nodes_coordsys->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
     visualize_nodes_coordsys->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NONE);
-    visualize_nodes_coordsys->SetSymbolsThickness(1.0);
+    visualize_nodes_coordsys->SetSymbolsThickness(10.0);
     visualize_nodes_coordsys->SetSymbolsScale(1.0);
     visualize_nodes_coordsys->SetZbufferHide(false);
     blades_mesh->AddAsset(visualize_nodes_coordsys);
