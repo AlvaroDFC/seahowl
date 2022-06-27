@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "blade.h"
+#include "rotor.h"
 #include "read_json.h"
 
 using namespace chrono;
@@ -34,19 +35,28 @@ int main(int argc, char* argv[]) {
     system.AddMesh(blades_mesh);
 
     // blade
-    auto blade = get_blade_from_json("../data/IEA15MW_blade.json");
+    auto blade1 = get_blade_from_json("../data/IEA15MW_blade.json");
+    auto blade2 = get_blade_from_json("../data/IEA15MW_blade.json");
+    auto blade3 = get_blade_from_json("../data/IEA15MW_blade.json");
 
-    blade.make_blade(blades_mesh);
+    std::vector<Blade*> blades{&blade1, &blade2, &blade3};
 
-    // add point to fix root node of blade
-    auto rotor_center = chrono_types::make_shared<ChBodyEasyBox>(0.2, 0.2, 0.2, 2700, true, true);
-    system.Add(rotor_center);
-    rotor_center->SetPos(ChVector<>(0, 0, -1));
-    rotor_center->SetBodyFixed(true);
-    // link between rotor and root node
-    auto link_pos = chrono_types::make_shared<ChLinkMateFix>();
-    link_pos->Initialize(blade.nodes[0], rotor_center);
-    system.Add(link_pos);
+    for (int ii = 0; ii < blades.size(); ii++) {
+        auto blade = blades[ii];
+        blade->make_blade(blades_mesh);
+        for (int jj = 0; jj < blade->elements.size(); jj++) {
+            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.1, 0.1);
+            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.1, 0.1);
+        }
+    }
+
+    // rotor
+    std::vector<double> precones{0.1, 0.1, 0.1};
+    std::vector<double> offsets{2.0, 2.0, 2.0};
+    auto rotor = Rotor(blades, offsets, precones);
+    rotor.make_rotor(system);
+    // fix body shaft hub
+    rotor.body_shaft_hub->SetBodyFixed(true);
 
     // VISUALIZATION
 
@@ -56,12 +66,6 @@ int main(int argc, char* argv[]) {
     application.AddTypicalSky();
     application.AddTypicalCamera(core::vector3df(10, 3, -10));
 
-    // visualize beams
-    // increase size of visualization for beams
-    for (int ii = 0; ii < blade.elements.size(); ii++) {
-        blade.elements[ii]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.1, 0.1);
-        blade.elements[ii]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.1, 0.1);
-    }
     auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
     visualize_beam->SetColorscaleMinMax(-0.4, 0.4);
@@ -106,7 +110,7 @@ int main(int argc, char* argv[]) {
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step
-                 << " pos: " << blade.nodes[blade.nodes.size() - 1]->GetPos().y() << "\n";
+                 << " pos: " << blade1.nodes[blade1.nodes.size() - 1]->GetPos().y() << "\n";
     }
 
     return 0;

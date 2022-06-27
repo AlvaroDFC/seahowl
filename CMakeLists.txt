@@ -128,7 +128,7 @@ endif()
 # files in your project. 
 #--------------------------------------------------------------
 
-add_executable(simple_blade src/main.cpp src/blade.cpp)
+add_executable(simple_blade src/main.cpp src/blade.cpp src/rotor.cpp)
 
 #--------------------------------------------------------------
 # Set properties for your executable target
