@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include "blade.h"
+#include "tower.h"
 
 #define LEN(arr) ((int)(sizeof(arr) / sizeof(arr)[0]))
 
@@ -86,4 +87,62 @@ Blade get_blade_from_json(std::string filepath) {
     blade.discretization_fractions = discretization_fractions;
 
     return blade;
+}
+
+std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
+    std::ifstream json_file(filepath);
+
+    // populate json object
+    json json_obj;
+    json_file >> json_obj;
+
+    // EXTRACT INFO
+    //
+    std::vector<double> tower_fractions = json_obj["fractions"];
+    double height = json_obj["height"];
+    std::vector<double> stiffness_foreaft = json_obj["stiffness_foreaft"];
+    std::vector<double> stiffness_sideside = json_obj["stiffness_sideside"];
+    std::vector<double> densities = json_obj["densities"];
+    std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
+
+    // MAKE TOWER REFERENCE POINTS
+    //
+    std::vector<TowerReferencePoint> reference_points;
+    for (int ii = 0; ii < tower_fractions.size(); ii++) {
+        TowerReferencePoint reference_point;
+        reference_point.fraction = tower_fractions[ii];
+        reference_point.coordinates = ChVector<double>(0.0, 0.0, height * tower_fractions[ii]);
+        reference_point.density = densities[ii];
+        reference_point.stiffness_sideside = stiffness_sideside[ii];
+        reference_point.stiffness_foreaft = stiffness_foreaft[ii];
+        reference_point.damping_coefficients.bx = damping_coefficients[0];
+        reference_point.damping_coefficients.by = damping_coefficients[1];
+        reference_point.damping_coefficients.bz = damping_coefficients[2];
+        reference_point.damping_coefficients.bt = damping_coefficients[3];
+        // TODO: change to actual values
+        reference_point.stiffness_axial = 210e9;
+        reference_point.stiffness_torsion = 1e11;
+
+        reference_points.push_back(reference_point);
+    }
+
+    return reference_points;
+}
+
+Tower get_tower_from_json(std::string filepath) {
+    std::ifstream json_file(filepath);
+
+    // populate json object
+    json json_obj;
+    json_file >> json_obj;
+
+    std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
+    double height = json_obj["height"];
+
+    Tower tower = Tower();
+    tower.height = height;
+    tower.reference_points = get_tower_reference_points_from_json(filepath);
+    tower.discretization_fractions = discretization_fractions;
+
+    return tower;
 }

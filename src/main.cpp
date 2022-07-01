@@ -26,6 +26,7 @@ int main(int argc, char* argv[]) {
     auto solver = chrono_types::make_shared<ChSolverMINRES>();
     system.SetSolver(solver);
     solver->SetMaxIterations(4000);
+    solver->SetVerbose(true);
     solver->SetTolerance(1e-12);
     solver->EnableDiagonalPreconditioner(true);
     solver->EnableWarmStart(true);
@@ -50,6 +51,21 @@ int main(int argc, char* argv[]) {
             blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
         }
     }
+
+    // tower
+    auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
+    tower.build(blades_mesh);
+    for (int jj = 0; jj < tower.elements.size(); jj++) {
+        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
+        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
+    }
+    // rotate and translate tower to make it match the current turbine configuration
+    tower.rotate(-CH_C_PI / 2.0, VECT_X);
+    double overhang = -12.098;
+    double tower2shaft = 4.3495;
+    tower.translate(ChVector<double>(-overhang, -tower.height - tower2shaft, 0.0));
+    // fix bottom of tower
+    tower.nodes[0]->SetFixed(true);
 
     // rotor
     std::vector<double> precones{0.1, 0.1, 0.1};
