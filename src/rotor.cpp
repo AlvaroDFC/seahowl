@@ -15,18 +15,14 @@ void Rotor::build(ChSystemSMC& system, std::vector<Blade*> blades) {
     system.Add(body_hub_apex);
     system.Add(body_shaft_hub);
 
-    body_hub_apex->SetPos(ChVector<>(hub.overhang, shaft.distance_from_towertop, 0.0));
-    // local Z axis along global X axis + shaft tilt along global Z axis
-    body_hub_apex->SetRot(Q_from_AngAxis(shaft.tilt, VECT_Z) * Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
-
-    body_hub_apex->SetPos(ChVector<>(hub.overhang, shaft.distance_from_towertop, 0.0));
-    // local Z axis along global X axis + shaft tilt along global Z axis
-    auto tilt_hub = Q_from_AngAxis(shaft.tilt, VECT_Z);
+    body_hub_apex->SetPos(ChVector<>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
+    // local Z axis along global X axis + shaft tilt along global Y axis
+    auto tilt_hub = Q_from_AngAxis(shaft.tilt, -VECT_Y);
     body_hub_apex->SetRot(tilt_hub * Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
     body_hub_apex->SetPos(tilt_hub.Rotate(body_hub_apex->GetPos()));
 
     // move end of shaft at hub apex
-    body_shaft_hub->SetPos(ChVector(0.0, shaft.distance_from_towertop, 0.0));
+    body_shaft_hub->SetPos(ChVector(0.0, 0.0, shaft.distance_from_towertop));
     // align rotation
     body_shaft_hub->SetRot(body_hub_apex->GetRot());
 
@@ -50,9 +46,9 @@ void Rotor::build(ChSystemSMC& system, std::vector<Blade*> blades) {
         // rotate blade around hub
         blade->rotate(angle, VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
         // offset with distance from towertop
-        blade->translate(ChVector<double>(0.0, shaft.distance_from_towertop, 0.0));
+        blade->translate(ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
         // apply shaft tilt to blades
-        blade->rotate(shaft.tilt, VECT_Z);
+        blade->rotate(shaft.tilt, -VECT_Y);
 
         // link root node of blade to rotor center
         auto link_hub_blade = chrono_types::make_shared<ChLinkMateFix>();

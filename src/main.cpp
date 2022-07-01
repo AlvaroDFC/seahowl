@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
 
     // system
     ChSystemSMC system;
+    system.Set_G_acc(ChVector<double>(0.0, 0.0, -9.81));
     system.SetNumThreads(ChOMP::GetNumProcs(), 0, 1);
 
     // solver
@@ -75,9 +76,8 @@ int main(int argc, char* argv[]) {
         tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
         tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
     }
-    // rotate and translate tower to make it match the current turbine configuration
-    tower.rotate(-CH_C_PI / 2.0, VECT_X);
-    tower.translate(ChVector<double>(0.0, -tower.height - rotor.shaft.distance_from_towertop, 0.0));
+    // translate tower to make it match the current turbine configuration
+    tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
     // fix bottom of tower
     tower.nodes[0]->SetFixed(true);
 
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     application.AddTypicalLights();
     application.AddTypicalSky();
-    application.AddTypicalCamera(core::vector3df(50, 3, -50));
+    application.AddTypicalCamera(core::vector3df(-100, -50, 3));
 
     auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
