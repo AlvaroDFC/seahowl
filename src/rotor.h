@@ -11,6 +11,7 @@ class Rotor {
     std::vector<double> blade_offsets;
     std::shared_ptr<ChBody> body_hub_apex;
     std::shared_ptr<ChBody> body_shaft_hub;
+    double shaft_tilt;
 
     Rotor(std::vector<Blade*> blades, std::vector<double> blade_offsets, std::vector<double> blade_precones);
 

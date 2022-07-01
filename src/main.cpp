@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
     std::vector<double> precones{0.1, 0.1, 0.1};
     std::vector<double> offsets{5.0, 5.0, 5.0};
     auto rotor = Rotor(blades, offsets, precones);
+    rotor.shaft_tilt = -0.1;
     rotor.make_rotor(system);
     // fix body shaft hub
     rotor.body_shaft_hub->SetBodyFixed(true);

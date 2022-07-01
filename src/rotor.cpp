@@ -4,11 +4,11 @@
 #include "chrono/physics/ChSystemSMC.h"
 
 Rotor::Rotor(std::vector<Blade*> blades, std::vector<double> blade_offsets, std::vector<double> blade_precones)
-    : blades(blades), blade_offsets(blade_offsets), blade_precones(blade_precones) {}
+    : blades(blades), blade_offsets(blade_offsets), blade_precones(blade_precones) {
+    shaft_tilt = 0.0;
+}
 
 void Rotor::make_rotor(ChSystemSMC& system) {
-    //
-
     // set hub apex at (0,0,0)
     body_hub_apex = chrono_types::make_shared<ChBody>();
     body_shaft_hub = chrono_types::make_shared<ChBody>();
@@ -16,11 +16,11 @@ void Rotor::make_rotor(ChSystemSMC& system) {
     system.Add(body_shaft_hub);
 
     body_hub_apex->SetPos(ChVector<>(0.0, 0.0, 0.0));
-    // local Z axis along global X axis
-    body_hub_apex->SetRot(Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
+    // local Z axis along global X axis + shaft tilt along global Z axis
+    body_hub_apex->SetRot(Q_from_AngAxis(shaft_tilt, VECT_Z) * Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
 
     // move end of shaft at hub apex
-    body_shaft_hub->SetPos(body_hub_apex->GetPos());
+    body_shaft_hub->SetPos(body_hub_apex->GetPos() + ChVector(0.0, 0.0, 0.0));
     // align rotation
     body_shaft_hub->SetRot(body_hub_apex->GetRot());
 
@@ -44,6 +44,8 @@ void Rotor::make_rotor(ChSystemSMC& system) {
         blade->translate(ChVector<double>(0., 0., offset));
         // rotate blade around hub
         blade->rotate(angle, VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
+        // apply shaft tilt to blades
+        blade->rotate(shaft_tilt, VECT_Z);
 
         // link root node of blade to rotor center
         auto link_hub_blade = chrono_types::make_shared<ChLinkMateFix>();
