@@ -146,3 +146,38 @@ Tower get_tower_from_json(std::string filepath) {
 
     return tower;
 }
+
+Rotor get_rotor_from_json(std::string filepath) {
+    std::ifstream json_file(filepath);
+
+    // populate json object
+    json json_obj;
+    json_file >> json_obj;
+
+    // EXTRACT INFO
+    //
+    auto rotor = Rotor();
+    // blades
+    rotor.blade_precones = (std::vector<double>)json_obj["precones"];
+    for (int ii = 0; ii < rotor.blade_precones.size(); ii++) {
+        // convert to radians
+        rotor.blade_precones[ii] *= CH_C_PI / 180.0;
+    }
+    // hub
+    rotor.hub.center_of_mass = json_obj["hub"]["CM"];
+    rotor.hub.mass = json_obj["hub"]["mass"];
+    rotor.hub.inertia = json_obj["hub"]["inertia"];
+    rotor.hub.overhang = json_obj["hub"]["overhang"];
+    rotor.hub.radius = json_obj["hub"]["radius"];
+    // nacelle
+    std::vector<double> cm = json_obj["nacelle"]["CM"];
+    rotor.nacelle.center_of_mass = ChVector<double>(cm[0], cm[1], cm[2]);
+    rotor.nacelle.mass = json_obj["nacelle"]["mass"];
+    rotor.nacelle.inertia = json_obj["nacelle"]["inertia"];
+    rotor.nacelle.yaw_bearing_mass = json_obj["nacelle"]["yaw_bearing_mass"];
+    // shaft
+    rotor.shaft.distance_from_towertop = json_obj["shaft"]["distance_from_towertop"];
+    rotor.shaft.tilt = (double)json_obj["shaft"]["tilt"] * CH_C_PI / 180.0;
+
+    return rotor;
+}

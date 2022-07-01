@@ -1,0 +1,28 @@
+{
+  "shaft": {
+    "tilt": -6.0,
+    "distance_from_towertop": 4.3495
+  },
+  "nacelle": {
+    "yaw_bearing_mass": 28280.0,
+    "inertia": 24240914.0,
+    "mass": 646895.0,
+    "CM": [
+      -4.7201,
+      0.0,
+      4.2751
+    ]
+  },
+  "hub": {
+    "radius": 3.97,
+    "overhang": -12.098,
+    "inertia": 973520.0,
+    "mass": 69360.0,
+    "CM": 0.0
+  },
+  "precones": [
+    -4.0,
+    -4.0,
+    -4.0
+  ]
+}

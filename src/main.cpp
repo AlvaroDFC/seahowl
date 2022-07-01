@@ -37,6 +37,7 @@ int main(int argc, char* argv[]) {
     system.AddMesh(blades_mesh);
 
     // blade
+    GetLog() << "Building blades\n";
     auto blade1 = get_blade_from_json("../data/IEA15MW_blade.json");
     auto blade2 = get_blade_from_json("../data/IEA15MW_blade.json");
     auto blade3 = get_blade_from_json("../data/IEA15MW_blade.json");
@@ -52,27 +53,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // tower
-    auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
-    tower.build(blades_mesh);
-    for (int jj = 0; jj < tower.elements.size(); jj++) {
-        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
-        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
-    }
-    // rotate and translate tower to make it match the current turbine configuration
-    tower.rotate(-CH_C_PI / 2.0, VECT_X);
-    double overhang = -12.098;
-    double tower2shaft = 4.3495;
-    tower.translate(ChVector<double>(-overhang, -tower.height - tower2shaft, 0.0));
-    // fix bottom of tower
-    tower.nodes[0]->SetFixed(true);
-
     // rotor
-    std::vector<double> precones{0.1, 0.1, 0.1};
-    std::vector<double> offsets{5.0, 5.0, 5.0};
-    auto rotor = Rotor(blades, offsets, precones);
-    rotor.shaft_tilt = -0.1;
-    rotor.make_rotor(system);
+    GetLog() << "Building rotor\n";
+    auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
+    rotor.build(system, blades);
     // fix body shaft hub
     rotor.body_shaft_hub->SetBodyFixed(true);
 
@@ -81,8 +65,23 @@ int main(int argc, char* argv[]) {
     system.AddLink(link_motor);
     auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
     link_motor->SetSpeedFunction(my_speed_function);
-
     link_motor->SetDisabled(false);
+
+    // tower
+    GetLog() << "Building tower\n";
+    auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
+    tower.build(blades_mesh);
+    for (int jj = 0; jj < tower.elements.size(); jj++) {
+        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
+        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
+    }
+    // rotate and translate tower to make it match the current turbine configuration
+    tower.rotate(-CH_C_PI / 2.0, VECT_X);
+    tower.translate(ChVector<double>(0.0, -tower.height - rotor.shaft.distance_from_towertop, 0.0));
+    // fix bottom of tower
+    tower.nodes[0]->SetFixed(true);
+
+    GetLog() << "Finished building system\n";
 
     // VISUALIZATION
 

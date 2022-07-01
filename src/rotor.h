@@ -4,18 +4,39 @@
 
 using namespace chrono;
 
+struct HubProperties {
+    double center_of_mass = 0.0;
+    double mass = 0.0;
+    double inertia = 0.0;
+    double overhang = 0.0;
+    double radius = 0.0;
+};
+
+struct NacelleProperties {
+    ChVector<double> center_of_mass = ChVector<double>(0.0, 0.0, 0.0);
+    double mass = 0.0;
+    double inertia = 0.0;
+    double yaw_bearing_mass = 0.0;
+};
+
+struct ShaftProperties {
+    double tilt = 0.0;
+    double distance_from_towertop = 0.0;
+};
+
 class Rotor {
   public:
     std::vector<Blade*> blades;
     std::vector<double> blade_precones;
-    std::vector<double> blade_offsets;
     std::shared_ptr<ChBody> body_hub_apex;
     std::shared_ptr<ChBody> body_shaft_hub;
-    double shaft_tilt;
+    ShaftProperties shaft;
+    NacelleProperties nacelle;
+    HubProperties hub;
 
-    Rotor(std::vector<Blade*> blades, std::vector<double> blade_offsets, std::vector<double> blade_precones);
+    Rotor();
 
-    void make_rotor(ChSystemSMC& system);
+    void build(ChSystemSMC& system, std::vector<Blade*> blades);
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);
 };
