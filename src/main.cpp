@@ -26,9 +26,7 @@ int main(int argc, char* argv[]) {
     // solver
     auto solver = chrono_types::make_shared<ChSolverMINRES>();
     system.SetSolver(solver);
-    solver->SetMaxIterations(40000);
     solver->SetVerbose(true);
-    solver->SetTolerance(1e-6);
     solver->EnableDiagonalPreconditioner(true);
     solver->EnableWarmStart(true);
     // system.SetSolverForceTolerance(1e-10);
@@ -49,8 +47,8 @@ int main(int argc, char* argv[]) {
         auto blade = blades[ii];
         blade->make_blade(blades_mesh);
         for (int jj = 0; jj < blade->elements.size(); jj++) {
-            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
-            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
+            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
+            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
         }
     }
 
@@ -71,8 +69,8 @@ int main(int argc, char* argv[]) {
     auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
     tower.build(blades_mesh);
     for (int jj = 0; jj < tower.elements.size(); jj++) {
-        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(0.5, 0.5);
-        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(0.5, 0.5);
+        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 2.0);
+        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 2.0);
     }
     // translate tower to make it match the current turbine configuration
     tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
@@ -127,7 +125,20 @@ int main(int argc, char* argv[]) {
     application.SetVideoframeSaveInterval(20);
     double time = 0.0;
     int step = 0;
-    application.DoStep();
+    solver->SetTolerance(1e-12);
+    solver->SetMaxIterations(400000);
+    system.DoStaticLinear();
+    // system.DoStaticNonlinear(10, true);
+    solver->SetTolerance(1e-6);
+    solver->SetMaxIterations(40000);
+    // application.DoStep();
+    for (int ii = 0; ii < blades.size(); ii++) {
+        GetLog() << "Blade" << ii << " mass: " << blades[ii]->get_mass() << "\n";
+    }
+    GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
+    GetLog() << "RNA mass (without blades): " << rotor.get_mass() - 3.0 * blade1.get_mass() << "\n";
+    GetLog() << "Tower mass: " << tower.get_mass() << "\n";
+    GetLog() << "Total mass: " << rotor.get_mass() + tower.get_mass() << "\n";
     while (application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();

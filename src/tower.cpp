@@ -128,3 +128,11 @@ void Tower::set_damping_coefficients(double axial, double edge, double flap, dou
         section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
+
+double Tower::get_mass() {
+    double total_mass = 0.0;
+    for (int ii = 0; ii < elements.size(); ii++) {
+        total_mass += elements[ii]->GetMass();
+    }
+    return total_mass;
+}

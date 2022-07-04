@@ -136,3 +136,20 @@ void Rotor::translate(ChVector<double> translation_vector) {
     // yaw_bearing
     body_yaw_bearing->SetPos(body_yaw_bearing->GetPos() + translation_vector);
 }
+
+double Rotor::get_mass() {
+    double total_mass = 0.0;
+    // blades
+    for (int ii = 0; ii < blades.size(); ii++) {
+        total_mass += blades[ii]->get_mass();
+    }
+    // hub
+    total_mass += body_hub->GetMass();
+    // shaft
+    total_mass += body_shaft->GetMass();
+    // nacelle
+    total_mass += body_nacelle->GetMass();
+    // yaw_bearing
+    total_mass += body_yaw_bearing->GetMass();
+    return total_mass;
+}

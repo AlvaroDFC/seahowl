@@ -66,6 +66,7 @@ class Tower {
     std::vector<TowerReferencePoint> discretized_points;
     std::vector<double> discretization_fractions;
     double height;
+    double base_height;
 
     Tower() {}
 
@@ -75,6 +76,7 @@ class Tower {
     void translate(ChVector<double> translation_vector);
     void rotate(double angle, ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
+    double get_mass();
 };
 
 #endif  // TOWER_H_

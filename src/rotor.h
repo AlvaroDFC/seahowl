@@ -55,6 +55,7 @@ class Rotor {
     void link_tower(Tower& tower, ChSystemSMC& system);
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);
+    double get_mass();
 };
 
 #endif  // ROTOR_H_

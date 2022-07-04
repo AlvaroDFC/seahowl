@@ -82,6 +82,7 @@ class Blade {
     void translate(ChVector<double> translation_vector);
     void rotate(double angle, ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
+    double get_mass();
 };
 
 #endif  // BLADE_H_
