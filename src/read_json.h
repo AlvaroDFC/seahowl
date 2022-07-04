@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include "blade.h"
+#include "rotor.h"
 #include "tower.h"
 
 #define LEN(arr) ((int)(sizeof(arr) / sizeof(arr)[0]))

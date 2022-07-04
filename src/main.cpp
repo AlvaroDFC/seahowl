@@ -26,12 +26,12 @@ int main(int argc, char* argv[]) {
     // solver
     auto solver = chrono_types::make_shared<ChSolverMINRES>();
     system.SetSolver(solver);
-    solver->SetMaxIterations(4000);
+    solver->SetMaxIterations(40000);
     solver->SetVerbose(true);
-    solver->SetTolerance(1e-12);
+    solver->SetTolerance(1e-6);
     solver->EnableDiagonalPreconditioner(true);
     solver->EnableWarmStart(true);
-    system.SetSolverForceTolerance(1e-10);
+    // system.SetSolverForceTolerance(1e-10);
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -58,11 +58,9 @@ int main(int argc, char* argv[]) {
     GetLog() << "Building rotor\n";
     auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
     rotor.build(system, blades);
-    // fix body shaft hub
-    rotor.body_shaft_hub->SetBodyFixed(true);
 
     auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
-    link_motor->Initialize(rotor.body_shaft_hub, rotor.body_hub_apex, rotor.body_shaft_hub->GetAssetsFrame());
+    link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
     system.AddLink(link_motor);
     auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
     link_motor->SetSpeedFunction(my_speed_function);
@@ -80,6 +78,9 @@ int main(int argc, char* argv[]) {
     tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
     // fix bottom of tower
     tower.nodes[0]->SetFixed(true);
+
+    // link rotor to tower
+    rotor.link_tower(tower, system);
 
     GetLog() << "Finished building system\n";
 

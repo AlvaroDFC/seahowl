@@ -1,6 +1,12 @@
+#ifndef ROTOR_H_
+#define ROTOR_H_
+
 #include "blade.h"
+#include "tower.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
+#include "chrono/physics/ChLinkMate.h"
+#include "chrono/physics/ChLinkRevolute.h"
 
 using namespace chrono;
 
@@ -28,8 +34,17 @@ class Rotor {
   public:
     std::vector<Blade*> blades;
     std::vector<double> blade_precones;
-    std::shared_ptr<ChBody> body_hub_apex;
-    std::shared_ptr<ChBody> body_shaft_hub;
+    // bodies
+    std::shared_ptr<ChBody> body_hub;
+    std::shared_ptr<ChBody> body_shaft;
+    std::shared_ptr<ChBody> body_nacelle;
+    std::shared_ptr<ChBody> body_yaw_bearing;
+    // links
+    std::shared_ptr<ChLinkRevolute> link_shaft_hub;
+    std::shared_ptr<ChLinkMateFix> link_shaft_nacelle;
+    std::shared_ptr<ChLinkMateFix> link_shaft_yaw_bearing;
+    std::shared_ptr<ChLinkMateFix> link_towertop_yaw_bearing;
+    // properties
     ShaftProperties shaft;
     NacelleProperties nacelle;
     HubProperties hub;
@@ -37,6 +52,9 @@ class Rotor {
     Rotor();
 
     void build(ChSystemSMC& system, std::vector<Blade*> blades);
+    void link_tower(Tower& tower, ChSystemSMC& system);
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);
 };
+
+#endif  // ROTOR_H_
