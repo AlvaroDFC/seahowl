@@ -37,11 +37,11 @@ int main(int argc, char* argv[]) {
 
     // blade
     GetLog() << "Building blades\n";
-    auto blade1 = get_blade_from_json("../data/IEA15MW_blade.json");
-    auto blade2 = get_blade_from_json("../data/IEA15MW_blade.json");
-    auto blade3 = get_blade_from_json("../data/IEA15MW_blade.json");
-
-    std::vector<Blade*> blades{&blade1, &blade2, &blade3};
+    std::vector<std::shared_ptr<Blade>> blades;
+    for (int ii = 0; ii < 3; ii++) {
+        auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
+        blades.push_back(blade);
+    }
 
     for (int ii = 0; ii < blades.size(); ii++) {
         auto blade = blades[ii];
@@ -130,13 +130,15 @@ int main(int argc, char* argv[]) {
     system.DoStaticLinear();
     // system.DoStaticNonlinear(10, true);
     solver->SetTolerance(1e-6);
-    solver->SetMaxIterations(40000);
+    solver->SetMaxIterations(400000);
     // application.DoStep();
+    double mass_blades = 0.0;
     for (int ii = 0; ii < blades.size(); ii++) {
         GetLog() << "Blade" << ii << " mass: " << blades[ii]->get_mass() << "\n";
+        mass_blades += blades[ii]->get_mass();
     }
     GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
-    GetLog() << "RNA mass (without blades): " << rotor.get_mass() - 3.0 * blade1.get_mass() << "\n";
+    GetLog() << "RNA mass (without blades): " << rotor.get_mass() - mass_blades << "\n";
     GetLog() << "Tower mass: " << tower.get_mass() << "\n";
     GetLog() << "Total mass: " << rotor.get_mass() + tower.get_mass() << "\n";
     while (application.GetDevice()->run()) {
@@ -147,7 +149,7 @@ int main(int argc, char* argv[]) {
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step
-                 << " pos: " << blade1.nodes[blade1.nodes.size() - 1]->GetPos().y() << "\n";
+                 << " pos: " << blades[0]->nodes[blades[0]->nodes.size() - 1]->GetPos().y() << "\n";
     }
 
     return 0;
