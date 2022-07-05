@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
     for (int ii = 0; ii < blades.size(); ii++) {
         auto blade = blades[ii];
-        blade->make_blade(blades_mesh);
+        blade->build(system, blades_mesh);
         for (int jj = 0; jj < blade->elements.size(); jj++) {
             blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
             blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);

@@ -1,15 +1,15 @@
 #include "blade.h"
-#include "utils.h"
 
 Blade::Blade() {}
 
-void Blade::make_blade(std::shared_ptr<ChMesh> mesh) {
+void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
-    make_nodes(mesh);
-    make_elements_tapered_timoshenko(mesh);
+    build_nodes(mesh);
+    build_elements_tapered_timoshenko(mesh);
+    build_loads(system);
 };
 
-void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
+void Blade::build_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
     int nnodes = discretized_points.size();
     for (int ii = 0; ii < nnodes; ii++) {
@@ -44,7 +44,7 @@ void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
     };
 };
 
-void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
+void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
     int nelements = nodes.size() - 1;
 
@@ -110,6 +110,17 @@ void Blade::make_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         rotation_relative =
             ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
         element->SetNodeBreferenceRot(rotation_relative);
+    }
+}
+
+void Blade::build_loads(ChSystemSMC& system) {
+    auto loadcontainer = chrono_types::make_shared<ChLoadContainer>();
+    system.Add(loadcontainer);
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto element = elements[ii];
+        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element));
+        loaders_aero.push_back(loader_weighted);
+        loadcontainer->Add(loader_weighted);
     }
 }
 
