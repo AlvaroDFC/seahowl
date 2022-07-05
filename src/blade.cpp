@@ -61,9 +61,9 @@ void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     section->SetAxialRigidity(discretized_point.stiffness_axial);
     section->SetXtorsionRigidity(discretized_point.stiffness_torsion);
     // flap
-    section->SetZbendingRigidity(discretized_point.stiffness_flap);
+    section->SetYbendingRigidity(discretized_point.stiffness_flap);
     // edge
-    section->SetYbendingRigidity(discretized_point.stiffness_edge);
+    section->SetZbendingRigidity(discretized_point.stiffness_edge);
     // damping
     section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 
@@ -98,9 +98,9 @@ void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetAxialRigidity(discretized_point.stiffness_axial);
         section->SetXtorsionRigidity(discretized_point.stiffness_torsion);
         // flap
-        section->SetZbendingRigidity(discretized_point.stiffness_flap);
+        section->SetYbendingRigidity(discretized_point.stiffness_flap);
         // edge
-        section->SetYbendingRigidity(discretized_point.stiffness_edge);
+        section->SetZbendingRigidity(discretized_point.stiffness_edge);
         // damping
         section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 

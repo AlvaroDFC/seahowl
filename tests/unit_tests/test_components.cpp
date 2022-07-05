@@ -44,15 +44,15 @@ TEST(test_blade, mass_deflection) {
     ASSERT_NEAR(blade_mass, blade.get_mass(), 1.0);
 
     // check deflection from gravity (edge)
-    double deflection_edge = -2.17637;
+    double deflection_edge = -1.240225;
     system.DoStaticLinear();
-    ASSERT_NEAR(deflection_edge, blade.nodes[blade.nodes.size() - 1]->GetPos().y(), 0.001);
+    ASSERT_NEAR(deflection_edge, blade.nodes.back()->GetPos().y(), 0.001);
 
     // check deflection from gravity (flap)
-    double deflection_flap = -4.96310;
-    blade.rotate(CH_C_PI / 2.0, VECT_Z);
+    double deflection_flap = 1.792233;
+    blade.rotate(-CH_C_PI / 2.0, VECT_Z);
     system.DoStaticLinear();
-    ASSERT_NEAR(deflection_flap, blade.nodes[blade.nodes.size() - 1]->GetPos().y(), 0.001);
+    ASSERT_NEAR(deflection_flap, blade.nodes.back()->GetPos().y(), 0.001);
 }
 
 TEST(test_rotor, mass) {
@@ -115,4 +115,125 @@ TEST(test_tower, mass) {
     // check mass
     double tower_mass = 1467613.86;
     ASSERT_NEAR(tower_mass, tower.get_mass(), 1.0);
+}
+
+TEST(test_blade, natural_period_dynamic_edge) {
+    // system
+    ChSystemSMC system;
+    system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
+    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    system.SetSolver(solver);
+    solver->EnableDiagonalPreconditioner(true);
+    solver->EnableWarmStart(true);
+    solver->SetMaxIterations(40000);
+    solver->SetTolerance(1e-12);
+
+    // mesh for blade
+    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    system.AddMesh(blades_mesh);
+    // blade
+    auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
+    blade.discretization_fractions.clear();
+    blade.build(system, blades_mesh);
+    blade.nodes[0]->SetFixed(true);
+
+    system.Setup();
+    system.DoStaticLinear();
+
+    // static position of blade tip
+    double pos0 = blade.nodes.back()->GetPos().y();
+
+    // check zero-crossings (static position of blade tip)
+    int nsteps = 500;
+    int step = 0;
+    double pos_y = 0.0;
+    double dt = 0.02;
+    int npeaks = 0;
+    double natural_period = 0.0;
+    double time = 0.0;
+    double end_time = 5.0;
+    double start_time = 0.0;
+    blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
+    while (time < end_time) {
+        if (time > 0.5) {
+            blade.nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
+            if (blade.nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
+                if (start_time == 0.0) {
+                    start_time = time;
+                } else {
+                    npeaks += 1;
+                    natural_period = (time - start_time) / npeaks;
+                }
+            }
+        }
+        pos_y = blade.nodes.back()->GetPos().y();
+        system.DoStepDynamics(dt);
+        time += dt;
+        step += 1;
+    }
+
+    double natural_period_ref = 1.37;
+    ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
+}
+
+TEST(test_blade, natural_period_dynamic_flap) {
+    // system
+    ChSystemSMC system;
+    system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
+    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    system.SetSolver(solver);
+    solver->EnableDiagonalPreconditioner(true);
+    solver->EnableWarmStart(true);
+    solver->SetMaxIterations(40000);
+    solver->SetTolerance(1e-12);
+
+    // mesh for blade
+    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    system.AddMesh(blades_mesh);
+    // blade
+    auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
+    blade.discretization_fractions.clear();
+    blade.build(system, blades_mesh);
+    blade.nodes[0]->SetFixed(true);
+
+    // rotate blade for flap
+    blade.rotate(-CH_C_PI / 2.0, VECT_Z);
+
+    system.Setup();
+    system.DoStaticLinear();
+
+    // static position of blade tip
+    double pos0 = blade.nodes.back()->GetPos().y();
+
+    // check zero-crossings (static position of blade tip)
+    int nsteps = 500;
+    int step = 0;
+    double pos_y = 0.0;
+    double dt = 0.02;
+    int npeaks = 0;
+    double natural_period = 0.0;
+    double time = 0.0;
+    double end_time = 5.0;
+    double start_time = 0.0;
+    blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
+    while (time < end_time) {
+        if (time > 0.5) {
+            blade.nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
+            if (blade.nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
+                if (start_time == 0.0) {
+                    start_time = time;
+                } else {
+                    npeaks += 1;
+                    natural_period = (time - start_time) / npeaks;
+                }
+            }
+        }
+        pos_y = blade.nodes.back()->GetPos().y();
+        system.DoStepDynamics(dt);
+        time += dt;
+        step += 1;
+    }
+
+    double natural_period_ref = 1.84;
+    ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
 }
