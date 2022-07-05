@@ -1,22 +1,6 @@
-#--------------------------------------------------------------
-# 
-# Example of CMake configuration file to build an external 
-# project depending on Chrono and on optional Chrono modules.
-# 
-# This minimal sample project can be used as a template for a
-# user project.  Modify sections 1, 2, and 3 below as appropriate.
-# 
-#--------------------------------------------------------------
- 
-
 cmake_minimum_required(VERSION 3.10)
 
-#--------------------------------------------------------------
-# === 1 === 
-# Modify the project name if you want: 
-#--------------------------------------------------------------
-
-project(my_project)
+project(seahowl)
 
 #--------------------------------------------------------------
 # === 2 ===
@@ -128,7 +112,7 @@ endif()
 # files in your project. 
 #--------------------------------------------------------------
 
-add_executable(simple_blade src/main.cpp src/blade.cpp src/rotor.cpp src/tower.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/blade.cpp src/rotor.cpp src/tower.cpp)
 
 #--------------------------------------------------------------
 # Set properties for your executable target
@@ -139,7 +123,7 @@ add_executable(simple_blade src/main.cpp src/blade.cpp src/rotor.cpp src/tower.c
 # install tree (if using an installed version of Chrono).
 #--------------------------------------------------------------
 
-set_target_properties(simple_blade PROPERTIES 
+set_target_properties(${PROJECT_NAME} PROPERTIES
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
 	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
@@ -148,7 +132,7 @@ set_target_properties(simple_blade PROPERTIES
 # Link to Chrono libraries and dependency libraries
 #--------------------------------------------------------------
 
-target_link_libraries(simple_blade ${CHRONO_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${CHRONO_LIBRARIES})
 
 #--------------------------------------------------------------
 # === 4 (OPTIONAL) ===
