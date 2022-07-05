@@ -66,6 +66,33 @@ struct BladeReferencePoint {
     };
 };
 
+struct BladeAeroReferencePoint {
+    double fraction;
+    ChVector<double> coordinates;
+    ChVector<double> direction_x;
+    ChVector<double> direction_y;
+    ChVector<double> velocity;
+
+    BladeAeroReferencePoint operator*(const double factor) const {
+        BladeAeroReferencePoint new_point;
+        new_point.fraction = fraction * factor;
+        new_point.coordinates = coordinates * factor;
+        new_point.direction_x = direction_x * factor;
+        new_point.direction_y = direction_y * factor;
+        new_point.velocity = velocity * factor;
+        return new_point;
+    };
+    BladeAeroReferencePoint operator+(const BladeAeroReferencePoint& other) const {
+        BladeAeroReferencePoint new_point = *this;
+        new_point.fraction += other.fraction;
+        new_point.coordinates += other.coordinates;
+        new_point.direction_x += other.direction_x;
+        new_point.direction_y += other.direction_y;
+        new_point.velocity += other.velocity;
+        return new_point;
+    };
+};
+
 class Blade {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
@@ -73,6 +100,7 @@ class Blade {
     std::vector<BladeReferencePoint> reference_points;
     std::vector<BladeReferencePoint> discretized_points;
     std::vector<double> discretization_fractions;
+    std::vector<double> discretization_aero;
 
     Blade();
 
@@ -82,6 +110,7 @@ class Blade {
     void translate(ChVector<double> translation_vector);
     void rotate(double angle, ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
+    std::vector<BladeAeroReferencePoint> get_aerodynamic_point_positions();
     double get_mass();
 };
 

@@ -6,6 +6,7 @@
 
 template <typename T,
           typename = typename std::enable_if<std::is_base_of<BladeReferencePoint, T>::value ||
+                                             std::is_base_of<BladeAeroReferencePoint, T>::value ||
                                              std::is_base_of<TowerReferencePoint, T>::value>::type>
 std::vector<T> get_discretized_points(std::vector<double>& discretization_fractions, std::vector<T>& reference_points) {
     if (discretization_fractions.size() == 0) {
