@@ -57,7 +57,8 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
         auto og = offsets_gravity_vec[ii];
         reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
         reference_point.density = densities[ii];
-        reference_point.structural_twist = structural_twist[ii];
+        reference_point.structural_twist = structural_twist[ii] * CH_C_PI / 180.0;
+        ;
         reference_point.stiffness_edge = stiffness_edge[ii];
         reference_point.stiffness_flap = stiffness_flap[ii];
         reference_point.damping_coefficients.bx = damping_coefficients[0];
@@ -101,6 +102,7 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     //
     std::vector<double> tower_fractions = json_obj["fractions"];
     double height = json_obj["height"];
+    double base_height = json_obj["base_height"];
     std::vector<double> stiffness_foreaft = json_obj["stiffness_foreaft"];
     std::vector<double> stiffness_sideside = json_obj["stiffness_sideside"];
     std::vector<double> densities = json_obj["densities"];
@@ -112,7 +114,7 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     for (int ii = 0; ii < tower_fractions.size(); ii++) {
         TowerReferencePoint reference_point;
         reference_point.fraction = tower_fractions[ii];
-        reference_point.coordinates = ChVector<double>(0.0, 0.0, height * tower_fractions[ii]);
+        reference_point.coordinates = ChVector<double>(0.0, 0.0, (height - base_height) * tower_fractions[ii]);
         reference_point.density = densities[ii];
         reference_point.stiffness_sideside = stiffness_sideside[ii];
         reference_point.stiffness_foreaft = stiffness_foreaft[ii];
@@ -139,9 +141,11 @@ Tower get_tower_from_json(std::string filepath) {
 
     std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
     double height = json_obj["height"];
+    double base_height = json_obj["base_height"];
 
     Tower tower = Tower();
     tower.height = height;
+    tower.base_height = base_height;
     tower.reference_points = get_tower_reference_points_from_json(filepath);
     tower.discretization_fractions = discretization_fractions;
 

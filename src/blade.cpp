@@ -30,8 +30,8 @@ void Blade::make_nodes(std::shared_ptr<ChMesh> mesh) {
                 (discretized_points[ii + 1].coordinates - discretized_points[ii - 1].coordinates).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         }
-        double twist = discretized_point.structural_twist * CH_C_PI / 180.0;  // convert degrees->radians
-        ChMatrix33<> twist_matrix(Q_from_AngAxis(twist, node_axis));
+        // apply structural twist
+        ChMatrix33<> twist_matrix(Q_from_AngAxis(discretized_point.structural_twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
