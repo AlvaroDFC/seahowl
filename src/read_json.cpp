@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include "read_json.h"
+#include "utils.h"
 
 using json = nlohmann::json;
 
@@ -13,56 +14,60 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
 
     // EXTRACT INFO
     //
-    std::vector<double> blade_fractions = json_obj["fractions"];
-    std::vector<std::vector<double>> centers_reference_vec = json_obj["centers_reference"];
-    std::vector<std::vector<double>> offsets_elastic_vec;
-    if (json_obj.contains("offsets_elastic")) {
-        offsets_elastic_vec = json_obj["offsets_elastic"];
-    } else {
-        for (int ii = 0; ii < centers_reference_vec.size(); ii++) {
-            std::vector<double> offset_elastic{0.0, 0.0};
-            offsets_elastic_vec.push_back(offset_elastic);
-        }
-    }
-    std::vector<std::vector<double>> offsets_gravity_vec;
-    if (json_obj.contains("offsets_gravity")) {
-        offsets_gravity_vec = json_obj["offsets_gravity"];
-    } else {
-        for (int ii = 0; ii < centers_reference_vec.size(); ii++) {
-            std::vector<double> offset_gravity{0.0, 0.0};
-            offsets_gravity_vec.push_back(offset_gravity);
-        }
-    }
-    std::vector<double> stiffness_edge = json_obj["stiffness_edge"];
-    std::vector<double> stiffness_flap = json_obj["stiffness_flap"];
-    std::vector<double> densities = json_obj["densities"];
-    std::vector<double> structural_twist = json_obj["structural_twist"];
-    std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
-
-    // MAKE BLADE REFERENCE POINTS
-    //
     std::vector<BladeReferencePoint> reference_points;
-    for (int ii = 0; ii < blade_fractions.size(); ii++) {
-        BladeReferencePoint reference_point;
-        reference_point.fraction = blade_fractions[ii];
-        auto coords = centers_reference_vec[ii];
+    auto points = json_obj["reference_points"];
+    std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
+    double blade_length = points[points.size() - 1]["coordinates"][2];
+    for (int ii = 0; ii < points.size(); ii++) {
+        auto point = points[ii];
+        auto reference_point = BladeReferencePoint();
+
+        std::vector<double> coords = point["coordinates"];
+        reference_point.fraction = coords[2] / blade_length;
         reference_point.coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
-        auto oe = offsets_elastic_vec[ii];
-        reference_point.offset_elastic = ChVector2<double>(oe[0], oe[1]);
-        auto og = offsets_gravity_vec[ii];
-        reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
-        reference_point.density = densities[ii];
-        reference_point.structural_twist = structural_twist[ii] * CH_C_PI / 180.0;
-        ;
-        reference_point.stiffness_edge = stiffness_edge[ii];
-        reference_point.stiffness_flap = stiffness_flap[ii];
+        if (point.contains("offset_gravity")) {
+            std::vector<double> og = point["offsets_gravity"];
+            reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
+        }
+        if (point.contains("offset_elastic")) {
+            std::vector<double> oe = point["offset_elastic"];
+            reference_point.offset_elastic = ChVector2<double>(oe[0], oe[1]);
+        }
+
+        std::vector<std::vector<double>> sm = point["stiffness_matrix"];
+        std::vector<std::vector<double>> mm = point["mass_matrix"];
+        int jjo, kko;
+        // apply offsets to indices to switch from IEC standard to Chrono standard
+        for (int jj = 0; jj < 6; jj++) {
+            if (jj == 2 || jj == 5) {
+                jjo = -2;
+            }
+            if (jj == 1 || jj == 4) {
+                jjo = +0;
+            }
+            if (jj == 0 || jj == 3) {
+                jjo = +2;
+            }
+            for (int kk = 0; kk < 6; kk++) {
+                if (kk == 2 || kk == 5) {
+                    kko = -2;
+                }
+                if (kk == 1 || kk == 4) {
+                    kko = +0;
+                }
+                if (kk == 0 || kk == 3) {
+                    kko = +2;
+                }
+                reference_point.stiffness_matrix(jj + jjo, kk + kko) = sm[jj][kk];
+                reference_point.mass_matrix(jj + jjo, kk + kko) = mm[jj][kk];
+            }
+        }
+        double twist = point["twist"];
+        reference_point.structural_twist = twist * CH_C_PI / 180.0;
         reference_point.damping_coefficients.bx = damping_coefficients[0];
         reference_point.damping_coefficients.by = damping_coefficients[1];
         reference_point.damping_coefficients.bz = damping_coefficients[2];
         reference_point.damping_coefficients.bt = damping_coefficients[3];
-        // TODO: change to actual values
-        reference_point.stiffness_axial = 210e9;
-        reference_point.stiffness_torsion = 1e11;
 
         reference_points.push_back(reference_point);
     }
@@ -77,11 +82,15 @@ Blade get_blade_from_json(std::string filepath) {
     json json_obj;
     json_file >> json_obj;
 
-    std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
+    bool fpm_mode = json_obj["fpm_mode"];
 
     Blade blade = Blade();
+    blade.fpm_mode = fpm_mode;
     blade.reference_points = get_blade_reference_points_from_json(filepath);
-    blade.discretization_fractions = discretization_fractions;
+    if (json_obj.contains("discretization_fractions")) {
+        std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
+        blade.discretization_fractions = discretization_fractions;
+    }
 
     return blade;
 }
@@ -158,7 +167,8 @@ Rotor get_rotor_from_json(std::string filepath) {
     //
     auto rotor = Rotor();
     // blades
-    rotor.blade_precones = (std::vector<double>)json_obj["precones"];
+    std::vector<double> precones = json_obj["precones"];
+    rotor.blade_precones = precones;
     for (int ii = 0; ii < rotor.blade_precones.size(); ii++) {
         // convert to radians
         rotor.blade_precones[ii] *= CH_C_PI / 180.0;

@@ -15,7 +15,7 @@ struct TowerReferencePoint {
     double stiffness_foreaft;
     double stiffness_sideside;
     double stiffness_torsion;
-    DampingCoefficients damping_coefficients = {0.001, 0.001, 0.001, 0.001, 0.0};
+    DampingCoefficients damping_coefficients ;
 
     TowerReferencePoint operator*(const double factor) const {
         TowerReferencePoint new_point;

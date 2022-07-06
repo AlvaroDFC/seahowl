@@ -10,7 +10,7 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blade
     body_hub = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_hub);
     // move hub along X for overhang and COG offset, and along Z for distance from towertop
-    body_hub->SetPos(ChVector<>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
+    body_hub->SetPos(ChVector<double>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
     // local Z axis along global X axis + shaft tilt along global Y axis
     auto tilt_hub = Q_from_AngAxis(shaft.tilt, -VECT_Y);
     body_hub->SetRot(tilt_hub * Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
@@ -23,7 +23,7 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blade
     body_shaft = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_shaft);
     // move end of shaft at yaw axis of nacelle
-    body_shaft->SetPos(ChVector(0.0, 0.0, shaft.distance_from_towertop));
+    body_shaft->SetPos(ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
     // align rotation
     body_shaft->SetRot(body_hub->GetRot());
     // massless body

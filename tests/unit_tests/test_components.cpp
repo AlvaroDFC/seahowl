@@ -39,16 +39,16 @@ TEST(test_blade, mass_deflection) {
     system.DoStaticLinear();
 
     // check mass
-    double blade_mass = 68537.9;
+    double blade_mass = 67058.294688;
     ASSERT_NEAR(blade_mass, blade.get_mass(), 1.0);
 
     // check deflection from gravity (edge)
-    double deflection_edge = -1.240225;
+    double deflection_edge = -1.4705;
     system.DoStaticLinear();
     ASSERT_NEAR(deflection_edge, blade.nodes.back()->GetPos().y(), 0.001);
 
     // check deflection from gravity (flap)
-    double deflection_flap = 1.792233;
+    double deflection_flap = 1.6295;
     blade.rotate(-CH_C_PI / 2.0, VECT_Z);
     system.DoStaticLinear();
     ASSERT_NEAR(deflection_flap, blade.nodes.back()->GetPos().y(), 0.001);
@@ -81,7 +81,7 @@ TEST(test_rotor, mass) {
     system.Setup();
     system.DoStaticLinear();
     // check mass
-    double rotor_total_mass = 950149.6;
+    double rotor_total_mass = 945710.88406;
     ASSERT_NEAR(rotor_total_mass, rotor.get_mass(), 1.0);
 }
 
@@ -163,7 +163,8 @@ TEST(test_blade, natural_period_dynamic_edge) {
         step += 1;
     }
 
-    double natural_period_ref = 1.37;
+    // literature edgewise natural frequency for IEA15MW: 0.642Hz (1.558s)
+    double natural_period_ref = 1.35;
     ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
 }
 
@@ -222,6 +223,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
         step += 1;
     }
 
-    double natural_period_ref = 1.84;
+    // literature flapwise natural frequency for IEA15MW: 0.555Hz (1.802s)
+    double natural_period_ref = 1.92;
     ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
 }

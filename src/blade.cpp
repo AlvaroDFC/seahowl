@@ -1,11 +1,18 @@
 #include "blade.h"
 
+#include "chrono/fea/ChBuilderBeam.h"
+
 Blade::Blade() {}
 
 void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
+    // blade
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
-    build_elements_tapered_timoshenko(mesh);
+    if (fpm_mode) {
+        build_elements_tapered_timoshenko_fpm(mesh);
+    } else {
+        build_elements_tapered_timoshenko(mesh);
+    }
     build_loads(system);
 };
 
@@ -56,14 +63,14 @@ void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     section->SetCentroidY(discretized_point.offset_elastic.y());
     section->SetCentroidZ(-discretized_point.offset_elastic.x());
     // material properties
-    section->SetMassPerUnitLength(discretized_point.density);
+    section->SetMassPerUnitLength(discretized_point.mass_matrix(0, 0));
     // axial
-    section->SetAxialRigidity(discretized_point.stiffness_axial);
-    section->SetXtorsionRigidity(discretized_point.stiffness_torsion);
+    section->SetAxialRigidity(discretized_point.stiffness_matrix(0, 0));
+    section->SetXtorsionRigidity(discretized_point.stiffness_matrix(3, 3));
     // flap
-    section->SetYbendingRigidity(discretized_point.stiffness_flap);
+    section->SetYbendingRigidity(discretized_point.stiffness_matrix(4, 4));
     // edge
-    section->SetZbendingRigidity(discretized_point.stiffness_edge);
+    section->SetZbendingRigidity(discretized_point.stiffness_matrix(5, 5));
     // damping
     section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 
@@ -93,14 +100,74 @@ void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         section->SetCentroidY(discretized_point.offset_elastic.y());
         section->SetCentroidZ(-discretized_point.offset_elastic.x());
         // material properties
-        section->SetMassPerUnitLength(discretized_point.density);
+        section->SetMassPerUnitLength(discretized_point.mass_matrix(0, 0));
         // axial
-        section->SetAxialRigidity(discretized_point.stiffness_axial);
-        section->SetXtorsionRigidity(discretized_point.stiffness_torsion);
+        section->SetAxialRigidity(discretized_point.stiffness_matrix(0, 0));
+        section->SetXtorsionRigidity(discretized_point.stiffness_matrix(3, 3));
         // flap
-        section->SetYbendingRigidity(discretized_point.stiffness_flap);
+        section->SetYbendingRigidity(discretized_point.stiffness_matrix(4, 4));
         // edge
-        section->SetZbendingRigidity(discretized_point.stiffness_edge);
+        section->SetZbendingRigidity(discretized_point.stiffness_matrix(5, 5));
+        // damping
+        section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
+
+        // apply prebend and structural twist
+        auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
+        // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
+        rotation_relative =
+            ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+        element->SetNodeBreferenceRot(rotation_relative);
+    }
+}
+void Blade::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) {
+    elements.clear();
+    int nelements = nodes.size() - 1;
+
+    ChMatrixNM<double, 6, 6> mm;
+    for (int jj = 0; jj < 6; jj++) {
+        mm(jj, jj) = 1.0;
+    }
+    // make first section for tapered section
+    auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+    auto discretized_point = discretized_points[0];
+    // offsets
+    section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
+    section->SetCentroidY(discretized_point.offset_elastic.y());
+    section->SetCentroidZ(-discretized_point.offset_elastic.x());
+    // material properties
+    section->SetMassMatrixFPM(discretized_point.mass_matrix);
+    section->SetStiffnessMatrixFPM(discretized_point.stiffness_matrix);
+    // damping
+    section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
+
+    for (int ii = 1; ii < nelements + 1; ii++) {
+        // create element
+        auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenkoFPM>();
+        // add element to blade elements vector
+        elements.push_back(element);
+        // add element to mesh
+        mesh->AddElement(element);
+        // set element nodes
+        element->SetNodes(nodes[ii - 1], nodes[ii]);
+
+        // create blade section
+        auto blade_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGenericFPM>();
+        element->SetTaperedSection(blade_section);
+
+        // set first section for tapered section
+        blade_section->SetSectionA(section);
+
+        // make second section for tapered section
+        section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+        blade_section->SetSectionB(section);
+        auto discretized_point = discretized_points[ii];
+        // offsets
+        section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
+        section->SetCentroidY(discretized_point.offset_elastic.y());
+        section->SetCentroidZ(-discretized_point.offset_elastic.x());
+        // material properties
+        section->SetMassMatrixFPM(discretized_point.mass_matrix);
+        section->SetStiffnessMatrixFPM(discretized_point.stiffness_matrix);
         // damping
         section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 

@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_STANDARD 11)
 
 project(seahowl)
 
@@ -81,7 +82,7 @@ endif()
 # of the requested modules.
 #--------------------------------------------------------------
 
-include_directories(${CHRONO_INCLUDE_DIRS})
+include_directories(${CHRONO_INCLUDE_DIRS} /opt/homebrew/include)
 
 #-----------------------------------------------------------------------------
 # Fix for VS 2017 15.8 and newer to handle alignment specification with Eigen
