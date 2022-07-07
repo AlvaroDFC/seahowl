@@ -5,6 +5,7 @@
 #include "chrono/solver/ChIterativeSolverLS.h"
 #include "chrono_irrlicht/ChIrrApp.h"
 #include "chrono/physics/ChLinkMotorRotationSpeed.h"
+#include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
 
 #include "blade.h"
@@ -23,13 +24,11 @@ int main(int argc, char* argv[]) {
     system.Set_G_acc(ChVector<double>(0.0, 0.0, -9.81));
     system.SetNumThreads(ChOMP::GetNumProcs(), 0, 1);
 
-    // solver
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
     system.SetSolver(solver);
-    solver->SetVerbose(true);
-    solver->EnableDiagonalPreconditioner(true);
-    solver->EnableWarmStart(true);
-    // system.SetSolverForceTolerance(1e-10);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
+    solver->SetVerbose(false);
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -40,11 +39,8 @@ int main(int argc, char* argv[]) {
     std::vector<std::shared_ptr<Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
         auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
+        blade->discretization_fractions.clear();
         blades.push_back(blade);
-    }
-
-    for (int ii = 0; ii < blades.size(); ii++) {
-        auto blade = blades[ii];
         blade->build(system, blades_mesh);
         for (int jj = 0; jj < blade->elements.size(); jj++) {
             blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
@@ -57,12 +53,12 @@ int main(int argc, char* argv[]) {
     auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
     rotor.build(system, blades);
 
-    auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
-    link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
-    system.AddLink(link_motor);
-    auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
-    link_motor->SetSpeedFunction(my_speed_function);
-    link_motor->SetDisabled(false);
+    // auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
+    // link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
+    // system.AddLink(link_motor);
+    // auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
+    // link_motor->SetSpeedFunction(my_speed_function);
+    // link_motor->SetDisabled(false);
 
     // tower
     GetLog() << "Building tower\n";
@@ -120,17 +116,14 @@ int main(int argc, char* argv[]) {
 
     // SIMULATION LOOP
 
-    application.SetTimestep(0.01);
+    double dt = 0.1;
+    application.SetTimestep(dt);
     application.SetVideoframeSave(false);
     application.SetVideoframeSaveInterval(20);
     double time = 0.0;
     int step = 0;
-    solver->SetTolerance(1e-12);
-    solver->SetMaxIterations(400000);
     system.DoStaticLinear();
     // system.DoStaticNonlinear(10, true);
-    solver->SetTolerance(1e-6);
-    solver->SetMaxIterations(400000);
     // application.DoStep();
     double mass_blades = 0.0;
     for (int ii = 0; ii < blades.size(); ii++) {
@@ -146,10 +139,23 @@ int main(int argc, char* argv[]) {
         application.DrawAll();
         application.DoStep();
         application.EndScene();
+        // system.DoStepDynamics(dt);
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step
                  << " pos: " << blades[0]->nodes[blades[0]->nodes.size() - 1]->GetPos().y() << "\n";
+
+        // apply force
+        for (int jj = 0; jj < blades.size(); ++jj) {
+            auto blade = blades[jj];
+            for (int kk = 0; kk < blade->elements.size(); ++kk) {
+                auto node = blade->nodes[kk];
+                blade->loaders_aero[kk]->loader.positions = {-1.0, 1.0};
+                auto force =
+                    node->TransformDirectionLocalToParent(ChVector<>(0.0, 1000.0, 0.0)) * std::min(100.0, time) / 100.0;
+                blade->loaders_aero[kk]->loader.loads = {force, force};
+            }
+        }
     }
 
     return 0;

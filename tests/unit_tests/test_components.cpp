@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "chrono/physics/ChSystemSMC.h"
+#include "chrono/solver/ChDirectSolverLS.h"
 #include "chrono/solver/ChIterativeSolverLS.h"
 
 #include "../../src/blade.h"
@@ -20,12 +21,10 @@ TEST(test_blade, mass_deflection) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
     system.SetSolver(solver);
-    solver->EnableDiagonalPreconditioner(true);
-    solver->EnableWarmStart(true);
-    solver->SetMaxIterations(40000);
-    solver->SetTolerance(1e-12);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -59,31 +58,26 @@ TEST(test_rotor, mass) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
     system.SetSolver(solver);
-    solver->EnableDiagonalPreconditioner(true);
-    solver->EnableWarmStart(true);
-    solver->SetMaxIterations(40000);
-    solver->SetTolerance(1e-12);
-
-    // mesh for blade
-    auto rotor = get_rotor_from_json("../../data/IEA15MW_RNA.json");
-    std::vector<std::shared_ptr<Blade>> blades;
-    rotor.build(system, blades);
-
-    // check mass
-    double rotor_mass = 744536;
-    ASSERT_NEAR(rotor_mass, rotor.get_mass(), 1.0);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
 
     // check mass with blades
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
+    std::vector<std::shared_ptr<Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
         auto blade = std::make_shared<Blade>(get_blade_from_json("../../data/IEA15MW_blade.json"));
         blade->discretization_fractions.clear();
+        blades.push_back(blade);
         blade->build(system, blades_mesh);
-        rotor.blades.push_back(blade);
     }
+
+    auto rotor = get_rotor_from_json("../../data/IEA15MW_RNA.json");
+    rotor.build(system, blades);
+    rotor.body_yaw_bearing->SetBodyFixed(true);
+
     system.Setup();
     system.DoStaticLinear();
     // check mass
@@ -121,12 +115,10 @@ TEST(test_blade, natural_period_dynamic_edge) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
     system.SetSolver(solver);
-    solver->EnableDiagonalPreconditioner(true);
-    solver->EnableWarmStart(true);
-    solver->SetMaxIterations(40000);
-    solver->SetTolerance(1e-12);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -144,14 +136,13 @@ TEST(test_blade, natural_period_dynamic_edge) {
     double pos0 = blade.nodes.back()->GetPos().y();
 
     // check zero-crossings (static position of blade tip)
-    int nsteps = 500;
     int step = 0;
     double pos_y = 0.0;
     double dt = 0.02;
     int npeaks = 0;
     double natural_period = 0.0;
     double time = 0.0;
-    double end_time = 5.0;
+    double end_time = 10.0;
     double start_time = 0.0;
     blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
     while (time < end_time) {
@@ -180,12 +171,10 @@ TEST(test_blade, natural_period_dynamic_flap) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
     system.SetSolver(solver);
-    solver->EnableDiagonalPreconditioner(true);
-    solver->EnableWarmStart(true);
-    solver->SetMaxIterations(40000);
-    solver->SetTolerance(1e-12);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -206,14 +195,13 @@ TEST(test_blade, natural_period_dynamic_flap) {
     double pos0 = blade.nodes.back()->GetPos().y();
 
     // check zero-crossings (static position of blade tip)
-    int nsteps = 500;
     int step = 0;
     double pos_y = 0.0;
     double dt = 0.02;
     int npeaks = 0;
     double natural_period = 0.0;
     double time = 0.0;
-    double end_time = 5.0;
+    double end_time = 10.0;
     double start_time = 0.0;
     blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
     while (time < end_time) {
