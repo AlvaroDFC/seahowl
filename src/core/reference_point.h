@@ -16,6 +16,29 @@ struct AirfoilProperties {
     AirfoilProperties() {}
 
     ~AirfoilProperties() {}
+
+    AirfoilProperties operator*(const double factor) const {
+        AirfoilProperties new_point = *this;
+        /* new_point.reynolds_number *= factor; */
+        for (int ii = 0; ii < alpha.size(); ii++) {
+            new_point.alpha[ii] *= factor;
+            new_point.lift_coeff[ii] *= factor;
+            new_point.drag_coeff[ii] *= factor;
+            new_point.am_coeff[ii] *= factor;
+        }
+        return new_point;
+    };
+    AirfoilProperties operator+(const AirfoilProperties& other) const {
+        AirfoilProperties new_point = *this;
+        /* new_point.reynolds_number += other.reynolds_number; */
+        for (int ii = 0; ii < alpha.size(); ii++) {
+            new_point.alpha[ii] += other.alpha[ii];
+            new_point.lift_coeff[ii] += other.lift_coeff[ii];
+            new_point.drag_coeff[ii] *= other.drag_coeff[ii];
+            new_point.am_coeff[ii] *= other.am_coeff[ii];
+        }
+        return new_point;
+    };
 };
 
 struct BladeReferencePoint {
@@ -55,7 +78,9 @@ struct BladeReferencePoint {
         new_point.damping_coefficients.bz *= factor;
         new_point.damping_coefficients.bt *= factor;
         new_point.damping_coefficients.alpha *= factor;
-        // TODO include airfoil properties
+        for (int ii = 0; ii < airfoil_properties.size(); ii++) {
+            new_point.airfoil_properties[ii] = airfoil_properties[ii] * factor;
+        }
         return new_point;
     };
     BladeReferencePoint operator+(const BladeReferencePoint& other) const {
@@ -72,7 +97,12 @@ struct BladeReferencePoint {
         new_point.damping_coefficients.bz += other.damping_coefficients.bz;
         new_point.damping_coefficients.bt += other.damping_coefficients.bt;
         new_point.damping_coefficients.alpha += other.damping_coefficients.alpha;
-        // TODO include airfoil properties
+        for (int ii = 0; ii < airfoil_properties.size(); ii++) {
+            if (airfoil_properties[ii].reynolds_number != other.airfoil_properties[ii].reynolds_number) {
+                throw std::runtime_error("Trying to add airfoil properties with different Reynolds number.");
+            }
+            new_point.airfoil_properties[ii] = airfoil_properties[ii] + other.airfoil_properties[ii];
+        }
         return new_point;
     };
 };
