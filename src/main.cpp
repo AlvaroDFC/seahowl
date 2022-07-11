@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
     // system
     ChSystemSMC system;
-    system.Set_G_acc(ChVector<double>(0.0, 0.0, -9.81));
+    system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
     system.SetNumThreads(ChOMP::GetNumProcs(), 0, 1);
 
     auto solver = chrono_types::make_shared<ChSolverSparseLU>();
@@ -34,49 +34,67 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
 
-    // blade
-    GetLog() << "Building blades\n";
-    std::vector<std::shared_ptr<Blade>> blades;
-    for (int ii = 0; ii < 3; ii++) {
-        auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
-        blade->discretization_fractions.clear();
-        blades.push_back(blade);
-        blade->build(system, blades_mesh);
-        for (int jj = 0; jj < blade->elements.size(); jj++) {
-            blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
-            blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
+    std::vector<std::shared_ptr<Blade>> all_blades;
+    for (int kk = 0; kk < 3; kk++) {
+        // blade
+        GetLog() << "Building blades\n";
+        std::vector<std::shared_ptr<Blade>> blades;
+        for (int ii = 0; ii < 3; ii++) {
+            auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
+            blade->discretization_elasto.clear();
+            blades.push_back(blade);
+            all_blades.push_back(blade);
+            blade->build(system, blades_mesh);
+            for (int jj = 0; jj < blade->elements.size(); jj++) {
+                blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
+                blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
+            }
         }
+
+        // rotor
+        GetLog() << "Building rotor\n";
+        auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
+        rotor.build(system, blades);
+
+        // auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
+        // link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
+        // system.AddLink(link_motor);
+        // auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
+        // link_motor->SetSpeedFunction(my_speed_function);
+        // link_motor->SetDisabled(false);
+
+        // tower
+        GetLog() << "Building tower\n";
+        auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
+        tower.build(blades_mesh);
+        for (int jj = 0; jj < tower.elements.size(); jj++) {
+            tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 2.0);
+            tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 2.0);
+        }
+        // translate tower to make it match the current turbine configuration
+        tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
+        // fix bottom of tower
+        tower.nodes[0]->SetFixed(true);
+
+        // link rotor to tower
+        rotor.link_tower(tower, system);
+
+        tower.translate(ChVector<double>(150.0 * kk, 150.0 * kk * pow(-1.0, kk), 0.0));
+        rotor.translate(ChVector<double>(150.0 * kk, 150.0 * kk * pow(-1.0, kk), 0.0));
+        tower.rotate(-CH_C_PI / 2.0, VECT_X);
+        rotor.rotate(-CH_C_PI / 2.0, VECT_X);
+
+        GetLog() << "Finished building system\n";
+        double mass_blades = 0.0;
+        for (int ii = 0; ii < blades.size(); ii++) {
+            GetLog() << "Blade" << ii << " mass: " << blades[ii]->get_mass() << "\n";
+            mass_blades += blades[ii]->get_mass();
+        }
+        GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
+        GetLog() << "RNA mass (without blades): " << rotor.get_mass() - mass_blades << "\n";
+        GetLog() << "Tower mass: " << tower.get_mass() << "\n";
+        GetLog() << "Total mass: " << rotor.get_mass() + tower.get_mass() << "\n";
     }
-
-    // rotor
-    GetLog() << "Building rotor\n";
-    auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
-    rotor.build(system, blades);
-
-    // auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
-    // link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
-    // system.AddLink(link_motor);
-    // auto my_speed_function = chrono_types::make_shared<ChFunction_Ramp>(0.0, CH_C_PI / 100.);
-    // link_motor->SetSpeedFunction(my_speed_function);
-    // link_motor->SetDisabled(false);
-
-    // tower
-    GetLog() << "Building tower\n";
-    auto tower = get_tower_from_json("../data/IEA15MW_tower.json");
-    tower.build(blades_mesh);
-    for (int jj = 0; jj < tower.elements.size(); jj++) {
-        tower.elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 2.0);
-        tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 2.0);
-    }
-    // translate tower to make it match the current turbine configuration
-    tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
-    // fix bottom of tower
-    tower.nodes[0]->SetFixed(true);
-
-    // link rotor to tower
-    rotor.link_tower(tower, system);
-
-    GetLog() << "Finished building system\n";
 
     // VISUALIZATION
 
@@ -84,7 +102,7 @@ int main(int argc, char* argv[]) {
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     application.AddTypicalLights();
     application.AddTypicalSky();
-    application.AddTypicalCamera(core::vector3df(-100, -50, 3));
+    application.AddTypicalCamera(core::vector3df(-300, 3, -50));
 
     auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
     visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
@@ -125,15 +143,6 @@ int main(int argc, char* argv[]) {
     system.DoStaticLinear();
     // system.DoStaticNonlinear(10, true);
     // application.DoStep();
-    double mass_blades = 0.0;
-    for (int ii = 0; ii < blades.size(); ii++) {
-        GetLog() << "Blade" << ii << " mass: " << blades[ii]->get_mass() << "\n";
-        mass_blades += blades[ii]->get_mass();
-    }
-    GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
-    GetLog() << "RNA mass (without blades): " << rotor.get_mass() - mass_blades << "\n";
-    GetLog() << "Tower mass: " << tower.get_mass() << "\n";
-    GetLog() << "Total mass: " << rotor.get_mass() + tower.get_mass() << "\n";
     while (application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();
@@ -142,17 +151,16 @@ int main(int argc, char* argv[]) {
         // system.DoStepDynamics(dt);
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step
-                 << " pos: " << blades[0]->nodes[blades[0]->nodes.size() - 1]->GetPos().y() << "\n";
+        GetLog() << "time " << time << " step: " << step << "\n";
 
         // apply force
-        for (int jj = 0; jj < blades.size(); ++jj) {
-            auto blade = blades[jj];
+        for (int jj = 0; jj < all_blades.size(); ++jj) {
+            auto blade = all_blades[jj];
             for (int kk = 0; kk < blade->elements.size(); ++kk) {
                 auto node = blade->nodes[kk];
                 blade->loaders_aero[kk]->loader.positions = {-1.0, 1.0};
-                auto force =
-                    node->TransformDirectionLocalToParent(ChVector<>(0.0, 1000.0, 0.0)) * std::min(100.0, time) / 100.0;
+                auto force = node->TransformDirectionLocalToParent(ChVector<>(0.0, 1000.0, 0.0)) *
+                             std::min(100.0, time) / 100.0 / double(jj + 1);
                 blade->loaders_aero[kk]->loader.loads = {force, force};
             }
         }

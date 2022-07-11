@@ -2,6 +2,8 @@
 #include <iostream>
 #include "read_json.h"
 #include "utils.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 using json = nlohmann::json;
 
@@ -69,6 +71,40 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
         reference_point.damping_coefficients.bz = damping_coefficients[2];
         reference_point.damping_coefficients.bt = damping_coefficients[3];
 
+        // populate json object
+        if (point.contains("airfoil_file")) {
+            auto main_directory = fs::path(filepath).parent_path();
+            std::string airfoil_filename = point["airfoil_file"];
+            auto airfoil_filepath = main_directory / airfoil_filename;
+            std::ifstream airfoil_file(airfoil_filepath.u8string());
+            json json_airfoil;
+            airfoil_file >> json_airfoil;
+
+            int nreynolds = json_airfoil.size();
+            for (int jj = 0; jj < nreynolds; jj++) {
+                auto airfoil_properties = json_airfoil[jj];
+                std::vector<std::vector<double>> coeffs = airfoil_properties["coefficients"];
+
+                std::vector<double> alpha;
+                std::vector<double> lift_coeff;
+                std::vector<double> drag_coeff;
+                std::vector<double> am_coeff;
+
+                for (int kk = 0; kk < coeffs.size(); kk++) {
+                    alpha.push_back(coeffs[kk][0]);
+                    lift_coeff.push_back(coeffs[kk][1]);
+                    drag_coeff.push_back(coeffs[kk][2]);
+                    am_coeff.push_back(coeffs[kk][3]);
+                }
+                AirfoilProperties airfoil;
+                airfoil.alpha = alpha;
+                airfoil.lift_coeff = lift_coeff;
+                airfoil.drag_coeff = drag_coeff;
+                airfoil.am_coeff = am_coeff;
+                reference_point.airfoil_properties.push_back(airfoil);
+            }
+        }
+
         reference_points.push_back(reference_point);
     }
 
@@ -87,9 +123,13 @@ Blade get_blade_from_json(std::string filepath) {
     Blade blade = Blade();
     blade.fpm_mode = fpm_mode;
     blade.reference_points = get_blade_reference_points_from_json(filepath);
-    if (json_obj.contains("discretization_fractions")) {
-        std::vector<double> discretization_fractions = json_obj["discretization_fractions"];
-        blade.discretization_fractions = discretization_fractions;
+    if (json_obj.contains("discretization_elasto")) {
+        std::vector<double> discretization_elasto = json_obj["discretization_elasto"];
+        blade.discretization_elasto = discretization_elasto;
+    }
+    if (json_obj.contains("discretization_aero")) {
+        std::vector<double> discretization_aero = json_obj["discretization_aero"];
+        blade.discretization_aero = discretization_aero;
     }
 
     return blade;

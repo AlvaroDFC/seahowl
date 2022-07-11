@@ -10,6 +10,18 @@
 using namespace chrono;
 using namespace chrono::fea;
 
+struct AirfoilProperties {
+    double reynolds_number = 0.0;
+    std::vector<double> alpha;
+    std::vector<double> lift_coeff;
+    std::vector<double> drag_coeff;
+    std::vector<double> am_coeff;
+
+    AirfoilProperties() {}
+
+    ~AirfoilProperties() {}
+};
+
 struct BladeReferencePoint {
     ChVector<double> coordinates = ChVector<double>(0.0, 0.0, 0.0);
     ChVector2<double> offset_elastic = ChVector2<double>(0.0, 0.0);
@@ -19,14 +31,15 @@ struct BladeReferencePoint {
     double fraction = 0.0;
     double structural_twist = 0.0;
     DampingCoefficients damping_coefficients;
+    std::vector<AirfoilProperties> airfoil_properties;
 
     BladeReferencePoint() {
         stiffness_matrix.setZero();
         mass_matrix.setZero();
-        damping_coefficients.bx = 0.0;
-        damping_coefficients.by = 0.0;
-        damping_coefficients.bz = 0.0;
-        damping_coefficients.bt = 0.0;
+        damping_coefficients.bx = 0.03;
+        damping_coefficients.by = 0.03;
+        damping_coefficients.bz = 0.03;
+        damping_coefficients.bt = 0.06;
         damping_coefficients.alpha = 0.0;
     }
 
@@ -46,6 +59,7 @@ struct BladeReferencePoint {
         new_point.damping_coefficients.bz *= factor;
         new_point.damping_coefficients.bt *= factor;
         new_point.damping_coefficients.alpha *= factor;
+        // TODO include airfoil properties
         return new_point;
     };
     BladeReferencePoint operator+(const BladeReferencePoint& other) const {
@@ -62,6 +76,7 @@ struct BladeReferencePoint {
         new_point.damping_coefficients.bz += other.damping_coefficients.bz;
         new_point.damping_coefficients.bt += other.damping_coefficients.bt;
         new_point.damping_coefficients.alpha += other.damping_coefficients.alpha;
+        // TODO include airfoil properties
         return new_point;
     };
 };
@@ -72,14 +87,16 @@ struct BladeAeroReferencePoint {
     ChVector<double> direction_x;
     ChVector<double> direction_y;
     ChVector<double> velocity;
+    std::vector<AirfoilProperties> airfoil_properties;
 
     BladeAeroReferencePoint operator*(const double factor) const {
-        BladeAeroReferencePoint new_point;
-        new_point.fraction = fraction * factor;
-        new_point.coordinates = coordinates * factor;
-        new_point.direction_x = direction_x * factor;
-        new_point.direction_y = direction_y * factor;
-        new_point.velocity = velocity * factor;
+        BladeAeroReferencePoint new_point = *this;
+        new_point.fraction *= factor;
+        new_point.coordinates *= factor;
+        new_point.direction_x *= factor;
+        new_point.direction_y *= factor;
+        new_point.velocity *= factor;
+        // TODO include airfoil properties
         return new_point;
     };
     BladeAeroReferencePoint operator+(const BladeAeroReferencePoint& other) const {
@@ -89,6 +106,7 @@ struct BladeAeroReferencePoint {
         new_point.direction_x += other.direction_x;
         new_point.direction_y += other.direction_y;
         new_point.velocity += other.velocity;
+        // TODO include airfoil properties
         return new_point;
     };
 };
@@ -100,7 +118,7 @@ class Blade {
     std::vector<std::shared_ptr<ChLoad<ChLoaderWeighted>>> loaders_aero;
     std::vector<BladeReferencePoint> reference_points;
     std::vector<BladeReferencePoint> discretized_points;
-    std::vector<double> discretization_fractions;
+    std::vector<double> discretization_elasto;
     std::vector<double> discretization_aero;
     bool fpm_mode = false;
 

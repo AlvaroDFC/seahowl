@@ -6,7 +6,7 @@ Blade::Blade() {}
 
 void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // blade
-    discretized_points = get_discretized_points(discretization_fractions, reference_points);
+    discretized_points = get_discretized_points(discretization_elasto, reference_points);
     build_nodes(mesh);
     if (fpm_mode) {
         build_elements_tapered_timoshenko_fpm(mesh);
@@ -240,7 +240,7 @@ std::vector<BladeAeroReferencePoint> Blade::get_aerodynamic_point_positions() {
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
         BladeAeroReferencePoint nodal_position;
-        nodal_position.fraction = discretization_fractions[ii];
+        nodal_position.fraction = discretization_elasto[ii];
         nodal_position.coordinates = node->GetPos();
         // reference directions of cross-section
         auto local_direction_x = ChVector<double>(0.0, 1.0, 0.0);

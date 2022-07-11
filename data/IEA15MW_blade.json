@@ -1,11 +1,13 @@
 {
   "fpm_mode": false,
   "damping_coefficients": [0.03, 0.03, 0.03, 0.06],
+  "discretization_aero": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1.0],
+  "discretization_elasto": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1.0],
   "reference_points": [{
     "coordinates": [-0.006354122360450852, 0.0, 0.0],
     "twist": 15.59455301971172,
     "chord": 5.2,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_00.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_00.json",
     "mass_matrix": [
       [3127.4021155424143, 0.0, 0.0, 0.0, 0.0, 73.93195471060494],
       [0.0, 3127.4021155424143, 0.0, 0.0, 0.0, -0.23227931035313248],
@@ -26,7 +28,7 @@
     "coordinates": [0.03236481948738088, 0.0, 2.387753704536792],
     "twist": 15.58773861176889,
     "chord": 5.208839941579524,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_01.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_01.json",
     "mass_matrix": [
       [2796.393024267861, 0.0, 0.0, 0.0, 0.0, -142.61906513291498],
       [0.0, 2796.393024267861, 0.0, 0.0, 0.0, 2.668760931484047],
@@ -47,7 +49,7 @@
     "coordinates": [0.0662168568751168, 0.0, 4.775507409073585],
     "twist": 15.41083467878359,
     "chord": 5.237887092263203,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_02.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_02.json",
     "mass_matrix": [
       [2373.964962132593, 0.0, 0.0, 0.0, 0.0, -229.01924945888464],
       [0.0, 2373.964962132593, 0.0, 0.0, 0.0, 12.978490475869993],
@@ -68,7 +70,7 @@
     "coordinates": [0.08551302257769909, 0.0, 7.163261113610377],
     "twist": 14.94855563474368,
     "chord": 5.293325313383697,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_03.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_03.json",
     "mass_matrix": [
       [2019.458666111556, 0.0, 0.0, 0.0, 0.0, -303.92126188013356],
       [0.0, 2019.458666111556, 0.0, 0.0, 0.0, 18.26551110188587],
@@ -89,7 +91,7 @@
     "coordinates": [0.09641383525966472, 0.0, 9.55101481814717],
     "twist": 14.25845480678574,
     "chord": 5.36733985481492,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_04.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_04.json",
     "mass_matrix": [
       [1767.2822668641468, 0.0, 0.0, 0.0, 0.0, -396.277648048679],
       [0.0, 1767.2822668641468, 0.0, 0.0, 0.0, 24.586778579223633],
@@ -110,7 +112,7 @@
     "coordinates": [0.1047603018628692, 0.0, 11.93876852268396],
     "twist": 13.39714163725627,
     "chord": 5.452092684226667,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_05.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_05.json",
     "mass_matrix": [
       [1668.2212875078196, 0.0, 0.0, 0.0, 0.0, -528.8897834853422],
       [0.0, 1668.2212875078196, 0.0, 0.0, 0.0, 33.25831210507502],
@@ -131,7 +133,7 @@
     "coordinates": [0.1158548641787537, 0.0, 14.32652222722075],
     "twist": 12.42201947682708,
     "chord": 5.540031728503847,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_06.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_06.json",
     "mass_matrix": [
       [1405.3629361125713, 0.0, 0.0, 0.0, 0.0, -563.4776159085093],
       [0.0, 1405.3629361125713, 0.0, 0.0, 0.0, 29.52645550466849],
@@ -152,7 +154,7 @@
     "coordinates": [0.1342461230233627, 0.0, 16.71427593175755],
     "twist": 11.39457131628079,
     "chord": 5.621824261194381,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_07.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_07.json",
     "mass_matrix": [
       [1142.5045847173214, 0.0, 0.0, 0.0, 0.0, -598.0654483316767],
       [0.0, 1142.5045847173214, 0.0, 0.0, 0.0, 25.79459890426194],
@@ -173,7 +175,7 @@
     "coordinates": [0.1596395008211909, 0.0, 19.10202963629434],
     "twist": 10.37097608496841,
     "chord": 5.692531175149338,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_08.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_08.json",
     "mass_matrix": [
       [949.2460365106996, 0.0, 0.0, 0.0, 0.0, -586.0689122774724],
       [0.0, 949.2460365106996, 0.0, 0.0, 0.0, 23.370633605410326],
@@ -194,7 +196,7 @@
     "coordinates": [0.1772839218313782, 0.0, 21.48978334083113],
     "twist": 9.403999874823057,
     "chord": 5.74261089072697,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_09.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_09.json",
     "mass_matrix": [
       [793.4643054056448, 0.0, 0.0, 0.0, 0.0, -548.9884855046836],
       [0.0, 793.4643054056448, 0.0, 0.0, 0.0, 21.650917468934423],
@@ -215,7 +217,7 @@
     "coordinates": [0.1862701718402896, 0.0, 23.87753704536793],
     "twist": 8.55152220118208,
     "chord": 5.764836827022541,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_10.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_10.json",
     "mass_matrix": [
       [657.5917657811683, 0.0, 0.0, 0.0, 0.0, -515.2313417908612],
       [0.0, 657.5917657811683, 0.0, 0.0, 0.0, 20.122632067563142],
@@ -236,7 +238,7 @@
     "coordinates": [0.1903983042803929, 0.0, 26.26529074990471],
     "twist": 7.833153039627247,
     "chord": 5.756119529852528,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_11.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_11.json",
     "mass_matrix": [
       [601.3559920790049, 0.0, 0.0, 0.0, 0.0, -494.76733031290394],
       [0.0, 601.3559920790049, 0.0, 0.0, 0.0, 19.360069606610345],
@@ -257,7 +259,7 @@
     "coordinates": [0.1965084748280304, 0.0, 28.65304445444151],
     "twist": 7.191354972096501,
     "chord": 5.70309851275065,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_12.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_12.json",
     "mass_matrix": [
       [545.120218376841, 0.0, 0.0, 0.0, 0.0, -474.3033188349466],
       [0.0, 545.120218376841, 0.0, 0.0, 0.0, 18.597507145657545],
@@ -278,7 +280,7 @@
     "coordinates": [0.2035393425849667, 0.0, 31.0407981589783],
     "twist": 6.551629060916145,
     "chord": 5.604676021602162,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_13.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_13.json",
     "mass_matrix": [
       [516.6502187707238, 0.0, 0.0, 0.0, 0.0, -457.05263872488354],
       [0.0, 516.6502187707238, 0.0, 0.0, 0.0, 17.44028981829647],
@@ -299,7 +301,7 @@
     "coordinates": [0.2082242607643353, 0.0, 33.4285518635151],
     "twist": 5.933995702189942,
     "chord": 5.471559126660524,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_14.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_14.json",
     "mass_matrix": [
       [497.43547719662195, 0.0, 0.0, 0.0, 0.0, -440.8730690707851],
       [0.0, 497.43547719662195, 0.0, 0.0, 0.0, 16.1515208687993],
@@ -320,7 +322,7 @@
     "coordinates": [0.2108086308339459, 0.0, 35.81630556805188],
     "twist": 5.346089613189348,
     "chord": 5.322778014171772,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_15.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_15.json",
     "mass_matrix": [
       [480.8135738464442, 0.0, 0.0, 0.0, 0.0, -424.45968082778484],
       [0.0, 480.8135738464442, 0.0, 0.0, 0.0, 14.917809568629597],
@@ -341,7 +343,7 @@
     "coordinates": [0.2115700571915651, 0.0, 38.20405927258868],
     "twist": 4.796333947019595,
     "chord": 5.16648228816705,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_16.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_16.json",
     "mass_matrix": [
       [470.241626352089, 0.0, 0.0, 0.0, 0.0, -407.5007158773467],
       [0.0, 470.241626352089, 0.0, 0.0, 0.0, 13.812566116890626],
@@ -362,7 +364,7 @@
     "coordinates": [0.2111362622888833, 0.0, 40.59181297712547],
     "twist": 4.296593562725417,
     "chord": 5.019421327310202,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_17.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_17.json",
     "mass_matrix": [
       [459.66967885773374, 0.0, 0.0, 0.0, 0.0, -390.5417509269085],
       [0.0, 459.66967885773374, 0.0, 0.0, 0.0, 12.707322665151658],
@@ -383,7 +385,7 @@
     "coordinates": [0.2074921713986668, 0.0, 42.97956668166226],
     "twist": 3.846955194686785,
     "chord": 4.885807888739599,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_18.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_18.json",
     "mass_matrix": [
       [449.6837062137437, 0.0, 0.0, 0.0, 0.0, -373.3887638209364],
       [0.0, 449.6837062137437, 0.0, 0.0, 0.0, 11.446446286640722],
@@ -404,7 +406,7 @@
     "coordinates": [0.1961491644965832, 0.0, 45.36732038619906],
     "twist": 3.445342056797746,
     "chord": 4.767959675121795,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_19.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_19.json",
     "mass_matrix": [
       [439.8011408962885, 0.0, 0.0, 0.0, 0.0, -356.20153751104647],
       [0.0, 439.8011408962885, 0.0, 0.0, 0.0, 10.158105273993554],
@@ -425,7 +427,7 @@
     "coordinates": [0.173938589078078, 0.0, 47.75507409073585],
     "twist": 3.07691390977302,
     "chord": 4.654566079625438,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_20.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_20.json",
     "mass_matrix": [
       [429.14445149320585, 0.0, 0.0, 0.0, 0.0, -340.2047423560455],
       [0.0, 429.14445149320585, 0.0, 0.0, 0.0, 9.073372168357004],
@@ -446,7 +448,7 @@
     "coordinates": [0.1378633438394944, 0.0, 50.14282779527264],
     "twist": 2.733562457425842,
     "chord": 4.54103105171191,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_21.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_21.json",
     "mass_matrix": [
       [417.3265759616818, 0.0, 0.0, 0.0, 0.0, -325.99359393337784],
       [0.0, 417.3265759616818, 0.0, 0.0, 0.0, 8.294050923236364],
@@ -467,7 +469,7 @@
     "coordinates": [0.09027607400369848, 0.0, 52.53058149980943],
     "twist": 2.412234674442038,
     "chord": 4.42817557762473,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_22.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_22.json",
     "mass_matrix": [
       [405.5087004301577, 0.0, 0.0, 0.0, 0.0, -311.7824455107101],
       [0.0, 405.5087004301577, 0.0, 0.0, 0.0, 7.5147296781157245],
@@ -488,7 +490,7 @@
     "coordinates": [0.03445719810261592, 0.0, 54.91833520434623],
     "twist": 2.111690772172129,
     "chord": 4.316958876583997,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_23.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_23.json",
     "mass_matrix": [
       [394.37607402433343, 0.0, 0.0, 0.0, 0.0, -296.2511902400225],
       [0.0, 394.37607402433343, 0.0, 0.0, 0.0, 7.607522020282122],
@@ -509,7 +511,7 @@
     "coordinates": [-0.02772456879271226, 0.0, 57.30608890888303],
     "twist": 1.828396455235506,
     "chord": 4.207880735790049,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_24.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_24.json",
     "mass_matrix": [
       [383.27951336196713, 0.0, 0.0, 0.0, 0.0, -280.65045566154436],
       [0.0, 383.27951336196713, 0.0, 0.0, 0.0, 7.746215077568888],
@@ -530,7 +532,7 @@
     "coordinates": [-0.09317136122682015, 0.0, 59.69384261341982],
     "twist": 1.558783420877334,
     "chord": 4.101646187027423,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_25.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_25.json",
     "mass_matrix": [
       [372.17064262365625, 0.0, 0.0, 0.0, 0.0, -265.73364017415815],
       [0.0, 372.17064262365625, 0.0, 0.0, 0.0, 7.89054417828803],
@@ -551,7 +553,7 @@
     "coordinates": [-0.1623758862177225, 0.0, 62.08159631795661],
     "twist": 1.302436869719713,
     "chord": 3.998712335312356,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_26.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_26.json",
     "mass_matrix": [
       [361.04946180940095, 0.0, 0.0, 0.0, 0.0, -251.50074377786387],
       [0.0, 361.04946180940095, 0.0, 0.0, 0.0, 8.040509322439545],
@@ -572,7 +574,7 @@
     "coordinates": [-0.2434852854714629, 0.0, 64.46935002249339],
     "twist": 1.064427371073839,
     "chord": 3.899408676051565,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_27.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_27.json",
     "mass_matrix": [
       [349.60400299582835, 0.0, 0.0, 0.0, 0.0, -236.48458826364248],
       [0.0, 349.60400299582835, 0.0, 0.0, 0.0, 8.17825600158767],
@@ -593,7 +595,7 @@
     "coordinates": [-0.3387672278625571, 0.0, 66.85710372703018],
     "twist": 0.8434461662411673,
     "chord": 3.803172543681295,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_28.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_28.json",
     "mass_matrix": [
       [331.997262195227, 0.0, 0.0, 0.0, 0.0, -206.58650950880525],
       [0.0, 331.997262195227, 0.0, 0.0, 0.0, 8.083851845671344],
@@ -614,7 +616,7 @@
     "coordinates": [-0.4485233220920201, 0.0, 69.24485743156698],
     "twist": 0.636564186841789,
     "chord": 3.709389453654426,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_29.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_29.json",
     "mass_matrix": [
       [314.3905213946255, 0.0, 0.0, 0.0, 0.0, -176.68843075396794],
       [0.0, 314.3905213946255, 0.0, 0.0, 0.0, 7.989447689755019],
@@ -635,7 +637,7 @@
     "coordinates": [-0.5691577197429315, 0.0, 71.63261113610376],
     "twist": 0.4370289000217617,
     "chord": 3.617111741572532,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_30.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_30.json",
     "mass_matrix": [
       [295.81741949795105, 0.0, 0.0, 0.0, 0.0, -147.26931735848223],
       [0.0, 295.81741949795105, 0.0, 0.0, 0.0, 7.7902922206449565],
@@ -656,7 +658,7 @@
     "coordinates": [-0.6981271306483475, 0.0, 74.02036484064057],
     "twist": 0.239656793338798,
     "chord": 3.525634918177657,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_31.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_31.json",
     "mass_matrix": [
       [276.60007687056066, 0.0, 0.0, 0.0, 0.0, -118.1695142025635],
       [0.0, 276.60007687056066, 0.0, 0.0, 0.0, 7.521302542739068],
@@ -677,7 +679,7 @@
     "coordinates": [-0.8322285121101992, 0.0, 76.40811854517736],
     "twist": 0.0396776881472392,
     "chord": 3.434082670567315,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_32.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_32.json",
     "mass_matrix": [
       [258.04149235003075, 0.0, 0.0, 0.0, 0.0, -91.26123454986944],
       [0.0, 258.04149235003075, 0.0, 0.0, 0.0, 7.288398626677792],
@@ -698,7 +700,7 @@
     "coordinates": [-0.9695092756948377, 0.0, 78.79587224971415],
     "twist": -0.1728281243479747,
     "chord": 3.341933111457596,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_33.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_33.json",
     "mass_matrix": [
       [243.2158704350424, 0.0, 0.0, 0.0, 0.0, -76.77158808211351],
       [0.0, 243.2158704350424, 0.0, 0.0, 0.0, 7.259980694402643],
@@ -719,7 +721,7 @@
     "coordinates": [-1.107990118373343, 0.0, 81.18362595425094],
     "twist": -0.4070838313820219,
     "chord": 3.248678447761413,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_34.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_34.json",
     "mass_matrix": [
       [228.39024852005406, 0.0, 0.0, 0.0, 0.0, -62.28194161435765],
       [0.0, 228.39024852005406, 0.0, 0.0, 0.0, 7.231562762127492],
@@ -740,7 +742,7 @@
     "coordinates": [-1.253249451921619, 0.0, 83.57137965878775],
     "twist": -0.680377614461304,
     "chord": 3.156109679927359,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_35.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_35.json",
     "mass_matrix": [
       [211.2687072959413, 0.0, 0.0, 0.0, 0.0, -52.25429049586151],
       [0.0, 211.2687072959413, 0.0, 0.0, 0.0, 7.037128908275816],
@@ -761,7 +763,7 @@
     "coordinates": [-1.407503356114155, 0.0, 85.95913336332453],
     "twist": -0.999293610427649,
     "chord": 3.064580004833834,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_36.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_36.json",
     "mass_matrix": [
       [193.16320065363269, 0.0, 0.0, 0.0, 0.0, -44.13892309847674],
       [0.0, 193.16320065363269, 0.0, 0.0, 0.0, 6.771545373748493],
@@ -782,7 +784,7 @@
     "coordinates": [-1.569415649792242, 0.0, 88.34688706786133],
     "twist": -1.320525255517711,
     "chord": 2.972992647082487,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_37.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_37.json",
     "mass_matrix": [
       [174.45385993813014, 0.0, 0.0, 0.0, 0.0, -36.53950240557847],
       [0.0, 174.45385993813014, 0.0, 0.0, 0.0, 6.383256148051058],
@@ -803,7 +805,7 @@
     "coordinates": [-1.738609665373033, 0.0, 90.73464077239812],
     "twist": -1.623298762065715,
     "chord": 2.880705106690617,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_38.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_38.json",
     "mass_matrix": [
       [153.9330170030467, 0.0, 0.0, 0.0, 0.0, -30.48792182613986],
       [0.0, 153.9330170030467, 0.0, 0.0, 0.0, 5.626849848843326],
@@ -824,7 +826,7 @@
     "coordinates": [-1.91367979918283, 0.0, 93.1223944769349],
     "twist": -1.884368146311783,
     "chord": 2.786969376686517,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_39.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_39.json",
     "mass_matrix": [
       [133.41217406796352, 0.0, 0.0, 0.0, 0.0, -24.436341246701325],
       [0.0, 133.41217406796352, 0.0, 0.0, 0.0, 4.8704435496356036],
@@ -845,7 +847,7 @@
     "coordinates": [-2.093586929140116, 0.0, 95.5101481814717],
     "twist": -2.086230093232373,
     "chord": 2.691030938627057,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_40.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_40.json",
     "mass_matrix": [
       [114.66236694109858, 0.0, 0.0, 0.0, 0.0, -20.99563725418376],
       [0.0, 114.66236694109858, 0.0, 0.0, 0.0, 4.099372895582774],
@@ -866,7 +868,7 @@
     "coordinates": [-2.278630233534075, 0.0, 97.89790188600848],
     "twist": -2.163998201705838,
     "chord": 2.591965555977676,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_41.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_41.json",
     "mass_matrix": [
       [96.35531876628848, 0.0, 0.0, 0.0, 0.0, -18.207652408396473],
       [0.0, 96.35531876628848, 0.0, 0.0, 0.0, 3.3246361528186785],
@@ -887,7 +889,7 @@
     "coordinates": [-2.468636765792445, 0.0, 100.2856555905453],
     "twist": -2.175841166085,
     "chord": 2.489323647505217,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_42.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_42.json",
     "mass_matrix": [
       [80.20559357729128, 0.0, 0.0, 0.0, 0.0, -15.629422706946933],
       [0.0, 80.20559357729128, 0.0, 0.0, 0.0, 2.6525955747104373],
@@ -908,7 +910,7 @@
     "coordinates": [-2.666293052105629, 0.0, 102.6734092950821],
     "twist": -2.155303774975188,
     "chord": 2.383917231097341,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_43.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_43.json",
     "mass_matrix": [
       [68.06232536194703, 0.0, 0.0, 0.0, 0.0, -13.440738273553292],
       [0.0, 68.06232536194703, 0.0, 0.0, 0.0, 2.1712764452487954],
@@ -929,7 +931,7 @@
     "coordinates": [-2.871202075032245, 0.0, 105.0611629996189],
     "twist": -2.102909521958467,
     "chord": 2.275923816206998,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_44.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_44.json",
     "mass_matrix": [
       [55.91905714660272, 0.0, 0.0, 0.0, 0.0, -11.25205384015964],
       [0.0, 55.91905714660272, 0.0, 0.0, 0.0, 1.689957315787151],
@@ -950,7 +952,7 @@
     "coordinates": [-3.083212464328674, 0.0, 107.4489167041557],
     "twist": -2.018403421317624,
     "chord": 2.165466732053696,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_45.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_45.json",
     "mass_matrix": [
       [47.26419100855091, 0.0, 0.0, 0.0, 0.0, -9.962849340003034],
       [0.0, 47.26419100855091, 0.0, 0.0, 0.0, 1.375381179200122],
@@ -971,7 +973,7 @@
     "coordinates": [-3.301933250165787, 0.0, 109.8366704086924],
     "twist": -1.89674321397277,
     "chord": 2.052625082558482,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_46.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_46.json",
     "mass_matrix": [
       [38.996925101309614, 0.0, 0.0, 0.0, 0.0, -8.773587054650568],
       [0.0, 38.996925101309614, 0.0, 0.0, 0.0, 1.0793320418213908],
@@ -992,7 +994,7 @@
     "coordinates": [-3.527723381568596, 0.0, 112.2244241132292],
     "twist": -1.724325762660474,
     "chord": 1.937753326819164,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_47.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_47.json",
     "mass_matrix": [
       [29.113303883981416, 0.0, 0.0, 0.0, 0.0, -6.657340517096899],
       [0.0, 29.113303883981416, 0.0, 0.0, 0.0, 0.7549561316972888],
@@ -1013,7 +1015,7 @@
     "coordinates": [-3.758854692855718, 0.0, 114.6121778177661],
     "twist": -1.508125114401624,
     "chord": 1.819662967336163,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_48.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_48.json",
     "mass_matrix": [
       [17.254137287658086, 0.0, 0.0, 0.0, 0.0, -3.408113226852781],
       [0.0, 17.254137287658086, 0.0, 0.0, 0.0, 0.3959586104399587],
@@ -1034,7 +1036,7 @@
     "coordinates": [-3.998718787548573, 0.0, 116.9999315223028],
     "twist": -1.24238770627297,
     "chord": 0.4999999999999998,
-    "airfoil_file": "converted/Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_49.json",
+    "airfoil_file": "./Airfoils/IEA-15-240-RWT_AeroDyn15_Polar_49.json",
     "mass_matrix": [
       [5.394970691335722, 0.0, 0.0, 0.0, 0.0, -0.1588859366089294],
       [0.0, 5.394970691335722, 0.0, 0.0, 0.0, 0.036961089182658016],

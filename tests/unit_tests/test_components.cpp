@@ -31,7 +31,7 @@ TEST(test_blade, mass_deflection) {
     system.AddMesh(blades_mesh);
     // blade
     auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_fractions.clear();
+    blade.discretization_elasto.clear();
     blade.build(system, blades_mesh);
     blade.nodes[0]->SetFixed(true);
 
@@ -69,7 +69,7 @@ TEST(test_rotor, mass) {
     std::vector<std::shared_ptr<Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
         auto blade = std::make_shared<Blade>(get_blade_from_json("../../data/IEA15MW_blade.json"));
-        blade->discretization_fractions.clear();
+        blade->discretization_elasto.clear();
         blades.push_back(blade);
         blade->build(system, blades_mesh);
     }
@@ -125,7 +125,7 @@ TEST(test_blade, natural_period_dynamic_edge) {
     system.AddMesh(blades_mesh);
     // blade
     auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_fractions.clear();
+    blade.discretization_elasto.clear();
     blade.build(system, blades_mesh);
     blade.nodes[0]->SetFixed(true);
 
@@ -182,7 +182,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
     system.AddMesh(blades_mesh);
     // blade
     auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_fractions.clear();
+    blade.discretization_elasto.clear();
     blade.build(system, blades_mesh);
     blade.nodes[0]->SetFixed(true);
 

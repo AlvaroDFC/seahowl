@@ -19,39 +19,48 @@ def save_json(json_dict, path):
 
 def convert_polar_file(filename, save_directory=None):
     filepath = Path(filename)
-    airfoil = dict()
     with open(filepath, "r") as f:
         lines = f.readlines()
+        airfoils_per_reynolds = list()
         coefficients = list()
         cl = list()
         cd = list()
         cm = list()
+        idx_airfoil = 0
         for ii, line in enumerate(lines):
             words = line.split()
             if len(words) >= 2:
-                if words[1] == "NumAlf":
-                    npolars = int(words[0])
-                    for jj in range(3, npolars + 3):
-                        coeffs = lines[ii + jj].split()
-                        coefficients.append(
-                            [
-                                float(coeffs[0]),
-                                float(coeffs[1]),
-                                float(coeffs[2]),
-                                float(coeffs[3]),
-                            ]
-                        )
-                if words[1] == "Re":
-                    airfoil["reynolds_number"] = float(words[0])
-    airfoil["header"] = ["alpha", "Cl", "Cd", "Cm"]
-    airfoil["coefficients"] = coefficients
+                if ii > 10:
+                    for iw, word in enumerate(words):
+                        if word == "Re":
+                            for _ in range(iw):
+                                airfoil = dict()
+                                airfoil["reynolds_number"] = float(words[0])
+                                airfoils_per_reynolds.append(airfoil)
+                            break
+                    if words[1] == "NumAlf":
+                        airfoil = airfoils_per_reynolds[idx_airfoil]
+                        idx_airfoil += 1
+                        npolars = int(words[0])
+                        airfoil["header"] = ["alpha", "Cl", "Cd", "Cm"]
+                        for jj in range(3, npolars + 3):
+                            coeffs = lines[ii + jj].split()
+                            coefficients.append(
+                                [
+                                    float(coeffs[0]),
+                                    float(coeffs[1]),
+                                    float(coeffs[2]),
+                                    float(coeffs[3]),
+                                ]
+                            )
+                        airfoil["coefficients"] = coefficients
 
     # save to file
     if save_directory is not None:
-        fullpath = Path(save_directory) / filename
-        save_json(airfoil, fullpath)
+        fullpath = Path(save_directory) / filename.with_suffix(".json")
+        save_json(airfoils_per_reynolds, fullpath)
 
-    return airfoil
+    return airfoils_per_reynolds
 
 
 def convert_aerodyn_files(filename, blade_filename, save_directory=None):
