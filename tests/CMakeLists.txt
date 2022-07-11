@@ -57,7 +57,7 @@ else()
 endif()
 
 
-add_executable(${PROJECT_NAME} unit_tests/test_components.cpp ../src/blade.cpp ../src/rotor.cpp ../src/tower.cpp ../src/read_json.cpp)
+add_executable(${PROJECT_NAME} unit_tests/test_components.cpp ../src/elasto/blade_elasto.cpp ../src/elasto/rotor.cpp ../src/elasto/tower.cpp ../src/io/read_json.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"

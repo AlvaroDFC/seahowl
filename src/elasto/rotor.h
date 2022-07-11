@@ -1,7 +1,7 @@
 #ifndef ROTOR_H_
 #define ROTOR_H_
 
-#include "blade.h"
+#include "blade_elasto.h"
 #include "tower.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
@@ -32,7 +32,7 @@ struct ShaftProperties {
 
 class Rotor {
   public:
-    std::vector<std::shared_ptr<Blade>> blades;
+    std::vector<std::shared_ptr<BladeElasto>> blades;
     std::vector<double> blade_precones;
     // bodies
     std::shared_ptr<ChBody> body_hub;
@@ -51,7 +51,7 @@ class Rotor {
 
     Rotor();
 
-    void build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blades);
+    void build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
     void link_tower(Tower& tower, ChSystemSMC& system);
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);

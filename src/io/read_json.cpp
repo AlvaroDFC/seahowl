@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include "read_json.h"
-#include "utils.h"
+#include "../utils.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -121,15 +121,15 @@ Blade get_blade_from_json(std::string filepath) {
     bool fpm_mode = json_obj["fpm_mode"];
 
     Blade blade = Blade();
-    blade.fpm_mode = fpm_mode;
+    blade.elasto->fpm_mode = fpm_mode;
     blade.reference_points = get_blade_reference_points_from_json(filepath);
     if (json_obj.contains("discretization_elasto")) {
         std::vector<double> discretization_elasto = json_obj["discretization_elasto"];
-        blade.discretization_elasto = discretization_elasto;
+        blade.set_discretization_elasto(discretization_elasto);
     }
     if (json_obj.contains("discretization_aero")) {
         std::vector<double> discretization_aero = json_obj["discretization_aero"];
-        blade.discretization_aero = discretization_aero;
+        blade.set_discretization_aero(discretization_aero);
     }
 
     return blade;

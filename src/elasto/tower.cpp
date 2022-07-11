@@ -1,5 +1,5 @@
 #include "tower.h"
-#include "utils.h"
+#include "../utils.h"
 
 void Tower::build(std::shared_ptr<ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);

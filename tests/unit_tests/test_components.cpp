@@ -5,10 +5,10 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include "chrono/solver/ChIterativeSolverLS.h"
 
-#include "../../src/blade.h"
-#include "../../src/rotor.h"
-#include "../../src/tower.h"
-#include "../../src/read_json.h"
+#include "../../src/elasto/blade_elasto.h"
+#include "../../src/elasto/rotor.h"
+#include "../../src/elasto/tower.h"
+#include "../../src/io/read_json.h"
 
 using namespace chrono;
 
@@ -30,28 +30,31 @@ TEST(test_blade, mass_deflection) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_elasto.clear();
-    blade.build(system, blades_mesh);
-    blade.nodes[0]->SetFixed(true);
+    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    std::vector<double> fractions;
+    fractions.clear();
+    blade_core.set_discretization_elasto(fractions);
+    blade_core.build(system, blades_mesh);
+    auto blade = blade_core.elasto;
+    blade->nodes[0]->SetFixed(true);
 
     system.Setup();
     system.DoStaticLinear();
 
     // check mass
     double blade_mass = 67058.294688;
-    ASSERT_NEAR(blade_mass, blade.get_mass(), 1.0);
+    ASSERT_NEAR(blade_mass, blade->get_mass(), 1.0);
 
     // check deflection from gravity (edge)
     double deflection_edge = -1.4705;
     system.DoStaticLinear();
-    ASSERT_NEAR(deflection_edge, blade.nodes.back()->GetPos().y(), 0.001);
+    ASSERT_NEAR(deflection_edge, blade->nodes.back()->GetPos().y(), 0.001);
 
     // check deflection from gravity (flap)
     double deflection_flap = 1.6295;
-    blade.rotate(-CH_C_PI / 2.0, VECT_Z);
+    blade->rotate(-CH_C_PI / 2.0, VECT_Z);
     system.DoStaticLinear();
-    ASSERT_NEAR(deflection_flap, blade.nodes.back()->GetPos().y(), 0.001);
+    ASSERT_NEAR(deflection_flap, blade->nodes.back()->GetPos().y(), 0.001);
 }
 
 TEST(test_rotor, mass) {
@@ -66,12 +69,15 @@ TEST(test_rotor, mass) {
     // check mass with blades
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
-    std::vector<std::shared_ptr<Blade>> blades;
+    std::vector<std::shared_ptr<BladeElasto>> blades;
     for (int ii = 0; ii < 3; ii++) {
-        auto blade = std::make_shared<Blade>(get_blade_from_json("../../data/IEA15MW_blade.json"));
-        blade->discretization_elasto.clear();
+        auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+        std::vector<double> fractions;
+        fractions.clear();
+        blade_core.set_discretization_elasto(fractions);
+        blade_core.build(system, blades_mesh);
+        auto blade = blade_core.elasto;
         blades.push_back(blade);
-        blade->build(system, blades_mesh);
     }
 
     auto rotor = get_rotor_from_json("../../data/IEA15MW_RNA.json");
@@ -124,16 +130,19 @@ TEST(test_blade, natural_period_dynamic_edge) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_elasto.clear();
-    blade.build(system, blades_mesh);
-    blade.nodes[0]->SetFixed(true);
+    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    std::vector<double> fractions;
+    fractions.clear();
+    blade_core.set_discretization_elasto(fractions);
+    blade_core.build(system, blades_mesh);
+    auto blade = blade_core.elasto;
+    blade->nodes[0]->SetFixed(true);
 
     system.Setup();
     system.DoStaticLinear();
 
     // static position of blade tip
-    double pos0 = blade.nodes.back()->GetPos().y();
+    double pos0 = blade->nodes.back()->GetPos().y();
 
     // check zero-crossings (static position of blade tip)
     int step = 0;
@@ -144,11 +153,11 @@ TEST(test_blade, natural_period_dynamic_edge) {
     double time = 0.0;
     double end_time = 10.0;
     double start_time = 0.0;
-    blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
+    blade->nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
     while (time < end_time) {
         if (time > 0.5) {
-            blade.nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
-            if (blade.nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
+            blade->nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
+            if (blade->nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
                 if (start_time == 0.0) {
                     start_time = time;
                 } else {
@@ -157,7 +166,7 @@ TEST(test_blade, natural_period_dynamic_edge) {
                 }
             }
         }
-        pos_y = blade.nodes.back()->GetPos().y();
+        pos_y = blade->nodes.back()->GetPos().y();
         system.DoStepDynamics(dt);
         time += dt;
         step += 1;
@@ -181,19 +190,22 @@ TEST(test_blade, natural_period_dynamic_flap) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade = get_blade_from_json("../../data/IEA15MW_blade.json");
-    blade.discretization_elasto.clear();
-    blade.build(system, blades_mesh);
-    blade.nodes[0]->SetFixed(true);
+    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    std::vector<double> fractions;
+    fractions.clear();
+    blade_core.set_discretization_elasto(fractions);
+    blade_core.build(system, blades_mesh);
+    auto blade = blade_core.elasto;
+    blade->nodes[0]->SetFixed(true);
 
     // rotate blade for flap
-    blade.rotate(-CH_C_PI / 2.0, VECT_Z);
+    blade->rotate(-CH_C_PI / 2.0, VECT_Z);
 
     system.Setup();
     system.DoStaticLinear();
 
     // static position of blade tip
-    double pos0 = blade.nodes.back()->GetPos().y();
+    double pos0 = blade->nodes.back()->GetPos().y();
 
     // check zero-crossings (static position of blade tip)
     int step = 0;
@@ -204,11 +216,11 @@ TEST(test_blade, natural_period_dynamic_flap) {
     double time = 0.0;
     double end_time = 10.0;
     double start_time = 0.0;
-    blade.nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
+    blade->nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
     while (time < end_time) {
         if (time > 0.5) {
-            blade.nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
-            if (blade.nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
+            blade->nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
+            if (blade->nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
                 if (start_time == 0.0) {
                     start_time = time;
                 } else {
@@ -217,7 +229,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
                 }
             }
         }
-        pos_y = blade.nodes.back()->GetPos().y();
+        pos_y = blade->nodes.back()->GetPos().y();
         system.DoStepDynamics(dt);
         time += dt;
         step += 1;

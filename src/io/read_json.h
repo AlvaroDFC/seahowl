@@ -2,9 +2,9 @@
 #define READ_JSON_H_
 
 #include <nlohmann/json.hpp>
-#include "blade.h"
-#include "rotor.h"
-#include "tower.h"
+#include "../core/blade_core.h"
+#include "../elasto/rotor.h"
+#include "../elasto/tower.h"
 
 std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath);
 

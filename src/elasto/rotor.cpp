@@ -3,7 +3,7 @@
 
 Rotor::Rotor() {}
 
-void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blades) {
+void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 
     // hub

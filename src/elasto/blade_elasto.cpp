@@ -1,12 +1,13 @@
-#include "blade.h"
+#include "blade_elasto.h"
 
 #include "chrono/fea/ChBuilderBeam.h"
 
-Blade::Blade() {}
+BladeElasto::BladeElasto() {}
 
-void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // blade
-    discretized_points = get_discretized_points(discretization_elasto, reference_points);
+    //
+    discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     if (fpm_mode) {
         build_elements_tapered_timoshenko_fpm(mesh);
@@ -16,7 +17,7 @@ void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     build_loads(system);
 };
 
-void Blade::build_nodes(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
     int nnodes = discretized_points.size();
     for (int ii = 0; ii < nnodes; ii++) {
@@ -51,9 +52,13 @@ void Blade::build_nodes(std::shared_ptr<ChMesh> mesh) {
     };
 };
 
-void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
     int nelements = nodes.size() - 1;
+
+    if (nelements <= 0) {
+        throw std::runtime_error("Trying to build blade with no element.");
+    }
 
     // make first section for tapered section
     auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
@@ -119,7 +124,7 @@ void Blade::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
-void Blade::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
     int nelements = nodes.size() - 1;
 
@@ -180,7 +185,7 @@ void Blade::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) 
     }
 }
 
-void Blade::build_loads(ChSystemSMC& system) {
+void BladeElasto::build_loads(ChSystemSMC& system) {
     auto loadcontainer = chrono_types::make_shared<ChLoadContainer>();
     system.Add(loadcontainer);
     for (int ii = 0; ii < elements.size(); ii++) {
@@ -191,7 +196,7 @@ void Blade::build_loads(ChSystemSMC& system) {
     }
 }
 
-void Blade::rotate(double angle, ChVector<double> axis) {
+void BladeElasto::rotate(double angle, ChVector<double> axis) {
     auto rotation = Q_from_AngAxis(angle, axis);
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
@@ -202,14 +207,14 @@ void Blade::rotate(double angle, ChVector<double> axis) {
     }
 }
 
-void Blade::translate(ChVector<double> translation_vector) {
+void BladeElasto::translate(ChVector<double> translation_vector) {
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
         node->SetPos(node->GetPos() + translation_vector);
     }
 }
 
-void Blade::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
+void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
@@ -226,34 +231,10 @@ void Blade::set_damping_coefficients(double axial, double edge, double flap, dou
     }
 }
 
-double Blade::get_mass() {
+double BladeElasto::get_mass() {
     double total_mass = 0.0;
     for (int ii = 0; ii < elements.size(); ii++) {
         total_mass += elements[ii]->GetMass();
     }
     return total_mass;
-}
-
-std::vector<BladeAeroReferencePoint> Blade::get_aerodynamic_point_positions() {
-    // build reference aero points at structural nodes
-    std::vector<BladeAeroReferencePoint> nodal_positions;
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto node = nodes[ii];
-        BladeAeroReferencePoint nodal_position;
-        nodal_position.fraction = discretization_elasto[ii];
-        nodal_position.coordinates = node->GetPos();
-        // reference directions of cross-section
-        auto local_direction_x = ChVector<double>(0.0, 1.0, 0.0);
-        auto global_direction_x = node->TransformDirectionLocalToParent(local_direction_x);
-        nodal_position.direction_x = global_direction_x;
-        auto local_direction_y = ChVector<double>(0.0, 0.0, 1.0);
-        auto global_direction_y = node->TransformDirectionLocalToParent(local_direction_y);
-        nodal_position.direction_y = global_direction_y;
-        // // tangential velocity
-        // nodal_position.velocity = (node->GetPos_dt() ^ global_direction_x) * global_direction_x;
-        nodal_position.velocity = node->GetPos_dt();
-        nodal_positions.push_back(nodal_position);
-    }
-    // interpolate and return reference aero points at desired locations
-    return get_discretized_points(discretization_aero, nodal_positions);
 }

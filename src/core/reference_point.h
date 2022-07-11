@@ -1,11 +1,7 @@
-#ifndef BLADE_H_
-#define BLADE_H_
+#ifndef REFERENCE_POINT_H_
+#define REFERENCE_POINT_H_
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-#include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
-#include "chrono/fea/ChMesh.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "utils.h"
 
 using namespace chrono;
 using namespace chrono::fea;
@@ -81,59 +77,4 @@ struct BladeReferencePoint {
     };
 };
 
-struct BladeAeroReferencePoint {
-    double fraction;
-    ChVector<double> coordinates;
-    ChVector<double> direction_x;
-    ChVector<double> direction_y;
-    ChVector<double> velocity;
-    std::vector<AirfoilProperties> airfoil_properties;
-
-    BladeAeroReferencePoint operator*(const double factor) const {
-        BladeAeroReferencePoint new_point = *this;
-        new_point.fraction *= factor;
-        new_point.coordinates *= factor;
-        new_point.direction_x *= factor;
-        new_point.direction_y *= factor;
-        new_point.velocity *= factor;
-        // TODO include airfoil properties
-        return new_point;
-    };
-    BladeAeroReferencePoint operator+(const BladeAeroReferencePoint& other) const {
-        BladeAeroReferencePoint new_point = *this;
-        new_point.fraction += other.fraction;
-        new_point.coordinates += other.coordinates;
-        new_point.direction_x += other.direction_x;
-        new_point.direction_y += other.direction_y;
-        new_point.velocity += other.velocity;
-        // TODO include airfoil properties
-        return new_point;
-    };
-};
-
-class Blade {
-  public:
-    std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
-    std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
-    std::vector<std::shared_ptr<ChLoad<ChLoaderWeighted>>> loaders_aero;
-    std::vector<BladeReferencePoint> reference_points;
-    std::vector<BladeReferencePoint> discretized_points;
-    std::vector<double> discretization_elasto;
-    std::vector<double> discretization_aero;
-    bool fpm_mode = false;
-
-    Blade();
-
-    void build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh);
-    void build_nodes(std::shared_ptr<ChMesh> mesh);
-    void build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh);
-    void build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh);
-    void build_loads(ChSystemSMC& system);
-    void translate(ChVector<double> translation_vector);
-    void rotate(double angle, ChVector<double> axis);
-    void set_damping_coefficients(double axial, double edge, double flap, double torsion);
-    std::vector<BladeAeroReferencePoint> get_aerodynamic_point_positions();
-    double get_mass();
-};
-
-#endif  // BLADE_H_
+#endif  // REFERENCE_POINT_H_

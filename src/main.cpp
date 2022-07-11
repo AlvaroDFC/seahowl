@@ -8,9 +8,10 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
 
-#include "blade.h"
-#include "rotor.h"
-#include "read_json.h"
+#include "elasto/blade_elasto.h"
+#include "core/blade_core.h"
+#include "elasto/rotor.h"
+#include "io/read_json.h"
 
 using namespace chrono;
 using namespace chrono::irrlicht;
@@ -34,27 +35,27 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
 
-    std::vector<std::shared_ptr<Blade>> all_blades;
+    std::vector<std::shared_ptr<BladeElasto>> all_blades_elasto;
     for (int kk = 0; kk < 3; kk++) {
         // blade
         GetLog() << "Building blades\n";
-        std::vector<std::shared_ptr<Blade>> blades;
+        std::vector<std::shared_ptr<BladeElasto>> blades_elasto;
         for (int ii = 0; ii < 3; ii++) {
             auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
-            blade->discretization_elasto.clear();
-            blades.push_back(blade);
-            all_blades.push_back(blade);
+            blade->elasto->discretization_fractions.clear();
+            blades_elasto.push_back(blade->elasto);
+            all_blades_elasto.push_back(blade->elasto);
             blade->build(system, blades_mesh);
-            for (int jj = 0; jj < blade->elements.size(); jj++) {
-                blade->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
-                blade->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
+            for (int jj = 0; jj < blade->elasto->elements.size(); jj++) {
+                blade->elasto->elements[jj]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
+                blade->elasto->elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
             }
         }
 
         // rotor
         GetLog() << "Building rotor\n";
         auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
-        rotor.build(system, blades);
+        rotor.build(system, blades_elasto);
 
         // auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
         // link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
@@ -86,9 +87,9 @@ int main(int argc, char* argv[]) {
 
         GetLog() << "Finished building system\n";
         double mass_blades = 0.0;
-        for (int ii = 0; ii < blades.size(); ii++) {
-            GetLog() << "Blade" << ii << " mass: " << blades[ii]->get_mass() << "\n";
-            mass_blades += blades[ii]->get_mass();
+        for (int ii = 0; ii < blades_elasto.size(); ii++) {
+            GetLog() << "Blade" << ii << " mass: " << blades_elasto[ii]->get_mass() << "\n";
+            mass_blades += blades_elasto[ii]->get_mass();
         }
         GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
         GetLog() << "RNA mass (without blades): " << rotor.get_mass() - mass_blades << "\n";
@@ -154,8 +155,8 @@ int main(int argc, char* argv[]) {
         GetLog() << "time " << time << " step: " << step << "\n";
 
         // apply force
-        for (int jj = 0; jj < all_blades.size(); ++jj) {
-            auto blade = all_blades[jj];
+        for (int jj = 0; jj < all_blades_elasto.size(); ++jj) {
+            auto blade = all_blades_elasto[jj];
             for (int kk = 0; kk < blade->elements.size(); ++kk) {
                 auto node = blade->nodes[kk];
                 blade->loaders_aero[kk]->loader.positions = {-1.0, 1.0};
