@@ -32,7 +32,6 @@ class BladeElasto {
     void translate(ChVector<double> translation_vector);
     void rotate(double angle, ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
-    // std::vector<BladeAeroReferencePoint> get_aerodynamic_point_positions();
     double get_mass();
 };
 

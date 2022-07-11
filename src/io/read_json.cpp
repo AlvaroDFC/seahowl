@@ -84,23 +84,21 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
             for (int jj = 0; jj < nreynolds; jj++) {
                 auto airfoil_properties = json_airfoil[jj];
                 std::vector<std::vector<double>> coeffs = airfoil_properties["coefficients"];
+                double reynolds_number = airfoil_properties["reynolds_number"];
 
-                std::vector<double> alpha;
-                std::vector<double> lift_coeff;
-                std::vector<double> drag_coeff;
-                std::vector<double> am_coeff;
+                std::vector<AirfoilCoefficients> coefficients_list;
 
                 for (int kk = 0; kk < coeffs.size(); kk++) {
-                    alpha.push_back(coeffs[kk][0]);
-                    lift_coeff.push_back(coeffs[kk][1]);
-                    drag_coeff.push_back(coeffs[kk][2]);
-                    am_coeff.push_back(coeffs[kk][3]);
+                    AirfoilCoefficients coefficients;
+                    coefficients.alpha = coeffs[kk][0];
+                    coefficients.lift = coeffs[kk][1];
+                    coefficients.drag = coeffs[kk][2];
+                    coefficients.added_mass = coeffs[kk][3];
+                    coefficients_list.push_back(coefficients);
                 }
                 AirfoilProperties airfoil;
-                airfoil.alpha = alpha;
-                airfoil.lift_coeff = lift_coeff;
-                airfoil.drag_coeff = drag_coeff;
-                airfoil.am_coeff = am_coeff;
+                airfoil.reynolds_number = reynolds_number;
+                airfoil.coefficients_list = coefficients_list;
                 reference_point.airfoil_properties.push_back(airfoil);
             }
         }

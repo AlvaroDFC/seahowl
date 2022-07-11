@@ -2,44 +2,10 @@
 #define REFERENCE_POINT_H_
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
+#include "../aero/airfoil.h"
 
 using namespace chrono;
 using namespace chrono::fea;
-
-struct AirfoilProperties {
-    double reynolds_number = 0.0;
-    std::vector<double> alpha;
-    std::vector<double> lift_coeff;
-    std::vector<double> drag_coeff;
-    std::vector<double> am_coeff;
-
-    AirfoilProperties() {}
-
-    ~AirfoilProperties() {}
-
-    AirfoilProperties operator*(const double factor) const {
-        AirfoilProperties new_point = *this;
-        /* new_point.reynolds_number *= factor; */
-        for (int ii = 0; ii < alpha.size(); ii++) {
-            new_point.alpha[ii] *= factor;
-            new_point.lift_coeff[ii] *= factor;
-            new_point.drag_coeff[ii] *= factor;
-            new_point.am_coeff[ii] *= factor;
-        }
-        return new_point;
-    };
-    AirfoilProperties operator+(const AirfoilProperties& other) const {
-        AirfoilProperties new_point = *this;
-        /* new_point.reynolds_number += other.reynolds_number; */
-        for (int ii = 0; ii < alpha.size(); ii++) {
-            new_point.alpha[ii] += other.alpha[ii];
-            new_point.lift_coeff[ii] += other.lift_coeff[ii];
-            new_point.drag_coeff[ii] *= other.drag_coeff[ii];
-            new_point.am_coeff[ii] *= other.am_coeff[ii];
-        }
-        return new_point;
-    };
-};
 
 struct BladeReferencePoint {
     ChVector<double> coordinates = ChVector<double>(0.0, 0.0, 0.0);
