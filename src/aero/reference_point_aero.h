@@ -6,6 +6,7 @@
 struct BladeReferencePointAero {
     double fraction;
     ChVector<double> coordinates;
+    ChQuaternion<double> rotation;
     ChVector<double> direction_x;
     ChVector<double> direction_y;
     ChVector<double> velocity;

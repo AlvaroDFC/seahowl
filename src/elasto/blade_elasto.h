@@ -2,6 +2,7 @@
 #define BLADE_ELASTO_H_
 
 #include "reference_point_elasto.h"
+#include "utils_elasto.h"
 #include "../utils.h"
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
@@ -33,6 +34,12 @@ class BladeElasto {
     void rotate(double angle, ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
     double get_mass();
+    void evaluate_position_rotation(ChVector<double>& position,
+                                    ChQuaternion<double>& rotation,
+                                    int element_index,
+                                    double eta);
+    void reset_loads();
+    void accumulate_element_load(ChVector<double> load, int element_index, double eta);
 };
 
 #endif  // BLADE_ELASTO_H_

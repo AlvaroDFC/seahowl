@@ -36,12 +36,14 @@ int main(int argc, char* argv[]) {
     system.AddMesh(blades_mesh);
 
     std::vector<std::shared_ptr<BladeElasto>> all_blades_elasto;
+    std::vector<std::shared_ptr<Blade>> all_blades;
     for (int kk = 0; kk < 3; kk++) {
         // blade
         GetLog() << "Building blades\n";
         std::vector<std::shared_ptr<BladeElasto>> blades_elasto;
         for (int ii = 0; ii < 3; ii++) {
             auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
+            all_blades.push_back(blade);
             blade->elasto->discretization_fractions.clear();
             blades_elasto.push_back(blade->elasto);
             all_blades_elasto.push_back(blade->elasto);
@@ -156,6 +158,7 @@ int main(int argc, char* argv[]) {
 
         // apply force
         for (int jj = 0; jj < all_blades_elasto.size(); ++jj) {
+            all_blades[jj]->prestep();
             auto blade = all_blades_elasto[jj];
             for (int kk = 0; kk < blade->elements.size(); ++kk) {
                 auto node = blade->nodes[kk];
