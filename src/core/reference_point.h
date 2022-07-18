@@ -15,6 +15,7 @@ struct BladeReferencePoint {
     ChMatrixNM<double, 6, 6> mass_matrix;
     double fraction = 0.0;
     double structural_twist = 0.0;
+    double chord = 0.0;
     DampingCoefficients damping_coefficients;
     std::vector<AirfoilProperties> airfoil_properties;
 

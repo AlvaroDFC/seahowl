@@ -2,6 +2,13 @@
 
 std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& discretization_fractions,
                                                           std::vector<double>& reference_fractions) {
+    // check for potential errors
+    if (discretization_fractions.size() == 0) {
+        std::runtime_error("Cannot get discretization with empty array.");
+    } else if (reference_fractions.size() < 2) {
+        std::runtime_error("Cannot get discretization with reference array with less than 2 elements.");
+    }
+
     std::vector<DiscretizationPoint> points;
     for (int ii = 0; ii < discretization_fractions.size(); ii++) {
         double fraction = discretization_fractions[ii];
@@ -10,18 +17,25 @@ std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& d
             throw std::runtime_error("Discretization fraction must be between 0 and 1 but was " +
                                      std::to_string(fraction) + ".");
         }
-        int idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
-                  reference_fractions.begin();
-        // decrease index for getting lower bound
-        idx -= 1;
-        double fraction_lower = reference_fractions[idx];
-        double fraction_upper = reference_fractions[idx + 1];
-        double fraction_range = fraction_upper - fraction_lower;
-        double eta = 2.0 * (fraction - fraction_lower) / fraction_range - 1.0;
-        DiscretizationPoint point;
-        point.index = idx;
-        point.eta = eta;
-        points.push_back(point);
+        if (fraction == 0) {
+            DiscretizationPoint point;
+            point.index = 0;
+            point.eta = -1;
+            points.push_back(point);
+        } else {
+            int idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
+                      reference_fractions.begin();
+            // decrease index for getting lower bound
+            idx -= 1;
+            double fraction_lower = reference_fractions[idx];
+            double fraction_upper = reference_fractions[idx + 1];
+            double fraction_range = fraction_upper - fraction_lower;
+            double eta = 2.0 * (fraction - fraction_lower) / fraction_range - 1.0;
+            DiscretizationPoint point;
+            point.index = idx;
+            point.eta = eta;
+            points.push_back(point);
+        }
     }
     return points;
 }

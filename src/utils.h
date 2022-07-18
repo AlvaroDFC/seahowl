@@ -5,6 +5,10 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include "chrono/core/ChVector.h"
+
+using namespace chrono;
+
 struct DiscretizationPoint {
     int index;
     double eta;

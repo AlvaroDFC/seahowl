@@ -1,6 +1,9 @@
 #ifndef AIRFOIL_H_
 #define AIRFOIL_H_
 
+#include <vector>
+#include <stdexcept>
+
 struct AirfoilCoefficients {
     double alpha = 0.0;
     double lift = 0.0;
@@ -71,7 +74,7 @@ struct AirfoilProperties {
                 return coefficients;
             }
         }
-        throw std::runtime_error("Could not find alpha value for airfoil.");
+        throw std::runtime_error("Could not find alpha value (" + std::to_string(alpha) + ") for airfoil.");
     }
 };
 

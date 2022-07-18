@@ -71,6 +71,10 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
         reference_point.damping_coefficients.bz = damping_coefficients[2];
         reference_point.damping_coefficients.bt = damping_coefficients[3];
 
+        if (point.contains("chord")) {
+            reference_point.chord = point["chord"];
+        }
+
         // populate json object
         if (point.contains("airfoil_file")) {
             auto main_directory = fs::path(filepath).parent_path();

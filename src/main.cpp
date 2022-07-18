@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::shared_ptr<BladeElasto>> all_blades_elasto;
     std::vector<std::shared_ptr<Blade>> all_blades;
-    for (int kk = 0; kk < 3; kk++) {
+    std::vector<std::shared_ptr<Rotor>> rotors;
+    for (int kk = 0; kk < 1; kk++) {
         // blade
         GetLog() << "Building blades\n";
         std::vector<std::shared_ptr<BladeElasto>> blades_elasto;
@@ -45,6 +46,7 @@ int main(int argc, char* argv[]) {
             auto blade = std::make_shared<Blade>(get_blade_from_json("../data/IEA15MW_blade.json"));
             all_blades.push_back(blade);
             blade->elasto->discretization_fractions.clear();
+            blade->aero->discretization_fractions.clear();
             blades_elasto.push_back(blade->elasto);
             all_blades_elasto.push_back(blade->elasto);
             blade->build(system, blades_mesh);
@@ -56,8 +58,9 @@ int main(int argc, char* argv[]) {
 
         // rotor
         GetLog() << "Building rotor\n";
-        auto rotor = get_rotor_from_json("../data/IEA15MW_RNA.json");
-        rotor.build(system, blades_elasto);
+        auto rotor = std::make_shared<Rotor>(get_rotor_from_json("../data/IEA15MW_RNA.json"));
+        rotor->build(system, blades_elasto);
+        rotors.push_back(rotor);
 
         // auto link_motor = chrono_types::make_shared<ChLinkMotorRotationSpeed>();
         // link_motor->Initialize(rotor.body_shaft, rotor.body_hub, rotor.body_shaft->GetAssetsFrame());
@@ -75,17 +78,17 @@ int main(int argc, char* argv[]) {
             tower.elements[jj]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 2.0);
         }
         // translate tower to make it match the current turbine configuration
-        tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor.shaft.distance_from_towertop));
+        tower.translate(ChVector<double>(0.0, 0.0, -tower.height - rotor->shaft.distance_from_towertop));
         // fix bottom of tower
         tower.nodes[0]->SetFixed(true);
 
         // link rotor to tower
-        rotor.link_tower(tower, system);
+        rotor->link_tower(tower, system);
 
         tower.translate(ChVector<double>(150.0 * kk, 150.0 * kk * pow(-1.0, kk), 0.0));
-        rotor.translate(ChVector<double>(150.0 * kk, 150.0 * kk * pow(-1.0, kk), 0.0));
+        rotor->translate(ChVector<double>(150.0 * kk, 150.0 * kk * pow(-1.0, kk), 0.0));
         tower.rotate(-CH_C_PI / 2.0, VECT_X);
-        rotor.rotate(-CH_C_PI / 2.0, VECT_X);
+        rotor->rotate(-CH_C_PI / 2.0, VECT_X);
 
         GetLog() << "Finished building system\n";
         double mass_blades = 0.0;
@@ -93,10 +96,10 @@ int main(int argc, char* argv[]) {
             GetLog() << "Blade" << ii << " mass: " << blades_elasto[ii]->get_mass() << "\n";
             mass_blades += blades_elasto[ii]->get_mass();
         }
-        GetLog() << "RNA mass: " << rotor.get_mass() << "\n";
-        GetLog() << "RNA mass (without blades): " << rotor.get_mass() - mass_blades << "\n";
+        GetLog() << "RNA mass: " << rotor->get_mass() << "\n";
+        GetLog() << "RNA mass (without blades): " << rotor->get_mass() - mass_blades << "\n";
         GetLog() << "Tower mass: " << tower.get_mass() << "\n";
-        GetLog() << "Total mass: " << rotor.get_mass() + tower.get_mass() << "\n";
+        GetLog() << "Total mass: " << rotor->get_mass() + tower.get_mass() << "\n";
     }
 
     // VISUALIZATION
@@ -143,9 +146,11 @@ int main(int argc, char* argv[]) {
     application.SetVideoframeSaveInterval(20);
     double time = 0.0;
     int step = 0;
-    system.DoStaticLinear();
+    // system.DoStaticLinear();
     // system.DoStaticNonlinear(10, true);
     // application.DoStep();
+    auto wind_model = ConstantWind();
+    wind_model.set_wind_speed(ChVector<double>(10.59, 0.0, 0.0));
     while (application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();
@@ -158,15 +163,7 @@ int main(int argc, char* argv[]) {
 
         // apply force
         for (int jj = 0; jj < all_blades_elasto.size(); ++jj) {
-            all_blades[jj]->prestep();
-            auto blade = all_blades_elasto[jj];
-            for (int kk = 0; kk < blade->elements.size(); ++kk) {
-                auto node = blade->nodes[kk];
-                blade->loaders_aero[kk]->loader.positions = {-1.0, 1.0};
-                auto force = node->TransformDirectionLocalToParent(ChVector<>(0.0, 1000.0, 0.0)) *
-                             std::min(100.0, time) / 100.0 / double(jj + 1);
-                blade->loaders_aero[kk]->loader.loads = {force, force};
-            }
+            all_blades[jj]->prestep(time, wind_model);
         }
     }
 

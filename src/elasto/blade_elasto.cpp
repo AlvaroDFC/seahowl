@@ -5,8 +5,19 @@
 BladeElasto::BladeElasto() {}
 
 void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
-    // blade
-    //
+    // check that enough reference points were defined to create elements (at least 2)
+    if (reference_points.size() <= 2) {
+        std::runtime_error("Not enough elasto reference points defined for blade.");
+    }
+
+    // check that discretization_fractions was defined, otherwise take reference point fractions
+    if (discretization_fractions.size() == 0) {
+        for (int ii = 0; ii < reference_points.size(); ii++) {
+            discretization_fractions.push_back(reference_points[ii].fraction);
+        }
+    }
+
+    // build
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     if (fpm_mode) {

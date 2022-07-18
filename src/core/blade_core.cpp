@@ -8,13 +8,15 @@ Blade::Blade() {
 void Blade::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // push reference points
     elasto->reference_points.clear();
-    /* aero->reference_points.clear(); */
+    aero->reference_points.clear();
     for (int ii = 0; ii < reference_points.size(); ii++) {
         elasto->reference_points.push_back(BladeReferencePointElasto(reference_points[ii]));
-        /* aero->reference_points.push_back(BladeReferencePointAero(reference_points[ii])); */
+        aero->reference_points.push_back(BladeReferencePointAero(reference_points[ii]));
     }
     // build elasto
     elasto->build(system, mesh);
+    // build aero
+    aero->build();
 
     // mappings
     compute_mapping_aero2elasto();
@@ -37,23 +39,29 @@ void Blade::compute_mapping_elasto2aero() {
     mapping_elasto2aero = get_indice_and_positions(elasto->discretization_fractions, aero->discretization_fractions);
 }
 
-void Blade::prestep() {
+void Blade::prestep(double time, WindModel& wind_model) {
     // reset loads on elasto part
     elasto->reset_loads();
     // update position of aero points
     update_positions_aero();
     // compute loads from aero
-    aero->compute_loads();
+    aero->compute_loads(time, wind_model);
     // update loads on elasto part
     update_loads_elasto();
 }
 
 void Blade::update_positions_aero() {
-    for (int ii = 0; ii < aero->discretized_points.size(); ii++) {
-        int element_index = mapping_aero2elasto[ii].index;
+    for (int ii = 0; ii < aero->elements.size(); ii++) {
+        int elasto_element_index = mapping_aero2elasto[ii].index;
         double eta = mapping_aero2elasto[ii].eta;
-        elasto->evaluate_position_rotation(aero->discretized_points[ii].coordinates,
-                                           aero->discretized_points[ii].rotation, element_index, eta);
+        elasto->evaluate_position_rotation(aero->elements[ii].properties.coordinates,
+                                           aero->elements[ii].properties.rotation, elasto_element_index, eta);
+
+        aero->elements[ii].properties.velocity =
+            0.5 * (elasto->elements[elasto_element_index]->GetNodeA()->GetPos_dt() +
+                   elasto->elements[elasto_element_index]->GetNodeB()->GetPos_dt());
+        // TODO: add pitch
+        // aero->elements[ii].pitch_beta = ...;
     }
 }
 
