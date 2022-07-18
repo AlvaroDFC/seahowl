@@ -15,7 +15,6 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     json_file >> json_obj;
 
     // EXTRACT INFO
-    //
     std::vector<BladeReferencePoint> reference_points;
     auto points = json_obj["reference_points"];
     std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
@@ -232,4 +231,24 @@ Rotor get_rotor_from_json(std::string filepath) {
     rotor.shaft.tilt = (double)json_obj["shaft"]["tilt"] * CH_C_PI / 180.0;
 
     return rotor;
+}
+
+Turbine get_turbine_from_json(std::vector<std::string> filepaths_blades,
+                              std::string filepath_rotor,
+                              std::string filepath_tower) {
+    std::vector<std::shared_ptr<Blade>> blades;
+    for (int ii = 0; ii < filepaths_blades.size(); ii++) {
+        blades.push_back(std::make_shared<Blade>(get_blade_from_json(filepaths_blades[ii])));
+    }
+
+    auto rotor = get_rotor_from_json(filepath_rotor);
+
+    auto tower = get_tower_from_json(filepath_tower);
+
+    auto turbine = Turbine();
+    turbine.rotor = rotor;
+    turbine.tower = tower;
+    turbine.blades = blades;
+
+    return turbine;
 }
