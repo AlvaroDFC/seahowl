@@ -58,6 +58,7 @@ class Rotor {
     void translate(ChVector<double> translation_vector);
     double get_mass();
     void apply_collective_pitch_increment(double pitch_increment);
+    double get_rpm();
 };
 
 #endif  // ROTOR_H_

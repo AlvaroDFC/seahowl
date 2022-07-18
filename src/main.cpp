@@ -159,7 +159,7 @@ int main(int argc, char* argv[]) {
         // system.DoStepDynamics(dt);
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << "\n";
+        GetLog() << "time " << time << " step: " << step << " rpm: " << rotors[0]->get_rpm() << "\n";
 
         // apply force
         for (int jj = 0; jj < all_blades_elasto.size(); ++jj) {

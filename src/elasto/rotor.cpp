@@ -166,3 +166,10 @@ void Rotor::apply_collective_pitch_increment(double pitch_increment) {
         link->Initialize(blade->nodes.front(), body_hub);
     }
 }
+
+double Rotor::get_rpm() {
+    ChVector<double> angles;
+    body_hub->coord.rot.Qdt_to_Wrel(angles, body_hub->coord_dt.rot);
+    double rpm = angles.z() * 60 / (2 * CH_C_PI);
+    return rpm;
+}
