@@ -40,6 +40,7 @@ class Rotor {
     std::shared_ptr<ChBody> body_nacelle;
     std::shared_ptr<ChBody> body_yaw_bearing;
     // links
+    std::vector<std::shared_ptr<ChLinkMateFix>> links_blades;
     std::shared_ptr<ChLinkRevolute> link_shaft_hub;
     std::shared_ptr<ChLinkMateFix> link_shaft_nacelle;
     std::shared_ptr<ChLinkMateFix> link_shaft_yaw_bearing;
@@ -56,6 +57,7 @@ class Rotor {
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);
     double get_mass();
+    void apply_collective_pitch_increment(double pitch_increment);
 };
 
 #endif  // ROTOR_H_

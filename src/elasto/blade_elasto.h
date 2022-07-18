@@ -40,6 +40,7 @@ class BladeElasto {
                                     double eta);
     void reset_loads();
     void accumulate_element_load(ChVector<double> load, int element_index, double eta);
+    void apply_pitch_increment(double pitch_increment);
 };
 
 #endif  // BLADE_ELASTO_H_

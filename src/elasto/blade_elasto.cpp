@@ -277,3 +277,12 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
     node1->SetForce(node1->GetForce() + load1);
     node1->SetTorque(node1->GetTorque() + (position - node1->GetPos()) % load1);
 }
+
+void BladeElasto::apply_pitch_increment(double pitch_increment) {
+    // apply pitch from root node direction and position
+    auto root_dir = nodes.front()->TransformDirectionLocalToParent(ChVector<double>(1.0, 0.0, 0.0));
+    auto root_pos = nodes.front()->GetPos();
+    translate(-root_pos);
+    rotate(pitch_increment, root_dir);
+    translate(root_pos);
+};

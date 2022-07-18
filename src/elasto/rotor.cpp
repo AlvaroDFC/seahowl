@@ -58,6 +58,7 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>>
     link_shaft_yaw_bearing->Initialize(body_shaft, body_yaw_bearing, body_yaw_bearing->GetAssetsFrame());
 
     // blades
+    links_blades.clear();
     int nblades = blades.size();
     for (int ii = 0; ii < nblades; ii++) {
         auto blade = blades[ii];
@@ -80,7 +81,8 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>>
         // link root node of blade to rotor center
         auto link_hub_blade = chrono_types::make_shared<ChLinkMateFix>();
         system.Add(link_hub_blade);
-        link_hub_blade->Initialize(body_hub, blade->nodes[0], body_hub->GetAssetsFrame());
+        link_hub_blade->Initialize(blade->nodes[0], body_hub);
+        links_blades.push_back(link_hub_blade);
     }
 }
 
@@ -152,4 +154,15 @@ double Rotor::get_mass() {
     // yaw_bearing
     total_mass += body_yaw_bearing->GetMass();
     return total_mass;
+}
+
+void Rotor::apply_collective_pitch_increment(double pitch_increment) {
+    for (int ii = 0; ii < blades.size(); ii++) {
+        // apply pitch on blade
+        auto blade = blades[ii];
+        blade->apply_pitch_increment(pitch_increment);
+        // update blade-hub constraint
+        auto link = links_blades[ii];
+        link->Initialize(blade->nodes.front(), body_hub);
+    }
 }
