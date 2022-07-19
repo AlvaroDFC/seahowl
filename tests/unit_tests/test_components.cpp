@@ -113,7 +113,7 @@ TEST(test_tower, mass) {
     system.DoStaticLinear();
 
     // check mass
-    double tower_mass = 1467613.86;
+    double tower_mass = 870880.97;
     ASSERT_NEAR(tower_mass, tower.get_mass(), 1.0);
 }
 

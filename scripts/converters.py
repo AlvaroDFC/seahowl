@@ -245,7 +245,7 @@ def convert_beamdyn_file(filename, save_directory=None):
 
             points.append(point)
 
-    beamdyn_json["material_properties"] = points
+    beamdyn_json["reference_points"] = points
 
     if save_directory is not None:
         fullpath = Path(save_directory) / filepath.with_suffix(".json")
@@ -260,7 +260,7 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
     beamdyn_fractions = list()
     for point in aerodyn_json["reference_points"]:
         aerodyn_fractions.append(point["coordinates"][2] / blade_length)
-    for point in beamdyn_json["material_properties"]:
+    for point in beamdyn_json["reference_points"]:
         beamdyn_fractions.append(point["fraction"])
 
     idx = 0
@@ -273,10 +273,10 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
             bfraction0 = float(beamdyn_fractions[idx])
             bfraction1 = float(beamdyn_fractions[idx + 1])
         bfraction_range = bfraction1 - bfraction0
-        mm1 = np.array(beamdyn_json["material_properties"][idx]["mass_matrix"])
-        mm2 = np.array(beamdyn_json["material_properties"][idx + 1]["mass_matrix"])
-        sm1 = np.array(beamdyn_json["material_properties"][idx]["stiffness_matrix"])
-        sm2 = np.array(beamdyn_json["material_properties"][idx + 1]["stiffness_matrix"])
+        mm1 = np.array(beamdyn_json["reference_points"][idx]["mass_matrix"])
+        mm2 = np.array(beamdyn_json["reference_points"][idx + 1]["mass_matrix"])
+        sm1 = np.array(beamdyn_json["reference_points"][idx]["stiffness_matrix"])
+        sm2 = np.array(beamdyn_json["reference_points"][idx + 1]["stiffness_matrix"])
         coeff1 = 1.0 - (afraction - bfraction0) / bfraction_range
         coeff2 = 1.0 - (bfraction1 - afraction) / bfraction_range
         mass_matrix = coeff1 * mm1 + coeff2 * mm2
@@ -289,6 +289,78 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
     return aerodyn_json
 
 
+def convert_elastodyn_tower_file(filename, save_directory=None):
+    filepath = Path(filename)
+    elastodyn_json = dict()
+
+    points = list()
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+        npoints = 0
+        for ii, line in enumerate(lines):
+            words = line.split()
+            if len(words) >= 2 and words[1] == "NTwInpSt":
+                npoints = int(words[0])
+                break
+
+    assert npoints != 0, "Could not find tower ElastoDyn info in given file."
+    start_idx = 19
+    for line in lines[start_idx : start_idx + npoints]:
+        point = dict()
+        words = line.split()
+        point["fraction"] = float(words[0])
+        point["density"] = float(words[1])
+        point["stiffness_foreaft"] = float(words[2])
+        point["stiffness_sideside"] = float(words[3])
+        points.append(point)
+
+    elastodyn_json["reference_points"] = points
+
+    # save to file
+    if save_directory is not None:
+        fullpath = Path(save_directory) / filepath.with_suffix(".json")
+        save_json(elastodyn_json, fullpath)
+
+    return elastodyn_json
+
+
+def convert_aerodyn_tower_file(filename, save_directory=None):
+    filepath = Path(filename)
+    aerodyn_json = dict()
+
+    points = list()
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+        npoints = 0
+        start_idx = 0
+        npoints = 0
+        for ii, line in enumerate(lines):
+            words = line.split()
+            if len(words) >= 2 and words[1] == "NumTwrNds":
+                npoints = int(words[0])
+                start_idx = ii + 3
+                break
+
+        assert start_idx != 0, "Could not find tower AeroDyn info in given file."
+        for line in lines[start_idx : start_idx + npoints]:
+            point = dict()
+            words = line.split()
+            point["elevation"] = float(words[0])
+            point["diameter"] = float(words[1])
+            point["drag_coefficient"] = float(words[2])
+            point["TI"] = float(words[3])
+            points.append(point)
+
+    aerodyn_json["reference_points"] = points
+
+    # save to file
+    if save_directory is not None:
+        fullpath = Path(save_directory) / filepath.with_suffix(".json")
+        save_json(aerodyn_json, fullpath)
+
+    return elastodyn_json
+
+
 if __name__ == "__main__":
 
     save_directory = "./converted"
@@ -299,6 +371,9 @@ if __name__ == "__main__":
 
     beamdyn_filename = "./IEA-15-240-RWT_BeamDyn_blade.dat"
     convert_beamdyn_file(beamdyn_filename, save_directory)
+
+    elastodyn_tower_filename = "./IEA-15-240-RWT-Monopile_ElastoDyn_tower.dat"
+    convert_elastodyn_tower_file(elastodyn_tower_filename, save_directory)
 
     with open("./converted/IEA-15-240-RWT_BeamDyn_blade.json", "r") as f:
         beamdyn_json = json.load(f)
