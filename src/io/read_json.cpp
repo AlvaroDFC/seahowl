@@ -16,30 +16,42 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
 
     // EXTRACT INFO
     std::vector<BladeReferencePoint> reference_points;
-    auto points = json_obj["reference_points"];
-    std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
+    auto points = json_obj.at("reference_points").get<json>();
+    auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
+    if (damping_coefficients.size() != 4) {
+        throw std::runtime_error("Damping coefficients has to be vector of length 4.");
+    }
     double blade_length = points[points.size() - 1]["coordinates"][2];
     for (int ii = 0; ii < points.size(); ii++) {
         auto point = points[ii];
         auto reference_point = BladeReferencePoint();
 
-        std::vector<double> coords = point["coordinates"];
+        auto coords = point.at("coordinates").get<std::vector<double>>();
+        if (coords.size() != 3) {
+            throw std::runtime_error("Coordinates has to be vector of length 3.");
+        }
         reference_point.fraction = coords[2] / blade_length;
         reference_point.coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
         if (point.contains("offset_gravity")) {
-            std::vector<double> og = point["offsets_gravity"];
+            auto og = point.at("offsets_gravity").get<std::vector<double>>();
             reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
         }
         if (point.contains("offset_elastic")) {
-            std::vector<double> oe = point["offset_elastic"];
+            auto oe = point.at("offsets_elastic").get<std::vector<double>>();
             reference_point.offset_elastic = ChVector2<double>(oe[0], oe[1]);
         }
 
-        std::vector<std::vector<double>> sm = point["stiffness_matrix"];
-        std::vector<std::vector<double>> mm = point["mass_matrix"];
+        auto sm = point.at("stiffness_matrix").get<std::vector<std::vector<double>>>();
+        auto mm = point.at("mass_matrix").get<std::vector<std::vector<double>>>();
+        if (sm.size() != 6 || mm.size() != 6) {
+            throw std::runtime_error("Mass and stiffness matrices hqve to be defined as 6x6 matrices.");
+        }
         int jjo, kko;
         // apply offsets to indices to switch from IEC standard to Chrono standard
         for (int jj = 0; jj < 6; jj++) {
+            if (sm[jj].size() != 6 || mm[jj].size() != 6) {
+                throw std::runtime_error("Mass and stiffness matrices hqve to be defined as 6x6 matrices.");
+            }
             if (jj == 2 || jj == 5) {
                 jjo = -2;
             }
@@ -63,8 +75,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
                 reference_point.mass_matrix(jj + jjo, kk + kko) = mm[jj][kk];
             }
         }
-        double twist = point["twist"];
-        reference_point.structural_twist = twist * CH_C_PI / 180.0;
+        reference_point.structural_twist = point.at("twist").get<double>() * CH_C_PI / 180.0;
         reference_point.damping_coefficients.bx = damping_coefficients[0];
         reference_point.damping_coefficients.by = damping_coefficients[1];
         reference_point.damping_coefficients.bz = damping_coefficients[2];
@@ -77,7 +88,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
         // populate json object
         if (point.contains("airfoil_file")) {
             auto main_directory = fs::path(filepath).parent_path();
-            std::string airfoil_filename = point["airfoil_file"];
+            auto airfoil_filename = point.at("airfoil_file").get<std::string>();
             auto airfoil_filepath = main_directory / airfoil_filename;
             std::ifstream airfoil_file(airfoil_filepath.u8string());
             json json_airfoil;
@@ -86,12 +97,14 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
             int nreynolds = json_airfoil.size();
             for (int jj = 0; jj < nreynolds; jj++) {
                 auto airfoil_properties = json_airfoil[jj];
-                std::vector<std::vector<double>> coeffs = airfoil_properties["coefficients"];
-                double reynolds_number = airfoil_properties["reynolds_number"];
+                auto coeffs = airfoil_properties.at("coefficients").get<std::vector<std::vector<double>>>();
 
                 std::vector<AirfoilCoefficients> coefficients_list;
 
                 for (int kk = 0; kk < coeffs.size(); kk++) {
+                    if (coeffs[kk].size() != 4) {
+                        throw std::runtime_error("Airfoil coefficients has to be vectors of length 4.");
+                    }
                     AirfoilCoefficients coefficients;
                     coefficients.alpha = coeffs[kk][0];
                     coefficients.lift = coeffs[kk][1];
@@ -100,7 +113,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
                     coefficients_list.push_back(coefficients);
                 }
                 AirfoilProperties airfoil;
-                airfoil.reynolds_number = reynolds_number;
+                airfoil_properties.at("reynolds_number").get_to(airfoil.reynolds_number);
                 airfoil.coefficients_list = coefficients_list;
                 reference_point.airfoil_properties.push_back(airfoil);
             }
@@ -119,17 +132,15 @@ Blade get_blade_from_json(std::string filepath) {
     json json_obj;
     json_file >> json_obj;
 
-    bool fpm_mode = json_obj["fpm_mode"];
-
     Blade blade = Blade();
-    blade.elasto->fpm_mode = fpm_mode;
+    blade.elasto->fpm_mode = json_obj.at("fpm_mode").get<bool>();
     blade.reference_points = get_blade_reference_points_from_json(filepath);
     if (json_obj.contains("discretization_elasto")) {
-        std::vector<double> discretization_elasto = json_obj["discretization_elasto"];
+        auto discretization_elasto = json_obj.at("discretization_elasto").get<std::vector<double>>();
         blade.set_discretization_elasto(discretization_elasto);
     }
     if (json_obj.contains("discretization_aero")) {
-        std::vector<double> discretization_aero = json_obj["discretization_aero"];
+        auto discretization_aero = json_obj.at("discretization_aero").get<std::vector<double>>();
         blade.set_discretization_aero(discretization_aero);
     }
 
@@ -146,7 +157,7 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     // EXTRACT INFO
     double height = json_obj.at("height").get<double>();
     double base_height = json_obj.at("base_height").get<double>();
-    std::vector<double> damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
+    auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
 
     // MAKE TOWER REFERENCE POINTS
     std::vector<TowerReferencePoint> reference_points;
@@ -208,20 +219,28 @@ Rotor get_rotor_from_json(std::string filepath) {
         rotor.blade_precones[ii] *= CH_C_PI / 180.0;
     }
     // hub
-    rotor.hub.center_of_mass = json_obj["hub"]["CM"];
-    rotor.hub.mass = json_obj["hub"]["mass"];
-    rotor.hub.inertia = json_obj["hub"]["inertia"];
-    rotor.hub.overhang = json_obj["hub"]["overhang"];
-    rotor.hub.radius = json_obj["hub"]["radius"];
+    auto hub = json_obj.at("hub");
+    hub.at("CM").get_to(rotor.hub.center_of_mass);
+    hub.at("mass").get_to(rotor.hub.mass);
+    hub.at("inertia").get_to(rotor.hub.inertia);
+    hub.at("overhang").get_to(rotor.hub.overhang);
+    hub.at("radius").get_to(rotor.hub.radius);
     // nacelle
-    std::vector<double> cm = json_obj["nacelle"]["CM"];
+    auto nacelle = json_obj.at("nacelle");
+    auto cm = nacelle.at("CM").get<std::vector<double>>();
+    if (cm.size() != 3) {
+        throw std::runtime_error("Center of mass of nacelle has to be vector of length 3.");
+    }
     rotor.nacelle.center_of_mass = ChVector<double>(cm[0], cm[1], cm[2]);
-    rotor.nacelle.mass = json_obj["nacelle"]["mass"];
-    rotor.nacelle.inertia = json_obj["nacelle"]["inertia"];
-    rotor.nacelle.yaw_bearing_mass = json_obj["nacelle"]["yaw_bearing_mass"];
+    nacelle.at("mass").get_to(rotor.nacelle.mass);
+    nacelle.at("inertia").get_to(rotor.nacelle.inertia);
+    nacelle.at("yaw_bearing_mass").get_to(rotor.nacelle.yaw_bearing_mass);
     // shaft
-    rotor.shaft.distance_from_towertop = json_obj["shaft"]["distance_from_towertop"];
-    rotor.shaft.tilt = (double)json_obj["shaft"]["tilt"] * CH_C_PI / 180.0;
+    auto shaft = json_obj.at("shaft");
+    shaft.at("distance_from_towertop").get_to(rotor.shaft.distance_from_towertop);
+    shaft.at("tilt").get_to(rotor.shaft.tilt);
+    // convert to radians
+    rotor.shaft.tilt *= CH_C_PI / 180.0;
 
     return rotor;
 }
