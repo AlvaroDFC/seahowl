@@ -1,8 +1,8 @@
-#ifndef ROTOR_H_
-#define ROTOR_H_
+#ifndef ROTOR_ELASTO_H_
+#define ROTOR_ELASTO_H_
 
 #include "blade_elasto.h"
-#include "tower.h"
+#include "tower_elasto.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/physics/ChLinkMate.h"
@@ -30,7 +30,7 @@ struct ShaftProperties {
     double distance_from_towertop = 0.0;
 };
 
-class Rotor {
+class RotorElasto {
   public:
     std::vector<std::shared_ptr<BladeElasto>> blades;
     std::vector<double> blade_precones;
@@ -50,10 +50,10 @@ class Rotor {
     NacelleProperties nacelle;
     HubProperties hub;
 
-    Rotor();
+    RotorElasto();
 
     void build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
-    void link_tower(Tower& tower, ChSystemSMC& system);
+    void link_tower(TowerElasto& tower, ChSystemSMC& system);
     void rotate(double angle, ChVector<double> axis);
     void translate(ChVector<double> translation_vector);
     double get_mass();
@@ -61,4 +61,4 @@ class Rotor {
     double get_rpm();
 };
 
-#endif  // ROTOR_H_
+#endif  // ROTOR_ELASTO_H_

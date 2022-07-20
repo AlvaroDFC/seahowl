@@ -15,7 +15,7 @@ struct TowerReferencePoint {
     double stiffness_foreaft;
     double stiffness_sideside;
     double stiffness_torsion;
-    DampingCoefficients damping_coefficients ;
+    DampingCoefficients damping_coefficients;
 
     TowerReferencePoint operator*(const double factor) const {
         TowerReferencePoint new_point;
@@ -58,7 +58,7 @@ struct TowerReferencePoint {
     };
 };
 
-class Tower {
+class TowerElasto {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
     std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
@@ -68,7 +68,8 @@ class Tower {
     double height;
     double base_height;
 
-    Tower() {}
+    TowerElasto() {}
+    ~TowerElasto() {}
 
     void build(std::shared_ptr<ChMesh> mesh);
     void build_nodes(std::shared_ptr<ChMesh> mesh);

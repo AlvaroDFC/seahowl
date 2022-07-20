@@ -1,9 +1,9 @@
-#include "rotor.h"
+#include "rotor_elasto.h"
 #include "chrono/physics/ChBodyEasy.h"
 
-Rotor::Rotor() {}
+RotorElasto::RotorElasto() {}
 
-void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
+void RotorElasto::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 
     // hub
@@ -86,7 +86,7 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>>
     }
 }
 
-void Rotor::link_tower(Tower& tower, ChSystemSMC& system) {
+void RotorElasto::link_tower(TowerElasto& tower, ChSystemSMC& system) {
     auto towertop_node = tower.nodes[tower.nodes.size() - 1];
     // translate RNA center of origin to towertop
     this->translate(towertop_node->GetPos());
@@ -96,7 +96,7 @@ void Rotor::link_tower(Tower& tower, ChSystemSMC& system) {
     link_towertop_yaw_bearing->Initialize(towertop_node, body_yaw_bearing);
 }
 
-void Rotor::rotate(double angle, ChVector<double> axis) {
+void RotorElasto::rotate(double angle, ChVector<double> axis) {
     // blades
     for (int ii = 0; ii < blades.size(); ii++) {
         blades[ii]->rotate(angle, axis);
@@ -124,7 +124,7 @@ void Rotor::rotate(double angle, ChVector<double> axis) {
     body_yaw_bearing->SetRot(new_rotation_yaw_bearing);
 }
 
-void Rotor::translate(ChVector<double> translation_vector) {
+void RotorElasto::translate(ChVector<double> translation_vector) {
     // blades
     for (int ii = 0; ii < blades.size(); ii++) {
         blades[ii]->translate(translation_vector);
@@ -139,7 +139,7 @@ void Rotor::translate(ChVector<double> translation_vector) {
     body_yaw_bearing->SetPos(body_yaw_bearing->GetPos() + translation_vector);
 }
 
-double Rotor::get_mass() {
+double RotorElasto::get_mass() {
     double total_mass = 0.0;
     // blades
     for (int ii = 0; ii < blades.size(); ii++) {
@@ -156,7 +156,7 @@ double Rotor::get_mass() {
     return total_mass;
 }
 
-void Rotor::apply_collective_pitch_increment(double pitch_increment) {
+void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
     for (int ii = 0; ii < blades.size(); ii++) {
         // apply pitch on blade
         auto blade = blades[ii];
@@ -167,7 +167,7 @@ void Rotor::apply_collective_pitch_increment(double pitch_increment) {
     }
 }
 
-double Rotor::get_rpm() {
+double RotorElasto::get_rpm() {
     ChVector<double> angles;
     body_hub->coord.rot.Qdt_to_Wrel(angles, body_hub->coord_dt.rot);
     double rpm = angles.z() * 60 / (2 * CH_C_PI);

@@ -1,8 +1,8 @@
 #include "turbine.h"
 
 Turbine::Turbine() {
-    rotor = Rotor();
-    tower = Tower();
+    rotor = RotorElasto();
+    tower = TowerElasto();
 }
 
 void Turbine::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {

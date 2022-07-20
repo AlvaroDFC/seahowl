@@ -113,7 +113,7 @@ endif()
 # files in your project. 
 #--------------------------------------------------------------
 
-add_executable(${PROJECT_NAME} src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor.cpp src/elasto/tower.cpp src/io/read_json.cpp src/utils.cpp src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor_elasto.cpp src/elasto/tower_elasto.cpp src/io/read_json.cpp src/utils.cpp src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp)
 
 #--------------------------------------------------------------
 # Set properties for your executable target

@@ -185,14 +185,14 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     return reference_points;
 }
 
-Tower get_tower_from_json(std::string filepath) {
+TowerElasto get_tower_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    Tower tower = Tower();
+    TowerElasto tower = TowerElasto();
     tower.height = json_obj.at("height").get<double>();
     tower.base_height = json_obj.at("base_height").get<double>();
     tower.reference_points = get_tower_reference_points_from_json(filepath);
@@ -201,7 +201,7 @@ Tower get_tower_from_json(std::string filepath) {
     return tower;
 }
 
-Rotor get_rotor_from_json(std::string filepath) {
+RotorElasto get_rotor_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -210,7 +210,7 @@ Rotor get_rotor_from_json(std::string filepath) {
 
     // EXTRACT INFO
     //
-    auto rotor = Rotor();
+    auto rotor = RotorElasto();
     // blades
     std::vector<double> precones = json_obj["precones"];
     rotor.blade_precones = precones;
