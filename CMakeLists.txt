@@ -1,56 +1,35 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
 
-project(seahowl)
 
-#--------------------------------------------------------------
-# === 2 ===
-# Find the Chrono package and any REQUIRED or OPTIONAL modules
-# by invoking the find_package function in CONFIG mode:
-#    find_package(Chrono
-#                 COMPONENTS req_module1 req_module1 ...
-#                 OPTIONAL_COMPONENTS opt_module1 opt_module2 ...
-#                 CONFIG)
-# The following Chrono modules can be requested (their names
-# are case insensitive): Cascade, Cosimulation, FEA, Irrlicht,
-# Matlab, Parallel, Postprocess, Python, Vehicle.
-# 
-# Note that you will have to set the variable Chrono_DIR to 
-# specify the location of the ChronoConfig.cmake script, if
-# it is not in its default install location.
-# Chrono_DIR can be either a Chrono build tree or a Chrono install tree.
-# 
-# The following variables are set and can be used further down:
-# CHRONO_FOUND
-#   set to true if Chrono and all required components were found
-# CHRONO_C_FLAGS
-# CHRONO_CXX_FLAGS
-#   C and C++ compilation flags
-# CHRONO_INCLUDE_DIRS
-#   additional paths for included headers
-# CHRONO_LIBRARIES
-#   list of required libraries (with full path)
-# CHRONO_LINKER_FLAGS
-#   additional linker flags
-# CHRONO_DLLS
-#   list of all DLL dependencies (with full path)
-# CHRONO_DATA_DIR
-#   path to the Chrono data make_directory
-# 
-# In addition, for each requested component [COMPONENT], the
-# following variable is set to true (ON) or false (OFF):
-# CHRONO_[COMPONENT]_FOUND
-# 
-# In this example, we only request the Irrlicht module (required)
-# and, for demonstration purposes, the PardisoMKL module (optional)
-#--------------------------------------------------------------
+project( SEAHOWL 
+         VERSION 0.0.1
+         DESCRIPTION "Wind Turbine simulation with CHRONO"
+         LANGUAGES CXX
+)
 
-LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
+# guard against in-source builds
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
+endif()
+
+
+LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")  # TO BE CLEANDED
+
+option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
+
+
+# Find external libraries
+if(SEAHOWL_ENABLE_IRRLICHT)
+    set(IRRLICHT_COMP Irrlicht )
+    add_definitions("-DHAVE_IRRLICHT=1")
+endif(SEAHOWL_ENABLE_IRRLICHT)
 
 find_package(Chrono
-             COMPONENTS Irrlicht
-             OPTIONAL_COMPONENTS PardisoMKL
-             CONFIG REQUIRED)
+            COMPONENTS ${IRRLICHT_COMP}
+            OPTIONAL_COMPONENTS PardisoMKL
+            CONFIG REQUIRED)
+
+
 
 find_package(nlohmann_json CONFIG REQUIRED)
 
@@ -79,11 +58,8 @@ endif()
 # of the requested modules.
 #--------------------------------------------------------------
 
-include_directories(${CHRONO_INCLUDE_DIRS} /opt/homebrew/include)
+include_directories(/opt/homebrew/include)  ## TO BE REMOVED
 
-#-----------------------------------------------------------------------------
-# Fix for VS 2017 15.8 and newer to handle alignment specification with Eigen
-#-----------------------------------------------------------------------------
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   if(MSVC AND ${MSVC_VERSION} GREATER_EQUAL 1915)
@@ -100,6 +76,11 @@ if(MSVC)
     add_definitions( "-DNOMINMAX" )                # do not use MSVC's min/max macros
     add_compile_options(/wd4275)                   # disable warnings triggered by Irrlicht
     add_compile_options(/wd4251)                   # class needs to have dll-interface
+
+    ## TO BE REMOVED: SHOULD BE ALREADY SET BY CHRONO LIBRARY
+    if(${MSVC_VERSION} GREATER_EQUAL 1915)         # Fix for VS 2017 15.8 and newer to handle alignment specification with Eigen
+        add_definitions( "-D_ENABLE_EXTENDED_ALIGNED_STORAGE" )
+    endif()
 else()
     set(EXTRA_COMPILE_FLAGS "")
 endif()
@@ -124,13 +105,26 @@ target_sources(seahowl_driver
     ${SEAHOWL_SOURCES}
 )
 
+target_include_directories(seahowl_driver
+    PRIVATE
+    ${CHRONO_INCLUDE_DIRS}
+)
+
+target_compile_features(
+	seahowl_driver
+
+	PRIVATE
+	cxx_std_17
+)
 
 set_target_properties(seahowl_driver 
 
     PROPERTIES
+        CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
-	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
+)
 
 
 target_link_libraries(seahowl_driver 

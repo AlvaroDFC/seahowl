@@ -15,9 +15,8 @@
 
 using namespace chrono;
 
-#define IRRLICHT 1
 
-#ifdef IRRLICHT
+#ifdef HAVE_IRRLICHT
     #include "chrono_irrlicht/ChIrrApp.h"
     using namespace chrono::irrlicht;
     using namespace irr;
@@ -80,7 +79,7 @@ int main(int argc, char* argv[]) {
 
     // VISUALIZATION
 
- #ifdef IRRLICHT
+ #ifdef HAVE_IRRLICHT
     // make visualization app
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     application.AddTypicalLights();
@@ -131,7 +130,7 @@ int main(int argc, char* argv[]) {
     auto wind_model = ConstantWind();
     wind_model.set_wind_speed(ChVector<double>(10.59, 0.0, 0.0));
 
-#ifdef IRRLICHT
+#ifdef HAVE_IRRLICHT
     while ( application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();
