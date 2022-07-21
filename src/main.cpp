@@ -1,5 +1,3 @@
-#pragma warning(push, 0)
-
 #include <chrono/fea/ChVisualizationFEAmesh.h>
 #include <chrono/physics/ChBodyEasy.h>
 #include <chrono/physics/ChLinkMate.h>
@@ -9,8 +7,6 @@
 #include <chrono/physics/ChLinkMotorRotationSpeed.h>
 #include <chrono/solver/ChDirectSolverLS.h>
 
-
-#pragma warning(pop)
 
 #include <cmath>
 
