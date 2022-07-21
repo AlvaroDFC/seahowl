@@ -46,19 +46,16 @@ project(seahowl)
 #--------------------------------------------------------------
 
 LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
+
 find_package(Chrono
              COMPONENTS Irrlicht
              OPTIONAL_COMPONENTS PardisoMKL
-             CONFIG)
+             CONFIG REQUIRED)
 
-#--------------------------------------------------------------
-# Return now if Chrono or a required component was not found.
-#--------------------------------------------------------------
+find_package(nlohmann_json CONFIG REQUIRED)
 
-if (NOT Chrono_FOUND)
-  message("Could not find Chrono or one of its required modules")
-  return()
-endif()
+
+
 
 #--------------------------------------------------------------
 # Enable creation of "application bundles" on MacOSX.
@@ -112,28 +109,35 @@ endif()
 # Add the executable from your project and specify all C++ 
 # files in your project. 
 #--------------------------------------------------------------
+add_executable( seahowl_driver )
 
-add_executable(${PROJECT_NAME} src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor.cpp src/elasto/tower.cpp src/io/read_json.cpp src/utils.cpp src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp)
 
-#--------------------------------------------------------------
-# Set properties for your executable target
-# 
-# Note that here we define a macro CHRONO_DATA_DIR which will
-# contain the path to the Chrono data directory, either in its
-# source tree (if using a build version of Chrono), or in its
-# install tree (if using an installed version of Chrono).
-#--------------------------------------------------------------
+set(SEAHOWL_SOURCES 
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+	src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor.cpp 
+	src/elasto/tower.cpp src/io/read_json.cpp src/utils.cpp 
+	src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp
+)
+
+target_sources(seahowl_driver 
+    PRIVATE 
+    ${SEAHOWL_SOURCES}
+)
+
+
+set_target_properties(seahowl_driver 
+
+    PROPERTIES
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
 	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
 
-#--------------------------------------------------------------
-# Link to Chrono libraries and dependency libraries
-#--------------------------------------------------------------
 
-target_link_libraries(${PROJECT_NAME} ${CHRONO_LIBRARIES})
+target_link_libraries(seahowl_driver 
+    PRIVATE 
+    nlohmann_json::nlohmann_json
+    ${CHRONO_LIBRARIES}
+)
 
 #--------------------------------------------------------------
 # === 4 (OPTIONAL) ===

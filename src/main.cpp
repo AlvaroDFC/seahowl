@@ -3,7 +3,7 @@
 #include "chrono/physics/ChLinkMate.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/solver/ChIterativeSolverLS.h"
-#include "chrono_irrlicht/ChIrrApp.h"
+
 #include "chrono/physics/ChLinkMotorRotationSpeed.h"
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
@@ -14,8 +14,14 @@
 #include "io/read_json.h"
 
 using namespace chrono;
-using namespace chrono::irrlicht;
-using namespace irr;
+
+#define IRRLICHT 1
+
+#ifdef IRRLICHT
+    #include "chrono_irrlicht/ChIrrApp.h"
+    using namespace chrono::irrlicht;
+    using namespace irr;
+#endif
 
 int main(int argc, char* argv[]) {
     // SETUP
@@ -74,6 +80,7 @@ int main(int argc, char* argv[]) {
 
     // VISUALIZATION
 
+ #ifdef IRRLICHT
     // make visualization app
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     application.AddTypicalLights();
@@ -107,13 +114,15 @@ int main(int argc, char* argv[]) {
     application.AssetBindAll();
     application.AssetUpdateAll();
     application.AddShadowAll();
-
+#endif
     // SIMULATION LOOP
 
     double dt = 0.1;
-    application.SetTimestep(dt);
-    application.SetVideoframeSave(false);
-    application.SetVideoframeSaveInterval(20);
+    //application.SetTimestep(dt);
+    //application.SetVideoframeSave(false);
+    //application.SetVideoframeSaveInterval(20);
+
+    system.Setup();
     double time = 0.0;
     int step = 0;
     // system.DoStaticLinear();
@@ -121,12 +130,18 @@ int main(int argc, char* argv[]) {
     // application.DoStep();
     auto wind_model = ConstantWind();
     wind_model.set_wind_speed(ChVector<double>(10.59, 0.0, 0.0));
-    while (application.GetDevice()->run()) {
+
+#ifdef IRRLICHT
+    while ( application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();
         application.DoStep();
         application.EndScene();
-        // system.DoStepDynamics(dt);
+        
+#else
+    while (true) {
+        system.DoStepDynamics(dt);
+#endif
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() << "\n";
