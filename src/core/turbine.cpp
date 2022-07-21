@@ -23,6 +23,7 @@ void Turbine::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
 
 void Turbine::prestep(double time, WindModel& wind_model) {
     for (int ii = 0; ii < blades.size(); ii++) {
+        // rotor[ii]->prestep(time);
         blades[ii]->prestep(time, wind_model);
     }
 }

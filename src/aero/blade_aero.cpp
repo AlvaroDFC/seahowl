@@ -25,32 +25,31 @@ void BladeAero::build() {
 }
 
 void BladeAero::compute_loads(double time, WindModel& wind_model) {
-    // TODO: include induction factors
+    double density = 1.225;
     for (int ii = 0; ii < elements.size(); ii++) {
         auto& element = elements[ii];
-        double length = element.length;
         auto& properties = element.properties;
-        double chord = properties.chord;
 
-        auto wind_speed = wind_model.get_wind_speed(properties.coordinates, 0.0);
-        double density = 1.225;
-        // get fluid relative speed locally
-        auto relative_speed = wind_speed - properties.velocity;
-        auto local_speed = properties.rotation.RotateBack(relative_speed);
-        double local_speed_x = -local_speed[1];
-        double local_speed_y = local_speed[2];
+        // get fluid relative velocity
+        auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, 0.0);
+        auto global_velocity = wind_velocity - properties.velocity;
+        // project locally
+        auto local_velocity0_3d = properties.rotation.RotateBack(global_velocity);
+        auto local_velocity0 = ChVector2<double>(-local_velocity0_3d[1], local_velocity0_3d[2]);
+
+        // update induction factors and return local velocity
+        auto local_velocity = element.get_induced_velocity(local_velocity0);
 
         // get coefficients from angle of attack
-        double alpha = atan2(local_speed_y, local_speed_x) * 180 / CH_C_PI;
+        double alpha = atan2(local_velocity.y(), local_velocity.x()) * 180 / CH_C_PI;
         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha);
 
-        // calculate W values
-        double W = sqrt(local_speed_x * local_speed_x + local_speed_y * local_speed_y);
-        double lift = 0.5 * density * W * W * chord * coefficients.lift * length;
-        double drag = 0.5 * density * W * W * chord * coefficients.drag * length;
-        // double phi = properties.structural_twist + alpha;
-        // double force_lift = lift * sin(phi) - drag * cos(phi);
-        // double force_drag = lift * cos(phi) + drag * sin(phi);
+        // calculate drag and lift force values
+        double vel = local_velocity.Length();
+        double chord = properties.chord;
+        double length = element.length;
+        double lift = 0.5 * density * vel * vel * chord * coefficients.lift * length;
+        double drag = 0.5 * density * vel * vel * chord * coefficients.drag * length;
 
         // transform from local to global load
         auto load_local = ChVector<double>(0.0, drag, lift);
