@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
         // system.DoStepDynamics(dt);
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() << "\n";
+        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm() << "\n";
 
         // apply force
         for (int ii = 0; ii < turbines.size(); ii++) {

@@ -201,7 +201,7 @@ TowerElasto get_tower_from_json(std::string filepath) {
     return tower;
 }
 
-RotorElasto get_rotor_from_json(std::string filepath) {
+Rotor get_rotor_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -210,37 +210,36 @@ RotorElasto get_rotor_from_json(std::string filepath) {
 
     // EXTRACT INFO
     //
-    auto rotor = RotorElasto();
+    auto rotor = Rotor();
     // blades
-    std::vector<double> precones = json_obj["precones"];
-    rotor.blade_precones = precones;
-    for (int ii = 0; ii < rotor.blade_precones.size(); ii++) {
+    json_obj.at("precones").get_to(rotor.elasto.blade_precones);
+    for (int ii = 0; ii < rotor.elasto.blade_precones.size(); ii++) {
         // convert to radians
-        rotor.blade_precones[ii] *= CH_C_PI / 180.0;
+        rotor.elasto.blade_precones[ii] *= CH_C_PI / 180.0;
     }
     // hub
     auto hub = json_obj.at("hub");
-    hub.at("CM").get_to(rotor.hub.center_of_mass);
-    hub.at("mass").get_to(rotor.hub.mass);
-    hub.at("inertia").get_to(rotor.hub.inertia);
-    hub.at("overhang").get_to(rotor.hub.overhang);
-    hub.at("radius").get_to(rotor.hub.radius);
+    hub.at("CM").get_to(rotor.elasto.hub.center_of_mass);
+    hub.at("mass").get_to(rotor.elasto.hub.mass);
+    hub.at("inertia").get_to(rotor.elasto.hub.inertia);
+    hub.at("overhang").get_to(rotor.elasto.hub.overhang);
+    hub.at("radius").get_to(rotor.elasto.hub.radius);
     // nacelle
     auto nacelle = json_obj.at("nacelle");
     auto cm = nacelle.at("CM").get<std::vector<double>>();
     if (cm.size() != 3) {
         throw std::runtime_error("Center of mass of nacelle has to be vector of length 3.");
     }
-    rotor.nacelle.center_of_mass = ChVector<double>(cm[0], cm[1], cm[2]);
-    nacelle.at("mass").get_to(rotor.nacelle.mass);
-    nacelle.at("inertia").get_to(rotor.nacelle.inertia);
-    nacelle.at("yaw_bearing_mass").get_to(rotor.nacelle.yaw_bearing_mass);
+    rotor.elasto.nacelle.center_of_mass = ChVector<double>(cm[0], cm[1], cm[2]);
+    nacelle.at("mass").get_to(rotor.elasto.nacelle.mass);
+    nacelle.at("inertia").get_to(rotor.elasto.nacelle.inertia);
+    nacelle.at("yaw_bearing_mass").get_to(rotor.elasto.nacelle.yaw_bearing_mass);
     // shaft
     auto shaft = json_obj.at("shaft");
-    shaft.at("distance_from_towertop").get_to(rotor.shaft.distance_from_towertop);
-    shaft.at("tilt").get_to(rotor.shaft.tilt);
+    shaft.at("distance_from_towertop").get_to(rotor.elasto.shaft.distance_from_towertop);
+    shaft.at("tilt").get_to(rotor.elasto.shaft.tilt);
     // convert to radians
-    rotor.shaft.tilt *= CH_C_PI / 180.0;
+    rotor.elasto.shaft.tilt *= CH_C_PI / 180.0;
 
     return rotor;
 }

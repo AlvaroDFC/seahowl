@@ -1,14 +1,14 @@
-#ifndef TURBINE_ELASTO_H_
-#define TURBINE_ELASTO_H_
+#ifndef TURBINE_H_
+#define TURBINE_H_
 
 #include "blade_core.h"
-#include "../elasto/rotor_elasto.h"
+#include "rotor.h"
 #include "../elasto/tower_elasto.h"
 
 class Turbine {
   public:
     std::vector<std::shared_ptr<Blade>> blades;
-    RotorElasto rotor;
+    Rotor rotor;
     TowerElasto tower;
 
     Turbine();
@@ -21,4 +21,4 @@ class Turbine {
     void rotate(double angle, ChVector<double> axis);
 };
 
-#endif  // TURBINE_ELASTO_H_
+#endif  // TURBINE_H_
