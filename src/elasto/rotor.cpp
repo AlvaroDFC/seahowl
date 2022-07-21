@@ -59,10 +59,10 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>>
 
     // blades
     links_blades.clear();
-    int nblades = blades.size();
-    for (int ii = 0; ii < nblades; ii++) {
-        auto blade = blades[ii];
-        double precone = blade_precones[ii];
+    const auto nblades = blades.size();
+    for (auto ii = 0; ii < nblades; ii++) {
+        auto& blade = blades[ii];
+        double& precone = blade_precones[ii];
 
         // rotations + translations
         // blade root node is assumed to be originally at (0,0,0) and using IEC standard for coordinate system
@@ -87,7 +87,7 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>>
 }
 
 void Rotor::link_tower(Tower& tower, ChSystemSMC& system) {
-    auto towertop_node = tower.nodes[tower.nodes.size() - 1];
+    auto& towertop_node = tower.nodes[tower.nodes.size() - 1];
     // translate RNA center of origin to towertop
     this->translate(towertop_node->GetPos());
     // link yaw bearing body to towertop
@@ -159,10 +159,10 @@ double Rotor::get_mass() {
 void Rotor::apply_collective_pitch_increment(double pitch_increment) {
     for (int ii = 0; ii < blades.size(); ii++) {
         // apply pitch on blade
-        auto blade = blades[ii];
+        auto& blade = blades[ii];
         blade->apply_pitch_increment(pitch_increment);
         // update blade-hub constraint
-        auto link = links_blades[ii];
+        auto& link = links_blades[ii];
         link->Initialize(blade->nodes.front(), body_hub);
     }
 }

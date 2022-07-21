@@ -16,11 +16,11 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
 
     // EXTRACT INFO
     std::vector<BladeReferencePoint> reference_points;
-    auto points = json_obj["reference_points"];
+    auto& points = json_obj["reference_points"];
     std::vector<double> damping_coefficients = json_obj["damping_coefficients"];
     double blade_length = points[points.size() - 1]["coordinates"][2];
-    for (int ii = 0; ii < points.size(); ii++) {
-        auto point = points[ii];
+    for (size_t ii = 0; ii < points.size(); ii++) {
+        auto& point = points[ii];
         auto reference_point = BladeReferencePoint();
 
         std::vector<double> coords = point["coordinates"];
@@ -37,9 +37,9 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
 
         std::vector<std::vector<double>> sm = point["stiffness_matrix"];
         std::vector<std::vector<double>> mm = point["mass_matrix"];
-        int jjo, kko;
+        size_t jjo, kko;
         // apply offsets to indices to switch from IEC standard to Chrono standard
-        for (int jj = 0; jj < 6; jj++) {
+        for (size_t jj = 0; jj < 6; jj++) {
             if (jj == 2 || jj == 5) {
                 jjo = -2;
             }
@@ -83,9 +83,9 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
             json json_airfoil;
             airfoil_file >> json_airfoil;
 
-            int nreynolds = json_airfoil.size();
+            const auto nreynolds = json_airfoil.size();
             for (int jj = 0; jj < nreynolds; jj++) {
-                auto airfoil_properties = json_airfoil[jj];
+                auto& airfoil_properties = json_airfoil[jj];
                 std::vector<std::vector<double>> coeffs = airfoil_properties["coefficients"];
                 double reynolds_number = airfoil_properties["reynolds_number"];
 
@@ -152,8 +152,8 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     std::vector<TowerReferencePoint> reference_points;
     auto points = json_obj.at("reference_points").get<json>();
     for (int ii = 0; ii < points.size(); ii++) {
-        auto point = points[ii];
-        auto reference_point = TowerReferencePoint();
+        auto& point = points[ii];
+        auto& reference_point = TowerReferencePoint();
         point.at("fraction").get_to(reference_point.fraction);
         reference_point.coordinates = ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);
         point.at("stiffness_sideside").get_to(reference_point.stiffness_sideside);

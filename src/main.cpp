@@ -1,11 +1,17 @@
-#include "chrono/fea/ChVisualizationFEAmesh.h"
-#include "chrono/physics/ChBodyEasy.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/solver/ChIterativeSolverLS.h"
+#pragma warning(push, 0)
 
-#include "chrono/physics/ChLinkMotorRotationSpeed.h"
-#include "chrono/solver/ChDirectSolverLS.h"
+#include <chrono/fea/ChVisualizationFEAmesh.h>
+#include <chrono/physics/ChBodyEasy.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/solver/ChIterativeSolverLS.h>
+
+#include <chrono/physics/ChLinkMotorRotationSpeed.h>
+#include <chrono/solver/ChDirectSolverLS.h>
+
+
+#pragma warning(pop)
+
 #include <cmath>
 
 #include "elasto/blade_elasto.h"
@@ -15,12 +21,12 @@
 
 using namespace chrono;
 
-
 #ifdef HAVE_IRRLICHT
-    #include "chrono_irrlicht/ChIrrApp.h"
-    using namespace chrono::irrlicht;
-    using namespace irr;
+    #include <chrono_irrlicht/ChIrrApp.h>
+using namespace chrono::irrlicht;
+using namespace irr;
 #endif
+
 
 int main(int argc, char* argv[]) {
     // SETUP
@@ -60,7 +66,7 @@ int main(int argc, char* argv[]) {
 
         // increase elements for visualization
         for (int jj = 0; jj < turbine->blades.size(); jj++) {
-            auto blade = turbine->blades[jj]->elasto;
+            auto& blade = turbine->blades[jj]->elasto;
             for (int kk = 0; kk < blade->elements.size(); kk++) {
                 blade->elements[kk]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
                 blade->elements[kk]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
