@@ -35,14 +35,15 @@ void BladeAero::compute_loads(double time, WindModel& wind_model) {
         auto global_velocity = wind_velocity - properties.velocity;
         // project locally
         auto local_velocity0_3d = properties.rotation.RotateBack(global_velocity);
-        auto local_velocity0 = ChVector2<double>(-local_velocity0_3d[1], local_velocity0_3d[2]);
+        // project using BEMT convention: x along chord, y along thickness up
+        auto local_velocity0 = ChVector2<double>(-local_velocity0_3d[1], -local_velocity0_3d[2]);
 
         // update induction factors and return local velocity
         auto local_velocity = element.get_induced_velocity(local_velocity0);
 
         // get coefficients from angle of attack
-        double alpha = atan2(local_velocity.y(), local_velocity.x()) * 180 / CH_C_PI;
-        auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha);
+        double alpha = atan2(local_velocity.y(), local_velocity.x());
+        auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / CH_C_PI);
 
         // calculate drag and lift force values
         double vel = local_velocity.Length();
@@ -52,7 +53,8 @@ void BladeAero::compute_loads(double time, WindModel& wind_model) {
         double drag = 0.5 * density * vel * vel * chord * coefficients.drag * length;
 
         // transform from local to global load
-        auto load_local = ChVector<double>(0.0, drag, lift);
+        // use chrono convention
+        auto load_local = ChVector<double>(0.0, lift, drag);
         auto load_global = properties.rotation.Rotate(load_local);
         loads[ii] = load_global;
     }

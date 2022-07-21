@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     // system.DoStaticNonlinear(10, true);
     // application.DoStep();
     auto wind_model = ConstantWind();
-    wind_model.set_wind_velocity(ChVector<double>(10.59, 0.0, 0.0));
+    wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     while (application.GetDevice()->run()) {
         application.BeginScene();
         application.DrawAll();

@@ -32,7 +32,12 @@ void Blade::set_discretization_aero(std::vector<double> fractions) {
 };
 
 void Blade::compute_mapping_aero2elasto() {
-    mapping_aero2elasto = get_indice_and_positions(aero->discretization_fractions, elasto->discretization_fractions);
+    // get aero element position (center) from which loads will be applied
+    std::vector<double> aero_discretization_fractions;
+    for (int ii = 0; ii < aero->elements.size(); ii++) {
+        aero_discretization_fractions.push_back(aero->elements[ii].properties.fraction);
+    }
+    mapping_aero2elasto = get_indice_and_positions(aero_discretization_fractions, elasto->discretization_fractions);
 }
 
 void Blade::compute_mapping_elasto2aero() {

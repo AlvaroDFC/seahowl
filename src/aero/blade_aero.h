@@ -25,7 +25,7 @@ struct BladeElementAero {
 
     ~BladeElementAero() {}
 
-    ChVector2<double> get_induced_velocity(ChVector2<double> local_velocity0) {
+    ChVector2<double> get_induced_velocity(ChVector2<double>& local_velocity0) {
         // local_velocity_rotor0 is in rotor frame (unpitched and untwisted element)
         auto local_velocity_rotor0 = local_velocity0;
         local_velocity_rotor0.Rotate(pitch_beta);
@@ -34,7 +34,10 @@ struct BladeElementAero {
 
         double tol = 1e-6;
         double max_iter = 100;
+        double alpha = -1000.0;
+        double alpha_previous;
         for (int ii = 1; ii <= max_iter; ii++) {
+            alpha_previous = alpha;
             auto aa = induction_factor_axial;
             auto ap = induction_factor_tangential;
 
@@ -46,7 +49,7 @@ struct BladeElementAero {
             local_velocity.Rotate(-pitch_beta);
 
             // get coefficients from angle of attack
-            double alpha = atan2(-local_velocity.y(), -local_velocity.x());
+            alpha = atan2(local_velocity.y(), local_velocity.x());
             auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180.0 / CH_C_PI);
 
             double phi = alpha + pitch_beta;
@@ -64,12 +67,14 @@ struct BladeElementAero {
             induction_factor_tangential = chord_solidity * cy / (4 * sin_phi * cos_phi) * (1 + ap);
 
             double tol = 1e-6;
-            if (abs(aa - induction_factor_axial) + abs(ap - induction_factor_tangential) < tol) {
+            if (abs(alpha - alpha_previous) < tol) {
                 break;
             } else if (ii >= max_iter) {
                 throw std::runtime_error("Could not find new induction factor after " + std::to_string(ii) +
                                          " iterations. Last values: axial " + std::to_string(induction_factor_axial) +
-                                         ", tangential " + std::to_string(induction_factor_tangential) + ".");
+                                         ", tangential " + std::to_string(induction_factor_tangential) +
+                                         ". Previous values: axial " + std::to_string(aa) + ", tangential " +
+                                         std::to_string(ap));
             }
         }
 
