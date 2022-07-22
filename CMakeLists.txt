@@ -20,6 +20,9 @@ endif()
 
 LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")  # TO BE CLEANDED
 
+# Add the cmake folder so the FindSphinx module is found
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 # =============
 # OPTIONS
 # =============
@@ -198,3 +201,15 @@ target_link_libraries(seahowl_driver
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 add_DLL_copy_command("${CHRONO_DLLS}")
+
+# ===========
+# TESTS
+# ===========
+if(SEAHOWL_ENABLE_TESTS)
+
+	include(CTest)
+	enable_testing()
+
+	add_subdirectory(tests)
+
+endif(SEAHOWL_ENABLE_TESTS)
