@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.10)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+
+# ==================
+# SEAHOWL PROJECT
+# =================
 project( SEAHOWL 
          VERSION 0.0.1
          DESCRIPTION "Wind Turbine simulation with CHRONO"
@@ -15,10 +20,16 @@ endif()
 
 LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")  # TO BE CLEANDED
 
+# =============
+# OPTIONS
+# =============
+
 option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
+option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
 
-
-# Find external libraries
+# =======================
+# External libraries
+# =======================
 if(SEAHOWL_ENABLE_IRRLICHT)
     set(IRRLICHT_COMP Irrlicht )
     add_definitions("-DHAVE_IRRLICHT=1")
@@ -35,6 +46,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 
 
 
+if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
+endif()
 
 #--------------------------------------------------------------
 # Enable creation of "application bundles" on MacOSX.
@@ -85,24 +99,61 @@ else()
     set(EXTRA_COMPILE_FLAGS "")
 endif()
 
-#--------------------------------------------------------------
-# === 3 ===
-# Add the executable from your project and specify all C++ 
-# files in your project. 
-#--------------------------------------------------------------
-add_executable( seahowl_driver )
+# ================
+# CORE LIBRARY
+# ================
+add_library( seahowl_core )
 
 
 set(SEAHOWL_SOURCES 
 
-	src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor.cpp 
+	src/elasto/blade_elasto.cpp src/elasto/rotor.cpp 
 	src/elasto/tower.cpp src/io/read_json.cpp src/utils.cpp 
 	src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp
 )
 
-target_sources(seahowl_driver 
+target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
+)
+
+target_include_directories(seahowl_core
+    PRIVATE
+    ${CHRONO_INCLUDE_DIRS}
+)
+
+target_compile_features(
+	seahowl_core
+
+	PRIVATE
+	cxx_std_17
+)
+
+set_target_properties(seahowl_core
+
+    PROPERTIES
+        CXX_EXTENSIONS OFF
+	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
+	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
+)
+
+
+target_link_libraries(seahowl_core
+    PRIVATE 
+    nlohmann_json::nlohmann_json
+    ${CHRONO_LIBRARIES}
+)
+
+# =============
+# DRIVER 
+# =============
+add_executable( seahowl_driver )
+
+
+target_sources(seahowl_driver 
+    PRIVATE 
+    src/main.cpp
 )
 
 target_include_directories(seahowl_driver
@@ -129,6 +180,7 @@ set_target_properties(seahowl_driver
 
 target_link_libraries(seahowl_driver 
     PRIVATE 
+    seahowl_core
     nlohmann_json::nlohmann_json
     ${CHRONO_LIBRARIES}
 )
