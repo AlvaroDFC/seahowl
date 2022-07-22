@@ -201,9 +201,10 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
 void BladeElasto::build_loads(ChSystemSMC& system) {
     auto loadcontainer = chrono_types::make_shared<ChLoadContainer>();
     system.Add(loadcontainer);
-    for (auto ii = 0; ii < elements.size(); ii++) {
-        auto& element = elements[ii];
-        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element));
+
+    for (auto element : elements) {
+        /// TO CHECK ???? 
+        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element)); /////TODOOOOO POINTER NEW ????????
         loaders_aero.push_back(loader_weighted);
         loadcontainer->Add(loader_weighted);
     }
@@ -211,8 +212,8 @@ void BladeElasto::build_loads(ChSystemSMC& system) {
 
 void BladeElasto::rotate(double angle, ChVector<double> axis) {
     auto rotation = Q_from_AngAxis(angle, axis);
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto& node = nodes[ii];
+
+    for (auto node : nodes) {
         auto& new_position = rotation.Rotate(node->GetPos());
         node->SetPos(new_position);
         auto& new_rotation = (rotation * node->GetRot()).GetNormalized();
@@ -221,26 +222,24 @@ void BladeElasto::rotate(double angle, ChVector<double> axis) {
 }
 
 void BladeElasto::translate(ChVector<double> translation_vector) {
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto& node = nodes[ii];
+    for (auto node: nodes) {
         node->SetPos(node->GetPos() + translation_vector);
     }
 }
 
-void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
-    DampingCoefficients damping_coefficients;
-    damping_coefficients.bx = axial;
-    damping_coefficients.by = edge;
-    damping_coefficients.bz = flap;
-    damping_coefficients.bt = torsion;
-    for (int ii = 0; ii < reference_points.size(); ii++) {
-        auto& reference_point = reference_points[ii];
-        reference_point.damping_coefficients = damping_coefficients;
+void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) 
+{
+    
+    const DampingCoefficients damping_coefficients{axial, edge, flap, torsion};
+
+    for (auto& point : reference_points) {
+        point.damping_coefficients = damping_coefficients;
     }
-    for (int ii = 0; ii < elements.size(); ii++) {
-        auto section = elements[ii]->GetTaperedSection();
+
+    for (auto element : elements) {
+        auto section = element->GetTaperedSection();
         section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
-        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
+        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);  
     }
 }
 
@@ -259,9 +258,9 @@ void BladeElasto::evaluate_position_rotation(ChVector<double>& position,
 }
 
 void BladeElasto::reset_loads() {
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        nodes[ii]->SetForce(ChVector<double>(0.0, 0.0, 0.0));
-        nodes[ii]->SetTorque(ChVector<double>(0.0, 0.0, 0.0));
+    for (auto node : nodes) {
+        node->SetForce({0.0, 0.0, 0.0}); 
+        node->SetTorque({0.0, 0.0, 0.0});
     }
 }
 
@@ -271,8 +270,8 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
                                  std::to_string(elements.size()) + ").");
     }
     auto& element = elements[element_index];
-    auto& position = ChVector<double>(0.0, 0.0, 0.0);
-    auto& rotation = ChQuaternion<double>(0.0, 0.0, 0.0, 0.0);
+    ChVector<double> position{0.0, 0.0, 0.0};
+    ChQuaternion<double> rotation{0.0, 0.0, 0.0, 0.0};
     element->EvaluateSectionFrame(eta, position, rotation);
 
     // load on first node
