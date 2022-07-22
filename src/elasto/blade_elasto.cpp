@@ -1,5 +1,7 @@
 #include "blade_elasto.h"
 
+#include <numeric>
+
 #include "chrono/fea/ChBuilderBeam.h"
 
 BladeElasto::BladeElasto() {}
@@ -243,11 +245,10 @@ void BladeElasto::set_damping_coefficients(double axial, double edge, double fla
 }
 
 double BladeElasto::get_mass() {
-    double total_mass = 0.0;
-    for (int ii = 0; ii < elements.size(); ii++) {
-        total_mass += elements[ii]->GetMass();
-    }
-    return total_mass;
+    return std::accumulate(cbegin(elements), cend(elements), 0.0, 
+        [](double total, decltype(elements)::value_type pElem) {
+        return total += pElem->GetMass();}
+    );
 }
 
 void BladeElasto::evaluate_position_rotation(ChVector<double>& position,
