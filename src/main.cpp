@@ -126,8 +126,12 @@ int main(int argc, char* argv[]) {
     // application.DoStep();
     auto wind_model = ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
-    while (application.GetDevice()->run()) {
+    // while (application.GetDevice()->run()) {
+    while (true) {
         if (visualization_on) {
+            // this should be in while(...) loop, but it is here to allow no visualization at all
+            application.GetDevice()->run();
+
             application.BeginScene();
             application.DrawAll();
             application.DoStep();
