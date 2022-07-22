@@ -21,6 +21,7 @@ class BladeElasto {
     std::vector<double> discretization_fractions;
     std::vector<BladeReferencePointElasto> reference_points;
     std::vector<BladeReferencePointElasto> discretized_points;
+    double pitch = 0;
     bool fpm_mode = false;
 
     BladeElasto();

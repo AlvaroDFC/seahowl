@@ -296,4 +296,5 @@ void BladeElasto::apply_pitch_increment(double pitch_increment) {
     translate(-root_pos);
     rotate(pitch_increment, root_dir);
     translate(root_pos);
+    pitch += pitch_increment;
 };

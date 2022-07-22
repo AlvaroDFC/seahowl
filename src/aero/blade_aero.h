@@ -12,7 +12,7 @@ using namespace chrono;
 struct BladeElementAero {
     BladeReferencePointAero properties;
     double length;
-    double pitch_beta = 0.0;
+    double pitch = 0.0;
     double swept_annulus = 1.0;
     double chord_solidity = 1.0;
     double induction_factor_axial = 0.0;

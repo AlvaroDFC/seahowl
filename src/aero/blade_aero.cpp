@@ -8,7 +8,8 @@ BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferen
 ChVector2<double> BladeElementAero::get_induced_velocity(ChVector2<double>& local_velocity0) {
     // local_velocity_rotor0 is in rotor frame (unpitched and untwisted element)
     auto local_velocity_rotor0 = local_velocity0;
-    local_velocity_rotor0.Rotate(pitch_beta);
+    double pitch_twist = pitch + properties.structural_twist;
+    local_velocity_rotor0.Rotate(-pitch_twist);
     // local_velocity is in local element frame
     ChVector2<double> local_velocity;
 
@@ -26,13 +27,13 @@ ChVector2<double> BladeElementAero::get_induced_velocity(ChVector2<double>& loca
             ChVector2<double>(local_velocity_rotor0.x() * (1.0 + ap), local_velocity_rotor0.y() * (1.0 - aa));
         // reproject to blade element frame
         local_velocity = local_velocity_rotor;
-        local_velocity.Rotate(-pitch_beta);
+        local_velocity.Rotate(-pitch_twist);
 
         // get coefficients from angle of attack
         alpha = atan2(local_velocity.y(), local_velocity.x());
         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180.0 / CH_C_PI);
 
-        double phi = alpha + pitch_beta;
+        double phi = alpha + pitch_twist;
         double cos_phi = cos(phi);
         double sin_phi = sin(phi);
         double cl = coefficients.lift;

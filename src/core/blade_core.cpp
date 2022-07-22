@@ -57,16 +57,19 @@ void Blade::prestep(double time, WindModel& wind_model) {
 
 void Blade::update_positions_aero() {
     for (int ii = 0; ii < aero->elements.size(); ii++) {
+        // update position and rotation of aero elements
         int elasto_element_index = mapping_aero2elasto[ii].index;
         double eta = mapping_aero2elasto[ii].eta;
         elasto->evaluate_position_rotation(aero->elements[ii].properties.coordinates,
                                            aero->elements[ii].properties.rotation, elasto_element_index, eta);
 
+        // update velocity of aero elements
         aero->elements[ii].properties.velocity =
             0.5 * (elasto->elements[elasto_element_index]->GetNodeA()->GetPos_dt() +
                    elasto->elements[elasto_element_index]->GetNodeB()->GetPos_dt());
-        // TODO: add pitch
-        // aero->elements[ii].pitch_beta = ...;
+
+        // update pitch of aero elements
+        aero->elements[ii].pitch = elasto->pitch;
     }
 }
 
