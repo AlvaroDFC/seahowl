@@ -24,9 +24,28 @@ using namespace chrono::irrlicht;
 using namespace irr;
 #endif
 
+#include <filesystem> // C++17
+
+using std::filesystem::path;
+using std::filesystem::absolute;
 
 int main(int argc, char* argv[]) {
     // SETUP
+    if (argc < 2) {
+        std::cerr << "Usage: seahol_driver.exe <datadir>" << std::endl;
+        return 1;
+    }
+
+    auto datadir = absolute(path(argv[1]));
+
+    std::vector<std::string> blades_files = {
+        (datadir / "IEA15MW_blade.json").generic_string(),
+        (datadir / "IEA15MW_blade.json").generic_string(),
+        (datadir / "IEA15MW_blade.json").generic_string()};
+
+    auto rotor_file = (datadir / "IEA15MW_RNA.json").generic_string();
+    auto tower_file = (datadir / "IEA15MW_tower.json").generic_string();
+
 
     // system
     ChSystemSMC system;
@@ -43,10 +62,6 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
 
-    std::vector<std::string> blades_files = {"../data/IEA15MW_blade.json", "../data/IEA15MW_blade.json",
-                                             "../data/IEA15MW_blade.json"};
-    auto rotor_file = "../data/IEA15MW_RNA.json";
-    auto tower_file = "../data/IEA15MW_tower.json";
 
     std::vector<std::shared_ptr<Turbine>> turbines;
     int nturbines = 1;

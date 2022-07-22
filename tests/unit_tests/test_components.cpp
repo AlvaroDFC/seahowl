@@ -12,7 +12,21 @@
 
 using namespace chrono;
 
+#include <filesystem> // C++17
+
+using std::filesystem::path;
+using std::filesystem::absolute;
+
+static path DATADIR{};
+
 int main(int argc, char** argv) {
+    if (argc < 2) {
+        std::cerr << "Usage: seahol_driver.exe <datadir>" << std::endl;
+        return 1;
+    }
+
+    DATADIR = absolute(path(argv[1]));
+
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
@@ -30,7 +44,7 @@ TEST(test_blade, mass_deflection) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
@@ -71,7 +85,7 @@ TEST(test_rotor, mass) {
     system.AddMesh(blades_mesh);
     std::vector<std::shared_ptr<BladeElasto>> blades;
     for (int ii = 0; ii < 3; ii++) {
-        auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+        auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
         std::vector<double> fractions;
         fractions.clear();
         blade_core.set_discretization_elasto(fractions);
@@ -80,7 +94,7 @@ TEST(test_rotor, mass) {
         blades.push_back(blade);
     }
 
-    auto rotor = get_rotor_from_json("../../data/IEA15MW_RNA.json");
+    auto rotor = get_rotor_from_json((DATADIR / "IEA15MW_RNA.json").generic_string() );
     rotor.build(system, blades);
     rotor.body_yaw_bearing->SetBodyFixed(true);
 
@@ -106,7 +120,7 @@ TEST(test_tower, mass) {
     auto tower_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(tower_mesh);
     // tower
-    auto tower = get_tower_from_json("../../data/IEA15MW_tower.json");
+    auto tower = get_tower_from_json((DATADIR / "IEA15MW_tower.json").generic_string());
     tower.build(tower_mesh);
 
     system.Setup();
@@ -130,7 +144,7 @@ TEST(test_blade, natural_period_dynamic_edge) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
@@ -190,7 +204,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
-    auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+    auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);

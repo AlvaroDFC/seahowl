@@ -102,6 +102,22 @@ else()
     set(EXTRA_COMPILE_FLAGS "")
 endif()
 
+# ==============
+# DATADIR
+# ==============
+# Define a data directory to find test input files
+#
+# If the directory is not set as environment variable 
+# set a default value in CMake variable. This default
+# value can be modified in the CMakeCache.txt file
+# in build directory.
+#
+if(DEFINED ENV{SEAHOWL_DATADIR})
+	set(SEAHOWL_DATADIR $ENV{SEAHOWL_DATADIR})
+else()
+	set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
+endif()
+
 # ================
 # CORE LIBRARY
 # ================
