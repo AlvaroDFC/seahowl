@@ -19,6 +19,7 @@ using namespace irr;
 
 int main(int argc, char* argv[]) {
     // SETUP
+    bool visualization_on = true;
 
     // system
     ChSystemSMC system;
@@ -74,46 +75,50 @@ int main(int argc, char* argv[]) {
 
     // VISUALIZATION
 
-    // make visualization app
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
-    application.AddTypicalLights();
-    application.AddTypicalSky();
-    application.AddTypicalCamera(core::vector3df(-300, 150, -50));
+    if (visualization_on) {
+        // make visualization app
+        application.AddTypicalLights();
+        application.AddTypicalSky();
+        application.AddTypicalCamera(core::vector3df(-300, 150, -50));
 
-    auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-    visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
-    visualize_beam->SetColorscaleMinMax(-0.4, 0.4);
-    blades_mesh->AddAsset(visualize_beam);
+        auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
+        visualize_beam->SetColorscaleMinMax(-0.4, 0.4);
+        blades_mesh->AddAsset(visualize_beam);
 
-    // visualize nodes
-    auto visualize_nodes = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-    visualize_nodes->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
-    visualize_nodes->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
-    visualize_nodes->SetSymbolsThickness(1.0);
-    visualize_nodes->SetSymbolsScale(1.0);
-    visualize_nodes->SetZbufferHide(false);
-    blades_mesh->AddAsset(visualize_nodes);
+        // visualize nodes
+        auto visualize_nodes = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_nodes->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
+        visualize_nodes->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
+        visualize_nodes->SetSymbolsThickness(1.0);
+        visualize_nodes->SetSymbolsScale(1.0);
+        visualize_nodes->SetZbufferHide(false);
+        blades_mesh->AddAsset(visualize_nodes);
 
-    // visualize node coordinate systems
-    auto visualize_nodes_coordsys = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-    visualize_nodes_coordsys->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
-    visualize_nodes_coordsys->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NONE);
-    visualize_nodes_coordsys->SetSymbolsThickness(10.0);
-    visualize_nodes_coordsys->SetSymbolsScale(1.0);
-    visualize_nodes_coordsys->SetZbufferHide(false);
-    blades_mesh->AddAsset(visualize_nodes_coordsys);
+        // visualize node coordinate systems
+        auto visualize_nodes_coordsys = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_nodes_coordsys->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
+        visualize_nodes_coordsys->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NONE);
+        visualize_nodes_coordsys->SetSymbolsThickness(10.0);
+        visualize_nodes_coordsys->SetSymbolsScale(1.0);
+        visualize_nodes_coordsys->SetZbufferHide(false);
+        blades_mesh->AddAsset(visualize_nodes_coordsys);
 
-    // needed for visulization after setting everything up
-    application.AssetBindAll();
-    application.AssetUpdateAll();
-    application.AddShadowAll();
+        // needed for visulization after setting everything up
+        application.AssetBindAll();
+        application.AssetUpdateAll();
+        application.AddShadowAll();
+    }
 
     // SIMULATION LOOP
 
     double dt = 0.1;
-    application.SetTimestep(dt);
-    application.SetVideoframeSave(false);
-    application.SetVideoframeSaveInterval(20);
+    if (visualization_on) {
+        application.SetTimestep(dt);
+        application.SetVideoframeSave(false);
+        application.SetVideoframeSaveInterval(20);
+    }
     double time = 0.0;
     int step = 0;
     // system.DoStaticLinear();
@@ -122,11 +127,14 @@ int main(int argc, char* argv[]) {
     auto wind_model = ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     while (application.GetDevice()->run()) {
-        application.BeginScene();
-        application.DrawAll();
-        application.DoStep();
-        application.EndScene();
-        // system.DoStepDynamics(dt);
+        if (visualization_on) {
+            application.BeginScene();
+            application.DrawAll();
+            application.DoStep();
+            application.EndScene();
+        } else {
+            system.DoStepDynamics(dt);
+        }
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm() << "\n";
