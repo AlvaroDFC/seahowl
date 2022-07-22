@@ -5,9 +5,14 @@
 
 class WindModel {
   public:
+    double density = 1.225;
+
     WindModel() {}
     ~WindModel() {}
+
     virtual ChVector<double> get_wind_velocity(ChVector<double>& position, double time) = 0;
+
+    double get_density() { return density; }
 };
 
 class ConstantWind : public WindModel {
@@ -15,10 +20,7 @@ class ConstantWind : public WindModel {
     double density;
     ChVector<double> wind_velocity;
 
-    ConstantWind() {
-        wind_velocity = ChVector<double>(0.0, 0.0, 0.0);
-        density = 1.225;
-    }
+    ConstantWind() { wind_velocity = ChVector<double>(0.0, 0.0, 0.0); }
 
     ~ConstantWind() {}
 
