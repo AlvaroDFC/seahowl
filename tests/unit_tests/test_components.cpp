@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 #include <cmath>
 
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/solver/ChDirectSolverLS.h"
-#include "chrono/solver/ChIterativeSolverLS.h"
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/solver/ChDirectSolverLS.h>
+#include <chrono/solver/ChIterativeSolverLS.h>
 
 #include "../../src/elasto/blade_elasto.h"
 #include "../../src/elasto/rotor.h"
