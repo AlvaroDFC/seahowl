@@ -7,7 +7,7 @@ BladeElasto::BladeElasto() {}
 void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
-        std::runtime_error("Not enough elasto reference points defined for blade.");
+        throw std::runtime_error("Not enough elasto reference points defined for blade.");
     }
 
     // check that discretization_fractions was defined, otherwise take reference point fractions

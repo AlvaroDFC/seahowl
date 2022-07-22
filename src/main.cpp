@@ -9,6 +9,7 @@
 
 
 #include <cmath>
+#include <stdexcept>
 
 #include "elasto/blade_elasto.h"
 #include "core/blade_core.h"
@@ -132,26 +133,29 @@ int main(int argc, char* argv[]) {
     auto wind_model = ConstantWind();
     wind_model.set_wind_speed(ChVector<double>(10.59, 0.0, 0.0));
 
+    try {
 #ifdef HAVE_IRRLICHT
-    while ( application.GetDevice()->run()) {
-        application.BeginScene();
-        application.DrawAll();
-        application.DoStep();
-        application.EndScene();
-        
+        while (application.GetDevice()->run()) {
+            application.BeginScene();
+            application.DrawAll();
+            application.DoStep();
+            application.EndScene();
+
 #else
-    while (true) {
-        system.DoStepDynamics(dt);
+        while (true) {
+            system.DoStepDynamics(dt);
 #endif
-        time += system.GetStep();
-        step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() << "\n";
+            time += system.GetStep();
+            step += 1;
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() << "\n";
 
-        // apply force
-        for (int ii = 0; ii < turbines.size(); ii++) {
-            turbines[ii]->prestep(time, wind_model);
+            // apply force
+            for (int ii = 0; ii < turbines.size(); ii++) {
+                turbines[ii]->prestep(time, wind_model);
+            }
         }
+    } catch (std::exception& exc) {
+        std::cerr << exc.what() << std::endl;
     }
-
     return 0;
 }

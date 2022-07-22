@@ -4,9 +4,9 @@ std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& d
                                                           std::vector<double>& reference_fractions) {
     // check for potential errors
     if (discretization_fractions.size() == 0) {
-        std::runtime_error("Cannot get discretization with empty array.");
+        throw std::runtime_error("Cannot get discretization with empty array.");
     } else if (reference_fractions.size() < 2) {
-        std::runtime_error("Cannot get discretization with reference array with less than 2 elements.");
+        throw std::runtime_error("Cannot get discretization with reference array with less than 2 elements.");
     }
 
     std::vector<DiscretizationPoint> points;
