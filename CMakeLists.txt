@@ -126,7 +126,7 @@ add_library( seahowl_core )
 
 set(SEAHOWL_SOURCES 
 
-	src/elasto/blade_elasto.cpp src/elasto/rotor.cpp 
+	src/elasto/blade_elasto.cpp src/core/rotor.cpp 
 	src/elasto/tower.cpp src/io/read_json.cpp src/utils.cpp 
 	src/core/blade_core.cpp src/aero/blade_aero.cpp src/core/turbine.cpp
 )

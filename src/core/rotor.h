@@ -1,8 +1,8 @@
 #ifndef ROTOR_H_
 #define ROTOR_H_
 
-#include "blade_elasto.h"
-#include "tower.h"
+#include "../elasto/blade_elasto.h"
+#include "../elasto/tower.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/physics/ChLinkMate.h"

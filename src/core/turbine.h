@@ -2,7 +2,7 @@
 #define TURBINE_H_
 
 #include "blade_core.h"
-#include "../elasto/rotor.h"
+#include "../core/rotor.h"
 #include "../elasto/tower.h"
 
 class Turbine {

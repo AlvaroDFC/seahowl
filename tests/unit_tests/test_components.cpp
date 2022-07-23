@@ -6,7 +6,7 @@
 #include <chrono/solver/ChIterativeSolverLS.h>
 
 #include "../../src/elasto/blade_elasto.h"
-#include "../../src/elasto/rotor.h"
+#include "../../src/core/rotor.h"
 #include "../../src/elasto/tower.h"
 #include "../../src/io/read_json.h"
 

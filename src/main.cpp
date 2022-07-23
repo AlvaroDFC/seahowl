@@ -13,7 +13,7 @@
 
 #include "elasto/blade_elasto.h"
 #include "core/blade_core.h"
-#include "elasto/rotor.h"
+#include "core/rotor.h"
 #include "io/read_json.h"
 
 using namespace chrono;
