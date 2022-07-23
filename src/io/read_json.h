@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 #include "../core/blade_core.h"
 #include "../core/rotor.h"
-#include "../elasto/tower.h"
+#include "../elasto/tower_elasto.h"
 #include "../core/turbine.h"
 
 std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath);

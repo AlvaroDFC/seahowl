@@ -7,7 +7,7 @@
 
 #include "../../src/elasto/blade_elasto.h"
 #include "../../src/core/rotor.h"
-#include "../../src/elasto/tower.h"
+#include "../../src/elasto/tower_elasto.h"
 #include "../../src/io/read_json.h"
 
 using namespace chrono;

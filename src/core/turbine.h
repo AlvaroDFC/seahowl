@@ -3,7 +3,7 @@
 
 #include "blade_core.h"
 #include "../core/rotor.h"
-#include "../elasto/tower.h"
+#include "../elasto/tower_elasto.h"
 
 class Turbine {
   public:

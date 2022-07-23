@@ -2,7 +2,7 @@
 #define ROTOR_H_
 
 #include "../elasto/blade_elasto.h"
-#include "../elasto/tower.h"
+#include "../elasto/tower_elasto.h"
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/physics/ChLinkMate.h"
