@@ -2,6 +2,7 @@
 #define ROTOR_AERO_H_
 
 #include "blade_aero.h"
+#include "wind_models.h"
 
 #include "chrono/core/ChVector.h"
 
@@ -19,6 +20,7 @@ class RotorAero {
 
     void build(std::vector<std::shared_ptr<BladeAero>> blades);
     void compute_chords_solidity();
+    void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 
 #endif  // ROTOR_AERO_H_

@@ -8,9 +8,6 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
 
-#include "elasto/blade_elasto.h"
-#include "core/blade_core.h"
-#include "elasto/rotor_elasto.h"
 #include "io/read_json.h"
 
 using namespace chrono;
@@ -173,8 +170,22 @@ int main(int argc, char* argv[]) {
     // simulation loop
     double time = 0.0;
     int step = 0;
+    // initialization
+
+    for (int ii = 0; ii < turbines.size(); ii++) {
+        turbines[ii]->prestep(time);
+        turbines[ii]->poststep(time);
+    }
     // while (application.GetDevice()->run()) {
     while (true) {
+        // prestep
+        for (int ii = 0; ii < turbines.size(); ii++) {
+            // compute forces
+            turbines[ii]->rotor.aero.compute_wind_loads_bemt(wind_model, time);
+            // prestep (accumulates loads from aero to elasto)
+            turbines[ii]->prestep(time);
+        }
+        // step
         if (visualization_on) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
@@ -190,9 +201,9 @@ int main(int argc, char* argv[]) {
         step += 1;
         GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm() << "\n";
 
-        // apply force
+        // poststep
         for (int ii = 0; ii < turbines.size(); ii++) {
-            turbines[ii]->prestep(time, wind_model);
+            turbines[ii]->poststep(time);
         }
     }
 

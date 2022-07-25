@@ -30,6 +30,15 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blade
 }
 
 void Rotor::prestep(double time) {
+    for (int ii = 0; ii < blades.size(); ii++) {
+        blades[ii]->prestep(time);
+    }
+}
+
+void Rotor::poststep(double time) {
     update_positions_aero();
     aero.compute_chords_solidity();
+    for (int ii = 0; ii < blades.size(); ii++) {
+        blades[ii]->poststep(time);
+    }
 }

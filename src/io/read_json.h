@@ -2,7 +2,7 @@
 #define READ_JSON_H_
 
 #include <nlohmann/json.hpp>
-#include "../core/blade_core.h"
+#include "../core/blade.h"
 #include "../core/rotor.h"
 #include "../elasto/tower_elasto.h"
 #include "../core/turbine.h"

@@ -22,6 +22,7 @@ struct BladeElementAero {
     ~BladeElementAero() {}
 
     ChVector2<double> get_induced_velocity(ChVector2<double>& local_velocity0);
+    ChVector2<double> get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0);
 };
 
 class BladeAero {
@@ -36,7 +37,7 @@ class BladeAero {
     ~BladeAero() {}
 
     void build();
-    void compute_loads(double time, WindModel& wind_model);
+    void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 
 #endif  // BLADE_AERO_H_

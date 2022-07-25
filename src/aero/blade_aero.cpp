@@ -101,14 +101,14 @@ void BladeAero::build() {
     }
 }
 
-void BladeAero::compute_loads(double time, WindModel& wind_model) {
+void BladeAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
     double density = wind_model.get_density();
     for (int ii = 0; ii < elements.size(); ii++) {
         auto& element = elements[ii];
         auto& properties = element.properties;
 
         // get fluid relative velocity
-        auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, 0.0);
+        auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, time);
         auto global_velocity = wind_velocity - properties.velocity;
         // project locally
         auto local_velocity0_3d = properties.rotation.RotateBack(global_velocity);

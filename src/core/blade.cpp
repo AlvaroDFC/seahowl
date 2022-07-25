@@ -1,4 +1,4 @@
-#include "blade_core.h"
+#include "blade.h"
 
 Blade::Blade() {
     elasto = std::make_shared<BladeElasto>();
@@ -44,15 +44,14 @@ void Blade::compute_mapping_elasto2aero() {
     mapping_elasto2aero = get_indice_and_positions(elasto->discretization_fractions, aero->discretization_fractions);
 }
 
-void Blade::prestep(double time, WindModel& wind_model) {
-    // reset loads on elasto part
-    elasto->reset_loads();
-    // update position of aero points
-    update_positions_aero();
-    // compute loads from aero
-    aero->compute_loads(time, wind_model);
+void Blade::prestep(double time) {
     // update loads on elasto part
     update_loads_elasto();
+}
+
+void Blade::poststep(double time) {
+    // update position of aero points
+    update_positions_aero();
 }
 
 void Blade::update_positions_aero() {
