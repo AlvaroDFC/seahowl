@@ -9,11 +9,11 @@ ChVector2<double> BladeElementAero::get_induced_velocity(ChVector2<double>& loca
     // local_velocity_rotor0 is in rotor frame (unpitched and untwisted element)
     auto local_velocity_rotor0 = local_velocity0;
     double pitch_twist = pitch + properties.structural_twist;
-    local_velocity_rotor0.Rotate(-pitch_twist);
+    local_velocity_rotor0.Rotate(-pitch_twist);  // rotation is positive counter-clockwise
     // local_velocity is in local element frame
     ChVector2<double> local_velocity;
 
-    double tol = 1e-4;
+    double tol = 1e-3;
     double max_iter = 100;
     double alpha = -1000.0;
     double alpha_previous;
@@ -25,15 +25,24 @@ ChVector2<double> BladeElementAero::get_induced_velocity(ChVector2<double>& loca
         // local velocity updated with induction factors
         auto local_velocity_rotor =
             ChVector2<double>(local_velocity_rotor0.x() * (1.0 + ap), local_velocity_rotor0.y() * (1.0 - aa));
+        double phi = atan2(local_velocity_rotor.y(), -local_velocity_rotor.x());
+        // alpha = phi - pitch_twist;
+
         // reproject to blade element frame
         local_velocity = local_velocity_rotor;
-        local_velocity.Rotate(-pitch_twist);
+        local_velocity.Rotate(pitch_twist);  // rotation is positive counter-clockwise
 
         // get coefficients from angle of attack
-        alpha = atan2(local_velocity.y(), local_velocity.x());
+        alpha = atan2(local_velocity.y(), -local_velocity.x());
+        // double phi = alpha + pitch_twist;
+
+        if (phi == 0) {
+            // avoid division by zero
+            phi = 0.0001;
+        }
+
         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180.0 / CH_C_PI);
 
-        double phi = alpha + pitch_twist;
         double cos_phi = cos(phi);
         double sin_phi = sin(phi);
         double cl = coefficients.lift;
@@ -104,13 +113,13 @@ void BladeAero::compute_loads(double time, WindModel& wind_model) {
         // project locally
         auto local_velocity0_3d = properties.rotation.RotateBack(global_velocity);
         // project using BEMT convention: x along chord, y along thickness up
-        auto local_velocity0 = ChVector2<double>(-local_velocity0_3d[1], -local_velocity0_3d[2]);
+        auto local_velocity0 = ChVector2<double>(local_velocity0_3d[1], -local_velocity0_3d[2]);
 
         // update induction factors and return local velocity
         auto local_velocity = element.get_induced_velocity(local_velocity0);
 
         // get coefficients from angle of attack
-        double alpha = atan2(local_velocity.y(), local_velocity.x());
+        double alpha = atan2(local_velocity.y(), -local_velocity.x());
         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / CH_C_PI);
 
         // calculate drag and lift force
@@ -120,9 +129,13 @@ void BladeAero::compute_loads(double time, WindModel& wind_model) {
         double lift = 0.5 * density * vel * vel * chord * coefficients.lift * length;
         double drag = 0.5 * density * vel * vel * chord * coefficients.drag * length;
 
+        // project to element local frame
+        double lift_local = lift * cos(alpha) + drag * sin(alpha);
+        double drag_local = lift * sin(alpha) - drag * cos(alpha);
+
         // transform from local to global load
         // use chrono convention
-        auto load_local = ChVector<double>(0.0, lift, drag);
+        auto load_local = ChVector<double>(0.0, lift_local, -drag_local);
         auto load_global = properties.rotation.Rotate(load_local);
         loads[ii] = load_global;
     }
