@@ -19,18 +19,63 @@ using namespace irr;
 
 int main(int argc, char* argv[]) {
     // SETUP
+
+    // general options
     bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto solver_type = ChSolver::Type::SPARSE_LU;
+    auto verbose = false;
+    // timestepping
+    auto timestepper_type = ChTimestepper::Type::HHT;
+    double dt = 0.1;
+    // wind
+    auto wind_model = ConstantWind();
+    wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
 
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
     system.SetNumThreads(ChOMP::GetNumProcs(), 0, 1);
 
-    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
-    system.SetSolver(solver);
-    solver->UseSparsityPatternLearner(true);
-    solver->LockSparsityPattern(true);
-    solver->SetVerbose(false);
+    switch (solver_type) {
+        case ChSolver::Type::SPARSE_QR: {
+            std::cout << "Using SparseQR solver" << std::endl;
+            auto solver = chrono_types::make_shared<ChSolverSparseQR>();
+            system.SetSolver(solver);
+            solver->UseSparsityPatternLearner(true);
+            solver->LockSparsityPattern(true);
+            solver->SetVerbose(verbose);
+            break;
+        }
+        case ChSolver::Type::SPARSE_LU: {
+            std::cout << "Using SparseLU solver" << std::endl;
+            auto solver = chrono_types::make_shared<ChSolverSparseLU>();
+            system.SetSolver(solver);
+            solver->UseSparsityPatternLearner(true);
+            solver->LockSparsityPattern(true);
+            solver->SetVerbose(verbose);
+            break;
+        }
+        case ChSolver::Type::MINRES: {
+            std::cout << "Using MINRES solver" << std::endl;
+            auto solver = chrono_types::make_shared<ChSolverMINRES>();
+            system.SetSolver(solver);
+            solver->SetMaxIterations(40000);
+            solver->SetTolerance(1e-5);
+            solver->EnableDiagonalPreconditioner(true);
+            solver->EnableWarmStart(true);  // IMPORTANT for convergence when using EULER_IMPLICIT_LINEARIZED
+            solver->SetVerbose(verbose);
+            break;
+        }
+    }
+    system.SetTimestepperType(timestepper_type);
+    if (auto mystepper = std::dynamic_pointer_cast<ChTimestepperHHT>(system.GetTimestepper())) {
+        mystepper->SetStepControl(false);
+        mystepper->SetModifiedNewton(false);
+        // mystepper->SetAlpha(-0.5);
+        // GetLog() << mystepper->GetAlpha() << "\n";
+    }
 
     // mesh for blade
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
@@ -113,19 +158,21 @@ int main(int argc, char* argv[]) {
 
     // SIMULATION LOOP
 
-    double dt = 0.1;
     if (visualization_on) {
         application.SetTimestep(dt);
         application.SetVideoframeSave(false);
         application.SetVideoframeSaveInterval(20);
     }
+
+    // statics
+    if (statics_prestep) {
+        system.DoStaticLinear();
+        // system.DoStaticNonlinear(10, true);
+    }
+
+    // simulation loop
     double time = 0.0;
     int step = 0;
-    // system.DoStaticLinear();
-    // system.DoStaticNonlinear(10, true);
-    // application.DoStep();
-    auto wind_model = ConstantWind();
-    wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     // while (application.GetDevice()->run()) {
     while (true) {
         if (visualization_on) {
