@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
     if (visualization_on) {
         // make visualization app
         application.AddTypicalLights();
-        application.AddTypicalSky();
+        // application.AddTypicalSky();
         application.AddTypicalCamera(core::vector3df(-300, 150, -50));
 
         auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
@@ -180,10 +180,6 @@ int main(int argc, char* argv[]) {
         turbines[ii]->poststep(time);
     }
     // while (application.GetDevice()->run()) {
-    for (int ii = 0; ii < turbines.size(); ii++) {
-        turbines[ii]->prestep(time);
-        turbines[ii]->poststep(time);
-    }
     while (true) {
         // prestep
         for (int ii = 0; ii < turbines.size(); ii++) {

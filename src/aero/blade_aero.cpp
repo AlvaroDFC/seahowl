@@ -187,7 +187,7 @@ ChVector2<double> BladeElementAero::get_induced_velocity_rotor(ChVector2<double>
 void BladeAero::build() {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() < 2) {
-        std::runtime_error("Not enough aero reference points defined for blade.");
+        throw std::runtime_error("Not enough aero reference points defined for blade.");
     }
 
     // check that discretization_fractions was defined, otherwise take reference point fractions

@@ -12,7 +12,7 @@ void RotorAero::compute_chords_solidity() {
         for (int jj = 0; jj < blade->elements.size(); jj++) {
             auto& element = blade->elements[jj];
             auto radius = (element.properties.coordinates - hub_position).Length();
-            element.swept_annulus = element.length * 2 * M_PI * radius;
+            element.swept_annulus = element.length * 2 * CH_C_PI * radius;
             element.chord_solidity = nblades * element.properties.chord / (2 * CH_C_PI * radius);
             // std::cout << element.swept_annulus << " " << element.chord_solidity << std::endl;
         }

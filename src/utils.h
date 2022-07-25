@@ -47,6 +47,9 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
                       reference_fractions.begin();
             // decrease index for convenience
             idx -= 1;
+            if (idx == reference_fractions.size() - 1) {
+                idx -= 1;
+            }
             double fraction_lower = reference_fractions[idx];
             double fraction_upper = reference_fractions[idx + 1];
             double fraction_range = fraction_upper - fraction_lower;
