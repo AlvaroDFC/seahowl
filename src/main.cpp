@@ -29,6 +29,8 @@ int main(int argc, char* argv[]) {
     // wind
     auto wind_model = ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
+    // turbine
+    double initial_pitch = CH_C_PI / 8.0;
 
     // system
     ChSystemSMC system;
@@ -164,7 +166,7 @@ int main(int argc, char* argv[]) {
     // statics
     if (statics_prestep) {
         system.DoStaticLinear();
-        // system.DoStaticNonlinear(10, true);
+        system.DoStaticNonlinear(10, true);
     }
 
     // simulation loop
@@ -173,10 +175,15 @@ int main(int argc, char* argv[]) {
     // initialization
 
     for (int ii = 0; ii < turbines.size(); ii++) {
+        turbines[ii]->rotor.elasto.apply_collective_pitch_increment(initial_pitch);
         turbines[ii]->prestep(time);
         turbines[ii]->poststep(time);
     }
     // while (application.GetDevice()->run()) {
+    for (int ii = 0; ii < turbines.size(); ii++) {
+        turbines[ii]->prestep(time);
+        turbines[ii]->poststep(time);
+    }
     while (true) {
         // prestep
         for (int ii = 0; ii < turbines.size(); ii++) {
@@ -185,6 +192,7 @@ int main(int argc, char* argv[]) {
             // prestep (accumulates loads from aero to elasto)
             turbines[ii]->prestep(time);
         }
+
         // step
         if (visualization_on) {
             // this should be in while(...) loop, but it is here to allow no visualization at all

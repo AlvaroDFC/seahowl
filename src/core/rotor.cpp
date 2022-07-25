@@ -36,9 +36,9 @@ void Rotor::prestep(double time) {
 }
 
 void Rotor::poststep(double time) {
-    update_positions_aero();
-    aero.compute_chords_solidity();
     for (int ii = 0; ii < blades.size(); ii++) {
         blades[ii]->poststep(time);
     }
+    update_positions_aero();
+    aero.compute_chords_solidity();
 }

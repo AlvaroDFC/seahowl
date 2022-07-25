@@ -79,5 +79,6 @@ void Blade::update_loads_elasto() {
     }
     for (int ii = 0; ii < aero->loads.size(); ii++) {
         elasto->accumulate_element_load(aero->loads[ii], mapping_aero2elasto[ii].index, mapping_aero2elasto[ii].eta);
+       // GetLog() << ii << " " << loads[ii];
     }
 }
