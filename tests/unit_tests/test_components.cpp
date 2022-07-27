@@ -69,26 +69,26 @@ TEST(test_rotor, mass) {
     // check mass with blades
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
-    std::vector<std::shared_ptr<BladeElasto>> blades;
+    std::vector<std::shared_ptr<Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
-        auto blade_core = get_blade_from_json("../../data/IEA15MW_blade.json");
+        std::shared_ptr<Blade> blade_core =
+            std::make_shared<Blade>(get_blade_from_json("../../data/IEA15MW_blade.json"));
         std::vector<double> fractions;
         fractions.clear();
-        blade_core.set_discretization_elasto(fractions);
-        blade_core.build(system, blades_mesh);
-        auto blade = blade_core.elasto;
-        blades.push_back(blade);
+        blade_core->set_discretization_elasto(fractions);
+        blade_core->build(system, blades_mesh);
+        blades.push_back(blade_core);
     }
 
     auto rotor = get_rotor_from_json("../../data/IEA15MW_RNA.json");
     rotor.build(system, blades);
-    rotor.body_yaw_bearing->SetBodyFixed(true);
+    rotor.elasto.body_yaw_bearing->SetBodyFixed(true);
 
     system.Setup();
     system.DoStaticLinear();
     // check mass
     double rotor_total_mass = 945710.88406;
-    ASSERT_NEAR(rotor_total_mass, rotor.get_mass(), 1.0);
+    ASSERT_NEAR(rotor_total_mass, rotor.elasto.get_mass(), 1.0);
 }
 
 TEST(test_tower, mass) {

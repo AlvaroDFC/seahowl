@@ -57,7 +57,7 @@ else()
 endif()
 
 
-add_executable(${PROJECT_NAME} unit_tests/test_components.cpp ../src/elasto/blade_elasto.cpp ../src/elasto/rotor_elasto.cpp ../src/elasto/tower_elasto.cpp ../src/io/read_json.cpp ../src/utils.cpp ../src/core/blade.cpp ../src/aero/blade_aero.cpp ../src/core/turbine.cpp)
+add_executable(${PROJECT_NAME} unit_tests/test_components.cpp ../src/elasto/blade_elasto.cpp ../src/elasto/rotor_elasto.cpp ../src/elasto/tower_elasto.cpp ../src/io/read_json.cpp ../src/utils.cpp ../src/core/blade.cpp ../src/aero/blade_aero.cpp ../src/core/turbine.cpp ../src/core/rotor.cpp ../src/aero/rotor_aero.cpp)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
