@@ -59,6 +59,7 @@ class RotorElasto {
     double get_mass();
     void apply_collective_pitch_increment(double pitch_increment);
     double get_rpm();
+    double get_torque();
 };
 
 #endif  // ROTOR_ELASTO_H_

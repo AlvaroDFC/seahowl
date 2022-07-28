@@ -173,3 +173,7 @@ double RotorElasto::get_rpm() {
     double rpm = angles.z() * 60 / (2 * CH_C_PI);
     return rpm;
 }
+
+double RotorElasto::get_torque() {
+    return -link_shaft_hub->Get_react_torque().x();
+}

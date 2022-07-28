@@ -31,6 +31,9 @@ int main(int argc, char* argv[]) {
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
+    // target RPM for simple generator control
+    // set to 0.0 for no control
+    double target_rpm = 0.0;
 
     // system
     ChSystemSMC system;
@@ -174,6 +177,10 @@ int main(int argc, char* argv[]) {
         turbines[ii]->poststep(time);
     }
 
+    double torque_aero = 0.0;
+    double average_torque_aero = 0.0;
+    double torque_elec = 0.0;
+    double average_rpm = 0.0;
     // statics
     if (statics_prestep) {
         system.DoStaticLinear();
@@ -183,10 +190,27 @@ int main(int argc, char* argv[]) {
     while (true) {
         // prestep
         for (int ii = 0; ii < turbines.size(); ii++) {
+            auto& turbine = turbines[ii];
+
             // compute forces
-            turbines[ii]->rotor.aero.compute_wind_loads_bemt(wind_model, time);
+            turbine->rotor.aero.compute_wind_loads_bemt(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
-            turbines[ii]->prestep(time);
+            turbine->prestep(time);
+
+            if (target_rpm != 0.0) {
+                // generator controller tests
+                double rpm = turbine->rotor.elasto.get_rpm();
+                double nav = 1;  // number of time steps use for averaging/smoothing
+                average_rpm = (average_rpm * (nav - 1) + rpm) / nav;
+                torque_aero = turbine->rotor.elasto.get_torque() + torque_elec;
+                torque_elec = average_torque_aero * pow(average_rpm / target_rpm, 2);
+                average_torque_aero = (average_torque_aero * (nav - 1) + torque_aero) / nav;
+                if (average_rpm / target_rpm < 0.0) {
+                    torque_elec = 0.0;
+                }
+                turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
+                turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
+            }
         }
 
         // step
@@ -203,7 +227,8 @@ int main(int argc, char* argv[]) {
         }
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm() << "\n";
+        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
+                 << " average rpm: " << average_rpm << "\n";
 
         // poststep
         for (int ii = 0; ii < turbines.size(); ii++) {
