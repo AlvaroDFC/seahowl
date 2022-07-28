@@ -1,3 +1,4 @@
+
 #include <gtest/gtest.h>
 #include <cmath>
 
@@ -238,4 +239,79 @@ TEST(test_blade, natural_period_dynamic_flap) {
     // literature flapwise natural frequency for IEA15MW: 0.555Hz (1.802s)
     double natural_period_ref = 1.92;
     ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
+}
+
+TEST(test_turbine, rpm_initial_pitch) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    auto timestepper_type = ChTimestepper::Type::HHT;
+    double dt = 0.1;
+    // wind
+    auto wind_model = ConstantWind();
+    wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
+    // turbine
+    double initial_pitch = CH_C_PI / 8.0;
+
+    // system
+    ChSystemSMC system;
+    system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
+    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
+    system.SetSolver(solver);
+    solver->UseSparsityPatternLearner(true);
+    solver->LockSparsityPattern(true);
+    solver->SetVerbose(verbose);
+    system.SetTimestepperType(ChTimestepper::Type::HHT);
+    auto mystepper = std::dynamic_pointer_cast<ChTimestepperHHT>(system.GetTimestepper());
+    mystepper->SetStepControl(false);
+    mystepper->SetModifiedNewton(false);
+
+    // mesh for blade
+    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    system.AddMesh(blades_mesh);
+
+    std::vector<std::string> blades_files = {"../../data/IEA15MW_blade.json", "../../data/IEA15MW_blade.json",
+                                             "../../data/IEA15MW_blade.json"};
+    auto rotor_file = "../../data/IEA15MW_RNA.json";
+    auto tower_file = "../../data/IEA15MW_tower.json";
+    auto turbine = get_turbine_from_json(blades_files, rotor_file, tower_file);
+    // clear discretization defined in file
+    for (int jj = 0; jj < turbine.blades.size(); jj++) {
+        turbine.blades[jj]->elasto->discretization_fractions.clear();
+        turbine.blades[jj]->aero->discretization_fractions.clear();
+    }
+    turbine.build(system, blades_mesh);
+    turbine.tower.nodes[0]->SetFixed(true);
+
+    turbine.rotate(-CH_C_PI / 2.0, VECT_X);
+
+    // statics
+    if (statics_prestep) {
+        system.DoStaticLinear();
+        system.DoStaticNonlinear(10, verbose);
+    }
+
+    double time = 0.0;
+    turbine.rotor.elasto.apply_collective_pitch_increment(initial_pitch);
+    turbine.prestep(time);
+    turbine.poststep(time);
+    // while (application.GetDevice()->run()) {
+    while (time < 50) {
+        // prestep
+        // compute forces
+        turbine.rotor.aero.compute_wind_loads_bemt(wind_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time);
+
+        system.DoStepDynamics(dt);
+        time += system.GetStep();
+
+        // poststep
+        turbine.poststep(time);
+    }
+
+    ASSERT_NEAR(turbine.rotor.elasto.get_rpm(), 2.84, 0.02);
 }

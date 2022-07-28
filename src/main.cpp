@@ -163,12 +163,6 @@ int main(int argc, char* argv[]) {
         application.SetVideoframeSaveInterval(20);
     }
 
-    // statics
-    if (statics_prestep) {
-        system.DoStaticLinear();
-        system.DoStaticNonlinear(10, true);
-    }
-
     // simulation loop
     double time = 0.0;
     int step = 0;
@@ -178,6 +172,12 @@ int main(int argc, char* argv[]) {
         turbines[ii]->rotor.elasto.apply_collective_pitch_increment(initial_pitch);
         turbines[ii]->prestep(time);
         turbines[ii]->poststep(time);
+    }
+
+    // statics
+    if (statics_prestep) {
+        system.DoStaticLinear();
+        system.DoStaticNonlinear(10, true);
     }
     // while (application.GetDevice()->run()) {
     while (true) {
