@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "io/read_json.h"
+#include "servo/controller.h"
 
 using namespace chrono;
 using namespace chrono::irrlicht;
@@ -33,7 +34,8 @@ int main(int argc, char* argv[]) {
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
     // set to 0.0 for no control
-    double target_rpm = 0.0;
+    auto controller = ControllerVariableTorque();
+    controller.target_rpm = 0.0;
 
     // system
     ChSystemSMC system;
@@ -191,26 +193,10 @@ int main(int argc, char* argv[]) {
         // prestep
         for (int ii = 0; ii < turbines.size(); ii++) {
             auto& turbine = turbines[ii];
-
             // compute forces
             turbine->rotor.aero.compute_wind_loads_bemt(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
             turbine->prestep(time);
-
-            if (target_rpm != 0.0) {
-                // generator controller tests
-                double rpm = turbine->rotor.elasto.get_rpm();
-                double nav = 1;  // number of time steps use for averaging/smoothing
-                average_rpm = (average_rpm * (nav - 1) + rpm) / nav;
-                torque_aero = turbine->rotor.elasto.get_torque() + torque_elec;
-                torque_elec = average_torque_aero * pow(average_rpm / target_rpm, 2);
-                average_torque_aero = (average_torque_aero * (nav - 1) + torque_aero) / nav;
-                if (average_rpm / target_rpm < 0.0) {
-                    torque_elec = 0.0;
-                }
-                turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
-                turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
-            }
         }
 
         // step
@@ -232,7 +218,19 @@ int main(int argc, char* argv[]) {
 
         // poststep
         for (int ii = 0; ii < turbines.size(); ii++) {
-            turbines[ii]->poststep(time);
+            auto& turbine = turbines[ii];
+            turbine->poststep(time);
+
+            if (controller.target_rpm > 0.0) {
+                // get torque elec from controller
+                double rpm = turbine->rotor.elasto.get_rpm();
+                double torque_total = turbine->rotor.elasto.get_torque();
+                double torque_elec = controller.get_torque_elec(torque_total, rpm);
+                // apply torque elec to hub rigid body
+                turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
+                // torque elec is apply on Z axis of hub body (locally)
+                turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+            }
         }
     }
 
