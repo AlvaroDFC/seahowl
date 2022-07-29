@@ -225,6 +225,7 @@ Rotor get_rotor_from_json(std::string filepath) {
     rotor.elasto.hub.inertia += 1836784;
     hub.at("overhang").get_to(rotor.elasto.hub.overhang);
     hub.at("radius").get_to(rotor.elasto.hub.radius);
+    hub.at("radius").get_to(rotor.aero.hub_radius);
     // nacelle
     auto nacelle = json_obj.at("nacelle");
     auto cm = nacelle.at("CM").get<std::vector<double>>();

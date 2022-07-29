@@ -2,6 +2,19 @@
 
 void RotorAero::build(std::vector<std::shared_ptr<BladeAero>> blades) {
     this->blades = blades;
+
+    // calculate rotor radius
+    radius = 0.0;
+    for (int ii = 0; ii < blades.size(); ii++) {
+        auto& blade = blades[ii];
+        radius += (blade->discretized_points.back().coordinates - hub_position).Length();
+    }
+    radius /= blades.size();
+
+    // compute blade elements related values
+    compute_distances_from_tip();
+    compute_distances_from_hub();
+    compute_radii();
     compute_chords_solidity();
 }
 
@@ -16,6 +29,27 @@ void RotorAero::compute_chords_solidity() {
             element.chord_solidity = nblades * element.properties.chord / (2 * CH_C_PI * radius);
             // std::cout << element.swept_annulus << " " << element.chord_solidity << std::endl;
         }
+    }
+}
+
+void RotorAero::compute_distances_from_hub() {
+    for (int ii = 0; ii < blades.size(); ii++) {
+        auto& blade = blades[ii];
+        blade->compute_distances_from_hub(hub_position, hub_radius);
+    }
+}
+
+void RotorAero::compute_distances_from_tip() {
+    for (int ii = 0; ii < blades.size(); ii++) {
+        auto& blade = blades[ii];
+        blade->compute_distances_from_tip();
+    }
+}
+
+void RotorAero::compute_radii() {
+    for (int ii = 0; ii < blades.size(); ii++) {
+        auto& blade = blades[ii];
+        blade->compute_radii(hub_position);
     }
 }
 
@@ -54,7 +88,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             auto local_velocity0 = ChVector2<double>(local_velocity_tangent, local_velocity_normal);
 
             // get induced velocity (2D) from blade element
-            auto local_velocity = element.get_induced_velocity_rotor(local_velocity0);
+            auto local_velocity = element.get_induced_velocity_rotor(local_velocity0, blades.size());
 
             // get coefficients from angle of attack
             double phi = atan2(local_velocity.y(), -local_velocity.x());

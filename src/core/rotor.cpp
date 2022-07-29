@@ -19,14 +19,19 @@ void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blade
     for (int ii = 0; ii < blades.size(); ii++) {
         blades_elasto.push_back(blades[ii]->elasto);
         blades_aero.push_back(blades[ii]->aero);
+        blades[ii]->update_positions_aero();
     }
 
     // build elasto
     elasto.build(system, blades_elasto);
+    // update blade aero positions from new elasto positions
+    for (int ii = 0; ii < blades.size(); ii++) {
+        blades[ii]->update_positions_aero();
+    }
+    // update hub position from elasto
+    update_positions_aero();
     // build aero
     aero.build(blades_aero);
-    update_positions_aero();
-    aero.compute_chords_solidity();
 }
 
 void Rotor::prestep(double time) {

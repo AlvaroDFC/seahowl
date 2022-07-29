@@ -5,7 +5,10 @@ BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferen
     length = (point1.coordinates - point2.coordinates).Length();
 }
 
-ChVector2<double> BladeElementAero::get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0) {
+ChVector2<double> BladeElementAero::get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0,
+                                                               double nblades,
+                                                               bool tip_loss,
+                                                               bool hub_loss) {
     // local_velocity is in local element frame
     ChVector2<double> local_velocity;
     ChVector2<double> local_velocity_rotor;
@@ -57,11 +60,24 @@ ChVector2<double> BladeElementAero::get_induced_velocity_rotor(ChVector2<double>
         double cx = cl * cos_phi + cd * sin_phi;
         double cy = cl * sin_phi - cd * cos_phi;
 
-        // update induction factors
+        // losses
+        double loss_factor = 1.0;
+        if (tip_loss) {
+            // Prandtl's approximation for tip-loss factor
+            loss_factor *= (2.0 / CH_C_PI) *
+                           std::acos(std::exp(nblades * (-distance_from_tip)) / (2.0 * radius * std::fabs(sin_phi)));
+        }
+        if (hub_loss) {
+            // hub loss
+            double hub_radius = (radius - distance_from_hub);
+            loss_factor *= (2.0 / CH_C_PI) * std::acos(std::exp(nblades * (-distance_from_hub)) /
+                                                       (2.0 * hub_radius * std::fabs(sin_phi)));
+        }
 
-        aa = chord_solidity / (4.0 * sin_phi * sin_phi) * (cx - chord_solidity * cy * cy / (4.0 * sin_phi * sin_phi)) *
+        // update induction factors
+        aa = (chord_solidity * cx - (pow(chord_solidity, 2) * cy * cy)) / (4.0 * sin_phi * sin_phi * loss_factor) *
              (1.0 - aa);
-        ap = chord_solidity * cy / (4.0 * sin_phi * cos_phi) * (1.0 + ap);
+        ap = chord_solidity * cy / (4.0 * sin_phi * cos_phi * loss_factor) * (1.0 + ap);
 
         // apply limits on induction factors
 
@@ -205,6 +221,34 @@ void BladeAero::build() {
         elements.push_back(element);
         // push empty load
         loads.push_back(ChVector<double>(0.0, 0.0, 0.0));
+    }
+
+    // get distance from tip
+    compute_distances_from_tip();
+}
+
+void BladeAero::compute_distances_from_tip() {
+    // this is the position of the element at the tip
+    auto& element_tip_position = elements.back().properties.coordinates;
+    // need to add 0.5*length of the element to get actual distance from tip
+    double offset = 0.5 * elements.back().length;
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto& element = elements[ii];
+        element.distance_from_tip = (element.properties.coordinates - element_tip_position).Length() + offset;
+    }
+}
+
+void BladeAero::compute_distances_from_hub(ChVector<double> hub_apex_position, double hub_radius) {
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto& element = elements[ii];
+        element.distance_from_hub = (element.properties.coordinates - hub_apex_position).Length() - hub_radius;
+    }
+}
+
+void BladeAero::compute_radii(ChVector<double> hub_apex_position) {
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto& element = elements[ii];
+        element.radius = (element.properties.coordinates - hub_apex_position).Length();
     }
 }
 
