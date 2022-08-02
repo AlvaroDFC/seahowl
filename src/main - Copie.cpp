@@ -1,22 +1,53 @@
-#include "chrono/fea/ChVisualizationFEAmesh.h"
-#include "chrono/physics/ChBodyEasy.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/solver/ChIterativeSolverLS.h"
-#include "chrono_irrlicht/ChIrrApp.h"
-#include "chrono/physics/ChLinkMotorRotationSpeed.h"
-#include "chrono/solver/ChDirectSolverLS.h"
+#include <chrono/fea/ChVisualizationFEAmesh.h>
+#include <chrono/physics/ChBodyEasy.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/solver/ChIterativeSolverLS.h>
+
+#include <chrono/physics/ChLinkMotorRotationSpeed.h>
+#include <chrono/solver/ChDirectSolverLS.h>
+
+
 #include <cmath>
+#include <stdexcept>
+
+#include "elasto/blade_elasto.h"
+#include "core/blade.h"
+#include "core/rotor.h"
 
 #include "io/read_json.h"
 #include "servo/controller.h"
 
 using namespace chrono;
+
+#ifdef HAVE_IRRLICHT
+    #include <chrono_irrlicht/ChIrrApp.h>
 using namespace chrono::irrlicht;
 using namespace irr;
+#endif
+
+#include <filesystem> // C++17
+
+using std::filesystem::path;
+using std::filesystem::absolute;
 
 int main(int argc, char* argv[]) {
     // SETUP
+    if (argc < 2) {
+        std::cerr << "Usage: seahol_driver.exe <datadir>" << std::endl;
+        return 1;
+    }
+
+    auto datadir = absolute(path(argv[1]));
+
+    std::vector<std::string> blades_files = {
+        (datadir / "IEA15MW_blade.json").generic_string(),
+        (datadir / "IEA15MW_blade.json").generic_string(),
+        (datadir / "IEA15MW_blade.json").generic_string()};
+
+    auto rotor_file = (datadir / "IEA15MW_RNA.json").generic_string();
+    auto tower_file = (datadir / "IEA15MW_tower.json").generic_string();
+
 
     // general options
     bool visualization_on = true;
@@ -85,10 +116,6 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
 
-    std::vector<std::string> blades_files = {"../data/IEA15MW_blade.json", "../data/IEA15MW_blade.json",
-                                             "../data/IEA15MW_blade.json"};
-    auto rotor_file = "../data/IEA15MW_RNA.json";
-    auto tower_file = "../data/IEA15MW_tower.json";
 
     std::vector<std::shared_ptr<Turbine>> turbines;
     int nturbines = 1;
@@ -105,7 +132,7 @@ int main(int argc, char* argv[]) {
 
         // increase elements for visualization
         for (int jj = 0; jj < turbine->blades.size(); jj++) {
-            auto blade = turbine->blades[jj]->elasto;
+            auto& blade = turbine->blades[jj]->elasto;
             for (int kk = 0; kk < blade->elements.size(); kk++) {
                 blade->elements[kk]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
                 blade->elements[kk]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
@@ -124,6 +151,62 @@ int main(int argc, char* argv[]) {
 
     // VISUALIZATION
 
+/*
+ #ifdef HAVE_IRRLICHT
+    // make visualization app
+    ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
+    application.AddTypicalLights();
+    application.AddTypicalSky();
+    application.AddTypicalCamera(core::vector3df(-300, 150, -50));
+
+    auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+    visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
+    visualize_beam->SetColorscaleMinMax(-0.4, 0.4);
+    blades_mesh->AddAsset(visualize_beam);
+
+    // visualize nodes
+    auto visualize_nodes = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+    visualize_nodes->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
+    visualize_nodes->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
+    visualize_nodes->SetSymbolsThickness(1.0);
+    visualize_nodes->SetSymbolsScale(1.0);
+    visualize_nodes->SetZbufferHide(false);
+    blades_mesh->AddAsset(visualize_nodes);
+
+    // visualize node coordinate systems
+    auto visualize_nodes_coordsys = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
+    visualize_nodes_coordsys->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
+    visualize_nodes_coordsys->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NONE);
+    visualize_nodes_coordsys->SetSymbolsThickness(10.0);
+    visualize_nodes_coordsys->SetSymbolsScale(1.0);
+    visualize_nodes_coordsys->SetZbufferHide(false);
+    blades_mesh->AddAsset(visualize_nodes_coordsys);
+
+    // needed for visulization after setting everything up
+    application.AssetBindAll();
+    application.AssetUpdateAll();
+    application.AddShadowAll();
+#endif
+    // SIMULATION LOOP
+
+    double dt = 0.1;
+    //application.SetTimestep(dt);
+    //application.SetVideoframeSave(false);
+    //application.SetVideoframeSaveInterval(20);
+
+    system.Setup();
+    double time = 0.0;
+    int step = 0;
+    // system.DoStaticLinear();
+    // system.DoStaticNonlinear(10, true);
+    // application.DoStep();
+    auto wind_model = ConstantWind();
+    wind_model.set_wind_speed(ChVector<double>(10.59, 0.0, 0.0));
+
+    try {
+#ifdef HAVE_IRRLICHT
+        while (application.GetDevice()->run()) {
+*/
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     if (visualization_on) {
         // make visualization app
@@ -188,6 +271,8 @@ int main(int argc, char* argv[]) {
         system.DoStaticLinear();
         system.DoStaticNonlinear(10, true);
     }
+
+     try {
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep
@@ -208,6 +293,21 @@ int main(int argc, char* argv[]) {
             application.DrawAll();
             application.DoStep();
             application.EndScene();
+            /*
+
+            #else
+                    while (true) {
+                        system.DoStepDynamics(dt);
+            #endif
+                        time += system.GetStep();
+                        step += 1;
+                        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() <<
+            "\n";
+
+                        // apply force
+                        for (int ii = 0; ii < turbines.size(); ii++) {
+                            turbines[ii]->prestep(time, wind_model);
+            */
         } else {
             system.DoStepDynamics(dt);
         }
@@ -233,6 +333,8 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-
+    } catch (std::exception& exc) {
+        std::cerr << exc.what() << std::endl;
+    }
     return 0;
 }
