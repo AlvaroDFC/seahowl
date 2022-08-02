@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 #include "elasto/blade_elasto.h"
-#include "core/blade_core.h"
+#include "core/blade.h"
 #include "core/rotor.h"
 
 #include "io/read_json.h"
@@ -271,6 +271,8 @@ int main(int argc, char* argv[]) {
         system.DoStaticLinear();
         system.DoStaticNonlinear(10, true);
     }
+
+     try {
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep
@@ -287,25 +289,25 @@ int main(int argc, char* argv[]) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
-
             application.BeginScene();
             application.DrawAll();
             application.DoStep();
             application.EndScene();
-/*
+            /*
 
-#else
-        while (true) {
-            system.DoStepDynamics(dt);
-#endif
-            time += system.GetStep();
-            step += 1;
-            GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() << "\n";
+            #else
+                    while (true) {
+                        system.DoStepDynamics(dt);
+            #endif
+                        time += system.GetStep();
+                        step += 1;
+                        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.get_rpm() <<
+            "\n";
 
-            // apply force
-            for (int ii = 0; ii < turbines.size(); ii++) {
-                turbines[ii]->prestep(time, wind_model);
-*/
+                        // apply force
+                        for (int ii = 0; ii < turbines.size(); ii++) {
+                            turbines[ii]->prestep(time, wind_model);
+            */
         } else {
             system.DoStepDynamics(dt);
         }
@@ -328,9 +330,9 @@ int main(int argc, char* argv[]) {
                 turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
                 // torque elec is apply on Z axis of hub body (locally)
                 turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
-
             }
         }
+    }
     } catch (std::exception& exc) {
         std::cerr << exc.what() << std::endl;
     }

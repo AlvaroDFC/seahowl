@@ -8,8 +8,8 @@
 
 #include "../../src/elasto/blade_elasto.h"
 #include "../../src/elasto/rotor_elasto.h"
-
 #include "../../src/elasto/tower_elasto.h"
+
 #include "../../src/io/read_json.h"
 
 using namespace chrono;
@@ -88,7 +88,9 @@ TEST(test_rotor, mass) {
     std::vector<std::shared_ptr<Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
 
-        auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
+        auto blade_core = std::make_shared<Blade>(
+            get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string())
+            );
 
         std::vector<double> fractions;
         fractions.clear();
