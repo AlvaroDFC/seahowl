@@ -37,3 +37,4 @@ add_test(
 	NAME test_01 
 	COMMAND $<TARGET_FILE:test_01> ${SEAHOWL_DATADIR}
 )
+

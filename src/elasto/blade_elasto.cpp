@@ -27,7 +27,8 @@ void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     } else {
         build_elements_tapered_timoshenko(mesh);
     }
-    build_loads(system);
+    // commented out since loads are applied to nodes;
+    // build_loads(system);
 };
 
 void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
@@ -282,7 +283,7 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
     node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
 
     // load on second node
-    double weight1 = 0.5 * abs(eta - 1);
+    double weight1 = 0.5 * abs(eta + 1);
     auto load1 = load * weight1;
     auto& node1 = element->GetNodeB();
     node1->SetForce(node1->GetForce() + load1);
@@ -296,4 +297,5 @@ void BladeElasto::apply_pitch_increment(double pitch_increment) {
     translate(-root_pos);
     rotate(pitch_increment, root_dir);
     translate(root_pos);
+    pitch += pitch_increment;
 };

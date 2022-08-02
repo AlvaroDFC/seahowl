@@ -124,6 +124,7 @@ endif()
 add_library( seahowl_core )
 
 
+
 set(SEAHOWL_SOURCES 
 
 	src/elasto/blade_elasto.cpp src/core/rotor.cpp 

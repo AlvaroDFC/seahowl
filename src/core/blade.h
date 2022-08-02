@@ -21,7 +21,8 @@ class Blade {
     void set_discretization_aero(std::vector<double> fractions);
     void compute_mapping_aero2elasto();
     void compute_mapping_elasto2aero();
-    void prestep(double time, WindModel& wind_model);
+    void prestep(double time);
+    void poststep(double time);
     void update_positions_aero();
     void update_loads_elasto();
 };

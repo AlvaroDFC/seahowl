@@ -64,9 +64,10 @@ struct AirfoilProperties {
             double alpha2 = coefficients_list[ii + 1].alpha;
             if (alpha1 <= alpha && alpha <= alpha2) {
                 double alpha_range = alpha2 - alpha1;
-                double weight1 = (alpha - alpha1) / alpha_range;
-                double weight2 = (alpha2 - alpha1) / alpha_range;
+                double weight1 = 1.0 - (alpha - alpha1) / alpha_range;
+                double weight2 = 1.0 - (alpha2 - alpha) / alpha_range;
                 AirfoilCoefficients coefficients;
+                coefficients.alpha = coefficients_list[ii].alpha * weight1 + coefficients_list[ii + 1].alpha * weight2;
                 coefficients.lift = coefficients_list[ii].lift * weight1 + coefficients_list[ii + 1].lift * weight2;
                 coefficients.drag = coefficients_list[ii].drag * weight1 + coefficients_list[ii + 1].drag * weight2;
                 coefficients.added_mass =

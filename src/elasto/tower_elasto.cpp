@@ -1,13 +1,13 @@
 #include "tower_elasto.h"
 #include "../utils.h"
 
-void Tower::build(std::shared_ptr<ChMesh> mesh) {
+void TowerElasto::build(std::shared_ptr<ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     build_elements_tapered_timoshenko(mesh);
 };
 
-void Tower::build_nodes(std::shared_ptr<ChMesh> mesh) {
+void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
 
     const auto nnodes = discretized_points.size();
@@ -40,7 +40,7 @@ void Tower::build_nodes(std::shared_ptr<ChMesh> mesh) {
     };
 }
 
-void Tower::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
+void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -94,7 +94,7 @@ void Tower::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     }
 }
 
-void Tower::rotate(double angle, ChVector<double> axis) {
+void TowerElasto::rotate(double angle, ChVector<double> axis) {
     auto rotation = Q_from_AngAxis(angle, axis);
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
@@ -105,14 +105,14 @@ void Tower::rotate(double angle, ChVector<double> axis) {
     }
 }
 
-void Tower::translate(ChVector<double> translation_vector) {
+void TowerElasto::translate(ChVector<double> translation_vector) {
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
         node->SetPos(node->GetPos() + translation_vector);
     }
 }
 
-void Tower::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
+void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
@@ -129,7 +129,7 @@ void Tower::set_damping_coefficients(double axial, double edge, double flap, dou
     }
 }
 
-double Tower::get_mass() {
+double TowerElasto::get_mass() {
     double total_mass = 0.0;
     for (int ii = 0; ii < elements.size(); ii++) {
         total_mass += elements[ii]->GetMass();
