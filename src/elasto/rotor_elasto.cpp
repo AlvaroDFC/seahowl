@@ -1,4 +1,6 @@
-#include "rotor_elasto.h"
+#include <seahowl/elasto/rotor_elasto.h>
+
+
 #include "chrono/physics/ChBodyEasy.h"
 
 RotorElasto::RotorElasto() {}

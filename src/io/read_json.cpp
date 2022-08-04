@@ -1,7 +1,8 @@
+#include "seahowl/io/read_json.h"
+#include "seahowl/utils.h"
+
 #include <fstream>
 #include <iostream>
-#include "read_json.h"
-#include "seahowl/utils.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 

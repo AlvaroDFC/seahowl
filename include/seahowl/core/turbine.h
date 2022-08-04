@@ -1,8 +1,7 @@
-#ifndef TURBINE_H_
-#define TURBINE_H_
+#pragma once
 
-#include "blade.h"
-#include "rotor.h"
+#include <seahowl/core/blade.h>
+#include <seahowl/core/rotor.h>
 
 #include "../elasto/tower_elasto.h"
 
@@ -25,4 +24,3 @@ class Turbine {
     void compute_wind_loads(WindModel& wind_model, double time);
 };
 
-#endif  // TURBINE_H_

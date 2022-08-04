@@ -1,4 +1,4 @@
-#include "rotor.h"
+#include "seahowl/core/rotor.h"
 
 Rotor::Rotor() {
     elasto = RotorElasto();

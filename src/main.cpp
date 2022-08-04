@@ -8,8 +8,8 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
 
-#include "io/read_json.h"
-#include "servo/controller.h"
+#include <seahowl/io/read_json.h>
+#include <seahowl/servo/controller.h>
 
 using namespace chrono;
 using namespace chrono::irrlicht;

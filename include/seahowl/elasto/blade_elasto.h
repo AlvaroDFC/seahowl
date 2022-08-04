@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../elasto/reference_point_elasto.h"
-#include "utils_elasto.h"
+#include <seahowl/elasto/reference_point_elasto.h>
+#include <seahowl/elasto/utils_elasto.h>
 #include <seahowl/utils.h>
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
@@ -9,7 +9,7 @@
 #include "chrono/fea/ChMesh.h"
 #include "chrono/physics/ChSystemSMC.h"
 
-using namespace chrono;
+using namespace chrono;  /// TO BE REMOVED
 using namespace chrono::fea;
 
 /**@brief Elastodynamic model for blade */

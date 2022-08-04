@@ -1,4 +1,4 @@
-#include "turbine.h"
+#include "seahowl/core/turbine.h"
 
 Turbine::Turbine() {
     rotor = Rotor();

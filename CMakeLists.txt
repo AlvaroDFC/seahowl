@@ -196,6 +196,11 @@ target_sources(seahowl_driver
 )
 
 target_include_directories(seahowl_driver
+
+	PUBLIC
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+
     PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/
 	${CMAKE_CURRENT_SOURCE_DIR}/include

@@ -1,7 +1,6 @@
-#ifndef ROTOR_H_
-#define ROTOR_H_
+#pragma once
 
-#include "blade.h"
+#include <seahowl/core/blade.h>
 #include "../elasto/rotor_elasto.h"
 #include <seahowl/aero/rotor_aero.h>
 
@@ -21,4 +20,3 @@ class Rotor {
     void poststep(double time);
 };
 
-#endif  // ROTOR_H_

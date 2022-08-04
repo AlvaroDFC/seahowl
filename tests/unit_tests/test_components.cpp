@@ -6,11 +6,11 @@
 #include <chrono/solver/ChDirectSolverLS.h>
 #include <chrono/solver/ChIterativeSolverLS.h>
 
-#include "../../src/elasto/blade_elasto.h"
-#include "../../src/elasto/rotor_elasto.h"
-#include "../../src/elasto/tower_elasto.h"
+#include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/elasto/rotor_elasto.h>
+#include <seahowl/elasto/tower_elasto.h>
 
-#include "../../src/io/read_json.h"
+#include <seahowl/io/read_json.h>
 
 using namespace chrono;
 

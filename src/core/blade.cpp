@@ -1,4 +1,4 @@
-#include "blade.h"
+#include "seahowl/core/blade.h"
 
 Blade::Blade() {
     elasto = std::make_shared<BladeElasto>();

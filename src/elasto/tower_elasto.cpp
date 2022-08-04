@@ -1,4 +1,4 @@
-#include "tower_elasto.h"
+#include <seahowl/elasto/tower_elasto.h>
 #include "seahowl/utils.h"
 
 void TowerElasto::build(std::shared_ptr<ChMesh> mesh) {

@@ -1,12 +1,13 @@
-#ifndef CONTROLLER_H_
-#define CONTROLLER_H_
+#pragma once
 
+/**@brief Base class for controller */
 class Controller {
   public:
     Controller(){};
     ~Controller(){};
 };
 
+/**@brief Variable torque controler */
 class ControllerVariableTorque : public Controller {
   private:
     double torque_elec_previous = 0.0;
@@ -20,4 +21,4 @@ class ControllerVariableTorque : public Controller {
     double get_torque_elec(double torque_total, double rpm);
 };
 
-#endif  // CONTROLLER_H_
+

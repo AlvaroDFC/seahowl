@@ -1,4 +1,4 @@
-#include "blade_elasto.h"
+#include <seahowl/elasto/blade_elasto.h>
 
 #include <numeric>
 
