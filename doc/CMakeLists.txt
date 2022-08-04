@@ -1,3 +1,7 @@
+# ===================
+# SPHINX
+# ===================
+
 find_package(Sphinx)
 
 if(NOT Sphinx_FOUND)
@@ -5,16 +9,15 @@ if(NOT Sphinx_FOUND)
     return()
 endif(NOT Sphinx_FOUND)
 
-
 set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
-set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/doc)
+set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/user)
 set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
 
 add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
 
     COMMAND
 
-    ${SPHINX_EXECUTABLE} -a -b html  # Force write all files
+    ${SPHINX_EXECUTABLE} -a -b html # Force write all files
     ${SPHINX_SOURCE} ${SPHINX_BUILD}
 
     WORKING_DIRECTORY
@@ -31,3 +34,26 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
 
 add_custom_target(Sphinx DEPENDS ${SPHINX_SOURCE} ${SPHINX_INDEX_FILE})
 add_custom_target(documentation ALL DEPENDS Sphinx)
+
+# ===================
+# DOXYGEN
+# ===================
+find_package(Doxygen
+    REQUIRED dot
+    OPTIONAL_COMPONENTS mscgen dia)
+
+set(DOXYGEN_PROJECT_BRIEF "Floating Offshore Wind Turbines")
+
+set(DOXYGEN_MATHJAX_EXTENSIONS YES)
+set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
+set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
+
+set(DOXYGEN_GENERATE_HTML YES)
+set(DOXYGEN_GENERATE_MAN NO)
+
+doxygen_add_docs(
+    doxygen
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/include
+    COMMENT "Generate HTML pages"
+)

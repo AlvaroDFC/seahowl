@@ -5,11 +5,15 @@
 #include "../aero/blade_aero.h"
 #include "../utils.h"
 
+/**@brief wind turbine blade base class
+
+Pattern <mediator> for elasto and aero 
+*/
 class Blade {
   public:
     std::shared_ptr<BladeElasto> elasto;
     std::shared_ptr<BladeAero> aero;
-    std::vector<BladeReferencePoint> reference_points;
+    std::vector<BladeReferencePoint> reference_points; 
     std::vector<DiscretizationPoint> mapping_aero2elasto;
     std::vector<DiscretizationPoint> mapping_elasto2aero;
 
@@ -23,7 +27,11 @@ class Blade {
     void compute_mapping_elasto2aero();
     void prestep(double time);
     void poststep(double time);
+
+    /**@brief Compute aerodynamic loadings */
     void update_positions_aero();
+
+    /**@brief Compute elastodynamic loadings */
     void update_loads_elasto();
 };
 
