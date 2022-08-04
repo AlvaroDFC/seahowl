@@ -43,7 +43,7 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
                 throw std::runtime_error("Discretization fraction must be between 0 and 1 but was " +
                                          std::to_string(fraction) + ".");
             }
-            int idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
+            auto idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
                       reference_fractions.begin();
             // decrease index for convenience
             idx -= 1;

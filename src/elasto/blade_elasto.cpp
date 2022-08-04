@@ -1,5 +1,7 @@
 #include "blade_elasto.h"
 
+#include <numeric>
+
 #include "chrono/fea/ChBuilderBeam.h"
 
 BladeElasto::BladeElasto() {}
@@ -31,10 +33,10 @@ void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
 
 void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
-    int nnodes = discretized_points.size();
-    for (int ii = 0; ii < nnodes; ii++) {
-        auto discretized_point = discretized_points[ii];
-        auto node_pos = discretized_point.coordinates;
+    const auto nnodes = discretized_points.size();
+    for (size_t ii = 0; ii < nnodes; ii++) {
+        auto& discretized_point = discretized_points[ii];
+        auto& node_pos = discretized_point.coordinates;
 
         // get node coordinate system
         ChVector<> node_axis;
@@ -66,15 +68,15 @@ void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
 
 void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
-    int nelements = nodes.size() - 1;
+    const auto nelements = nodes.size() - 1;
 
     if (nelements <= 0) {
         throw std::runtime_error("Trying to build blade with no element.");
     }
 
     // make first section for tapered section
-    auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
-    auto discretized_point = discretized_points[0];
+    auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
     section->SetCentroidY(discretized_point.offset_elastic.y());
@@ -91,7 +93,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
     // damping
     section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 
-    for (int ii = 1; ii < nelements + 1; ii++) {
+    for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
         auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenko>();
         // add element to blade elements vector
@@ -111,7 +113,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
         // make second section for tapered section
         section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
         blade_section->SetSectionB(section);
-        auto discretized_point = discretized_points[ii];
+        auto& discretized_point = discretized_points[ii];
         // offsets
         section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
         section->SetCentroidY(discretized_point.offset_elastic.y());
@@ -138,15 +140,15 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
 }
 void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
-    int nelements = nodes.size() - 1;
+    const auto nelements = nodes.size() - 1;
 
     ChMatrixNM<double, 6, 6> mm;
     for (int jj = 0; jj < 6; jj++) {
         mm(jj, jj) = 1.0;
     }
     // make first section for tapered section
-    auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
-    auto discretized_point = discretized_points[0];
+    auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+    auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
     section->SetCentroidY(discretized_point.offset_elastic.y());
@@ -157,7 +159,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
     // damping
     section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 
-    for (int ii = 1; ii < nelements + 1; ii++) {
+    for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
         auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenkoFPM>();
         // add element to blade elements vector
@@ -177,7 +179,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
         // make second section for tapered section
         section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
         blade_section->SetSectionB(section);
-        auto discretized_point = discretized_points[ii];
+        auto& discretized_point = discretized_points[ii];
         // offsets
         section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
         section->SetCentroidY(discretized_point.offset_elastic.y());
@@ -200,9 +202,10 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
 void BladeElasto::build_loads(ChSystemSMC& system) {
     auto loadcontainer = chrono_types::make_shared<ChLoadContainer>();
     system.Add(loadcontainer);
-    for (int ii = 0; ii < elements.size(); ii++) {
-        auto element = elements[ii];
-        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element));
+
+    for (auto element : elements) {
+        /// TO CHECK ???? 
+        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element)); /////TODOOOOO POINTER NEW ????????
         loaders_aero.push_back(loader_weighted);
         loadcontainer->Add(loader_weighted);
     }
@@ -210,45 +213,42 @@ void BladeElasto::build_loads(ChSystemSMC& system) {
 
 void BladeElasto::rotate(double angle, ChVector<double> axis) {
     auto rotation = Q_from_AngAxis(angle, axis);
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto node = nodes[ii];
-        auto new_position = rotation.Rotate(node->GetPos());
+
+    for (auto node : nodes) {
+        auto& new_position = rotation.Rotate(node->GetPos());
         node->SetPos(new_position);
-        auto new_rotation = (rotation * node->GetRot()).GetNormalized();
+        auto& new_rotation = (rotation * node->GetRot()).GetNormalized();
         node->SetRot(new_rotation);
     }
 }
 
 void BladeElasto::translate(ChVector<double> translation_vector) {
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto node = nodes[ii];
+    for (auto node: nodes) {
         node->SetPos(node->GetPos() + translation_vector);
     }
 }
 
-void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
-    DampingCoefficients damping_coefficients;
-    damping_coefficients.bx = axial;
-    damping_coefficients.by = edge;
-    damping_coefficients.bz = flap;
-    damping_coefficients.bt = torsion;
-    for (int ii = 0; ii < reference_points.size(); ii++) {
-        auto reference_point = reference_points[ii];
-        reference_point.damping_coefficients = damping_coefficients;
+void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) 
+{
+    
+    const DampingCoefficients damping_coefficients{axial, edge, flap, torsion};
+
+    for (auto& point : reference_points) {
+        point.damping_coefficients = damping_coefficients;
     }
-    for (int ii = 0; ii < elements.size(); ii++) {
-        auto section = elements[ii]->GetTaperedSection();
+
+    for (auto element : elements) {
+        auto section = element->GetTaperedSection();
         section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
-        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
+        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);  
     }
 }
 
 double BladeElasto::get_mass() {
-    double total_mass = 0.0;
-    for (int ii = 0; ii < elements.size(); ii++) {
-        total_mass += elements[ii]->GetMass();
-    }
-    return total_mass;
+    return std::accumulate(cbegin(elements), cend(elements), 0.0, 
+        [](double total, decltype(elements)::value_type pElem) {
+        return total += pElem->GetMass();}
+    );
 }
 
 void BladeElasto::evaluate_position_rotation(ChVector<double>& position,
@@ -259,9 +259,9 @@ void BladeElasto::evaluate_position_rotation(ChVector<double>& position,
 }
 
 void BladeElasto::reset_loads() {
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        nodes[ii]->SetForce(ChVector<double>(0.0, 0.0, 0.0));
-        nodes[ii]->SetTorque(ChVector<double>(0.0, 0.0, 0.0));
+    for (auto node : nodes) {
+        node->SetForce({0.0, 0.0, 0.0}); 
+        node->SetTorque({0.0, 0.0, 0.0});
     }
 }
 
@@ -270,22 +270,22 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
         throw std::runtime_error("Element index " + std::to_string(element_index) + " does not exist (max " +
                                  std::to_string(elements.size()) + ").");
     }
-    auto element = elements[element_index];
-    auto position = ChVector<double>(0.0, 0.0, 0.0);
-    auto rotation = ChQuaternion<double>(0.0, 0.0, 0.0, 0.0);
+    auto& element = elements[element_index];
+    ChVector<double> position{0.0, 0.0, 0.0};
+    ChQuaternion<double> rotation{0.0, 0.0, 0.0, 0.0};
     element->EvaluateSectionFrame(eta, position, rotation);
 
     // load on first node
     double weight0 = 0.5 * abs(eta - 1);
     auto load0 = load * weight0;
-    auto node0 = element->GetNodeA();
+    auto& node0 = element->GetNodeA();
     node0->SetForce(node0->GetForce() + load0);
     node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
 
     // load on second node
     double weight1 = 0.5 * abs(eta + 1);
     auto load1 = load * weight1;
-    auto node1 = element->GetNodeB();
+    auto& node1 = element->GetNodeB();
     node1->SetForce(node1->GetForce() + load1);
     node1->SetTorque(node1->GetTorque() + (position - node1->GetPos()) % load1);
 }
@@ -293,7 +293,7 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
 void BladeElasto::apply_pitch_increment(double pitch_increment) {
     // apply pitch from root node direction and position
     auto root_dir = nodes.front()->TransformDirectionLocalToParent(ChVector<double>(1.0, 0.0, 0.0));
-    auto root_pos = nodes.front()->GetPos();
+    auto& root_pos = nodes.front()->GetPos();
     translate(-root_pos);
     rotate(pitch_increment, root_dir);
     translate(root_pos);

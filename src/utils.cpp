@@ -18,12 +18,12 @@ std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& d
                                      std::to_string(fraction) + ".");
         }
         if (fraction == 0) {
-            DiscretizationPoint point;
+            DiscretizationPoint point{};
             point.index = 0;
             point.eta = -1;
             points.push_back(point);
         } else {
-            int idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
+            auto idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
                       reference_fractions.begin();
             // decrease index for getting lower bound
             idx -= 1;
@@ -34,8 +34,8 @@ std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& d
             double fraction_upper = reference_fractions[idx + 1];
             double fraction_range = fraction_upper - fraction_lower;
             double eta = 2.0 * (fraction - fraction_lower) / fraction_range - 1.0;
-            DiscretizationPoint point;
-            point.index = idx;
+            DiscretizationPoint point{};
+            point.index = static_cast<decltype(point.index)>(idx);
             point.eta = eta;
             points.push_back(point);
         }

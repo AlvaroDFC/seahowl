@@ -1,63 +1,56 @@
 cmake_minimum_required(VERSION 3.10)
-set(CMAKE_CXX_STANDARD 17)
 
-project(seahowl)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-#--------------------------------------------------------------
-# === 2 ===
-# Find the Chrono package and any REQUIRED or OPTIONAL modules
-# by invoking the find_package function in CONFIG mode:
-#    find_package(Chrono
-#                 COMPONENTS req_module1 req_module1 ...
-#                 OPTIONAL_COMPONENTS opt_module1 opt_module2 ...
-#                 CONFIG)
-# The following Chrono modules can be requested (their names
-# are case insensitive): Cascade, Cosimulation, FEA, Irrlicht,
-# Matlab, Parallel, Postprocess, Python, Vehicle.
-# 
-# Note that you will have to set the variable Chrono_DIR to 
-# specify the location of the ChronoConfig.cmake script, if
-# it is not in its default install location.
-# Chrono_DIR can be either a Chrono build tree or a Chrono install tree.
-# 
-# The following variables are set and can be used further down:
-# CHRONO_FOUND
-#   set to true if Chrono and all required components were found
-# CHRONO_C_FLAGS
-# CHRONO_CXX_FLAGS
-#   C and C++ compilation flags
-# CHRONO_INCLUDE_DIRS
-#   additional paths for included headers
-# CHRONO_LIBRARIES
-#   list of required libraries (with full path)
-# CHRONO_LINKER_FLAGS
-#   additional linker flags
-# CHRONO_DLLS
-#   list of all DLL dependencies (with full path)
-# CHRONO_DATA_DIR
-#   path to the Chrono data make_directory
-# 
-# In addition, for each requested component [COMPONENT], the
-# following variable is set to true (ON) or false (OFF):
-# CHRONO_[COMPONENT]_FOUND
-# 
-# In this example, we only request the Irrlicht module (required)
-# and, for demonstration purposes, the PardisoMKL module (optional)
-#--------------------------------------------------------------
 
-LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
+# ==================
+# SEAHOWL PROJECT
+# =================
+project( SEAHOWL 
+         VERSION 0.0.1
+         DESCRIPTION "Wind Turbine simulation with CHRONO"
+         LANGUAGES CXX
+)
+
+# guard against in-source builds
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. ")
+endif()
+
+
+LIST(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")  # TO BE CLEANDED
+
+# Add the cmake folder so the FindSphinx module is found
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+# =============
+# OPTIONS
+# =============
+
+option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
+option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
+
+# =======================
+# External libraries
+# =======================
+if(SEAHOWL_ENABLE_IRRLICHT)
+    set(IRRLICHT_COMP Irrlicht )
+    add_definitions("-DHAVE_IRRLICHT=1")
+endif(SEAHOWL_ENABLE_IRRLICHT)
+
 find_package(Chrono
-             COMPONENTS Irrlicht
-             OPTIONAL_COMPONENTS PardisoMKL
-             CONFIG)
+            COMPONENTS ${IRRLICHT_COMP}
+            OPTIONAL_COMPONENTS PardisoMKL
+            CONFIG REQUIRED)
 
-#--------------------------------------------------------------
-# Return now if Chrono or a required component was not found.
-#--------------------------------------------------------------
 
-if (NOT Chrono_FOUND)
-  message("Could not find Chrono or one of its required modules")
-  return()
+
+find_package(nlohmann_json CONFIG REQUIRED)
+
+
+
+if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
+	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
 endif()
 
 #--------------------------------------------------------------
@@ -82,11 +75,8 @@ endif()
 # of the requested modules.
 #--------------------------------------------------------------
 
-include_directories(${CHRONO_INCLUDE_DIRS} /opt/homebrew/include)
+include_directories(/opt/homebrew/include)  ## TO BE REMOVED
 
-#-----------------------------------------------------------------------------
-# Fix for VS 2017 15.8 and newer to handle alignment specification with Eigen
-#-----------------------------------------------------------------------------
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   if(MSVC AND ${MSVC_VERSION} GREATER_EQUAL 1915)
@@ -103,37 +93,126 @@ if(MSVC)
     add_definitions( "-DNOMINMAX" )                # do not use MSVC's min/max macros
     add_compile_options(/wd4275)                   # disable warnings triggered by Irrlicht
     add_compile_options(/wd4251)                   # class needs to have dll-interface
+
+    ## TO BE REMOVED: SHOULD BE ALREADY SET BY CHRONO LIBRARY
+    if(${MSVC_VERSION} GREATER_EQUAL 1915)         # Fix for VS 2017 15.8 and newer to handle alignment specification with Eigen
+        add_definitions( "-D_ENABLE_EXTENDED_ALIGNED_STORAGE" )
+    endif()
 else()
     set(EXTRA_COMPILE_FLAGS "")
 endif()
 
-#--------------------------------------------------------------
-# === 3 ===
-# Add the executable from your project and specify all C++ 
-# files in your project. 
-#--------------------------------------------------------------
+# ==============
+# DATADIR
+# ==============
+# Define a data directory to find test input files
+#
+# If the directory is not set as environment variable 
+# set a default value in CMake variable. This default
+# value can be modified in the CMakeCache.txt file
+# in build directory.
+#
+if(DEFINED ENV{SEAHOWL_DATADIR})
+	set(SEAHOWL_DATADIR $ENV{SEAHOWL_DATADIR})
+else()
+	set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
+endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp src/elasto/blade_elasto.cpp src/elasto/rotor_elasto.cpp src/elasto/tower_elasto.cpp src/io/read_json.cpp src/utils.cpp src/core/blade.cpp src/aero/blade_aero.cpp src/core/turbine.cpp src/core/rotor.cpp src/aero/rotor_aero.cpp src/servo/controller.cpp)
+# ================
+# CORE LIBRARY
+# ================
+add_library( seahowl_core )
 
-#--------------------------------------------------------------
-# Set properties for your executable target
-# 
-# Note that here we define a macro CHRONO_DATA_DIR which will
-# contain the path to the Chrono data directory, either in its
-# source tree (if using a build version of Chrono), or in its
-# install tree (if using an installed version of Chrono).
-#--------------------------------------------------------------
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+
+set(SEAHOWL_SOURCES 
+
+	src/elasto/blade_elasto.cpp 
+    src/elasto/rotor_elasto.cpp
+    src/elasto/tower_elasto.cpp
+    src/core/rotor.cpp 
+    src/core/blade.cpp
+    src/core/turbine.cpp
+    src/aero/blade_aero.cpp 
+    src/aero/rotor_aero.cpp
+    src/servo/controller.cpp
+
+	src/io/read_json.cpp src/utils.cpp 
+	 
+)
+
+target_sources(seahowl_core 
+    PRIVATE 
+    ${SEAHOWL_SOURCES}
+)
+
+target_include_directories(seahowl_core
+    PRIVATE
+    ${CHRONO_INCLUDE_DIRS}
+)
+
+target_compile_features(
+	seahowl_core
+
+	PRIVATE
+	cxx_std_17
+)
+
+set_target_properties(seahowl_core
+
+    PROPERTIES
+        CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
-	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}")
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
+)
 
-#--------------------------------------------------------------
-# Link to Chrono libraries and dependency libraries
-#--------------------------------------------------------------
 
-target_link_libraries(${PROJECT_NAME} ${CHRONO_LIBRARIES})
+target_link_libraries(seahowl_core
+    PRIVATE 
+    nlohmann_json::nlohmann_json
+    ${CHRONO_LIBRARIES}
+)
+
+# =============
+# DRIVER 
+# =============
+add_executable( seahowl_driver )
+
+
+target_sources(seahowl_driver 
+    PRIVATE 
+    src/main.cpp
+)
+
+target_include_directories(seahowl_driver
+    PRIVATE
+    ${CHRONO_INCLUDE_DIRS}
+)
+
+target_compile_features(
+	seahowl_driver
+
+	PRIVATE
+	cxx_std_17
+)
+
+set_target_properties(seahowl_driver 
+
+    PROPERTIES
+        CXX_EXTENSIONS OFF
+	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
+	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
+)
+
+
+target_link_libraries(seahowl_driver 
+    PRIVATE 
+    seahowl_core
+    nlohmann_json::nlohmann_json
+    ${CHRONO_LIBRARIES}
+)
 
 #--------------------------------------------------------------
 # === 4 (OPTIONAL) ===
@@ -148,3 +227,15 @@ target_link_libraries(${PROJECT_NAME} ${CHRONO_LIBRARIES})
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 add_DLL_copy_command("${CHRONO_DLLS}")
+
+# ===========
+# TESTS
+# ===========
+if(SEAHOWL_ENABLE_TESTS)
+
+	include(CTest)
+	enable_testing()
+
+	add_subdirectory(tests)
+
+endif(SEAHOWL_ENABLE_TESTS)

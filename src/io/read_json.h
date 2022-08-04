@@ -3,6 +3,7 @@
 
 #include <nlohmann/json.hpp>
 #include "../core/blade.h"
+
 #include "../core/rotor.h"
 #include "../elasto/tower_elasto.h"
 #include "../core/turbine.h"

@@ -10,8 +10,8 @@ void TowerElasto::build(std::shared_ptr<ChMesh> mesh) {
 void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     nodes.clear();
 
-    int nnodes = discretized_points.size();
-    for (int ii = 0; ii < nnodes; ii++) {
+    const auto nnodes = discretized_points.size();
+    for (auto  ii = 0; ii < nnodes; ii++) {
         auto discretized_point = discretized_points[ii];
         auto node_pos = discretized_point.coordinates;
 
@@ -42,11 +42,11 @@ void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
 
 void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
     elements.clear();
-    int nelements = nodes.size() - 1;
+    const auto nelements = nodes.size() - 1;
 
     // make first section for tapered section
     auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
-    auto discretized_point = discretized_points[0];
+    auto& discretized_point = discretized_points[0];
     // material properties
     section->SetMassPerUnitLength(discretized_point.density);
     // axial
@@ -59,7 +59,7 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
     // damping
     section->SetBeamRaleyghDamping(discretized_point.damping_coefficients);
 
-    for (int ii = 1; ii < nelements + 1; ii++) {
+    for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
         auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenko>();
         // add element to tower elements vector
