@@ -26,7 +26,7 @@ struct BladeElementAero {
 
     // ChVector2<double> get_induced_velocity_element(ChVector2<double>& local_velocity0);
     ChVector2<double> get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0,
-                                                 double nblades,
+                                                 size_t nblades,
                                                  bool tip_loss = true,
                                                  bool hub_loss = true);
 };

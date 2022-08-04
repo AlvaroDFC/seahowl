@@ -6,7 +6,7 @@ BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferen
 }
 
 ChVector2<double> BladeElementAero::get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0,
-                                                               double nblades,
+                                                               size_t nblades,
                                                                bool tip_loss,
                                                                bool hub_loss) {
     // local_velocity is in local element frame
