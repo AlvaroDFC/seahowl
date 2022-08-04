@@ -6,6 +6,7 @@
 
 #include "../elasto/tower_elasto.h"
 
+/**@brief The turbine (without support and foundations) */
 class Turbine {
   public:
     std::vector<std::shared_ptr<Blade>> blades;

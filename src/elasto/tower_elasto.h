@@ -58,6 +58,7 @@ struct TowerReferencePoint {
     };
 };
 
+/**@brief wind turbine tower elastodynamic model */
 class TowerElasto {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
