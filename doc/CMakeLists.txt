@@ -35,6 +35,7 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
 add_custom_target(Sphinx DEPENDS ${SPHINX_SOURCE} ${SPHINX_INDEX_FILE})
 add_custom_target(documentation ALL DEPENDS Sphinx)
 
+
 # ===================
 # DOXYGEN
 # ===================
@@ -56,4 +57,13 @@ doxygen_add_docs(
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/include
     COMMENT "Generate HTML pages"
+)
+
+# For MSVC IDE
+set_target_properties(
+        Sphinx documentation doxygen		
+
+		PROPERTIES
+
+		FOLDER DOC
 )
