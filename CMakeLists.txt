@@ -29,6 +29,9 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
 option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
+option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
+option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
+option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 
 # =======================
 # External libraries
@@ -239,3 +242,10 @@ if(SEAHOWL_ENABLE_TESTS)
 	add_subdirectory(tests)
 
 endif(SEAHOWL_ENABLE_TESTS)
+
+# ====================
+# DOCUMENTATION
+# ====================
+if(SEAHOWL_ENABLE_DOC)
+	add_subdirectory(doc)
+endif(SEAHOWL_ENABLE_DOC)
