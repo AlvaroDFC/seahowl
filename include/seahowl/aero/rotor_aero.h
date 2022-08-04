@@ -1,13 +1,13 @@
-#ifndef ROTOR_AERO_H_
-#define ROTOR_AERO_H_
+#pragma once
 
-#include "blade_aero.h"
-#include "wind_models.h"
+#include <seahowl/aero/blade_aero.h>
+#include <seahowl/aero/wind_models.h>
 
 #include "chrono/core/ChVector.h"
 
-using namespace chrono;
+using namespace chrono; /// TODO remove from header
 
+/**@brief Aerodynamic model for rotor */
 class RotorAero {
   public:
     std::vector<std::shared_ptr<BladeAero>> blades;
@@ -26,5 +26,3 @@ class RotorAero {
     void compute_radii();
     void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
-
-#endif  // ROTOR_AERO_H_

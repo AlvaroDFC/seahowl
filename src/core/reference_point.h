@@ -2,7 +2,7 @@
 #define REFERENCE_POINT_H_
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-#include "../aero/airfoil.h"
+#include <seahowl/aero/airfoil.h>
 
 using namespace chrono;
 using namespace chrono::fea;

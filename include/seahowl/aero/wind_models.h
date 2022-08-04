@@ -1,8 +1,8 @@
-#ifndef WIND_MODELS_H_
-#define WIND_MODELS_H_
+#pragma once
 
 #include "chrono/core/ChVector.h"
 
+/**@brief Base class for wind models */
 class WindModel {
   public:
     double density = 1.225;
@@ -15,6 +15,7 @@ class WindModel {
     double get_density() { return density; }
 };
 
+/**@brief Constant wind models */
 class ConstantWind : public WindModel {
   public:
     double density;
@@ -28,4 +29,3 @@ class ConstantWind : public WindModel {
     ChVector<double> get_wind_velocity(ChVector<double>& position, double time) { return wind_velocity; }
 };
 
-#endif  // WIND_MODELS_H_

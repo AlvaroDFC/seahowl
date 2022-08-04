@@ -1,5 +1,4 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#pragma once
 
 #include <vector>
 #include <stdexcept>
@@ -7,8 +6,9 @@
 
 #include "chrono/core/ChVector.h"
 
-using namespace chrono;
+using namespace chrono; /// TODO remove from header
 
+/**@brief Parametric discretization point */
 struct DiscretizationPoint {
     int index;
     double eta;
@@ -70,4 +70,3 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
     }
 }
 
-#endif  // UTILS_H_

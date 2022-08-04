@@ -1,9 +1,8 @@
-#ifndef BLADE_ELASTO_H_
-#define BLADE_ELASTO_H_
+#pragma once
 
-#include "reference_point_elasto.h"
+#include "../elasto/reference_point_elasto.h"
 #include "utils_elasto.h"
-#include "../utils.h"
+#include <seahowl/utils.h>
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
 #include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
@@ -13,6 +12,7 @@
 using namespace chrono;
 using namespace chrono::fea;
 
+/**@brief Elastodynamic model for blade */
 class BladeElasto {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
@@ -44,4 +44,3 @@ class BladeElasto {
     void apply_pitch_increment(double pitch_increment);
 };
 
-#endif  // BLADE_ELASTO_H_

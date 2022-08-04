@@ -1,4 +1,4 @@
-#include "rotor_aero.h"
+#include "seahowl/aero/rotor_aero.h"
 
 void RotorAero::build(std::vector<std::shared_ptr<BladeAero>> blades) {
     this->blades = blades;

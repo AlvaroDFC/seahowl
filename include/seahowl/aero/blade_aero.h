@@ -1,14 +1,14 @@
-#ifndef BLADE_AERO_H_
-#define BLADE_AERO_H_
+#pragma once
 
-#include "reference_point_aero.h"
-#include "wind_models.h"
-#include "../utils.h"
+#include <seahowl/aero/reference_point_aero.h>
+#include <seahowl/aero/wind_models.h>
+#include <seahowl/utils.h>
 
 #include "chrono/core/ChVector.h"
 
-using namespace chrono;
+using namespace chrono; /// TODO remove from header
 
+/**@brief Blade aerodynamic element */
 struct BladeElementAero {
     BladeReferencePointAero properties;
     double length = 0.0;
@@ -31,6 +31,7 @@ struct BladeElementAero {
                                                  bool hub_loss = true);
 };
 
+/**@brief Aerodynamic model for blade */
 class BladeAero {
   public:
     std::vector<double> discretization_fractions;
@@ -49,4 +50,3 @@ class BladeAero {
     // void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 
-#endif  // BLADE_AERO_H_

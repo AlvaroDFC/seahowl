@@ -1,9 +1,8 @@
-#ifndef BLADE_CORE_H_
-#define BLADE_CORE_H_
+#pragma once
 
 #include "../elasto/blade_elasto.h"
-#include "../aero/blade_aero.h"
-#include "../utils.h"
+#include <seahowl/aero/blade_aero.h>
+#include <seahowl/utils.h>
 
 /**@brief wind turbine blade base class
 
@@ -35,4 +34,3 @@ class Blade {
     void update_loads_elasto();
 };
 
-#endif  // BLADE_CORE_H_

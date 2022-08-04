@@ -1,8 +1,8 @@
-#ifndef REFERENCE_POINT_AERO_H_
-#define REFERENCE_POINT_AERO_H_
+#pragma once
 
 #include "../core/reference_point.h"
 
+/**@brief Reference aerodynamic (DOF) point for blade */
 struct BladeReferencePointAero {
     double fraction;
     chrono::ChVector<double> coordinates;
@@ -52,4 +52,3 @@ struct BladeReferencePointAero {
     };
 };
 
-#endif  // REFERENCE_POINT_AERO_H_

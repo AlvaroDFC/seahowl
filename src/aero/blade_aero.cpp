@@ -1,4 +1,4 @@
-#include "blade_aero.h"
+#include "seahowl/aero/blade_aero.h"
 
 BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferencePointAero& point2) {
     properties = (point1 + point2) * 0.5;
