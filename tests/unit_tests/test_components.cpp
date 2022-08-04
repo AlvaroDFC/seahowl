@@ -51,7 +51,7 @@ TEST(test_blade, mass_deflection) {
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
     blade_core.build(system, blades_mesh);
-    auto blade = blade_core.elasto;
+    auto blade = blade_core.m_elasto;
     blade->nodes[0]->SetFixed(true);
 
     system.Setup();
@@ -85,10 +85,10 @@ TEST(test_rotor, mass) {
     // check mass with blades
     auto blades_mesh = chrono_types::make_shared<ChMesh>();
     system.AddMesh(blades_mesh);
-    std::vector<std::shared_ptr<Blade>> blades;
+    std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
 
-        auto blade_core = std::make_shared<Blade>(
+        auto blade_core = std::make_shared<seahowl::core::Blade>(
             get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string())
             );
 
@@ -154,7 +154,7 @@ TEST(test_blade, natural_period_dynamic_edge) {
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
     blade_core.build(system, blades_mesh);
-    auto blade = blade_core.elasto;
+    auto blade = blade_core.m_elasto;
     blade->nodes[0]->SetFixed(true);
 
     system.Setup();
@@ -214,7 +214,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
     blade_core.build(system, blades_mesh);
-    auto blade = blade_core.elasto;
+    auto blade = blade_core.m_elasto;
     blade->nodes[0]->SetFixed(true);
 
     // rotate blade for flap
@@ -297,12 +297,12 @@ TEST(test_turbine, rpm_initial_pitch) {
     auto tower_file = "../../data/IEA15MW_tower.json";
     auto turbine = get_turbine_from_json(blades_files, rotor_file, tower_file);
     // clear discretization defined in file
-    for (int jj = 0; jj < turbine.blades.size(); jj++) {
-        turbine.blades[jj]->elasto->discretization_fractions.clear();
-        turbine.blades[jj]->aero->discretization_fractions.clear();
+    for (auto& blade: turbine.m_blades) {
+        blade->m_elasto->discretization_fractions.clear();
+        blade->m_aero->discretization_fractions.clear();
     }
     turbine.build(system, blades_mesh);
-    turbine.tower.nodes[0]->SetFixed(true);
+    turbine.m_tower.nodes[0]->SetFixed(true);
 
     turbine.rotate(-CH_C_PI / 2.0, VECT_X);
 
@@ -313,14 +313,14 @@ TEST(test_turbine, rpm_initial_pitch) {
     }
 
     double time = 0.0;
-    turbine.rotor.elasto.apply_collective_pitch_increment(initial_pitch);
+    turbine.m_rotor.elasto.apply_collective_pitch_increment(initial_pitch);
     turbine.prestep(time);
     turbine.poststep(time);
     // while (application.GetDevice()->run()) {
     while (time < 50) {
         // prestep
         // compute forces
-        turbine.rotor.aero.compute_wind_loads_bemt(wind_model, time);
+        turbine.m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time);
 
@@ -331,5 +331,5 @@ TEST(test_turbine, rpm_initial_pitch) {
         turbine.poststep(time);
     }
 
-    ASSERT_NEAR(turbine.rotor.elasto.get_rpm(), 2.84, 0.02);
+    ASSERT_NEAR(turbine.m_rotor.elasto.get_rpm(), 2.84, 0.02);
 }

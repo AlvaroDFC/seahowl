@@ -1,22 +1,24 @@
 #pragma once
 
-#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
+#include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
 #include <seahowl/aero/airfoil.h>
 
-using namespace chrono;
-using namespace chrono::fea;
+#include <vector>
+
+//using namespace chrono;
+//using namespace chrono::fea;
 
 /**@brief Reference point (mesh) for Blade */
 struct BladeReferencePoint {
-    ChVector<double> coordinates = ChVector<double>(0.0, 0.0, 0.0);
-    ChVector2<double> offset_elastic = ChVector2<double>(0.0, 0.0);
-    ChVector2<double> offset_gravity = ChVector2<double>(0.0, 0.0);
-    ChMatrixNM<double, 6, 6> stiffness_matrix;
-    ChMatrixNM<double, 6, 6> mass_matrix;
+    chrono::ChVector<double> m_coordinates{0.0, 0.0, 0.0};
+    chrono::ChVector2<double> m_offset_elastic{0.0, 0.0};
+    chrono::ChVector2<double> m_offset_gravity{0.0, 0.0};
+    chrono::ChMatrixNM<double, 6, 6> stiffness_matrix;
+    chrono::ChMatrixNM<double, 6, 6> mass_matrix;
     double fraction = 0.0;
     double structural_twist = 0.0;
     double chord = 0.0;
-    DampingCoefficients damping_coefficients;
+    chrono::fea::DampingCoefficients damping_coefficients;
     std::vector<AirfoilProperties> airfoil_properties;
 
     BladeReferencePoint() {
@@ -33,9 +35,9 @@ struct BladeReferencePoint {
 
     BladeReferencePoint operator*(const double factor) const {
         BladeReferencePoint new_point = *this;
-        new_point.coordinates *= factor;
-        new_point.offset_elastic *= factor;
-        new_point.offset_gravity *= factor;
+        new_point.m_coordinates *= factor;
+        new_point.m_offset_elastic *= factor;
+        new_point.m_offset_gravity *= factor;
         new_point.fraction *= factor;
         new_point.structural_twist *= factor;
         new_point.mass_matrix *= factor;
@@ -52,9 +54,9 @@ struct BladeReferencePoint {
     };
     BladeReferencePoint operator+(const BladeReferencePoint& other) const {
         BladeReferencePoint new_point = *this;
-        new_point.coordinates += other.coordinates;
-        new_point.offset_elastic += other.offset_elastic;
-        new_point.offset_gravity += other.offset_gravity;
+        new_point.m_coordinates += other.m_coordinates;
+        new_point.m_offset_elastic += other.m_offset_elastic;
+        new_point.m_offset_gravity += other.m_offset_gravity;
         new_point.fraction += other.fraction;
         new_point.structural_twist += other.structural_twist;
         new_point.stiffness_matrix += other.stiffness_matrix;

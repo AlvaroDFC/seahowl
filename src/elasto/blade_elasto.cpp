@@ -36,24 +36,24 @@ void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     const auto nnodes = discretized_points.size();
     for (size_t ii = 0; ii < nnodes; ii++) {
         auto& discretized_point = discretized_points[ii];
-        auto& node_pos = discretized_point.coordinates;
+        auto& node_pos = discretized_point.m_coordinates;
 
         // get node coordinate system
-        ChVector<> node_axis;
-        ChMatrix33<> node_rotation;
+        chrono::ChVector<> node_axis;
+        chrono::ChMatrix33<> node_rotation;
         if (ii == 0) {
-            node_axis = (discretized_points[ii + 1].coordinates - node_pos).GetNormalized();
+            node_axis = (discretized_points[ii + 1].m_coordinates - node_pos).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         } else if (ii == nnodes - 1) {
-            node_axis = (node_pos - discretized_points[ii - 1].coordinates).GetNormalized();
+            node_axis = (node_pos - discretized_points[ii - 1].m_coordinates).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         } else {
             node_axis =
-                (discretized_points[ii + 1].coordinates - discretized_points[ii - 1].coordinates).GetNormalized();
+                (discretized_points[ii + 1].m_coordinates - discretized_points[ii - 1].m_coordinates).GetNormalized();
             node_rotation.Set_A_Xdir(node_axis, VECT_Y);
         }
         // apply structural twist
-        ChMatrix33<> twist_matrix(Q_from_AngAxis(discretized_point.structural_twist, node_axis));
+        chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(discretized_point.structural_twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
@@ -78,9 +78,9 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
     auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
     auto& discretized_point = discretized_points[0];
     // offsets
-    section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
-    section->SetCentroidY(discretized_point.offset_elastic.y());
-    section->SetCentroidZ(-discretized_point.offset_elastic.x());
+    section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
+    section->SetCentroidY(discretized_point.m_offset_elastic.y());
+    section->SetCentroidZ(-discretized_point.m_offset_elastic.x());
     // material properties
     section->SetMassPerUnitLength(discretized_point.mass_matrix(0, 0));
     // axial
@@ -115,9 +115,9 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
         blade_section->SetSectionB(section);
         auto& discretized_point = discretized_points[ii];
         // offsets
-        section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
-        section->SetCentroidY(discretized_point.offset_elastic.y());
-        section->SetCentroidZ(-discretized_point.offset_elastic.x());
+        section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
+        section->SetCentroidY(discretized_point.m_offset_elastic.y());
+        section->SetCentroidZ(-discretized_point.m_offset_elastic.x());
         // material properties
         section->SetMassPerUnitLength(discretized_point.mass_matrix(0, 0));
         // axial
@@ -150,9 +150,9 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
     auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
     auto& discretized_point = discretized_points[0];
     // offsets
-    section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
-    section->SetCentroidY(discretized_point.offset_elastic.y());
-    section->SetCentroidZ(-discretized_point.offset_elastic.x());
+    section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
+    section->SetCentroidY(discretized_point.m_offset_elastic.y());
+    section->SetCentroidZ(-discretized_point.m_offset_elastic.x());
     // material properties
     section->SetMassMatrixFPM(discretized_point.mass_matrix);
     section->SetStiffnessMatrixFPM(discretized_point.stiffness_matrix);
@@ -181,9 +181,9 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
         blade_section->SetSectionB(section);
         auto& discretized_point = discretized_points[ii];
         // offsets
-        section->SetCenterOfMass(discretized_point.offset_gravity.y(), -discretized_point.offset_gravity.x());
-        section->SetCentroidY(discretized_point.offset_elastic.y());
-        section->SetCentroidZ(-discretized_point.offset_elastic.x());
+        section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
+        section->SetCentroidY(discretized_point.m_offset_elastic.y());
+        section->SetCentroidZ(-discretized_point.m_offset_elastic.x());
         // material properties
         section->SetMassMatrixFPM(discretized_point.mass_matrix);
         section->SetStiffnessMatrixFPM(discretized_point.stiffness_matrix);

@@ -2,15 +2,19 @@
 
 #include <seahowl/core/blade.h>
 #include <seahowl/core/rotor.h>
+#include <seahowl/elasto/tower_elasto.h>
 
-#include "../elasto/tower_elasto.h"
+/**@brief Seahowl base namespace */
+namespace seahowl {
+
+namespace core {
 
 /**@brief The turbine (without support and foundations) */
 class Turbine {
   public:
-    std::vector<std::shared_ptr<Blade>> blades;
-    Rotor rotor;
-    TowerElasto tower;
+    std::vector<std::shared_ptr<Blade>> m_blades;
+    Rotor m_rotor;
+    TowerElasto m_tower;
 
     Turbine();
 
@@ -24,3 +28,5 @@ class Turbine {
     void compute_wind_loads(WindModel& wind_model, double time);
 };
 
+}  // namespace core
+}  // namespace seahowl

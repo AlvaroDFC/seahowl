@@ -5,7 +5,7 @@
 /**@brief Reference aerodynamic (DOF) point for blade */
 struct BladeReferencePointAero {
     double fraction;
-    chrono::ChVector<double> coordinates;
+    chrono::ChVector<double> m_coordinates;
     chrono::ChQuaternion<double> rotation;
     chrono::ChVector<double> velocity;
     double chord;
@@ -16,7 +16,7 @@ struct BladeReferencePointAero {
 
     BladeReferencePointAero(BladeReferencePoint& point) {
         fraction = point.fraction;
-        coordinates = point.coordinates;
+        m_coordinates = point.m_coordinates;
         velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
         chord = point.chord;
         structural_twist = point.structural_twist;
@@ -26,7 +26,7 @@ struct BladeReferencePointAero {
     BladeReferencePointAero operator*(const double factor) const {
         BladeReferencePointAero new_point = *this;
         new_point.fraction *= factor;
-        new_point.coordinates *= factor;
+        new_point.m_coordinates *= factor;
         new_point.velocity *= factor;
         new_point.chord *= factor;
         new_point.structural_twist *= factor;
@@ -38,7 +38,7 @@ struct BladeReferencePointAero {
     BladeReferencePointAero operator+(const BladeReferencePointAero& other) const {
         BladeReferencePointAero new_point = *this;
         new_point.fraction += other.fraction;
-        new_point.coordinates += other.coordinates;
+        new_point.m_coordinates += other.m_coordinates;
         new_point.velocity += other.velocity;
         new_point.chord += other.chord;
         new_point.structural_twist += other.structural_twist;

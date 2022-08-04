@@ -7,7 +7,7 @@ void RotorAero::build(std::vector<std::shared_ptr<BladeAero>> blades) {
     radius = 0.0;
     for (int ii = 0; ii < blades.size(); ii++) {
         auto& blade = blades[ii];
-        radius += (blade->discretized_points.back().coordinates - hub_position).Length();
+        radius += (blade->discretized_points.back().m_coordinates - hub_position).Length();
     }
     radius /= blades.size();
 
@@ -24,7 +24,7 @@ void RotorAero::compute_chords_solidity() {
         auto& blade = blades[ii];
         for (int jj = 0; jj < blade->elements.size(); jj++) {
             auto& element = blade->elements[jj];
-            auto radius = (element.properties.coordinates - hub_position).Length();
+            auto radius = (element.properties.m_coordinates - hub_position).Length();
             element.swept_annulus = element.length * 2 * CH_C_PI * radius;
             element.chord_solidity = nblades * element.properties.chord / (2 * CH_C_PI * radius);
             // std::cout << element.swept_annulus << " " << element.chord_solidity << std::endl;
@@ -65,7 +65,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             auto& properties = element.properties;
 
             // get fluid relative velocity
-            auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, time);
+            auto wind_velocity = wind_model.get_wind_velocity(properties.m_coordinates, time);
             auto global_velocity = wind_velocity - properties.velocity;
             // project in disc frame
             auto local_velocity_disc = hub_rotation.RotateBack(global_velocity);
@@ -75,7 +75,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             auto local_direction_normal = ChVector<double>(0.0, 0.0, 1.0);
             auto global_direction_normal = hub_rotation.Rotate(local_direction_normal);
             // pointing from hub to element position
-            auto global_direction_hub2element = (properties.coordinates - hub_position).GetNormalized();
+            auto global_direction_hub2element = (properties.m_coordinates - hub_position).GetNormalized();
             // pointing in tangential direction
             auto global_direction_tangent = (global_direction_hub2element % global_direction_normal).GetNormalized();
 

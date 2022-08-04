@@ -9,13 +9,13 @@ class Rotor {
   public:
     RotorElasto elasto;
     RotorAero aero;
-    std::vector<std::shared_ptr<Blade>> blades;
+    std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
 
     Rotor();
     ~Rotor() {}
 
     void update_positions_aero();
-    void build(ChSystemSMC& system, std::vector<std::shared_ptr<Blade>> blades);
+    void build(ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
     void prestep(double time);
     void poststep(double time);
 };
