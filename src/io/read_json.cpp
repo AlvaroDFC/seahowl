@@ -1,7 +1,8 @@
+#include "seahowl/io/read_json.h"
+#include "seahowl/utils.h"
+
 #include <fstream>
 #include <iostream>
-#include "read_json.h"
-#include "../utils.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -33,14 +34,14 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
             throw std::runtime_error("Coordinates has to be vector of length 3.");
         }
         reference_point.fraction = coords[2] / blade_length;
-        reference_point.coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
-        if (point.contains("offset_gravity")) {
+        reference_point.m_coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
+        if (point.contains("m_offset_gravity")) {
             auto og = point.at("offsets_gravity").get<std::vector<double>>();
-            reference_point.offset_gravity = ChVector2<double>(og[0], og[1]);
+            reference_point.m_offset_gravity = ChVector2<double>(og[0], og[1]);
         }
         if (point.contains("offset_elastic")) {
             auto oe = point.at("offsets_elastic").get<std::vector<double>>();
-            reference_point.offset_elastic = ChVector2<double>(oe[0], oe[1]);
+            reference_point.m_offset_elastic = ChVector2<double>(oe[0], oe[1]);
         }
 
         auto sm = point.at("stiffness_matrix").get<std::vector<std::vector<double>>>();
@@ -130,16 +131,16 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     return reference_points;
 }
 
-Blade get_blade_from_json(std::string filepath) {
+seahowl::core::Blade get_blade_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    Blade blade = Blade();
-    blade.elasto->fpm_mode = json_obj.at("fpm_mode").get<bool>();
-    blade.reference_points = get_blade_reference_points_from_json(filepath);
+    seahowl::core::Blade blade{};
+    blade.m_elasto->fpm_mode = json_obj.at("fpm_mode").get<bool>();
+    blade.m_reference_points = get_blade_reference_points_from_json(filepath);
     if (json_obj.contains("discretization_elasto")) {
         auto discretization_elasto = json_obj.at("discretization_elasto").get<std::vector<double>>();
         blade.set_discretization_elasto(discretization_elasto);
@@ -251,22 +252,22 @@ Rotor get_rotor_from_json(std::string filepath) {
     return rotor;
 }
 
-Turbine get_turbine_from_json(std::vector<std::string> filepaths_blades,
+seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_blades,
                               std::string filepath_rotor,
                               std::string filepath_tower) {
-    std::vector<std::shared_ptr<Blade>> blades;
-    for (int ii = 0; ii < filepaths_blades.size(); ii++) {
-        blades.push_back(std::make_shared<Blade>(get_blade_from_json(filepaths_blades[ii])));
+    std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
+    for (auto& fpath:filepaths_blades) {
+        blades.push_back(std::make_shared<seahowl::core::Blade>(get_blade_from_json(fpath)));
     }
 
     auto rotor = get_rotor_from_json(filepath_rotor);
 
     auto tower = get_tower_from_json(filepath_tower);
 
-    auto turbine = Turbine();
-    turbine.rotor = rotor;
-    turbine.tower = tower;
-    turbine.blades = blades;
+    auto turbine = seahowl::core::Turbine();
+    turbine.m_rotor = rotor;
+    turbine.m_tower = tower;
+    turbine.m_blades = blades;
 
     return turbine;
 }

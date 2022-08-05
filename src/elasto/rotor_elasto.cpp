@@ -1,4 +1,6 @@
-#include "rotor_elasto.h"
+#include <seahowl/elasto/rotor_elasto.h>
+
+
 #include "chrono/physics/ChBodyEasy.h"
 
 RotorElasto::RotorElasto() {}
@@ -59,7 +61,7 @@ void RotorElasto::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeEl
 
     // blades
     links_blades.clear();
-    int nblades = blades.size();
+    auto nblades = blades.size();
     for (int ii = 0; ii < nblades; ii++) {
         auto blade = blades[ii];
         double precone = blade_precones[ii];

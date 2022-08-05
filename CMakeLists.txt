@@ -29,6 +29,9 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
 option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
+option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
+option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
+option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 
 # =======================
 # External libraries
@@ -147,7 +150,14 @@ target_sources(seahowl_core
 )
 
 target_include_directories(seahowl_core
-    PRIVATE
+
+	PUBLIC
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+
+	PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/
+	${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CHRONO_INCLUDE_DIRS}
 )
 
@@ -186,7 +196,14 @@ target_sources(seahowl_driver
 )
 
 target_include_directories(seahowl_driver
+
+	PUBLIC
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+
     PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/
+	${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CHRONO_INCLUDE_DIRS}
 )
 
@@ -239,3 +256,10 @@ if(SEAHOWL_ENABLE_TESTS)
 	add_subdirectory(tests)
 
 endif(SEAHOWL_ENABLE_TESTS)
+
+# ====================
+# DOCUMENTATION
+# ====================
+if(SEAHOWL_ENABLE_DOC)
+	add_subdirectory(doc)
+endif(SEAHOWL_ENABLE_DOC)

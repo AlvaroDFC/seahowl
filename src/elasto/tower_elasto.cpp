@@ -1,5 +1,5 @@
-#include "tower_elasto.h"
-#include "../utils.h"
+#include <seahowl/elasto/tower_elasto.h>
+#include "seahowl/utils.h"
 
 void TowerElasto::build(std::shared_ptr<ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);

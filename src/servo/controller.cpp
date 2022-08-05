@@ -1,4 +1,4 @@
-#include "controller.h"
+#include "seahowl/servo/controller.h"
 
 #include <cmath>
 

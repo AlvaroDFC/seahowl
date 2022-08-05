@@ -1,40 +1,42 @@
-#include "turbine.h"
+#include "seahowl/core/turbine.h"
 
-Turbine::Turbine() {
-    rotor = Rotor();
-    tower = TowerElasto();
+seahowl::core::Turbine::Turbine() {
+    m_blades.resize(0);
+    m_rotor = Rotor();
+    m_tower = TowerElasto();
 }
 
-void Turbine::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
+void seahowl::core::Turbine::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // build blades
-    for (int ii = 0; ii < blades.size(); ii++) {
-        blades[ii]->build(system, mesh);
+    for (auto& blade : m_blades) {
+        blade->build(system, mesh);
     }
-    // build rotor
-    rotor.build(system, blades);
-    // build tower
-    tower.build(mesh);
+
+    // build rotor & tower
+    m_rotor.build(system, m_blades);
+    m_tower.build(mesh);
+
     // link tower to rotor
-    rotor.elasto.link_tower(tower, system);
+    m_rotor.elasto.link_tower(m_tower, system);
 }
 
-void Turbine::prestep(double time) {
-    rotor.prestep(time);
+void seahowl::core::Turbine::prestep(double time) {
+    m_rotor.prestep(time);
 }
-void Turbine::poststep(double time) {
-    rotor.poststep(time);
-}
-
-void Turbine::translate(ChVector<double> translation_vector) {
-    rotor.elasto.translate(translation_vector);
-    tower.translate(translation_vector);
+void seahowl::core::Turbine::poststep(double time) {
+    m_rotor.poststep(time);
 }
 
-void Turbine::rotate(double angle, ChVector<double> axis) {
-    rotor.elasto.rotate(angle, axis);
-    tower.rotate(angle, axis);
+void seahowl::core::Turbine::translate(ChVector<double> translation_vector) {
+    m_rotor.elasto.translate(translation_vector);
+    m_tower.translate(translation_vector);
 }
 
-void Turbine::compute_wind_loads(WindModel& wind_model, double time) {
-    rotor.aero.compute_wind_loads_bemt(wind_model, time);
+void seahowl::core::Turbine::rotate(double angle, ChVector<double> axis) {
+    m_rotor.elasto.rotate(angle, axis);
+    m_tower.rotate(angle, axis);
+}
+
+void seahowl::core::Turbine::compute_wind_loads(WindModel& wind_model, double time) {
+    m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
 }

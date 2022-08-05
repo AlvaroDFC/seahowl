@@ -1,9 +1,9 @@
-#ifndef AIRFOIL_H_
-#define AIRFOIL_H_
+#pragma once
 
 #include <vector>
 #include <stdexcept>
 
+/**@brief AriFoil coefficients */
 struct AirfoilCoefficients {
     double alpha = 0.0;
     double lift = 0.0;
@@ -33,6 +33,7 @@ struct AirfoilCoefficients {
     };
 };
 
+/**@brief AriFoil properties */
 struct AirfoilProperties {
     double reynolds_number = 0.0;
     std::vector<AirfoilCoefficients> coefficients_list;
@@ -79,4 +80,3 @@ struct AirfoilProperties {
     }
 };
 
-#endif  // AIRFOIL_H_

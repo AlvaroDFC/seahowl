@@ -8,13 +8,14 @@
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
 
-#include "io/read_json.h"
-#include "servo/controller.h"
+#include <seahowl/io/read_json.h>
+#include <seahowl/servo/controller.h>
 
 using namespace chrono;
 using namespace chrono::irrlicht;
 using namespace irr;
 
+/**@brief Driver main function */
 int main(int argc, char* argv[]) {
     // SETUP
 
@@ -90,32 +91,33 @@ int main(int argc, char* argv[]) {
     auto rotor_file = "../data/IEA15MW_RNA.json";
     auto tower_file = "../data/IEA15MW_tower.json";
 
-    std::vector<std::shared_ptr<Turbine>> turbines;
+    std::vector<std::shared_ptr<seahowl::core::Turbine>> turbines;
     int nturbines = 1;
     for (int ii = 0; ii < nturbines; ii++) {
-        auto turbine = std::make_shared<Turbine>(get_turbine_from_json(blades_files, rotor_file, tower_file));
+        auto turbine = std::make_shared<seahowl::core::Turbine>(
+            get_turbine_from_json(blades_files, rotor_file, tower_file));
         // clear discretization defined in file
-        for (int jj = 0; jj < turbine->blades.size(); jj++) {
-            turbine->blades[jj]->elasto->discretization_fractions.clear();
-            turbine->blades[jj]->aero->discretization_fractions.clear();
+        for (auto& blade: turbine->m_blades) {
+            blade->m_elasto->discretization_fractions.clear();
+            blade->m_aero->discretization_fractions.clear();
         }
         turbine->build(system, blades_mesh);
-        turbine->tower.nodes[0]->SetFixed(true);
+        turbine->m_tower.nodes[0]->SetFixed(true);
         turbines.push_back(turbine);
 
         // increase elements for visualization
-        for (int jj = 0; jj < turbine->blades.size(); jj++) {
-            auto blade = turbine->blades[jj]->elasto;
-            for (int kk = 0; kk < blade->elements.size(); kk++) {
-                blade->elements[kk]->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
-                blade->elements[kk]->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
+        for (auto& bladei: turbine->m_blades) {
+            auto blade = bladei->m_elasto;
+            for (auto& elm: blade->elements) {
+                elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
+                elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
             }
         }
         // increase elements for visualization
-        auto& tower = turbine->tower;
-        for (int kk = 0; kk < tower.elements.size(); kk++) {
-            tower.elements[kk]->GetTaperedSection()->GetSectionA()->SetDrawThickness(3.0, 3.0);
-            tower.elements[kk]->GetTaperedSection()->GetSectionB()->SetDrawThickness(3.0, 3.0);
+        auto& tower = turbine->m_tower;
+        for (auto& elm:  tower.elements) {
+            elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(3.0, 3.0);
+            elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(3.0, 3.0);
         }
 
         turbine->translate(ChVector<double>(150.0 * ii, 150.0 * ii * pow(-1.0, ii), -150.0));
@@ -173,10 +175,10 @@ int main(int argc, char* argv[]) {
     int step = 0;
     // initialization
 
-    for (int ii = 0; ii < turbines.size(); ii++) {
-        turbines[ii]->rotor.elasto.apply_collective_pitch_increment(initial_pitch);
-        turbines[ii]->prestep(time);
-        turbines[ii]->poststep(time);
+    for (auto& turbine: turbines) {
+        turbine->m_rotor.elasto.apply_collective_pitch_increment(initial_pitch);
+        turbine->prestep(time);
+        turbine->poststep(time);
     }
 
     double torque_aero = 0.0;
@@ -191,10 +193,10 @@ int main(int argc, char* argv[]) {
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep
-        for (int ii = 0; ii < turbines.size(); ii++) {
-            auto& turbine = turbines[ii];
+        for (auto& turbine: turbines) {
+            
             // compute forces
-            turbine->rotor.aero.compute_wind_loads_bemt(wind_model, time);
+            turbine->m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
             turbine->prestep(time);
         }
@@ -213,23 +215,23 @@ int main(int argc, char* argv[]) {
         }
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
+        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->m_rotor.elasto.get_rpm()
                  << " average rpm: " << average_rpm << "\n";
 
         // poststep
-        for (int ii = 0; ii < turbines.size(); ii++) {
-            auto& turbine = turbines[ii];
+        for (auto& turbine:  turbines) {
+
             turbine->poststep(time);
 
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
-                double rpm = turbine->rotor.elasto.get_rpm();
-                double torque_total = turbine->rotor.elasto.get_torque();
+                double rpm = turbine->m_rotor.elasto.get_rpm();
+                double torque_total = turbine->m_rotor.elasto.get_torque();
                 double torque_elec = controller.get_torque_elec(torque_total, rpm);
                 // apply torque elec to hub rigid body
-                turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
+                turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
                 // torque elec is apply on Z axis of hub body (locally)
-                turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+                turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
             }
         }
     }

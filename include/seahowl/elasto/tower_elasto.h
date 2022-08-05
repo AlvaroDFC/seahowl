@@ -1,12 +1,12 @@
-#ifndef TOWER_H_
-#define TOWER_H_
+#pragma once
 
 #include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
 #include "chrono/fea/ChMesh.h"
 
-using namespace chrono;
+using namespace chrono;  /// TO BE REMOVED
 using namespace chrono::fea;
 
+/**@brief Tower (DOF) reference point */
 struct TowerReferencePoint {
     ChVector<double> coordinates;
     double fraction;
@@ -58,6 +58,7 @@ struct TowerReferencePoint {
     };
 };
 
+/**@brief Wind turbine tower elastodynamic model */
 class TowerElasto {
   public:
     std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
@@ -80,4 +81,3 @@ class TowerElasto {
     double get_mass();
 };
 
-#endif  // TOWER_H_

@@ -1,10 +1,10 @@
-#ifndef UTILS_ELASTO_H_
-#define UTILS_ELASTO_H_
+#pragma once
 
 #include "chrono/physics/ChLoadContainer.h"
 
-using namespace chrono;
+using namespace chrono;  //// TO BE REMOVED
 
+/**@brief Loader : extend Chrono class */
 class ChLoaderWeighted : public ChLoaderUdistributed {
   public:
     std::vector<ChVector<double>> loads;
@@ -62,4 +62,4 @@ class ChLoaderWeighted : public ChLoaderUdistributed {
     virtual int GetIntegrationPointsU() { return integration_points; }
 };
 
-#endif  // UTILS_ELASTO_H_
+

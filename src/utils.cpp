@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "seahowl/utils.h"
 
 std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& discretization_fractions,
                                                           std::vector<double>& reference_fractions) {

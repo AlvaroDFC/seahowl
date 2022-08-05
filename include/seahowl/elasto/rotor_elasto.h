@@ -1,8 +1,9 @@
-#ifndef ROTOR_ELASTO_H_
-#define ROTOR_ELASTO_H_
+#pragma once
 
-#include "blade_elasto.h"
-#include "tower_elasto.h"
+#include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/elasto/tower_elasto.h>
+
+
 #include "chrono/physics/ChBody.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/physics/ChLinkMate.h"
@@ -10,6 +11,7 @@
 
 using namespace chrono;
 
+/**@brief Hub properties */
 struct HubProperties {
     double center_of_mass = 0.0;
     double mass = 0.0;
@@ -18,6 +20,7 @@ struct HubProperties {
     double radius = 0.0;
 };
 
+/**@brief Nacelle properties */
 struct NacelleProperties {
     ChVector<double> center_of_mass = ChVector<double>(0.0, 0.0, 0.0);
     double mass = 0.0;
@@ -25,11 +28,14 @@ struct NacelleProperties {
     double yaw_bearing_mass = 0.0;
 };
 
+/**@brief Shaft properties */
 struct ShaftProperties {
     double tilt = 0.0;
     double distance_from_towertop = 0.0;
 };
 
+
+/**@brief Rotor properties */
 class RotorElasto {
   public:
     std::vector<std::shared_ptr<BladeElasto>> blades;
@@ -62,4 +68,3 @@ class RotorElasto {
     double get_torque();
 };
 
-#endif  // ROTOR_ELASTO_H_
