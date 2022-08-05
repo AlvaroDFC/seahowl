@@ -1,5 +1,10 @@
 #pragma once
 
+namespace seahowl {
+
+/**@brief Servo controller module */
+namespace servo {
+
 /**@brief Base class for controller */
 class Controller {
   public:
@@ -21,4 +26,5 @@ class ControllerVariableTorque : public Controller {
     double get_torque_elec(double torque_total, double rpm);
 };
 
-
+}  // namespace servo
+}  // namespace seahowl

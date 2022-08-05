@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
     // set to 0.0 for no control
-    auto controller = ControllerVariableTorque();
+    auto controller = seahowl::servo::ControllerVariableTorque();
     controller.target_rpm = 0.0;
 
     // system
