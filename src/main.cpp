@@ -16,6 +16,18 @@ using namespace chrono;
 using namespace chrono::irrlicht;
 using namespace irr;
 
+/*! \mainpage SEAHOWL
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the introduction.
+ *
+ \image html NREL_ad_driver_geom.png "source image: NREL/Openfast" width=500cm
+ *
+ * etc...
+ */
+
+
 /**@brief Driver main function */
 int main(int argc, char* argv[]) {
     // SETUP

@@ -4,8 +4,13 @@
 #include <seahowl/elasto/rotor_elasto.h>
 #include <seahowl/aero/rotor_aero.h>
 
+namespace seahowl {
+namespace core {
 
-/**@brief Wind turbine rotor: Hub + blades */
+/**@brief Wind turbine rotor: Hub + blades 
+
+@todo Rotor should be composed of blades  + hub
+*/
 class Rotor {
   public:
     seahowl::elasto::RotorElasto elasto;
@@ -21,3 +26,5 @@ class Rotor {
     void poststep(double time);
 };
 
+}  // namespace core
+}  // namespace seahowl

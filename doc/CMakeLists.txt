@@ -52,6 +52,7 @@ set(DOXYGEN_GENERATE_TODOLIST YES)
 
 set(DOXYGEN_GENERATE_HTML YES)
 set(DOXYGEN_GENERATE_MAN NO)
+set(DOXYGEN_IMAGE_PATH ${SPHINX_SOURCE}/_static/images)
 
 doxygen_add_docs(
     doxygen

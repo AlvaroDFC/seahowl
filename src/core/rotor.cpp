@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <vector>
+using seahowl::core::Rotor;
 
 Rotor::Rotor() {
     elasto = seahowl::elasto::RotorElasto();

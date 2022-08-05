@@ -210,7 +210,7 @@ seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath) {
     return tower;
 }
 
-Rotor get_rotor_from_json(std::string filepath) {
+seahowl::core::Rotor get_rotor_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -219,7 +219,7 @@ Rotor get_rotor_from_json(std::string filepath) {
 
     // EXTRACT INFO
     //
-    auto rotor = Rotor();
+    seahowl::core::Rotor rotor;
     // blades
     json_obj.at("precones").get_to(rotor.elasto.blade_precones);
     for (int ii = 0; ii < rotor.elasto.blade_precones.size(); ii++) {

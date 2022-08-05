@@ -24,27 +24,31 @@ class ChSystemSMC;
 namespace seahowl {
 namespace elasto {
 
-/**@brief Hub properties */
+/**@brief Hub properties 
+
+
+\image html NREL_ad_driver_geom.png "source image: NREL/Openfast" width=300cm
+*/
 struct HubProperties {
-    double center_of_mass = 0.0;
-    double mass = 0.0;
-    double inertia = 0.0;
-    double overhang = 0.0;
-    double radius = 0.0;
+    double center_of_mass = 0.0; ///< COG Center of giration
+    double mass = 0.0; ///< Total mass of the hub
+    double inertia = 0.0; ///< Coefficient of inertia
+    double overhang = 0.0; ///< Overhang 
+    double radius = 0.0; ///< Radius of the hub ///@todo define better what is radius
 };
 
 /**@brief Nacelle properties */
 struct NacelleProperties {
-    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///@TODO Initialize in constructor
-    double mass = 0.0;
-    double inertia = 0.0;
-    double yaw_bearing_mass = 0.0;
+    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///<@TODO Initialize in constructor
+    double mass = 0.0; ///< Mass of the Nacelle (without bearing)
+    double inertia = 0.0; ///< Coefficient of inertia
+    double yaw_bearing_mass = 0.0; ///< Bearing mass
 };
 
 /**@brief Shaft properties */
 struct ShaftProperties {
-    double tilt = 0.0;
-    double distance_from_towertop = 0.0;
+    double tilt = 0.0; ///< Tilt angle
+    double distance_from_towertop = 0.0; ///< Distance from Tower top reference point
 };
 
 /**@brief Rotor properties */
