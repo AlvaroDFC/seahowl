@@ -41,7 +41,7 @@ struct HubProperties {
 
 /**@brief Nacelle properties */
 struct NacelleProperties {
-    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///<@TODO Initialize in constructor
+    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///< Center of Giration COG @todo Initialize in constructor
     double mass = 0.0; ///< Mass of the Nacelle (without bearing)
     double inertia = 0.0; ///< Coefficient of inertia
     double yaw_bearing_mass = 0.0; ///< Bearing mass
@@ -59,23 +59,33 @@ Implemented as collection of rigid bodies + blades
 */
 class RotorElasto : public ElastoComponent {
   public:
-    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades;
     std::vector<double> blade_precones;
+
     // bodies
-    std::shared_ptr<chrono::ChBody> body_hub;
-    std::shared_ptr<chrono::ChBody> body_shaft;
-    std::shared_ptr<chrono::ChBody> body_nacelle;
-    std::shared_ptr<chrono::ChBody> body_yaw_bearing;
+    ///@{
+    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades; ///<@brief Finite Element Blades
+    std::shared_ptr<chrono::ChBody> body_hub; ///< Hub rigid body
+    std::shared_ptr<chrono::ChBody> body_shaft; ///< Shaft rigid body
+    std::shared_ptr<chrono::ChBody> body_nacelle; ///< Nacelle rigid body
+    std::shared_ptr<chrono::ChBody> body_yaw_bearing; /// Yaw bearing rigid body
+    ///@}
+
     // links
-    std::vector<std::shared_ptr<chrono::ChLinkMateFix>> links_blades;
+    ///@{
+    std::vector<std::shared_ptr<chrono::ChLinkMateFix>> links_blades; 
     std::shared_ptr<chrono::ChLinkRevolute> link_shaft_hub;
     std::shared_ptr<chrono::ChLinkMateFix> link_shaft_nacelle;
     std::shared_ptr<chrono::ChLinkMateFix> link_shaft_yaw_bearing;
-    std::shared_ptr<chrono::ChLinkMateFix> link_towertop_yaw_bearing;
+    std::shared_ptr<chrono::ChLinkMateFix> link_towertop_yaw_bearing; ///< External link with TowerElasto
+    ///@}
+
+
     // properties
-    ShaftProperties shaft;
-    NacelleProperties nacelle;
-    HubProperties hub;
+    ///@{
+    ShaftProperties shaft; ///< Shaft properties
+    NacelleProperties nacelle; ///< Nacelle properties
+    HubProperties hub; ///< Hub properties
+    ///@}
 
     RotorElasto();
 
@@ -88,9 +98,11 @@ class RotorElasto : public ElastoComponent {
     double get_mass() const override; ///< @see ElastoComponent::get_mass
     ///@}
 
+    ///@{
     void apply_collective_pitch_increment(double pitch_increment);
     double get_rpm(); ///< Rotation speed @todo in general class Rotor
     double get_torque(); ///< Torque @todo in general class Rotor
+    ///@}
 };
 
 }  // namespace elasto
