@@ -1,5 +1,7 @@
 #include "seahowl/io/read_json.h"
 #include "seahowl/utils.h"
+#include "seahowl/elasto/blade_elasto.h"
+
 
 #include <fstream>
 #include <iostream>
@@ -181,7 +183,7 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
         reference_point.damping_coefficients.bz = damping_coefficients[2];
         reference_point.damping_coefficients.bt = damping_coefficients[3];
 
-        // TODO: change to actual values
+        ///@todo change to actual values
         reference_point.stiffness_axial = 210e9;
         reference_point.stiffness_torsion = 1e11;
 

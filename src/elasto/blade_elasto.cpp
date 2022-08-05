@@ -205,7 +205,7 @@ void BladeElasto::build_loads(ChSystemSMC& system) {
 
     for (auto element : elements) {
         /// TO CHECK ???? 
-        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element)); /////TODOOOOO POINTER NEW ????????
+        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element)); ///@todo POINTER NEW ????????
         loaders_aero.push_back(loader_weighted);
         loadcontainer->Add(loader_weighted);
     }

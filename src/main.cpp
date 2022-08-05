@@ -10,6 +10,7 @@
 
 #include <seahowl/io/read_json.h>
 #include <seahowl/servo/controller.h>
+#include <seahowl/elasto/blade_elasto.h>
 
 using namespace chrono;
 using namespace chrono::irrlicht;

@@ -1,61 +1,67 @@
 #include <seahowl/elasto/rotor_elasto.h>
 
+#include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/elasto/tower_elasto.h>
 
 #include "chrono/physics/ChBodyEasy.h"
+#include "chrono/physics/ChBody.h"
+#include "chrono/physics/ChSystemSMC.h"
+#include "chrono/physics/ChLinkMate.h"
+#include "chrono/physics/ChLinkRevolute.h"
 
 RotorElasto::RotorElasto() {}
 
-void RotorElasto::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
+void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 
     // hub
-    body_hub = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
+    body_hub = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_hub);
     // move hub along X for overhang and COG offset, and along Z for distance from towertop
-    body_hub->SetPos(ChVector<double>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
+    body_hub->SetPos(chrono::ChVector<double>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
     // local Z axis along global X axis + shaft tilt along global Y axis
-    auto tilt_hub = Q_from_AngAxis(shaft.tilt, -VECT_Y);
-    body_hub->SetRot(tilt_hub * Q_from_AngAxis(CH_C_PI / 2.0, VECT_Y));
+    auto tilt_hub = Q_from_AngAxis(shaft.tilt, -chrono::VECT_Y);
+    body_hub->SetRot(tilt_hub * Q_from_AngAxis(chrono::CH_C_PI / 2.0, chrono::VECT_Y));
     body_hub->SetPos(tilt_hub.Rotate(body_hub->GetPos()));
     // mass and inertia
     body_hub->SetMass(hub.mass);
-    body_hub->SetInertiaXX(ChVector<double>(0., 0., hub.inertia));
+    body_hub->SetInertiaXX(chrono::ChVector<double>(0., 0., hub.inertia));
 
     // shaft
-    body_shaft = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
+    body_shaft = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_shaft);
     // move end of shaft at yaw axis of nacelle
-    body_shaft->SetPos(ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
+    body_shaft->SetPos(chrono::ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
     // align rotation
     body_shaft->SetRot(body_hub->GetRot());
     // massless body
     body_shaft->SetMass(0.0);
     // link hub to shaft
-    link_shaft_hub = chrono_types::make_shared<ChLinkRevolute>();
+    link_shaft_hub = chrono_types::make_shared<chrono::ChLinkRevolute>();
     system.Add(link_shaft_hub);
     link_shaft_hub->Initialize(body_hub, body_shaft, body_shaft->GetAssetsFrame());
 
     // nacelle
-    body_nacelle = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
+    body_nacelle = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_nacelle);
     body_nacelle->SetPos(nacelle.center_of_mass);
     // mass and inertia
     body_nacelle->SetMass(nacelle.mass);
-    // TODO: change to full 3x3 inertia matrix
-    body_nacelle->SetInertiaXX(ChVector<double>(0.0, 0.0, nacelle.inertia));
+    ///@todo  change to full 3x3 inertia matrix
+    body_nacelle->SetInertiaXX(chrono::ChVector<double>(0.0, 0.0, nacelle.inertia));
     // link nacelle body to shaft body
-    link_shaft_nacelle = chrono_types::make_shared<ChLinkMateFix>();
+    link_shaft_nacelle = chrono_types::make_shared<chrono::ChLinkMateFix>();
     system.Add(link_shaft_nacelle);
     link_shaft_nacelle->Initialize(body_nacelle, body_shaft);
 
     // yaw bearing
     body_yaw_bearing = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_yaw_bearing);
-    body_yaw_bearing->SetPos(ChVector<double>(0.0, 0.0, 0.0));
+    body_yaw_bearing->SetPos(chrono::ChVector<double>(0.0, 0.0, 0.0));
     body_yaw_bearing->SetMass(nacelle.yaw_bearing_mass);
     // link yaw bearing body to shaft body
     // link_shaft_yaw_bearing = chrono_types::make_shared<ChLinkRevolute>();
-    link_shaft_yaw_bearing = chrono_types::make_shared<ChLinkMateFix>();
+    link_shaft_yaw_bearing = chrono_types::make_shared<chrono::ChLinkMateFix>();
     system.Add(link_shaft_yaw_bearing);
     link_shaft_yaw_bearing->Initialize(body_shaft, body_yaw_bearing, body_yaw_bearing->GetAssetsFrame());
 
@@ -70,35 +76,35 @@ void RotorElasto::build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeEl
         // blade root node is assumed to be originally at (0,0,0) and using IEC standard for coordinate system
         // apply precone
         blade->rotate(precone, VECT_Y);  // Y is the edge-wise axis for blade (IEC standard)
-        double angle = ii * CH_C_2PI / nblades;
+        double angle = ii * chrono::CH_C_2PI / nblades;
         // offset blade from hub apex and add overhang
         blade->translate(ChVector<double>(hub.overhang, 0.0, hub.radius));
         // rotate blade around hub
-        blade->rotate(angle, VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
+        blade->rotate(angle, chrono::VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
         // offset with distance from towertop
-        blade->translate(ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
+        blade->translate(chrono::ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
         // apply shaft tilt to blades
-        blade->rotate(shaft.tilt, -VECT_Y);
+        blade->rotate(shaft.tilt, -chrono::VECT_Y);
 
         // link root node of blade to rotor center
-        auto link_hub_blade = chrono_types::make_shared<ChLinkMateFix>();
+        auto link_hub_blade = chrono_types::make_shared<chrono::ChLinkMateFix>();
         system.Add(link_hub_blade);
         link_hub_blade->Initialize(blade->nodes[0], body_hub);
         links_blades.push_back(link_hub_blade);
     }
 }
 
-void RotorElasto::link_tower(TowerElasto& tower, ChSystemSMC& system) {
+void RotorElasto::link_tower(TowerElasto& tower, chrono::ChSystemSMC& system) {
     auto towertop_node = tower.nodes[tower.nodes.size() - 1];
     // translate RNA center of origin to towertop
     this->translate(towertop_node->GetPos());
     // link yaw bearing body to towertop
-    link_towertop_yaw_bearing = chrono_types::make_shared<ChLinkMateFix>();
+    link_towertop_yaw_bearing = chrono_types::make_shared<chrono::ChLinkMateFix>();
     system.Add(link_towertop_yaw_bearing);
     link_towertop_yaw_bearing->Initialize(towertop_node, body_yaw_bearing);
 }
 
-void RotorElasto::rotate(double angle, ChVector<double> axis) {
+void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) {
     // blades
     for (int ii = 0; ii < blades.size(); ii++) {
         blades[ii]->rotate(angle, axis);
@@ -126,7 +132,7 @@ void RotorElasto::rotate(double angle, ChVector<double> axis) {
     body_yaw_bearing->SetRot(new_rotation_yaw_bearing);
 }
 
-void RotorElasto::translate(ChVector<double> translation_vector) {
+void RotorElasto::translate(chrono::ChVector<double> translation_vector) {
     // blades
     for (int ii = 0; ii < blades.size(); ii++) {
         blades[ii]->translate(translation_vector);
@@ -170,9 +176,9 @@ void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
 }
 
 double RotorElasto::get_rpm() {
-    ChVector<double> angles;
+    chrono::ChVector<double> angles;
     body_hub->coord.rot.Qdt_to_Wrel(angles, body_hub->coord_dt.rot);
-    double rpm = angles.z() * 60 / (2 * CH_C_PI);
+    double rpm = angles.z() * 60 / (2 * chrono::CH_C_PI);
     return rpm;
 }
 

@@ -1,15 +1,21 @@
 #pragma once
 
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/elasto/tower_elasto.h>
 
+#include <vector>
+#include <memory>
 
-#include "chrono/physics/ChBody.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChLinkRevolute.h"
+class BladeElasto;
+class TowerElasto; ///@todo move out of rotor
 
-using namespace chrono;
+#include <chrono/core/ChVector.h>
+
+namespace chrono {
+class ChBody;
+class ChLinkMateFix;
+class ChLinkRevolute;
+class ChSystemSMC;
+
+}
 
 /**@brief Hub properties */
 struct HubProperties {
@@ -22,7 +28,7 @@ struct HubProperties {
 
 /**@brief Nacelle properties */
 struct NacelleProperties {
-    ChVector<double> center_of_mass = ChVector<double>(0.0, 0.0, 0.0);
+    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///@TODO Initialize in constructor
     double mass = 0.0;
     double inertia = 0.0;
     double yaw_bearing_mass = 0.0;
@@ -41,16 +47,16 @@ class RotorElasto {
     std::vector<std::shared_ptr<BladeElasto>> blades;
     std::vector<double> blade_precones;
     // bodies
-    std::shared_ptr<ChBody> body_hub;
-    std::shared_ptr<ChBody> body_shaft;
-    std::shared_ptr<ChBody> body_nacelle;
-    std::shared_ptr<ChBody> body_yaw_bearing;
+    std::shared_ptr<chrono::ChBody> body_hub;
+    std::shared_ptr<chrono::ChBody> body_shaft;
+    std::shared_ptr<chrono::ChBody> body_nacelle;
+    std::shared_ptr<chrono::ChBody> body_yaw_bearing;
     // links
-    std::vector<std::shared_ptr<ChLinkMateFix>> links_blades;
-    std::shared_ptr<ChLinkRevolute> link_shaft_hub;
-    std::shared_ptr<ChLinkMateFix> link_shaft_nacelle;
-    std::shared_ptr<ChLinkMateFix> link_shaft_yaw_bearing;
-    std::shared_ptr<ChLinkMateFix> link_towertop_yaw_bearing;
+    std::vector<std::shared_ptr<chrono::ChLinkMateFix>> links_blades;
+    std::shared_ptr<chrono::ChLinkRevolute> link_shaft_hub;
+    std::shared_ptr<chrono::ChLinkMateFix> link_shaft_nacelle;
+    std::shared_ptr<chrono::ChLinkMateFix> link_shaft_yaw_bearing;
+    std::shared_ptr<chrono::ChLinkMateFix> link_towertop_yaw_bearing;
     // properties
     ShaftProperties shaft;
     NacelleProperties nacelle;
@@ -58,10 +64,10 @@ class RotorElasto {
 
     RotorElasto();
 
-    void build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
-    void link_tower(TowerElasto& tower, ChSystemSMC& system);
-    void rotate(double angle, ChVector<double> axis);
-    void translate(ChVector<double> translation_vector);
+    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
+    void link_tower(TowerElasto& tower, chrono::ChSystemSMC& system);
+    void rotate(double angle, chrono::ChVector<double> axis);
+    void translate(chrono::ChVector<double> translation_vector);
     double get_mass();
     void apply_collective_pitch_increment(double pitch_increment);
     double get_rpm();

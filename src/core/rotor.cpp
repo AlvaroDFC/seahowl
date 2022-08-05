@@ -1,5 +1,7 @@
 #include "seahowl/core/rotor.h"
 
+#include "chrono/physics/ChBody.h"
+
 Rotor::Rotor() {
     elasto = RotorElasto();
     aero = RotorAero();

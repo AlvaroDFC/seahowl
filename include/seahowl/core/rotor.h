@@ -1,8 +1,9 @@
 #pragma once
 
 #include <seahowl/core/blade.h>
-#include "../elasto/rotor_elasto.h"
+#include <seahowl/elasto/rotor_elasto.h>
 #include <seahowl/aero/rotor_aero.h>
+
 
 /**@brief Wind turbine rotor: Hub + blades */
 class Rotor {
