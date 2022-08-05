@@ -1,12 +1,22 @@
 #include <seahowl/elasto/blade_elasto.h>
 
+#include <seahowl/elasto/utils_elasto.h> // WeightedElasto
+#include <seahowl/utils.h> // For DiscretizationPoint
+#include <seahowl/elasto/reference_point_elasto.h>
+#include <seahowl/elasto/utils_elasto.h>
+
 #include <numeric>
 
-#include "chrono/fea/ChBuilderBeam.h"
+#include <chrono/fea/ChBuilderBeam.h>
+#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
+#include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
+#include "chrono/fea/ChMesh.h"
+#include "chrono/physics/ChSystemSMC.h"
+#include <chrono/physics/ChLoadContainer.h>
 
 BladeElasto::BladeElasto() {}
 
-void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
         throw std::runtime_error("Not enough elasto reference points defined for blade.");
@@ -31,7 +41,7 @@ void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
     // build_loads(system);
 };
 
-void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     nodes.clear();
     const auto nnodes = discretized_points.size();
     for (size_t ii = 0; ii < nnodes; ii++) {
@@ -58,7 +68,7 @@ void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
         // make node
-        auto node = chrono_types::make_shared<ChNodeFEAxyzrot>(node_frame);
+        auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
         // add node to blade nodes vector
         nodes.push_back(node);
         // add node to mesh
@@ -66,7 +76,7 @@ void BladeElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     };
 };
 
-void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -75,7 +85,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
     }
 
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
@@ -95,7 +105,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
 
     for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
-        auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenko>();
+        auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenko>();
         // add element to blade elements vector
         elements.push_back(element);
         // add element to mesh
@@ -104,14 +114,14 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 
         // create blade section
-        auto blade_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
+        auto blade_section = chrono_types::make_shared<chrono::fea::ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
         element->SetTaperedSection(blade_section);
 
         // set first section for tapered section
         blade_section->SetSectionA(section);
 
         // make second section for tapered section
-        section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+        section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
         blade_section->SetSectionB(section);
         auto& discretized_point = discretized_points[ii];
         // offsets
@@ -138,7 +148,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
-void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -147,7 +157,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
         mm(jj, jj) = 1.0;
     }
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
@@ -161,7 +171,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
 
     for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
-        auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenkoFPM>();
+        auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenkoFPM>();
         // add element to blade elements vector
         elements.push_back(element);
         // add element to mesh
@@ -170,14 +180,14 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 
         // create blade section
-        auto blade_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGenericFPM>();
+        auto blade_section = chrono_types::make_shared<chrono::fea::ChBeamSectionTaperedTimoshenkoAdvancedGenericFPM>();
         element->SetTaperedSection(blade_section);
 
         // set first section for tapered section
         blade_section->SetSectionA(section);
 
         // make second section for tapered section
-        section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+        section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
         blade_section->SetSectionB(section);
         auto& discretized_point = discretized_points[ii];
         // offsets
@@ -200,7 +210,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> 
 }
 
 void BladeElasto::build_loads(ChSystemSMC& system) {
-    auto loadcontainer = chrono_types::make_shared<ChLoadContainer>();
+    auto loadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
     system.Add(loadcontainer);
 
     for (auto element : elements) {
@@ -231,7 +241,7 @@ void BladeElasto::translate(ChVector<double> translation_vector) {
 void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) 
 {
     
-    const DampingCoefficients damping_coefficients{axial, edge, flap, torsion};
+    const chrono::fea::DampingCoefficients damping_coefficients{axial, edge, flap, torsion};
 
     for (auto& point : reference_points) {
         point.damping_coefficients = damping_coefficients;

@@ -1,23 +1,26 @@
 #pragma once
 
-#include <seahowl/elasto/reference_point_elasto.h>
-#include <seahowl/elasto/utils_elasto.h>
-#include <seahowl/utils.h>
+struct BladeReferencePointElasto;
+#include <seahowl/elasto/utils_elasto.h> // WeightedElasto
 
-#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-#include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
-#include "chrono/fea/ChMesh.h"
-#include "chrono/physics/ChSystemSMC.h"
+#include <chrono/physics/ChLoad.h>
+#include <chrono/physics/ChLoaderU.h>
 
-using namespace chrono;  /// TO BE REMOVED
-using namespace chrono::fea;
-
-/**@brief Elastodynamic model for blade */
+namespace chrono {
+class ChSystemSMC;
+namespace fea {
+class ChMesh;
+class ChNodeFEAxyzrot;
+class ChElementBeamTaperedTimoshenko;
+}  // namespace fea
+} 
+    // namespace chrono
+    /**@brief Elastodynamic model for blade */
 class BladeElasto {
   public:
-    std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
-    std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
-    std::vector<std::shared_ptr<ChLoad<ChLoaderWeighted>>> loaders_aero;
+    std::vector<std::shared_ptr<chrono::fea::ChNodeFEAxyzrot>> nodes;
+    std::vector<std::shared_ptr<chrono::fea::ChElementBeamTaperedTimoshenko>> elements;
+    std::vector<std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>>> loaders_aero;
     std::vector<double> discretization_fractions;
     std::vector<BladeReferencePointElasto> reference_points;
     std::vector<BladeReferencePointElasto> discretized_points;
@@ -26,21 +29,21 @@ class BladeElasto {
 
     BladeElasto();
 
-    void build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh);
-    void build_nodes(std::shared_ptr<ChMesh> mesh);
-    void build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh);
-    void build_elements_tapered_timoshenko_fpm(std::shared_ptr<ChMesh> mesh);
-    void build_loads(ChSystemSMC& system);
-    void translate(ChVector<double> translation_vector);
-    void rotate(double angle, ChVector<double> axis);
+    void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_loads(chrono::ChSystemSMC& system);
+    void translate(chrono::ChVector<double> translation_vector);
+    void rotate(double angle, chrono::ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
     double get_mass();
-    void evaluate_position_rotation(ChVector<double>& position,
-                                    ChQuaternion<double>& rotation,
+    void evaluate_position_rotation(chrono::ChVector<double>& position,
+                                    chrono::ChQuaternion<double>& rotation,
                                     int element_index,
                                     double eta);
     void reset_loads();
-    void accumulate_element_load(ChVector<double> load, int element_index, double eta);
+    void accumulate_element_load(chrono::ChVector<double> load, int element_index, double eta);
     void apply_pitch_increment(double pitch_increment);
 };
 

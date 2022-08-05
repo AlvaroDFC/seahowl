@@ -1,17 +1,20 @@
 #pragma once
 
-#include "chrono/physics/ChLoadContainer.h"
+#include <chrono/physics/ChLoaderU.h>
+#include <chrono/core/ChVector.h>
+#include <chrono/core/ChMatrix.h>
 
-using namespace chrono;  //// TO BE REMOVED
+#include <vector>
+#include <memory>
 
 /**@brief Loader : extend Chrono class */
-class ChLoaderWeighted : public ChLoaderUdistributed {
+class ChLoaderWeighted : public chrono::ChLoaderUdistributed {
   public:
-    std::vector<ChVector<double>> loads;
+    std::vector<chrono::ChVector<double>> loads;
     std::vector<double> positions;
     int integration_points;
 
-    ChLoaderWeighted(std::shared_ptr<ChLoadableU> mloadable) : ChLoaderUdistributed(mloadable) {
+    ChLoaderWeighted(std::shared_ptr<chrono::ChLoadableU> mloadable) : chrono::ChLoaderUdistributed(mloadable) {
         integration_points = 10;
     };
 
@@ -20,7 +23,7 @@ class ChLoaderWeighted : public ChLoaderUdistributed {
         this->positions.assign(positions.begin(), positions.end());
     }
 
-    void set_loads(std::vector<ChVector<double>> loads) {
+    void set_loads(std::vector<chrono::ChVector<double>> loads) {
         // check that number of loads is the same as number of positions
         if (loads.size() != this->positions.size()) {
             throw std::runtime_error("Number of loads (" + std::to_string(loads.size()) +
@@ -33,12 +36,12 @@ class ChLoaderWeighted : public ChLoaderUdistributed {
 
     // Compute F=F(u)
     virtual void ComputeF(const double U,              // parametric coordinate along element
-                          ChVectorDynamic<>& F,        // resulting loads go here
-                          ChVectorDynamic<>* state_x,  // if !=0 update pos
-                          ChVectorDynamic<>* state_w   // if !=0 update speed
+                          chrono::ChVectorDynamic<>& F,        // resulting loads go here
+                          chrono::ChVectorDynamic<>* state_x,  // if !=0 update pos
+                          chrono::ChVectorDynamic<>* state_w   // if !=0 update speed
     ) {
         // initialize load
-        auto load = ChVector<double>(0.0, 0.0, 0.0);
+        auto load = chrono::ChVector<double>(0.0, 0.0, 0.0);
         // find between which load positions is U and interpolate
         for (int ii = 0; ii < std::max(0, (int)positions.size() - 1); ii++) {
             if (positions[ii] <= U && U <= positions[ii + 1]) {

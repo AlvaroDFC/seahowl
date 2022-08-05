@@ -75,10 +75,10 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
         // rotations + translations
         // blade root node is assumed to be originally at (0,0,0) and using IEC standard for coordinate system
         // apply precone
-        blade->rotate(precone, VECT_Y);  // Y is the edge-wise axis for blade (IEC standard)
+        blade->rotate(precone, chrono::VECT_Y);  // Y is the edge-wise axis for blade (IEC standard)
         double angle = ii * chrono::CH_C_2PI / nblades;
         // offset blade from hub apex and add overhang
-        blade->translate(ChVector<double>(hub.overhang, 0.0, hub.radius));
+        blade->translate(chrono::ChVector<double>(hub.overhang, 0.0, hub.radius));
         // rotate blade around hub
         blade->rotate(angle, chrono::VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
         // offset with distance from towertop
@@ -106,8 +106,8 @@ void RotorElasto::link_tower(TowerElasto& tower, chrono::ChSystemSMC& system) {
 
 void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) {
     // blades
-    for (int ii = 0; ii < blades.size(); ii++) {
-        blades[ii]->rotate(angle, axis);
+    for (auto& blade: blades) {
+        blade->rotate(angle, axis);
     }
     auto rotation = Q_from_AngAxis(angle, axis);
     // hub
@@ -134,8 +134,8 @@ void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) {
 
 void RotorElasto::translate(chrono::ChVector<double> translation_vector) {
     // blades
-    for (int ii = 0; ii < blades.size(); ii++) {
-        blades[ii]->translate(translation_vector);
+    for (auto& blade: blades) {
+        blade->translate(translation_vector);
     }
     // hub
     body_hub->SetPos(body_hub->GetPos() + translation_vector);
@@ -150,8 +150,8 @@ void RotorElasto::translate(chrono::ChVector<double> translation_vector) {
 double RotorElasto::get_mass() {
     double total_mass = 0.0;
     // blades
-    for (int ii = 0; ii < blades.size(); ii++) {
-        total_mass += blades[ii]->get_mass();
+    for (auto& blade: blades) {
+        total_mass += blade->get_mass();
     }
     // hub
     total_mass += body_hub->GetMass();
