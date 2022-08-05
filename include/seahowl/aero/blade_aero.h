@@ -2,7 +2,7 @@
 
 #include <seahowl/aero/reference_point_aero.h>
 #include <seahowl/aero/wind_models.h>
-#include <seahowl/utils.h>
+#include <seahowl/core/utils.h>
 
 #include <chrono/core/ChVector.h>
 
@@ -38,8 +38,8 @@ struct BladeElementAero {
 class BladeAero {
   public:
     std::vector<double> discretization_fractions;
-    std::vector<BladeReferencePointAero> reference_points;
-    std::vector<BladeReferencePointAero> discretized_points;
+    std::vector<BladeReferencePointAero> reference_points; ///< Reference (original ?) points
+    std::vector<BladeReferencePointAero> discretized_points; ///< Refined mesh
     std::vector<BladeElementAero> elements; ///< Mesh of BladeElements
     std::vector<chrono::ChVector<double>> loads; ///< Loads on mesh elements
 

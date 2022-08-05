@@ -1,5 +1,5 @@
 #include "seahowl/io/read_json.h"
-#include "seahowl/utils.h"
+#include "seahowl/core/utils.h"
 #include "seahowl/elasto/blade_elasto.h"
 
 #include <string>
@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 
 using json = nlohmann::json;
 
-std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
+std::vector<seahowl::core::BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -20,7 +20,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     json_file >> json_obj;
 
     // EXTRACT INFO
-    std::vector<BladeReferencePoint> reference_points;
+    std::vector<seahowl::core::BladeReferencePoint> reference_points;
 
     auto points = json_obj.at("reference_points").get<json>();
     auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
@@ -31,7 +31,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     double blade_length = points[points.size() - 1]["coordinates"][2];
     for (size_t ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto reference_point = BladeReferencePoint();
+        auto reference_point = seahowl::core::BladeReferencePoint();
 
         auto coords = point.at("coordinates").get<std::vector<double>>();
         if (coords.size() != 3) {

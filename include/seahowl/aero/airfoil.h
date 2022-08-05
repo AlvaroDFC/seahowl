@@ -8,10 +8,10 @@ namespace aero {
 
 /**@brief AriFoil coefficients */
 struct AirfoilCoefficients {
-    double alpha = 0.0;
-    double lift = 0.0;
-    double drag = 0.0;
-    double added_mass = 0.0;
+    double alpha = 0.0; ///< Angle of attack
+    double lift = 0.0;  ///< Lift coefficient Cl
+    double drag = 0.0;  ///< Drag coefficient Cd
+    double added_mass = 0.0; ///< Added mass coefficient
 
     AirfoilCoefficients() {}
 
@@ -36,10 +36,13 @@ struct AirfoilCoefficients {
     };
 };
 
-/**@brief AriFoil properties */
+/**@brief AriFoil properties
+
+@todo depends also of air density
+*/
 struct AirfoilProperties {
-    double reynolds_number = 0.0;
-    std::vector<AirfoilCoefficients> coefficients_list;
+    double reynolds_number = 0.0; ///< Reynlods number
+    std::vector<AirfoilCoefficients> coefficients_list; ///< (For each elements ?) the tabulated Lift, drag coefficient according to angle of attack 
 
     AirfoilProperties() {}
 

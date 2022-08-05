@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 
-std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath);
+std::vector<seahowl::core::BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath);
 
 seahowl::core::Blade get_blade_from_json(std::string filepath);
 

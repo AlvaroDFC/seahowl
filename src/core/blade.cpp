@@ -3,7 +3,7 @@
 #include <seahowl/elasto/reference_point_elasto.h>
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/aero/blade_aero.h>
-#include <seahowl/utils.h>
+#include <seahowl/core/utils.h>
 
 #include <chrono/fea/ChMesh.h>
 #include <chrono/physics/ChSystemSMC.h>
@@ -13,12 +13,11 @@ seahowl::core::Blade::Blade() {
     m_aero = std::make_shared<seahowl::aero::BladeAero>();
 }
 
-
 void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // push reference points
     m_elasto->reference_points.clear();
     m_aero->reference_points.clear();
-    for (auto& pt:  m_reference_points) {
+    for (auto& pt : m_reference_points) {
         m_elasto->reference_points.push_back(seahowl::elasto::BladeReferencePointElasto(pt));
         m_aero->reference_points.push_back(seahowl::aero::BladeReferencePointAero(pt));
     }
@@ -45,11 +44,13 @@ void seahowl::core::Blade::compute_mapping_aero2elasto() {
     for (int ii = 0; ii < m_aero->elements.size(); ii++) {
         aero_discretization_fractions.push_back(m_aero->elements[ii].properties.fraction);
     }
-    m_mapping_aero2elasto = get_indice_and_positions(aero_discretization_fractions, m_elasto->discretization_fractions);
+    m_mapping_aero2elasto =
+        seahowl::core::get_indice_and_positions(aero_discretization_fractions, m_elasto->discretization_fractions);
 }
 
 void seahowl::core::Blade::compute_mapping_elasto2aero() {
-    m_mapping_elasto2aero = get_indice_and_positions(m_elasto->discretization_fractions, m_aero->discretization_fractions);
+    m_mapping_elasto2aero =
+        seahowl::core::get_indice_and_positions(m_elasto->discretization_fractions, m_aero->discretization_fractions);
 }
 
 void seahowl::core::Blade::prestep(double time) {
@@ -68,7 +69,7 @@ void seahowl::core::Blade::update_positions_aero() {
         int elasto_element_index = m_mapping_aero2elasto[ii].index;
         double eta = m_mapping_aero2elasto[ii].eta;
         m_elasto->evaluate_position_rotation(m_aero->elements[ii].properties.m_coordinates,
-                                           m_aero->elements[ii].properties.rotation, elasto_element_index, eta);
+                                             m_aero->elements[ii].properties.rotation, elasto_element_index, eta);
 
         // update velocity of aero elements
         m_aero->elements[ii].properties.velocity =
@@ -86,6 +87,7 @@ void seahowl::core::Blade::update_loads_elasto() {
         throw std::runtime_error("length of vector of loads and aero to elasto mapping do not match.");
     }
     for (int ii = 0; ii < m_aero->loads.size(); ii++) {
-        m_elasto->accumulate_element_load(m_aero->loads[ii], m_mapping_aero2elasto[ii].index, m_mapping_aero2elasto[ii].eta);
+        m_elasto->accumulate_element_load(m_aero->loads[ii], m_mapping_aero2elasto[ii].index,
+                                          m_mapping_aero2elasto[ii].eta);
     }
 }

@@ -1,10 +1,13 @@
 #pragma once
 
-
 #include <memory>
 #include <vector>
 
 namespace seahowl {
+namespace core {
+struct DiscretizationPoint;
+struct BladeReferencePoint;
+}
 namespace elasto {
 class BladeElasto;
 }
@@ -14,8 +17,6 @@ class BladeAero;
 }  // namespace seahowl
 
 
-struct BladeReferencePoint;
-struct DiscretizationPoint;
 
 namespace chrono {
 class ChSystemSMC;
@@ -33,10 +34,10 @@ Pattern <mediator> for elasto and aero
 */
 class Blade {
   public:
-    std::shared_ptr<seahowl::elasto::BladeElasto> m_elasto; ///< Elastodynamic element mesh
-    std::shared_ptr<seahowl::aero::BladeAero> m_aero;  ///< Aerodynamic element mesh
+    std::shared_ptr<seahowl::elasto::BladeElasto> m_elasto;  ///< Elastodynamic element mesh
+    std::shared_ptr<seahowl::aero::BladeAero> m_aero;        ///< Aerodynamic element mesh
     std::vector<BladeReferencePoint>
-        m_reference_points;  /// TODO  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
+        m_reference_points;  ///<@todo  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
     std::vector<DiscretizationPoint> m_mapping_aero2elasto;
     std::vector<DiscretizationPoint> m_mapping_elasto2aero;
 

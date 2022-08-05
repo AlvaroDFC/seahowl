@@ -28,7 +28,7 @@ struct BladeReferencePointElasto {
         damping_coefficients.alpha = 0.0;
     }
 
-    BladeReferencePointElasto(BladeReferencePoint point) {
+    BladeReferencePointElasto(seahowl::core::BladeReferencePoint point) {
         m_coordinates = point.m_coordinates;
         m_offset_elastic = point.m_offset_elastic;
         m_offset_gravity = point.m_offset_gravity;

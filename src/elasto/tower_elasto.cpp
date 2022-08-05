@@ -1,5 +1,5 @@
 #include <seahowl/elasto/tower_elasto.h>
-#include <seahowl/utils.h>
+#include <seahowl/core/utils.h>
 
 #include <memory>
 #include <vector>
@@ -10,7 +10,7 @@
 using seahowl::elasto::TowerElasto;
 
 void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
-    discretized_points = get_discretized_points(discretization_fractions, reference_points);
+    discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     build_elements_tapered_timoshenko(mesh);
 };

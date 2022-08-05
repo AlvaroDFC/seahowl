@@ -121,6 +121,7 @@ else()
 	set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
 endif()
 
+
 # ================
 # CORE LIBRARY
 # ================
@@ -133,20 +134,28 @@ set(SEAHOWL_SOURCES
 	src/elasto/blade_elasto.cpp 
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
+    
     src/core/rotor.cpp 
     src/core/blade.cpp
     src/core/turbine.cpp
+    src/core/utils.cpp 
+
     src/aero/blade_aero.cpp 
     src/aero/rotor_aero.cpp
     src/servo/controller.cpp
 
-	src/io/read_json.cpp src/utils.cpp 
-	 
+	src/io/read_json.cpp 	 
+)
+
+set(SEAHOWL_HEADERS
+
+    include/seahowl/servo/controller.h
 )
 
 target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
+    ${SEAHOWL_HEADERS}
 )
 
 target_include_directories(seahowl_core
@@ -193,6 +202,8 @@ add_executable( seahowl_driver )
 target_sources(seahowl_driver 
     PRIVATE 
     src/main.cpp
+
+    ${SEAHOWL_HEADERS}
 )
 
 target_include_directories(seahowl_driver

@@ -1,7 +1,7 @@
 #include <seahowl/elasto/blade_elasto.h>
 
 #include <seahowl/elasto/utils_elasto.h> // WeightedElasto
-#include <seahowl/utils.h> // For DiscretizationPoint
+#include <seahowl/core/utils.h> // For DiscretizationPoint
 #include <seahowl/elasto/reference_point_elasto.h>
 #include <seahowl/elasto/utils_elasto.h>
 
@@ -32,7 +32,7 @@ void BladeElasto::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea
     }
 
     // build
-    discretized_points = get_discretized_points(discretization_fractions, reference_points);
+    discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     if (fpm_mode) {
         build_elements_tapered_timoshenko_fpm(mesh);
