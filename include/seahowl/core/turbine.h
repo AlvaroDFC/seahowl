@@ -28,7 +28,7 @@ class Turbine {
     void poststep(double time);
     void translate(chrono::ChVector<double> translation_vector);
     void rotate(double angle, chrono::ChVector<double> axis);
-    void compute_wind_loads(WindModel& wind_model, double time);
+    void compute_wind_loads(seahowl::aero::WindModel& wind_model, double time);
 };
 
 }  // namespace core

@@ -37,6 +37,6 @@ void seahowl::core::Turbine::rotate(double angle, chrono::ChVector<double> axis)
     m_tower.rotate(angle, axis);
 }
 
-void seahowl::core::Turbine::compute_wind_loads(WindModel& wind_model, double time) {
+void seahowl::core::Turbine::compute_wind_loads(seahowl::aero::WindModel& wind_model, double time) {
     m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
 }

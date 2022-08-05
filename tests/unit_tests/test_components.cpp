@@ -269,7 +269,7 @@ TEST(test_turbine, rpm_initial_pitch) {
     auto timestepper_type = ChTimestepper::Type::HHT;
     double dt = 0.1;
     // wind
-    auto wind_model = ConstantWind();
+    auto wind_model = seahowl::aero::ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
