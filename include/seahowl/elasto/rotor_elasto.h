@@ -1,11 +1,15 @@
 #pragma once
 
-
 #include <vector>
 #include <memory>
 
+namespace seahowl {
+namespace elasto {
 class BladeElasto;
-class TowerElasto; ///@todo move out of rotor
+class TowerElasto;  ///@todo move out of rotor
+}
+}  // namespace seahowl
+
 
 #include <chrono/core/ChVector.h>
 
@@ -15,7 +19,10 @@ class ChLinkMateFix;
 class ChLinkRevolute;
 class ChSystemSMC;
 
-}
+}  // namespace chrono
+
+namespace seahowl {
+namespace elasto {
 
 /**@brief Hub properties */
 struct HubProperties {
@@ -40,11 +47,10 @@ struct ShaftProperties {
     double distance_from_towertop = 0.0;
 };
 
-
 /**@brief Rotor properties */
 class RotorElasto {
   public:
-    std::vector<std::shared_ptr<BladeElasto>> blades;
+    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades;
     std::vector<double> blade_precones;
     // bodies
     std::shared_ptr<chrono::ChBody> body_hub;
@@ -64,7 +70,7 @@ class RotorElasto {
 
     RotorElasto();
 
-    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
+    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades);
     void link_tower(TowerElasto& tower, chrono::ChSystemSMC& system);
     void rotate(double angle, chrono::ChVector<double> axis);
     void translate(chrono::ChVector<double> translation_vector);
@@ -74,3 +80,5 @@ class RotorElasto {
     double get_torque();
 };
 
+}  // namespace elasto
+}  // namespace seahowl

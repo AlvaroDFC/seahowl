@@ -155,7 +155,7 @@ seahowl::core::Blade get_blade_from_json(std::string filepath) {
     return blade;
 }
 
-std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
+std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -168,11 +168,11 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
 
     // MAKE TOWER REFERENCE POINTS
-    std::vector<TowerReferencePoint> reference_points;
+    std::vector<seahowl::elasto::TowerReferencePoint> reference_points;
     auto points = json_obj.at("reference_points").get<json>();
     for (int ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto& reference_point = TowerReferencePoint();
+        auto& reference_point = seahowl::elasto::TowerReferencePoint();
         point.at("fraction").get_to(reference_point.fraction);
         reference_point.coordinates = ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);
         point.at("stiffness_sideside").get_to(reference_point.stiffness_sideside);
@@ -193,14 +193,15 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     return reference_points;
 }
 
-TowerElasto get_tower_from_json(std::string filepath) {
+seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    TowerElasto tower = TowerElasto();
+    seahowl::elasto::TowerElasto tower{};
+    ;
     tower.height = json_obj.at("height").get<double>();
     tower.base_height = json_obj.at("base_height").get<double>();
     tower.reference_points = get_tower_reference_points_from_json(filepath);

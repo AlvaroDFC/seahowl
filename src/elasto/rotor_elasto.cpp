@@ -9,6 +9,10 @@
 #include "chrono/physics/ChLinkMate.h"
 #include "chrono/physics/ChLinkRevolute.h"
 
+using seahowl::elasto::BladeElasto;
+using seahowl::elasto::RotorElasto;
+//using seahowl::elasto::TowerElasto;
+
 RotorElasto::RotorElasto() {}
 
 void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {

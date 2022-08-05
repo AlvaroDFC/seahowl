@@ -17,7 +17,7 @@ class Turbine {
   public:
     std::vector<std::shared_ptr<Blade>> m_blades;
     Rotor m_rotor;
-    TowerElasto m_tower;
+    seahowl::elasto::TowerElasto m_tower;
 
     Turbine();
 

@@ -8,6 +8,9 @@ class ChMesh;
 }
 }  // namespace chrono
 
+namespace seahowl {
+namespace elasto {
+
 /**@brief Tower (DOF) reference point */
 struct TowerReferencePoint {
     chrono::ChVector<double> coordinates;
@@ -83,3 +86,5 @@ class TowerElasto {
     double get_mass();
 };
 
+}  // namespace elasto
+}  // namespace seahowl

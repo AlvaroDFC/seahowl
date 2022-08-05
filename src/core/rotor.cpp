@@ -1,9 +1,12 @@
 #include "seahowl/core/rotor.h"
 
-#include "chrono/physics/ChBody.h"
+#include <chrono/physics/ChBody.h>
+
+#include <memory>
+#include <vector>
 
 Rotor::Rotor() {
-    elasto = RotorElasto();
+    elasto = seahowl::elasto::RotorElasto();
     aero = RotorAero();
 }
 
@@ -12,11 +15,11 @@ void Rotor::update_positions_aero() {
     aero.hub_rotation = elasto.body_hub->GetRot();
 }
 
-void Rotor::build(ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
+void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
     this->blades = blades;
 
     // get elasto and aero blades pointers
-    std::vector<std::shared_ptr<BladeElasto>> blades_elasto;
+    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades_elasto;
     std::vector<std::shared_ptr<BladeAero>> blades_aero;
     for (auto& blade:  blades) {
         blades_elasto.push_back(blade->m_elasto);

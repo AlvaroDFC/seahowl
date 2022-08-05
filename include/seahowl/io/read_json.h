@@ -15,9 +15,9 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
 
 seahowl::core::Blade get_blade_from_json(std::string filepath);
 
-std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath);
+std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath);
 
-TowerElasto get_tower_from_json(std::string filepath);
+seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath);
 
 Rotor get_rotor_from_json(std::string filepath);
 

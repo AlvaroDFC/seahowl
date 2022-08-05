@@ -8,7 +8,7 @@
 /**@brief Wind turbine rotor: Hub + blades */
 class Rotor {
   public:
-    RotorElasto elasto;
+    seahowl::elasto::RotorElasto elasto;
     RotorAero aero;
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
 
@@ -16,7 +16,7 @@ class Rotor {
     ~Rotor() {}
 
     void update_positions_aero();
-    void build(ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
+    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
     void prestep(double time);
     void poststep(double time);
 };

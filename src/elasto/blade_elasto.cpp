@@ -14,6 +14,8 @@
 #include "chrono/physics/ChSystemSMC.h"
 #include <chrono/physics/ChLoadContainer.h>
 
+using namespace seahowl::elasto;
+
 BladeElasto::BladeElasto() {}
 
 void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {

@@ -7,6 +7,8 @@
 #include <chrono/fea/ChMesh.h>
 #include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
 
+using seahowl::elasto::TowerElasto;
+
 void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);

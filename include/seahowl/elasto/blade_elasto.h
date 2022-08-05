@@ -13,9 +13,12 @@ class ChMesh;
 class ChNodeFEAxyzrot;
 class ChElementBeamTaperedTimoshenko;
 }  // namespace fea
-} 
-    // namespace chrono
-    /**@brief Elastodynamic model for blade */
+} // chrono namespace 
+
+namespace seahowl {
+namespace elasto {
+
+/**@brief Elastodynamic model for blade */
 class BladeElasto {
   public:
     std::vector<std::shared_ptr<chrono::fea::ChNodeFEAxyzrot>> nodes;
@@ -47,3 +50,5 @@ class BladeElasto {
     void apply_pitch_increment(double pitch_increment);
 };
 
+}  // namespace elasto
+}  // namespace seahowl

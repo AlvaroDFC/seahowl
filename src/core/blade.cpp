@@ -4,18 +4,15 @@
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/aero/blade_aero.h>
 #include <seahowl/utils.h>
-// 
-// 
-//#include "chrono/core/ChVector.h"
-//#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-//#include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
-#include "chrono/fea/ChMesh.h"
-#include "chrono/physics/ChSystemSMC.h"
+
+#include <chrono/fea/ChMesh.h>
+#include <chrono/physics/ChSystemSMC.h>
 
 seahowl::core::Blade::Blade() {
-    m_elasto = std::make_shared<BladeElasto>();
+    m_elasto = std::make_shared<seahowl::elasto::BladeElasto>();
     m_aero = std::make_shared<BladeAero>();
 }
+
 
 void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // push reference points
