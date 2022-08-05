@@ -24,20 +24,20 @@ void TowerElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
         auto node_pos = discretized_point.coordinates;
 
         // get node coordinate system
-        ChVector<> node_axis;
-        ChMatrix33<> node_rotation;
+        chrono::ChVector<> node_axis;
+        chrono::ChMatrix33<> node_rotation;
         if (ii == 0) {
             node_axis = (discretized_points[ii + 1].coordinates - node_pos).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         } else if (ii == nnodes - 1) {
             node_axis = (node_pos - discretized_points[ii - 1].coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         } else {
             node_axis =
                 (discretized_points[ii + 1].coordinates - discretized_points[ii - 1].coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         }
-        auto node_frame = ChFrame<>(node_pos, node_rotation);
+        auto node_frame = chrono::ChFrame<>(node_pos, node_rotation);
 
         // make node
         auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
@@ -102,7 +102,7 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
     }
 }
 
-void TowerElasto::rotate(double angle, ChVector<double> axis) {
+void TowerElasto::rotate(double angle, chrono::ChVector<double> axis) {
     auto rotation = Q_from_AngAxis(angle, axis);
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
@@ -113,7 +113,7 @@ void TowerElasto::rotate(double angle, ChVector<double> axis) {
     }
 }
 
-void TowerElasto::translate(ChVector<double> translation_vector) {
+void TowerElasto::translate(chrono::ChVector<double> translation_vector) {
     for (int ii = 0; ii < nodes.size(); ii++) {
         auto node = nodes[ii];
         node->SetPos(node->GetPos() + translation_vector);

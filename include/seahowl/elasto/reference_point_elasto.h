@@ -2,8 +2,10 @@
 
 #include <seahowl/core/reference_point.h>
 
-
 #include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
+
+namespace seahowl {
+namespace elasto {
 
 /**@brief Elastodynamic model DOF reference point */
 struct BladeReferencePointElasto {
@@ -75,4 +77,5 @@ struct BladeReferencePointElasto {
     };
 };
 
-
+}  // namespace elasto
+}  // namespace seahowl

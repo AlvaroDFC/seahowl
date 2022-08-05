@@ -6,7 +6,6 @@
 
 #include "chrono/core/ChVector.h"
 
-using namespace chrono; /// TODO remove from header
 
 /**@brief Parametric discretization point */
 struct DiscretizationPoint {

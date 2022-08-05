@@ -19,7 +19,7 @@ void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<ch
     m_elasto->reference_points.clear();
     m_aero->reference_points.clear();
     for (auto& pt:  m_reference_points) {
-        m_elasto->reference_points.push_back(BladeReferencePointElasto(pt));
+        m_elasto->reference_points.push_back(seahowl::elasto::BladeReferencePointElasto(pt));
         m_aero->reference_points.push_back(BladeReferencePointAero(pt));
     }
     // build aero & elasto

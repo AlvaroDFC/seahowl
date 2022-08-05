@@ -7,6 +7,9 @@
 #include <vector>
 #include <memory>
 
+namespace seahowl {
+namespace elasto {
+
 /**@brief Loader : extend Chrono class */
 class ChLoaderWeighted : public chrono::ChLoaderUdistributed {
   public:
@@ -35,7 +38,7 @@ class ChLoaderWeighted : public chrono::ChLoaderUdistributed {
     }
 
     // Compute F=F(u)
-    virtual void ComputeF(const double U,              // parametric coordinate along element
+    virtual void ComputeF(const double U,                      // parametric coordinate along element
                           chrono::ChVectorDynamic<>& F,        // resulting loads go here
                           chrono::ChVectorDynamic<>* state_x,  // if !=0 update pos
                           chrono::ChVectorDynamic<>* state_w   // if !=0 update speed
@@ -65,4 +68,5 @@ class ChLoaderWeighted : public chrono::ChLoaderUdistributed {
     virtual int GetIntegrationPointsU() { return integration_points; }
 };
 
-
+}  // namespace elasto
+}  // namespace seahowl

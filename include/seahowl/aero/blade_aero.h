@@ -4,9 +4,8 @@
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/utils.h>
 
-#include "chrono/core/ChVector.h"
+#include <chrono/core/ChVector.h>
 
-using namespace chrono; /// TODO remove from header
 
 /**@brief Blade aerodynamic element */
 struct BladeElementAero {
@@ -25,7 +24,7 @@ struct BladeElementAero {
     ~BladeElementAero() {}
 
     // ChVector2<double> get_induced_velocity_element(ChVector2<double>& local_velocity0);
-    ChVector2<double> get_induced_velocity_rotor(ChVector2<double>& local_velocity_rotor0,
+    chrono::ChVector2<double> get_induced_velocity_rotor(chrono::ChVector2<double>& local_velocity_rotor0,
                                                  size_t nblades,
                                                  bool tip_loss = true,
                                                  bool hub_loss = true);
@@ -38,15 +37,15 @@ class BladeAero {
     std::vector<BladeReferencePointAero> reference_points;
     std::vector<BladeReferencePointAero> discretized_points;
     std::vector<BladeElementAero> elements;
-    std::vector<ChVector<double>> loads;
+    std::vector<chrono::ChVector<double>> loads;
 
     BladeAero() {}
     ~BladeAero() {}
 
     void build();
     void compute_distances_from_tip();
-    void compute_distances_from_hub(ChVector<double> hub_apex_position, double hub_radius);
-    void compute_radii(ChVector<double> hub_apex_position);
+    void compute_distances_from_hub(chrono::ChVector<double> hub_apex_position, double hub_radius);
+    void compute_radii(chrono::ChVector<double> hub_apex_position);
     // void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 

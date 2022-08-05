@@ -18,7 +18,7 @@ using namespace seahowl::elasto;
 
 BladeElasto::BladeElasto() {}
 
-void BladeElasto::build(ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void BladeElasto::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
         throw std::runtime_error("Not enough elasto reference points defined for blade.");
@@ -55,19 +55,19 @@ void BladeElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
         chrono::ChMatrix33<> node_rotation;
         if (ii == 0) {
             node_axis = (discretized_points[ii + 1].m_coordinates - node_pos).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         } else if (ii == nnodes - 1) {
             node_axis = (node_pos - discretized_points[ii - 1].m_coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         } else {
             node_axis =
                 (discretized_points[ii + 1].m_coordinates - discretized_points[ii - 1].m_coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, VECT_Y);
+            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         }
         // apply structural twist
         chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(discretized_point.structural_twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
-        auto node_frame = ChFrame<>(node_pos, node_rotation);
+        auto node_frame = chrono::ChFrame<>(node_pos, node_rotation);
 
         // make node
         auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
@@ -146,7 +146,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
         // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
         rotation_relative =
-            ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+            chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
@@ -154,7 +154,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
-    ChMatrixNM<double, 6, 6> mm;
+    chrono::ChMatrixNM<double, 6, 6> mm;
     for (int jj = 0; jj < 6; jj++) {
         mm(jj, jj) = 1.0;
     }
@@ -206,25 +206,25 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
         // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
         rotation_relative =
-            ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+            chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
 
-void BladeElasto::build_loads(ChSystemSMC& system) {
+void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
     auto loadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
     system.Add(loadcontainer);
 
     for (auto element : elements) {
         /// TO CHECK ???? 
-        std::shared_ptr<ChLoad<ChLoaderWeighted>> loader_weighted(new ChLoad<ChLoaderWeighted>(element)); ///@todo POINTER NEW ????????
+        std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>> loader_weighted(new chrono::ChLoad<ChLoaderWeighted>(element)); ///@todo POINTER NEW ???????? maje_shared ??
         loaders_aero.push_back(loader_weighted);
         loadcontainer->Add(loader_weighted);
     }
 }
 
-void BladeElasto::rotate(double angle, ChVector<double> axis) {
-    auto rotation = Q_from_AngAxis(angle, axis);
+void BladeElasto::rotate(double angle, chrono::ChVector<double> axis) {
+    auto rotation = chrono::Q_from_AngAxis(angle, axis);
 
     for (auto node : nodes) {
         auto& new_position = rotation.Rotate(node->GetPos());
@@ -234,7 +234,7 @@ void BladeElasto::rotate(double angle, ChVector<double> axis) {
     }
 }
 
-void BladeElasto::translate(ChVector<double> translation_vector) {
+void BladeElasto::translate(chrono::ChVector<double> translation_vector) {
     for (auto node: nodes) {
         node->SetPos(node->GetPos() + translation_vector);
     }
@@ -263,8 +263,8 @@ double BladeElasto::get_mass() {
     );
 }
 
-void BladeElasto::evaluate_position_rotation(ChVector<double>& position,
-                                             ChQuaternion<double>& rotation,
+void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
+                                             chrono::ChQuaternion<double>& rotation,
                                              int element_index,
                                              double eta) {
     elements[element_index]->EvaluateSectionFrame(eta, position, rotation);
@@ -277,14 +277,14 @@ void BladeElasto::reset_loads() {
     }
 }
 
-void BladeElasto::accumulate_element_load(ChVector<double> load, int element_index, double eta) {
+void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int element_index, double eta) {
     if (element_index >= elements.size() || element_index < 0) {
         throw std::runtime_error("Element index " + std::to_string(element_index) + " does not exist (max " +
                                  std::to_string(elements.size()) + ").");
     }
     auto& element = elements[element_index];
-    ChVector<double> position{0.0, 0.0, 0.0};
-    ChQuaternion<double> rotation{0.0, 0.0, 0.0, 0.0};
+    chrono::ChVector<double> position{0.0, 0.0, 0.0};
+    chrono::ChQuaternion<double> rotation{0.0, 0.0, 0.0, 0.0};
     element->EvaluateSectionFrame(eta, position, rotation);
 
     // load on first node
@@ -304,7 +304,7 @@ void BladeElasto::accumulate_element_load(ChVector<double> load, int element_ind
 
 void BladeElasto::apply_pitch_increment(double pitch_increment) {
     // apply pitch from root node direction and position
-    auto root_dir = nodes.front()->TransformDirectionLocalToParent(ChVector<double>(1.0, 0.0, 0.0));
+    auto root_dir = nodes.front()->TransformDirectionLocalToParent(chrono::ChVector<double>(1.0, 0.0, 0.0));
     auto& root_pos = nodes.front()->GetPos();
     translate(-root_pos);
     rotate(pitch_increment, root_dir);

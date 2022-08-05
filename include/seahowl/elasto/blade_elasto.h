@@ -1,6 +1,5 @@
 #pragma once
 
-struct BladeReferencePointElasto;
 #include <seahowl/elasto/utils_elasto.h> // WeightedElasto
 
 #include <chrono/physics/ChLoad.h>
@@ -17,6 +16,8 @@ class ChElementBeamTaperedTimoshenko;
 
 namespace seahowl {
 namespace elasto {
+
+struct BladeReferencePointElasto;
 
 /**@brief Elastodynamic model for blade */
 class BladeElasto {
