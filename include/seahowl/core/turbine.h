@@ -23,11 +23,11 @@ class Turbine {
 
     ~Turbine() {}
 
-    void build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh);
+    void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void prestep(double time);
     void poststep(double time);
-    void translate(ChVector<double> translation_vector);
-    void rotate(double angle, ChVector<double> axis);
+    void translate(chrono::ChVector<double> translation_vector);
+    void rotate(double angle, chrono::ChVector<double> axis);
     void compute_wind_loads(WindModel& wind_model, double time);
 };
 

@@ -55,7 +55,7 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
     link_shaft_nacelle->Initialize(body_nacelle, body_shaft);
 
     // yaw bearing
-    body_yaw_bearing = chrono_types::make_shared<ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
+    body_yaw_bearing = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     system.Add(body_yaw_bearing);
     body_yaw_bearing->SetPos(chrono::ChVector<double>(0.0, 0.0, 0.0));
     body_yaw_bearing->SetMass(nacelle.yaw_bearing_mass);

@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
     }
 
     // mesh for blade
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
     std::vector<std::string> blades_files = {"../data/IEA15MW_blade.json", "../data/IEA15MW_blade.json",
@@ -134,24 +134,24 @@ int main(int argc, char* argv[]) {
         // application.AddTypicalSky();
         application.AddTypicalCamera(core::vector3df(-300, 150, -50));
 
-        auto visualize_beam = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-        visualize_beam->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
+        auto visualize_beam = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_beam->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
         visualize_beam->SetColorscaleMinMax(-0.4, 0.4);
         blades_mesh->AddAsset(visualize_beam);
 
         // visualize nodes
-        auto visualize_nodes = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-        visualize_nodes->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
-        visualize_nodes->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
+        auto visualize_nodes = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_nodes->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
+        visualize_nodes->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
         visualize_nodes->SetSymbolsThickness(1.0);
         visualize_nodes->SetSymbolsScale(1.0);
         visualize_nodes->SetZbufferHide(false);
         blades_mesh->AddAsset(visualize_nodes);
 
         // visualize node coordinate systems
-        auto visualize_nodes_coordsys = chrono_types::make_shared<ChVisualizationFEAmesh>(*(blades_mesh.get()));
-        visualize_nodes_coordsys->SetFEMglyphType(ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
-        visualize_nodes_coordsys->SetFEMdataType(ChVisualizationFEAmesh::E_PLOT_NONE);
+        auto visualize_nodes_coordsys = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        visualize_nodes_coordsys->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
+        visualize_nodes_coordsys->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NONE);
         visualize_nodes_coordsys->SetSymbolsThickness(10.0);
         visualize_nodes_coordsys->SetSymbolsScale(1.0);
         visualize_nodes_coordsys->SetZbufferHide(false);

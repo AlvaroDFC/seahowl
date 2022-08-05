@@ -1,21 +1,23 @@
 #pragma once
 
-#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-#include "chrono/fea/ChMesh.h"
+#include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
 
-using namespace chrono;  /// TO BE REMOVED
-using namespace chrono::fea;
+namespace chrono {
+namespace fea {
+class ChMesh;
+}
+}  // namespace chrono
 
 /**@brief Tower (DOF) reference point */
 struct TowerReferencePoint {
-    ChVector<double> coordinates;
+    chrono::ChVector<double> coordinates;
     double fraction;
     double density;
     double stiffness_axial;
     double stiffness_foreaft;
     double stiffness_sideside;
     double stiffness_torsion;
-    DampingCoefficients damping_coefficients;
+    chrono::fea::DampingCoefficients damping_coefficients;
 
     TowerReferencePoint operator*(const double factor) const {
         TowerReferencePoint new_point;
@@ -61,8 +63,8 @@ struct TowerReferencePoint {
 /**@brief Wind turbine tower elastodynamic model */
 class TowerElasto {
   public:
-    std::vector<std::shared_ptr<ChNodeFEAxyzrot>> nodes;
-    std::vector<std::shared_ptr<ChElementBeamTaperedTimoshenko>> elements;
+    std::vector<std::shared_ptr<chrono::fea::ChNodeFEAxyzrot>> nodes;
+    std::vector<std::shared_ptr<chrono::fea::ChElementBeamTaperedTimoshenko>> elements;
     std::vector<TowerReferencePoint> reference_points;
     std::vector<TowerReferencePoint> discretized_points;
     std::vector<double> discretization_fractions;
@@ -72,11 +74,11 @@ class TowerElasto {
     TowerElasto() {}
     ~TowerElasto() {}
 
-    void build(std::shared_ptr<ChMesh> mesh);
-    void build_nodes(std::shared_ptr<ChMesh> mesh);
-    void build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh);
-    void translate(ChVector<double> translation_vector);
-    void rotate(double angle, ChVector<double> axis);
+    void build(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void translate(chrono::ChVector<double> translation_vector);
+    void rotate(double angle, chrono::ChVector<double> axis);
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
     double get_mass();
 };

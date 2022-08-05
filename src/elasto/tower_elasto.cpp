@@ -1,13 +1,19 @@
 #include <seahowl/elasto/tower_elasto.h>
-#include "seahowl/utils.h"
+#include <seahowl/utils.h>
 
-void TowerElasto::build(std::shared_ptr<ChMesh> mesh) {
+#include <memory>
+#include <vector>
+
+#include <chrono/fea/ChMesh.h>
+#include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
+
+void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     discretized_points = get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);
     build_elements_tapered_timoshenko(mesh);
 };
 
-void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
+void TowerElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     nodes.clear();
 
     const auto nnodes = discretized_points.size();
@@ -32,7 +38,7 @@ void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
         auto node_frame = ChFrame<>(node_pos, node_rotation);
 
         // make node
-        auto node = chrono_types::make_shared<ChNodeFEAxyzrot>(node_frame);
+        auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
         // add node to tower nodes vector
         nodes.push_back(node);
         // add node to mesh
@@ -40,12 +46,12 @@ void TowerElasto::build_nodes(std::shared_ptr<ChMesh> mesh) {
     };
 }
 
-void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh) {
+void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
     // make first section for tapered section
-    auto section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
     auto& discretized_point = discretized_points[0];
     // material properties
     section->SetMassPerUnitLength(discretized_point.density);
@@ -61,7 +67,7 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
 
     for (size_t ii = 1; ii < nelements + 1; ii++) {
         // create element
-        auto element = chrono_types::make_shared<ChElementBeamTaperedTimoshenko>();
+        auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenko>();
         // add element to tower elements vector
         elements.push_back(element);
         // add element to mesh
@@ -70,14 +76,14 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<ChMesh> mesh
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 
         // create tower section
-        auto tower_section = chrono_types::make_shared<ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
+        auto tower_section = chrono_types::make_shared<chrono::fea::ChBeamSectionTaperedTimoshenkoAdvancedGeneric>();
         element->SetTaperedSection(tower_section);
 
         // set first section for tapered section
         tower_section->SetSectionA(section);
 
         // make second section for tapered section
-        section = chrono_types::make_shared<ChBeamSectionTimoshenkoAdvancedGeneric>();
+        section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
         tower_section->SetSectionB(section);
         auto discretized_point = discretized_points[ii];
         // material properties
@@ -113,7 +119,7 @@ void TowerElasto::translate(ChVector<double> translation_vector) {
 }
 
 void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
-    DampingCoefficients damping_coefficients;
+    chrono::fea::DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
     damping_coefficients.bz = flap;
