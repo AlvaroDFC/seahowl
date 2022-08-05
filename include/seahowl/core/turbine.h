@@ -4,9 +4,12 @@
 #include <seahowl/core/rotor.h>
 #include <seahowl/elasto/tower_elasto.h>
 
+#include <vector>
+
 /**@brief Seahowl base namespace */
 namespace seahowl {
 
+/**@brief Seahowl core module */
 namespace core {
 
 /**@brief The turbine (without support and foundations) */

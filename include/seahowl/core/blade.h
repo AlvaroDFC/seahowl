@@ -23,7 +23,7 @@ class ChMesh;
 namespace seahowl {
 namespace core {
 
-/**@brief wind turbine blade base class
+/**@brief Wind turbine blade base class
 
 Pattern <mediator> for elasto and aero
 */
@@ -31,7 +31,7 @@ class Blade {
   public:
     std::shared_ptr<BladeElasto> m_elasto;
     std::shared_ptr<BladeAero> m_aero;
-    std::vector<BladeReferencePoint> m_reference_points;
+    std::vector<BladeReferencePoint> m_reference_points;  ///TODO  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
     std::vector<DiscretizationPoint> m_mapping_aero2elasto;
     std::vector<DiscretizationPoint> m_mapping_elasto2aero;
 
