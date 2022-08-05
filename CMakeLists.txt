@@ -149,7 +149,30 @@ set(SEAHOWL_SOURCES
 
 set(SEAHOWL_HEADERS
 
+    include/seahowl/core/blade.h
+    include/seahowl/core/reference_point.h
+    include/seahowl/core/rotor.h
+    include/seahowl/core/turbine.h
+    include/seahowl/core/utils.h
+
+
+    include/seahowl/aero/airfoil.h
+    include/seahowl/aero/blade_aero.h
+    include/seahowl/aero/reference_point_aero.h
+    include/seahowl/aero/rotor_aero.h
+    include/seahowl/aero/wind_models.h
+
     include/seahowl/servo/controller.h
+
+    include/seahowl/elasto/blade_elasto.h
+    include/seahowl/elasto/elasto.h
+    include/seahowl/elasto/reference_point_elasto.h
+    include/seahowl/elasto/rotor_elasto.h
+    include/seahowl/elasto/tower_elasto.h
+    include/seahowl/elasto/utils_elasto.h
+
+    include/seahowl/io/read_json.h
+
 )
 
 target_sources(seahowl_core 
@@ -180,6 +203,7 @@ target_compile_features(
 set_target_properties(seahowl_core
 
     PROPERTIES
+        LINKER_LANGUAGE CXX
         CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
@@ -203,7 +227,7 @@ target_sources(seahowl_driver
     PRIVATE 
     src/main.cpp
 
-    ${SEAHOWL_HEADERS}
+    #${SEAHOWL_HEADERS}
 )
 
 target_include_directories(seahowl_driver
@@ -228,6 +252,7 @@ target_compile_features(
 set_target_properties(seahowl_driver 
 
     PROPERTIES
+        LINKER_LANGUAGE CXX
         CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
