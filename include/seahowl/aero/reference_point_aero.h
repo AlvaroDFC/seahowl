@@ -1,6 +1,9 @@
 #pragma once
 
-#include "../core/reference_point.h"
+#include <seahowl/core/reference_point.h>
+
+namespace seahowl {
+namespace aero {
 
 /**@brief Reference aerodynamic (DOF) point for blade */
 struct BladeReferencePointAero {
@@ -10,7 +13,7 @@ struct BladeReferencePointAero {
     chrono::ChVector<double> velocity;
     double chord;
     double structural_twist;
-    std::vector<AirfoilProperties> airfoil_properties;
+    std::vector<AirfoilProperties> airfoil_properties; ///< Airfoil properties
 
     BladeReferencePointAero() {}
 
@@ -52,3 +55,5 @@ struct BladeReferencePointAero {
     };
 };
 
+}  // namespace aero
+}  // namespace seahowl

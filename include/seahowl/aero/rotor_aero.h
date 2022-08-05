@@ -5,24 +5,28 @@
 
 #include "chrono/core/ChVector.h"
 
-using namespace chrono; /// TODO remove from header
+namespace seahowl {
+namespace aero {
 
 /**@brief Aerodynamic model for rotor */
 class RotorAero {
   public:
-    std::vector<std::shared_ptr<BladeAero>> blades;
-    ChVector<double> hub_position;
-    ChQuaternion<double> hub_rotation;
-    double radius;
-    double hub_radius;
+    std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades; ///< Blades 
+    chrono::ChVector<double> hub_position;
+    chrono::ChQuaternion<double> hub_rotation;
+    double radius; ///< Total radius of the rotor (hub + blade)
+    double hub_radius; ///< Hub Radius @todo include a class Hub
 
     RotorAero(){};
     ~RotorAero(){};
 
-    void build(std::vector<std::shared_ptr<BladeAero>> blades);
+    void build(std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades);
     void compute_chords_solidity();
     void compute_distances_from_hub();
     void compute_distances_from_tip();
     void compute_radii();
     void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
+
+}  // namespace aero
+}  // namespace seahowl

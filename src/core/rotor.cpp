@@ -8,7 +8,7 @@ using seahowl::core::Rotor;
 
 Rotor::Rotor() {
     elasto = seahowl::elasto::RotorElasto();
-    aero = RotorAero();
+    aero = seahowl::aero::RotorAero();
 }
 
 void Rotor::update_positions_aero() {
@@ -21,7 +21,7 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
 
     // get elasto and aero blades pointers
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades_elasto;
-    std::vector<std::shared_ptr<BladeAero>> blades_aero;
+    std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades_aero;
     for (auto& blade:  blades) {
         blades_elasto.push_back(blade->m_elasto);
         blades_aero.push_back(blade->m_aero);

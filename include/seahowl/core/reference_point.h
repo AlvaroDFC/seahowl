@@ -18,8 +18,8 @@ struct BladeReferencePoint {
     double fraction = 0.0;
     double structural_twist = 0.0;
     double chord = 0.0;
-    chrono::fea::DampingCoefficients damping_coefficients;
-    std::vector<AirfoilProperties> airfoil_properties;
+    chrono::fea::DampingCoefficients damping_coefficients; ///< Damping coefficients 
+    std::vector<seahowl::aero::AirfoilProperties> airfoil_properties; ///< Airfoil properties for each elemnts
 
     BladeReferencePoint() {
         stiffness_matrix.setZero();

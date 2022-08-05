@@ -13,9 +13,9 @@ namespace core {
 */
 class Rotor {
   public:
-    seahowl::elasto::RotorElasto elasto;
-    RotorAero aero;
-    std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
+    seahowl::elasto::RotorElasto elasto; ///< Elastodynamic model
+    seahowl::aero::RotorAero aero; ///< Aerodynamic model
+    std::vector<std::shared_ptr<seahowl::core::Blade>> blades; ///< Blades @todo connect bladeaero through blade ?
 
     Rotor();
     ~Rotor() {}

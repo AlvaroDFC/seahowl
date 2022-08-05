@@ -3,6 +3,9 @@
 #include <vector>
 #include <stdexcept>
 
+namespace seahowl {
+namespace aero {
+
 /**@brief AriFoil coefficients */
 struct AirfoilCoefficients {
     double alpha = 0.0;
@@ -80,3 +83,5 @@ struct AirfoilProperties {
     }
 };
 
+}  // namespace aero
+}  // namespace seahowl

@@ -10,7 +10,7 @@
 
 seahowl::core::Blade::Blade() {
     m_elasto = std::make_shared<seahowl::elasto::BladeElasto>();
-    m_aero = std::make_shared<BladeAero>();
+    m_aero = std::make_shared<seahowl::aero::BladeAero>();
 }
 
 
@@ -20,7 +20,7 @@ void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<ch
     m_aero->reference_points.clear();
     for (auto& pt:  m_reference_points) {
         m_elasto->reference_points.push_back(seahowl::elasto::BladeReferencePointElasto(pt));
-        m_aero->reference_points.push_back(BladeReferencePointAero(pt));
+        m_aero->reference_points.push_back(seahowl::aero::BladeReferencePointAero(pt));
     }
     // build aero & elasto
     m_elasto->build(system, mesh);

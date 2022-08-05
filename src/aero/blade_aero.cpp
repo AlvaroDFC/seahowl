@@ -1,5 +1,9 @@
 #include "seahowl/aero/blade_aero.h"
 
+using seahowl::aero::BladeElementAero;
+using seahowl::aero::BladeAero;
+//using seahowl::aero::BladeReferencePointAero;
+
 BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferencePointAero& point2) {
     properties = (point1 + point2) * 0.5;
     length = (point1.m_coordinates - point2.m_coordinates).Length();

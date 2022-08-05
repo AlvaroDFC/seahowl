@@ -1,4 +1,6 @@
 #include "seahowl/aero/rotor_aero.h"
+using seahowl::aero::BladeAero;
+using seahowl::aero::RotorAero;
 
 void RotorAero::build(std::vector<std::shared_ptr<BladeAero>> blades) {
     this->blades = blades;
@@ -25,8 +27,8 @@ void RotorAero::compute_chords_solidity() {
         for (int jj = 0; jj < blade->elements.size(); jj++) {
             auto& element = blade->elements[jj];
             auto radius = (element.properties.m_coordinates - hub_position).Length();
-            element.swept_annulus = element.length * 2 * CH_C_PI * radius;
-            element.chord_solidity = nblades * element.properties.chord / (2 * CH_C_PI * radius);
+            element.swept_annulus = element.length * 2 * chrono::CH_C_PI * radius;
+            element.chord_solidity = nblades * element.properties.chord / (2 * chrono::CH_C_PI * radius);
             // std::cout << element.swept_annulus << " " << element.chord_solidity << std::endl;
         }
     }
@@ -72,7 +74,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
 
             // get global/local directions
             // pointing from hub towards nacelle
-            auto local_direction_normal = ChVector<double>(0.0, 0.0, 1.0);
+            auto local_direction_normal = chrono::ChVector<double>(0.0, 0.0, 1.0);
             auto global_direction_normal = hub_rotation.Rotate(local_direction_normal);
             // pointing from hub to element position
             auto global_direction_hub2element = (properties.m_coordinates - hub_position).GetNormalized();
@@ -85,7 +87,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             // y: normal velocity (normal to rotor disc, pointing from hub to nacelle)
             double local_velocity_normal = (global_velocity ^ global_direction_normal);
             double local_velocity_tangent = (global_velocity ^ global_direction_tangent);
-            auto local_velocity0 = ChVector2<double>(local_velocity_tangent, local_velocity_normal);
+            auto local_velocity0 = chrono::ChVector2<double>(local_velocity_tangent, local_velocity_normal);
 
             // get induced velocity (2D) from blade element
             auto local_velocity = element.get_induced_velocity_rotor(local_velocity0, blades.size());
@@ -94,10 +96,10 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             double phi = atan2(local_velocity.y(), -local_velocity.x());
             double alpha = phi - (element.pitch + element.properties.structural_twist);
             // check that alpha is still in range
-            if (alpha < -CH_C_PI || alpha > CH_C_PI) {
-                alpha = abs(std::fmod((alpha + 3 * CH_C_PI), 2 * CH_C_PI)) - CH_C_PI;
+            if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
+                alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
             }
-            auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / CH_C_PI);
+            auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
 
             // calculate drag and lift force
             double vel = local_velocity.Length();

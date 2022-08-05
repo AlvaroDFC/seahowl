@@ -27,12 +27,12 @@ void seahowl::core::Turbine::poststep(double time) {
     m_rotor.poststep(time);
 }
 
-void seahowl::core::Turbine::translate(ChVector<double> translation_vector) {
+void seahowl::core::Turbine::translate(chrono::ChVector<double> translation_vector) {
     m_rotor.elasto.translate(translation_vector);
     m_tower.translate(translation_vector);
 }
 
-void seahowl::core::Turbine::rotate(double angle, ChVector<double> axis) {
+void seahowl::core::Turbine::rotate(double angle, chrono::ChVector<double> axis) {
     m_rotor.elasto.rotate(angle, axis);
     m_tower.rotate(angle, axis);
 }
