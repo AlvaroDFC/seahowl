@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <numeric>
 
 #include <chrono/fea/ChMesh.h>
 #include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
@@ -102,23 +103,6 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
     }
 }
 
-void TowerElasto::rotate(double angle, chrono::ChVector<double> axis) {
-    auto rotation = Q_from_AngAxis(angle, axis);
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto node = nodes[ii];
-        auto new_position = rotation.Rotate(node->GetPos());
-        node->SetPos(new_position);
-        auto new_rotation = (rotation * node->GetRot()).GetNormalized();
-        node->SetRot(new_rotation);
-    }
-}
-
-void TowerElasto::translate(chrono::ChVector<double> translation_vector) {
-    for (int ii = 0; ii < nodes.size(); ii++) {
-        auto node = nodes[ii];
-        node->SetPos(node->GetPos() + translation_vector);
-    }
-}
 
 void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     chrono::fea::DampingCoefficients damping_coefficients;
@@ -137,10 +121,3 @@ void TowerElasto::set_damping_coefficients(double axial, double edge, double fla
     }
 }
 
-double TowerElasto::get_mass() {
-    double total_mass = 0.0;
-    for (int ii = 0; ii < elements.size(); ii++) {
-        total_mass += elements[ii]->GetMass();
-    }
-    return total_mass;
-}

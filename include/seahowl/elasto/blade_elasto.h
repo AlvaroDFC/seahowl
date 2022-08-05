@@ -1,6 +1,7 @@
 #pragma once
+#include <seahowl/elasto/elasto.h>
 
-#include <seahowl/elasto/utils_elasto.h> // WeightedElasto
+#include <seahowl/elasto/utils_elasto.h>  // WeightedElasto
 
 #include <chrono/physics/ChLoad.h>
 #include <chrono/physics/ChLoaderU.h>
@@ -12,7 +13,7 @@ class ChMesh;
 class ChNodeFEAxyzrot;
 class ChElementBeamTaperedTimoshenko;
 }  // namespace fea
-} // chrono namespace 
+}  // namespace chrono
 
 namespace seahowl {
 namespace elasto {
@@ -20,10 +21,9 @@ namespace elasto {
 struct BladeReferencePointElasto;
 
 /**@brief Elastodynamic model for blade */
-class BladeElasto {
+class BladeElasto : public ElastoFEAComponent {
   public:
-    std::vector<std::shared_ptr<chrono::fea::ChNodeFEAxyzrot>> nodes;
-    std::vector<std::shared_ptr<chrono::fea::ChElementBeamTaperedTimoshenko>> elements;
+
     std::vector<std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>>> loaders_aero;
     std::vector<double> discretization_fractions;
     std::vector<BladeReferencePointElasto> reference_points;
@@ -38,10 +38,10 @@ class BladeElasto {
     void build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build_loads(chrono::ChSystemSMC& system);
-    void translate(chrono::ChVector<double> translation_vector);
-    void rotate(double angle, chrono::ChVector<double> axis);
+
+
     void set_damping_coefficients(double axial, double edge, double flap, double torsion);
-    double get_mass();
+
     void evaluate_position_rotation(chrono::ChVector<double>& position,
                                     chrono::ChQuaternion<double>& rotation,
                                     int element_index,

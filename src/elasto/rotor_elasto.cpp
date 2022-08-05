@@ -108,7 +108,7 @@ void RotorElasto::link_tower(TowerElasto& tower, chrono::ChSystemSMC& system) {
     link_towertop_yaw_bearing->Initialize(towertop_node, body_yaw_bearing);
 }
 
-void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) {
+void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) const {
     // blades
     for (auto& blade: blades) {
         blade->rotate(angle, axis);
@@ -136,7 +136,7 @@ void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) {
     body_yaw_bearing->SetRot(new_rotation_yaw_bearing);
 }
 
-void RotorElasto::translate(chrono::ChVector<double> translation_vector) {
+void RotorElasto::translate(chrono::ChVector<double> translation_vector) const {
     // blades
     for (auto& blade: blades) {
         blade->translate(translation_vector);
@@ -151,7 +151,7 @@ void RotorElasto::translate(chrono::ChVector<double> translation_vector) {
     body_yaw_bearing->SetPos(body_yaw_bearing->GetPos() + translation_vector);
 }
 
-double RotorElasto::get_mass() {
+double RotorElasto::get_mass() const {
     double total_mass = 0.0;
     // blades
     for (auto& blade: blades) {

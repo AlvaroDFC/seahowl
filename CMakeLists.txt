@@ -131,6 +131,7 @@ add_library( seahowl_core )
 
 set(SEAHOWL_SOURCES 
 
+    src/elasto/elasto.cpp
 	src/elasto/blade_elasto.cpp 
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp

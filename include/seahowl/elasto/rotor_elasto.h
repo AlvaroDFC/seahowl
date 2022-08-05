@@ -1,5 +1,7 @@
 #pragma once
 
+#include <seahowl/elasto/elasto.h>
+
 #include <vector>
 #include <memory>
 
@@ -51,8 +53,11 @@ struct ShaftProperties {
     double distance_from_towertop = 0.0; ///< Distance from Tower top reference point
 };
 
-/**@brief Rotor properties */
-class RotorElasto {
+/**@brief Rotor properties 
+
+Implemented as collection of rigid bodies + blades
+*/
+class RotorElasto : public ElastoComponent {
   public:
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades;
     std::vector<double> blade_precones;
@@ -76,12 +81,16 @@ class RotorElasto {
 
     void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades);
     void link_tower(TowerElasto& tower, chrono::ChSystemSMC& system);
-    void rotate(double angle, chrono::ChVector<double> axis);
-    void translate(chrono::ChVector<double> translation_vector);
-    double get_mass();
+    
+    ///@{
+    void rotate(double angle, chrono::ChVector<double> axis) const override; ///< @see ElastoComponent::rotate
+    void translate(chrono::ChVector<double> translation_vector) const override; ///< @see ElastoComponent::translate
+    double get_mass() const override; ///< @see ElastoComponent::get_mass
+    ///@}
+
     void apply_collective_pitch_increment(double pitch_increment);
-    double get_rpm();
-    double get_torque();
+    double get_rpm(); ///< Rotation speed @todo in general class Rotor
+    double get_torque(); ///< Torque @todo in general class Rotor
 };
 
 }  // namespace elasto

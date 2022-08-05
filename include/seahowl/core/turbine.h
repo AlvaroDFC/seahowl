@@ -15,9 +15,9 @@ namespace core {
 /**@brief The turbine (without support and foundations) */
 class Turbine {
   public:
-    std::vector<std::shared_ptr<Blade>> m_blades;
-    Rotor m_rotor;
-    seahowl::elasto::TowerElasto m_tower;
+    std::vector<std::shared_ptr<Blade>> m_blades; ///< Blades => To be moved in Rotor
+    Rotor m_rotor; ///< Rotor.  @todo Should be Hub + Blades 
+    seahowl::elasto::TowerElasto m_tower; ///< Tower @todo for elasto ? No generic class Tower
 
     Turbine();
 

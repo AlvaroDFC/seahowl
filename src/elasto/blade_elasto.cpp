@@ -223,22 +223,6 @@ void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
     }
 }
 
-void BladeElasto::rotate(double angle, chrono::ChVector<double> axis) {
-    auto rotation = chrono::Q_from_AngAxis(angle, axis);
-
-    for (auto node : nodes) {
-        auto& new_position = rotation.Rotate(node->GetPos());
-        node->SetPos(new_position);
-        auto& new_rotation = (rotation * node->GetRot()).GetNormalized();
-        node->SetRot(new_rotation);
-    }
-}
-
-void BladeElasto::translate(chrono::ChVector<double> translation_vector) {
-    for (auto node: nodes) {
-        node->SetPos(node->GetPos() + translation_vector);
-    }
-}
 
 void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) 
 {
@@ -256,12 +240,7 @@ void BladeElasto::set_damping_coefficients(double axial, double edge, double fla
     }
 }
 
-double BladeElasto::get_mass() {
-    return std::accumulate(cbegin(elements), cend(elements), 0.0, 
-        [](double total, decltype(elements)::value_type pElem) {
-        return total += pElem->GetMass();}
-    );
-}
+
 
 void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              chrono::ChQuaternion<double>& rotation,
