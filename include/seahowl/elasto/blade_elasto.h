@@ -18,16 +18,14 @@ class ChElementBeamTaperedTimoshenko;
 namespace seahowl {
 namespace elasto {
 
-struct BladeReferencePointElasto;
+
 
 /**@brief Elastodynamic model for blade */
 class BladeElasto : public ElastoFEAComponent {
   public:
 
     std::vector<std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>>> loaders_aero;
-    std::vector<double> discretization_fractions;
-    std::vector<BladeReferencePointElasto> reference_points;
-    std::vector<BladeReferencePointElasto> discretized_points;
+
     double pitch = 0;
     bool fpm_mode = false;
 
@@ -40,7 +38,7 @@ class BladeElasto : public ElastoFEAComponent {
     void build_loads(chrono::ChSystemSMC& system);
 
 
-    void set_damping_coefficients(double axial, double edge, double flap, double torsion);
+    virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion) override;
 
     void evaluate_position_rotation(chrono::ChVector<double>& position,
                                     chrono::ChQuaternion<double>& rotation,

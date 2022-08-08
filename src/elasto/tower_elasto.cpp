@@ -104,7 +104,7 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
 }
 
 
-void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
+void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion)  {
     chrono::fea::DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
