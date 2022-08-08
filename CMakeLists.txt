@@ -32,6 +32,8 @@ option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
 option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
+option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
+option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
 
 # =======================
 # External libraries
@@ -50,6 +52,9 @@ find_package(Chrono
 
 find_package(nlohmann_json CONFIG REQUIRED)
 
+if (SEAHOWL_ENABLE_ROSCO)
+    find_package(ROSCO REQUIRED)
+endif( SEAHOWL_ENABLE_ROSCO)
 
 
 if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -281,6 +286,13 @@ target_link_libraries(seahowl_driver
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 add_DLL_copy_command("${CHRONO_DLLS}")
+
+# ============
+# Examples
+# ===========
+if( SEAHOWL_ENABLE_EXAMPLES )
+    add_subdirectory(examples)
+endif( SEAHOWL_ENABLE_EXAMPLES )
 
 # ===========
 # TESTS
