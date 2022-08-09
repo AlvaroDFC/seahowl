@@ -1,20 +1,23 @@
 #pragma once
 
-#include "../core/reference_point.h"
+#include <seahowl/core/reference_point.h>
+
+namespace seahowl {
+namespace aero {
 
 /**@brief Reference aerodynamic (DOF) point for blade */
 struct BladeReferencePointAero {
-    double fraction;
-    chrono::ChVector<double> m_coordinates;
-    chrono::ChQuaternion<double> rotation;
-    chrono::ChVector<double> velocity;
-    double chord;
-    double structural_twist;
-    std::vector<AirfoilProperties> airfoil_properties;
+    double fraction; ///< Fraction (curbilinear abscissa ?)
+    chrono::ChVector<double> m_coordinates; ///< Point coordinates
+    chrono::ChQuaternion<double> rotation; ///< Rotation
+    chrono::ChVector<double> velocity; ///< Velocity
+    double chord; ///< Chord length
+    double structural_twist; ///< Twist
+    std::vector<AirfoilProperties> airfoil_properties; ///< Airfoil properties for each elements
 
     BladeReferencePointAero() {}
 
-    BladeReferencePointAero(BladeReferencePoint& point) {
+    BladeReferencePointAero(seahowl::core::BladeReferencePoint& point) {
         fraction = point.fraction;
         m_coordinates = point.m_coordinates;
         velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
@@ -52,3 +55,5 @@ struct BladeReferencePointAero {
     };
 };
 
+}  // namespace aero
+}  // namespace seahowl

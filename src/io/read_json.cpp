@@ -1,6 +1,10 @@
 #include "seahowl/io/read_json.h"
-#include "seahowl/utils.h"
+#include "seahowl/core/utils.h"
+#include "seahowl/elasto/blade_elasto.h"
 
+#include <string>
+#include <memory>
+#include <vector>
 #include <fstream>
 #include <iostream>
 #include <filesystem>
@@ -8,7 +12,7 @@ namespace fs = std::filesystem;
 
 using json = nlohmann::json;
 
-std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
+std::vector<seahowl::core::BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -16,7 +20,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     json_file >> json_obj;
 
     // EXTRACT INFO
-    std::vector<BladeReferencePoint> reference_points;
+    std::vector<seahowl::core::BladeReferencePoint> reference_points;
 
     auto points = json_obj.at("reference_points").get<json>();
     auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
@@ -27,21 +31,21 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
     double blade_length = points[points.size() - 1]["coordinates"][2];
     for (size_t ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto reference_point = BladeReferencePoint();
+        auto reference_point = seahowl::core::BladeReferencePoint();
 
         auto coords = point.at("coordinates").get<std::vector<double>>();
         if (coords.size() != 3) {
             throw std::runtime_error("Coordinates has to be vector of length 3.");
         }
         reference_point.fraction = coords[2] / blade_length;
-        reference_point.m_coordinates = ChVector<double>(coords[0], coords[1], coords[2]);
+        reference_point.m_coordinates = chrono::ChVector<double>(coords[0], coords[1], coords[2]);
         if (point.contains("m_offset_gravity")) {
             auto og = point.at("offsets_gravity").get<std::vector<double>>();
-            reference_point.m_offset_gravity = ChVector2<double>(og[0], og[1]);
+            reference_point.m_offset_gravity = chrono::ChVector2<double>(og[0], og[1]);
         }
         if (point.contains("offset_elastic")) {
             auto oe = point.at("offsets_elastic").get<std::vector<double>>();
-            reference_point.m_offset_elastic = ChVector2<double>(oe[0], oe[1]);
+            reference_point.m_offset_elastic = chrono::ChVector2<double>(oe[0], oe[1]);
         }
 
         auto sm = point.at("stiffness_matrix").get<std::vector<std::vector<double>>>();
@@ -79,7 +83,7 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
                 reference_point.mass_matrix(jj + jjo, kk + kko) = mm[jj][kk];
             }
         }
-        reference_point.structural_twist = point.at("twist").get<double>() * CH_C_PI / 180.0;
+        reference_point.structural_twist = point.at("twist").get<double>() * chrono::CH_C_PI / 180.0;
         reference_point.damping_coefficients.bx = damping_coefficients[0];
         reference_point.damping_coefficients.by = damping_coefficients[1];
         reference_point.damping_coefficients.bz = damping_coefficients[2];
@@ -105,20 +109,20 @@ std::vector<BladeReferencePoint> get_blade_reference_points_from_json(std::strin
                 auto coeffs = airfoil_properties.at("coefficients").get<std::vector<std::vector<double>>>();
 
 
-                std::vector<AirfoilCoefficients> coefficients_list;
+                std::vector<seahowl::aero::AirfoilCoefficients> coefficients_list;
 
                 for (int kk = 0; kk < coeffs.size(); kk++) {
                     if (coeffs[kk].size() != 4) {
                         throw std::runtime_error("Airfoil coefficients has to be vectors of length 4.");
                     }
-                    AirfoilCoefficients coefficients;
+                    seahowl::aero::AirfoilCoefficients coefficients;
                     coefficients.alpha = coeffs[kk][0];
                     coefficients.lift = coeffs[kk][1];
                     coefficients.drag = coeffs[kk][2];
                     coefficients.added_mass = coeffs[kk][3];
                     coefficients_list.push_back(coefficients);
                 }
-                AirfoilProperties airfoil;
+                seahowl::aero::AirfoilProperties airfoil;
                 airfoil_properties.at("reynolds_number").get_to(airfoil.reynolds_number);
                 airfoil.coefficients_list = coefficients_list;
                 reference_point.airfoil_properties.push_back(airfoil);
@@ -153,7 +157,7 @@ seahowl::core::Blade get_blade_from_json(std::string filepath) {
     return blade;
 }
 
-std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
+std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -166,13 +170,14 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
 
     // MAKE TOWER REFERENCE POINTS
-    std::vector<TowerReferencePoint> reference_points;
+    std::vector<seahowl::elasto::TowerReferencePoint> reference_points;
     auto points = json_obj.at("reference_points").get<json>();
     for (int ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto& reference_point = TowerReferencePoint();
+        auto& reference_point = seahowl::elasto::TowerReferencePoint();
         point.at("fraction").get_to(reference_point.fraction);
-        reference_point.coordinates = ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);
+        reference_point.coordinates =
+            chrono::ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);
         point.at("stiffness_sideside").get_to(reference_point.stiffness_sideside);
         point.at("stiffness_foreaft").get_to(reference_point.stiffness_foreaft);
         point.at("density").get_to(reference_point.density);
@@ -181,7 +186,7 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
         reference_point.damping_coefficients.bz = damping_coefficients[2];
         reference_point.damping_coefficients.bt = damping_coefficients[3];
 
-        // TODO: change to actual values
+        ///@todo change to actual values
         reference_point.stiffness_axial = 210e9;
         reference_point.stiffness_torsion = 1e11;
 
@@ -191,14 +196,15 @@ std::vector<TowerReferencePoint> get_tower_reference_points_from_json(std::strin
     return reference_points;
 }
 
-TowerElasto get_tower_from_json(std::string filepath) {
+seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    TowerElasto tower = TowerElasto();
+    seahowl::elasto::TowerElasto tower{};
+    ;
     tower.height = json_obj.at("height").get<double>();
     tower.base_height = json_obj.at("base_height").get<double>();
     tower.reference_points = get_tower_reference_points_from_json(filepath);
@@ -207,7 +213,7 @@ TowerElasto get_tower_from_json(std::string filepath) {
     return tower;
 }
 
-Rotor get_rotor_from_json(std::string filepath) {
+seahowl::core::Rotor get_rotor_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -216,12 +222,12 @@ Rotor get_rotor_from_json(std::string filepath) {
 
     // EXTRACT INFO
     //
-    auto rotor = Rotor();
+    seahowl::core::Rotor rotor;
     // blades
     json_obj.at("precones").get_to(rotor.elasto.blade_precones);
     for (int ii = 0; ii < rotor.elasto.blade_precones.size(); ii++) {
         // convert to radians
-        rotor.elasto.blade_precones[ii] *= CH_C_PI / 180.0;
+        rotor.elasto.blade_precones[ii] *= chrono::CH_C_PI / 180.0;
     }
     // hub
     auto hub = json_obj.at("hub");
@@ -238,7 +244,7 @@ Rotor get_rotor_from_json(std::string filepath) {
     if (cm.size() != 3) {
         throw std::runtime_error("Center of mass of nacelle has to be vector of length 3.");
     }
-    rotor.elasto.nacelle.center_of_mass = ChVector<double>(cm[0], cm[1], cm[2]);
+    rotor.elasto.nacelle.center_of_mass = chrono::ChVector<double>(cm[0], cm[1], cm[2]);
     nacelle.at("mass").get_to(rotor.elasto.nacelle.mass);
     nacelle.at("inertia").get_to(rotor.elasto.nacelle.inertia);
     nacelle.at("yaw_bearing_mass").get_to(rotor.elasto.nacelle.yaw_bearing_mass);
@@ -247,7 +253,7 @@ Rotor get_rotor_from_json(std::string filepath) {
     shaft.at("distance_from_towertop").get_to(rotor.elasto.shaft.distance_from_towertop);
     shaft.at("tilt").get_to(rotor.elasto.shaft.tilt);
     // convert to radians
-    rotor.elasto.shaft.tilt *= CH_C_PI / 180.0;
+    rotor.elasto.shaft.tilt *= chrono::CH_C_PI / 180.0;
 
     return rotor;
 }

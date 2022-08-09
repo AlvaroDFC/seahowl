@@ -1,70 +1,109 @@
 #pragma once
 
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/elasto/tower_elasto.h>
+#include <seahowl/elasto/elasto.h>
+
+#include <vector>
+#include <memory>
+
+namespace seahowl {
+namespace elasto {
+class BladeElasto;
+class TowerElasto;  ///@todo move out of rotor
+}
+}  // namespace seahowl
 
 
-#include "chrono/physics/ChBody.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChLinkRevolute.h"
+#include <chrono/core/ChVector.h>
 
-using namespace chrono;
+namespace chrono {
+class ChBody;
+class ChLinkMateFix;
+class ChLinkRevolute;
+class ChSystemSMC;
 
-/**@brief Hub properties */
+}  // namespace chrono
+
+namespace seahowl {
+namespace elasto {
+
+/**@brief Hub properties 
+
+
+\image html NREL_ad_driver_geom.png "source image: NREL/Openfast" width=300cm
+*/
 struct HubProperties {
-    double center_of_mass = 0.0;
-    double mass = 0.0;
-    double inertia = 0.0;
-    double overhang = 0.0;
-    double radius = 0.0;
+    double center_of_mass = 0.0; ///< COG Center of giration
+    double mass = 0.0; ///< Total mass of the hub
+    double inertia = 0.0; ///< Coefficient of inertia
+    double overhang = 0.0; ///< Overhang 
+    double radius = 0.0; ///< Radius of the hub ///@todo define better what is radius
 };
 
 /**@brief Nacelle properties */
 struct NacelleProperties {
-    ChVector<double> center_of_mass = ChVector<double>(0.0, 0.0, 0.0);
-    double mass = 0.0;
-    double inertia = 0.0;
-    double yaw_bearing_mass = 0.0;
+    chrono::ChVector<double> center_of_mass{0.0, 0.0, 0.0};  ///< Center of Giration COG @todo Initialize in constructor
+    double mass = 0.0; ///< Mass of the Nacelle (without bearing)
+    double inertia = 0.0; ///< Coefficient of inertia
+    double yaw_bearing_mass = 0.0; ///< Bearing mass
 };
 
 /**@brief Shaft properties */
 struct ShaftProperties {
-    double tilt = 0.0;
-    double distance_from_towertop = 0.0;
+    double tilt = 0.0; ///< Tilt angle
+    double distance_from_towertop = 0.0; ///< Distance from Tower top reference point
 };
 
+/**@brief Rotor properties 
 
-/**@brief Rotor properties */
-class RotorElasto {
+Implemented as collection of rigid bodies + blades
+*/
+class RotorElasto : public ElastoComponent {
   public:
-    std::vector<std::shared_ptr<BladeElasto>> blades;
     std::vector<double> blade_precones;
+
     // bodies
-    std::shared_ptr<ChBody> body_hub;
-    std::shared_ptr<ChBody> body_shaft;
-    std::shared_ptr<ChBody> body_nacelle;
-    std::shared_ptr<ChBody> body_yaw_bearing;
+    ///@{
+    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades; ///<@brief Finite Element Blades
+    std::shared_ptr<chrono::ChBody> body_hub; ///< Hub rigid body
+    std::shared_ptr<chrono::ChBody> body_shaft; ///< Shaft rigid body
+    std::shared_ptr<chrono::ChBody> body_nacelle; ///< Nacelle rigid body
+    std::shared_ptr<chrono::ChBody> body_yaw_bearing; /// Yaw bearing rigid body
+    ///@}
+
     // links
-    std::vector<std::shared_ptr<ChLinkMateFix>> links_blades;
-    std::shared_ptr<ChLinkRevolute> link_shaft_hub;
-    std::shared_ptr<ChLinkMateFix> link_shaft_nacelle;
-    std::shared_ptr<ChLinkMateFix> link_shaft_yaw_bearing;
-    std::shared_ptr<ChLinkMateFix> link_towertop_yaw_bearing;
+    ///@{
+    std::vector<std::shared_ptr<chrono::ChLinkMateFix>> links_blades; 
+    std::shared_ptr<chrono::ChLinkRevolute> link_shaft_hub;
+    std::shared_ptr<chrono::ChLinkMateFix> link_shaft_nacelle;
+    std::shared_ptr<chrono::ChLinkMateFix> link_shaft_yaw_bearing;
+    std::shared_ptr<chrono::ChLinkMateFix> link_towertop_yaw_bearing; ///< External link with TowerElasto
+    ///@}
+
+
     // properties
-    ShaftProperties shaft;
-    NacelleProperties nacelle;
-    HubProperties hub;
+    ///@{
+    ShaftProperties shaft; ///< Shaft properties
+    NacelleProperties nacelle; ///< Nacelle properties
+    HubProperties hub; ///< Hub properties
+    ///@}
 
     RotorElasto();
 
-    void build(ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades);
-    void link_tower(TowerElasto& tower, ChSystemSMC& system);
-    void rotate(double angle, ChVector<double> axis);
-    void translate(ChVector<double> translation_vector);
-    double get_mass();
+    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades);
+    void link_tower(TowerElasto& tower, chrono::ChSystemSMC& system);
+    
+    ///@{
+    void rotate(double angle, chrono::ChVector<double> axis) const override; ///< @see ElastoComponent::rotate
+    void translate(chrono::ChVector<double> translation_vector) const override; ///< @see ElastoComponent::translate
+    double get_mass() const override; ///< @see ElastoComponent::get_mass
+    ///@}
+
+    ///@{
     void apply_collective_pitch_increment(double pitch_increment);
-    double get_rpm();
-    double get_torque();
+    double get_rpm(); ///< Rotation speed @todo in general class Rotor
+    double get_torque(); ///< Torque @todo in general class Rotor
+    ///@}
 };
 
+}  // namespace elasto
+}  // namespace seahowl

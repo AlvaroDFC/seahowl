@@ -1,0 +1,74 @@
+#pragma once
+
+
+#include <iostream>
+#include <cstring>
+
+
+/// <summary>
+/// Fortran Fonction definition of DISCO (ROSCO) controller
+/// </summary>
+/// @todo shoudl be private
+/// <param name="avrSWAP"></param>
+/// <param name="aviFAIL"></param>
+/// <param name="accINFILE"></param>
+/// <param name="avcOUTNAME"></param>
+/// <param name="avcMSG"></param>
+extern "C" void DISCON(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, char* avcMSG);
+
+
+
+namespace seahowl {
+namespace servo {
+
+/**@brief ROSCO Discon wrapping (adapter) interface 
+*
+* @todo Set as Pimpl private implementation of seahowl::servo::Controller class
+*/
+struct DisconController {
+
+    float& m_time = avrSWAP[1];   ///<@brief Time
+    float& m_dt = avrSWAP[2];    ///<@brief Time step
+    float& m_pitch = avrSWAP[41]; ///<@brief Pitch return controller states
+    float& m_torque = avrSWAP[46]; ///<@brief Torque return controller states
+
+    /// <summary>
+    /// Reset Controller state as initial
+    /// 
+    /// </summary>
+    void ResetFirst() {
+        avrSWAP[0] = 0;  // Initial step iStatus
+    }
+    /// <summary>
+    /// Call the DISCON controller
+    /// </summary>
+    void Call();
+    /// <summary>
+    /// Set the guess pitch
+    /// </summary>
+    /// <param name="pitch_angle"></param>
+    void SetPitch(double pitch_angle);
+
+    /// <summary>
+    /// Inflow wind speed
+    /// </summary>
+    /// <param name="ws">The inflow wind speed. m.s^{-1}</param>
+    void SetWindSpeed(double ws);
+
+    /// <summary>
+    ///  PRIVATE
+    /// </summary>
+    float avrSWAP[500];
+    int aviFAIL;
+    char accINFILE[4096];
+    char avcOUTNAME[1024];
+    char avcMSG[4096];
+
+    /// <summary>
+    /// Initialize the controller parameters
+    /// </summary>
+    void Init();
+};
+
+}  // namespace servo
+}  // namespace seahowl

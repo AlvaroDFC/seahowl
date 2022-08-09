@@ -32,6 +32,8 @@ option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
 option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
+option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
+option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
 
 # =======================
 # External libraries
@@ -50,6 +52,10 @@ find_package(Chrono
 
 find_package(nlohmann_json CONFIG REQUIRED)
 
+if (SEAHOWL_ENABLE_ROSCO)
+    find_package(ROSCO REQUIRED)
+    add_compile_definitions(SEAHOWL_HAVE_ROSCO=1)
+endif( SEAHOWL_ENABLE_ROSCO)
 
 
 if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -121,6 +127,7 @@ else()
 	set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
 endif()
 
+
 # ================
 # CORE LIBRARY
 # ================
@@ -130,23 +137,64 @@ add_library( seahowl_core )
 
 set(SEAHOWL_SOURCES 
 
+    src/elasto/elasto.cpp
 	src/elasto/blade_elasto.cpp 
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
+    
     src/core/rotor.cpp 
     src/core/blade.cpp
     src/core/turbine.cpp
+    src/core/utils.cpp 
+
     src/aero/blade_aero.cpp 
     src/aero/rotor_aero.cpp
     src/servo/controller.cpp
 
-	src/io/read_json.cpp src/utils.cpp 
-	 
+	src/io/read_json.cpp 	 
 )
+
+set(SEAHOWL_HEADERS
+
+    include/seahowl/core/blade.h
+    include/seahowl/core/reference_point.h
+    include/seahowl/core/rotor.h
+    include/seahowl/core/turbine.h
+    include/seahowl/core/utils.h
+
+
+    include/seahowl/aero/airfoil.h
+    include/seahowl/aero/blade_aero.h
+    include/seahowl/aero/reference_point_aero.h
+    include/seahowl/aero/rotor_aero.h
+    include/seahowl/aero/wind_models.h
+
+    include/seahowl/servo/controller.h
+
+    include/seahowl/elasto/blade_elasto.h
+    include/seahowl/elasto/elasto.h
+    include/seahowl/elasto/reference_point_elasto.h
+    include/seahowl/elasto/rotor_elasto.h
+    include/seahowl/elasto/tower_elasto.h
+    include/seahowl/elasto/utils_elasto.h
+
+    include/seahowl/io/read_json.h
+
+)
+
+if (SEAHOWL_ENABLE_ROSCO)
+    list(APPEND SEAHOWL_HEADERS 
+        include/seahowl/servo/controller_discon.h
+    )
+    list(APPEND SEAHOWL_SOURCES 
+        src/servo/controller_discon.cpp
+    )
+endif (SEAHOWL_ENABLE_ROSCO)
 
 target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
+    ${SEAHOWL_HEADERS}
 )
 
 target_include_directories(seahowl_core
@@ -171,6 +219,7 @@ target_compile_features(
 set_target_properties(seahowl_core
 
     PROPERTIES
+        LINKER_LANGUAGE CXX
         CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
@@ -184,6 +233,13 @@ target_link_libraries(seahowl_core
     ${CHRONO_LIBRARIES}
 )
 
+if (SEAHOWL_ENABLE_ROSCO)
+target_link_libraries(seahowl_core
+    PRIVATE
+    ROSCO::ROSCO
+)
+endif (SEAHOWL_ENABLE_ROSCO)
+
 # =============
 # DRIVER 
 # =============
@@ -193,6 +249,8 @@ add_executable( seahowl_driver )
 target_sources(seahowl_driver 
     PRIVATE 
     src/main.cpp
+
+    #${SEAHOWL_HEADERS}
 )
 
 target_include_directories(seahowl_driver
@@ -217,6 +275,7 @@ target_compile_features(
 set_target_properties(seahowl_driver 
 
     PROPERTIES
+        LINKER_LANGUAGE CXX
         CXX_EXTENSIONS OFF
 	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
 	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
@@ -244,6 +303,13 @@ target_link_libraries(seahowl_driver
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 add_DLL_copy_command("${CHRONO_DLLS}")
+
+# ============
+# Examples
+# ===========
+if( SEAHOWL_ENABLE_EXAMPLES )
+    add_subdirectory(examples)
+endif( SEAHOWL_ENABLE_EXAMPLES )
 
 # ===========
 # TESTS

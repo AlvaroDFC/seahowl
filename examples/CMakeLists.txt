@@ -1,0 +1,51 @@
+
+if (SEAHOWL_ENABLE_ROSCO)
+
+
+add_executable( ex_rosco
+)
+
+target_sources(ex_rosco
+
+    PRIVATE 
+    ex_rosco.cpp
+)
+
+target_include_directories(ex_rosco
+
+
+	PUBLIC
+	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:include>
+
+    PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/
+	${CMAKE_PROJECT_SOURCE_DIR}    
+)
+
+target_compile_features(
+	ex_rosco
+
+	PRIVATE
+	cxx_std_17
+)
+
+set_target_properties(ex_rosco
+
+    PROPERTIES
+        FOLDER examples
+        LINKER_LANGUAGE CXX
+        CXX_EXTENSIONS OFF
+	    COMPILE_FLAGS "${CHRONO_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}"
+	    COMPILE_DEFINITIONS "CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\""
+	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
+)
+
+
+target_link_libraries(ex_rosco
+    PRIVATE 
+	seahowl_core
+)
+
+
+endif (SEAHOWL_ENABLE_ROSCO)

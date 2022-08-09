@@ -4,15 +4,17 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include "chrono/core/ChVector.h"
+#include <chrono/core/ChVector.h>
 
-using namespace chrono; /// TODO remove from header
+namespace seahowl {
+namespace core {
 
 /**@brief Parametric discretization point */
 struct DiscretizationPoint {
     int index;
     double eta;
 };
+
 
 std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& discretization_fractions,
                                                           std::vector<double>& reference_fractions);
@@ -44,7 +46,7 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
                                          std::to_string(fraction) + ".");
             }
             auto idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
-                      reference_fractions.begin();
+                       reference_fractions.begin();
             // decrease index for convenience
             idx -= 1;
             if (idx == reference_fractions.size() - 1) {
@@ -70,3 +72,6 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
     }
 }
 
+
+}  // namespace core
+}  // namespace seahowl

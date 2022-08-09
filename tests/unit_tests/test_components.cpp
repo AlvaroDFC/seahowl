@@ -43,7 +43,7 @@ TEST(test_blade, mass_deflection) {
     solver->LockSparsityPattern(true);
 
     // mesh for blade
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
     auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
@@ -77,13 +77,13 @@ TEST(test_rotor, mass) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
+    auto solver = chrono_types::make_shared<chrono::ChSolverSparseLU>();
     system.SetSolver(solver);
     solver->UseSparsityPatternLearner(true);
     solver->LockSparsityPattern(true);
 
     // check mass with blades
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
@@ -114,7 +114,7 @@ TEST(test_tower, mass) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverMINRES>();
+    auto solver = chrono_types::make_shared<chrono::ChSolverMINRES>();
     system.SetSolver(solver);
     solver->EnableDiagonalPreconditioner(true);
     solver->EnableWarmStart(true);
@@ -122,7 +122,7 @@ TEST(test_tower, mass) {
     solver->SetTolerance(1e-12);
 
     // mesh for tower
-    auto tower_mesh = chrono_types::make_shared<ChMesh>();
+    auto tower_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(tower_mesh);
     // tower
     auto tower = get_tower_from_json((DATADIR / "IEA15MW_tower.json").generic_string());
@@ -140,13 +140,13 @@ TEST(test_blade, natural_period_dynamic_edge) {
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
-    auto solver = chrono_types::make_shared<ChSolverSparseLU>();
+    auto solver = chrono_types::make_shared<chrono::ChSolverSparseLU>();
     system.SetSolver(solver);
     solver->UseSparsityPatternLearner(true);
     solver->LockSparsityPattern(true);
 
     // mesh for blade
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
     auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
@@ -206,7 +206,7 @@ TEST(test_blade, natural_period_dynamic_flap) {
     solver->LockSparsityPattern(true);
 
     // mesh for blade
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
     // blade
     auto blade_core = get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string());
@@ -235,10 +235,10 @@ TEST(test_blade, natural_period_dynamic_flap) {
     double time = 0.0;
     double end_time = 10.0;
     double start_time = 0.0;
-    blade->nodes.back()->SetForce(ChVector<double>(0.0, 1000.0, 0.0));
+    blade->nodes.back()->SetForce(chrono::ChVector<double>(0.0, 1000.0, 0.0));
     while (time < end_time) {
         if (time > 0.5) {
-            blade->nodes.back()->SetForce(ChVector<double>(0.0, 0.0, 0.0));
+            blade->nodes.back()->SetForce(chrono::ChVector<double>(0.0, 0.0, 0.0));
             if (blade->nodes.back()->GetPos().y() < pos0 && pos_y > pos0) {
                 if (start_time == 0.0) {
                     start_time = time;
@@ -269,7 +269,7 @@ TEST(test_turbine, rpm_initial_pitch) {
     auto timestepper_type = ChTimestepper::Type::HHT;
     double dt = 0.1;
     // wind
-    auto wind_model = ConstantWind();
+    auto wind_model = seahowl::aero::ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
@@ -288,7 +288,7 @@ TEST(test_turbine, rpm_initial_pitch) {
     mystepper->SetModifiedNewton(false);
 
     // mesh for blade
-    auto blades_mesh = chrono_types::make_shared<ChMesh>();
+    auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
     std::vector<std::string> blades_files = {"../../data/IEA15MW_blade.json", "../../data/IEA15MW_blade.json",

@@ -3,10 +3,10 @@
 seahowl::core::Turbine::Turbine() {
     m_blades.resize(0);
     m_rotor = Rotor();
-    m_tower = TowerElasto();
+    m_tower = seahowl::elasto::TowerElasto();
 }
 
-void seahowl::core::Turbine::build(ChSystemSMC& system, std::shared_ptr<ChMesh> mesh) {
+void seahowl::core::Turbine::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // build blades
     for (auto& blade : m_blades) {
         blade->build(system, mesh);
@@ -27,16 +27,16 @@ void seahowl::core::Turbine::poststep(double time) {
     m_rotor.poststep(time);
 }
 
-void seahowl::core::Turbine::translate(ChVector<double> translation_vector) {
+void seahowl::core::Turbine::translate(chrono::ChVector<double> translation_vector) {
     m_rotor.elasto.translate(translation_vector);
     m_tower.translate(translation_vector);
 }
 
-void seahowl::core::Turbine::rotate(double angle, ChVector<double> axis) {
+void seahowl::core::Turbine::rotate(double angle, chrono::ChVector<double> axis) {
     m_rotor.elasto.rotate(angle, axis);
     m_tower.rotate(angle, axis);
 }
 
-void seahowl::core::Turbine::compute_wind_loads(WindModel& wind_model, double time) {
+void seahowl::core::Turbine::compute_wind_loads(seahowl::aero::WindModel& wind_model, double time) {
     m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
 }
