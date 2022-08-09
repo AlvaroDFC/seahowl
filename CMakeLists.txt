@@ -54,6 +54,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 
 if (SEAHOWL_ENABLE_ROSCO)
     find_package(ROSCO REQUIRED)
+    add_compile_definitions(SEAHOWL_HAVE_ROSCO=1)
 endif( SEAHOWL_ENABLE_ROSCO)
 
 
@@ -181,6 +182,15 @@ set(SEAHOWL_HEADERS
 
 )
 
+if (SEAHOWL_ENABLE_ROSCO)
+    list(APPEND SEAHOWL_HEADERS 
+        include/seahowl/servo/controller_discon.h
+    )
+    list(APPEND SEAHOWL_SOURCES 
+        src/servo/controller_discon.cpp
+    )
+endif (SEAHOWL_ENABLE_ROSCO)
+
 target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
@@ -222,6 +232,13 @@ target_link_libraries(seahowl_core
     nlohmann_json::nlohmann_json
     ${CHRONO_LIBRARIES}
 )
+
+if (SEAHOWL_ENABLE_ROSCO)
+target_link_libraries(seahowl_core
+    PRIVATE
+    ROSCO::ROSCO
+)
+endif (SEAHOWL_ENABLE_ROSCO)
 
 # =============
 # DRIVER 

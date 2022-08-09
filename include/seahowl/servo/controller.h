@@ -26,5 +26,7 @@ class ControllerVariableTorque : public Controller {
     double get_torque_elec(double torque_total, double rpm);
 };
 
+
+
 }  // namespace servo
 }  // namespace seahowl

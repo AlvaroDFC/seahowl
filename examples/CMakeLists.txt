@@ -1,6 +1,9 @@
+
+if (SEAHOWL_ENABLE_ROSCO)
+
+
 add_executable( ex_rosco
 )
-
 
 target_sources(ex_rosco
 
@@ -41,5 +44,8 @@ set_target_properties(ex_rosco
 
 target_link_libraries(ex_rosco
     PRIVATE 
-    ROSCO::ROSCO
+	seahowl_core
 )
+
+
+endif (SEAHOWL_ENABLE_ROSCO)
