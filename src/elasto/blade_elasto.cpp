@@ -269,14 +269,14 @@ void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int ele
     // load on first node
     double weight0 = 0.5 * abs(eta - 1);
     auto load0 = load * weight0;
-    auto& node0 = element->GetNodeA();
+    auto node0 = element->GetNodeA();
     node0->SetForce(node0->GetForce() + load0);
     node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
 
     // load on second node
-    double weight1 = 0.5 * abs(eta + 1);
+    double weight1 = 0.5 * abs(eta -1);
     auto load1 = load * weight1;
-    auto& node1 = element->GetNodeB();
+    auto node1 = element->GetNodeB();
     node1->SetForce(node1->GetForce() + load1);
     node1->SetTorque(node1->GetTorque() + (position - node1->GetPos()) % load1);
 }
