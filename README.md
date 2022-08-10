@@ -11,10 +11,36 @@
   - repo: https://github.com/nlohmann/json
   - version: 3.10.5
 
-- ROSCO:
+- ROSCO (optional):
   - repo: https://github.com/NREL/ROSCO
   - version: 2.5.1
 
+For documentation:
+
+- Doxygen (optional):
+  - repo: https://doxygen.nl/
+  - version: 1.8.0+
+
+- Graphviz (optional):
+  - repo: https://graphviz.org/
+  - version: latest
+
+- Sphinx (optional):
+  - repo: https://www.sphinx-doc.org/en/master/
+  - version: 4.4.0+
+
+For visualization:
+
+  - IRRLICHT (optional):
+    - repo: https://irrlicht.sourceforge.io/
+    - version: latest
+
+For tests:
+
+  - Google tests:
+    - repo: https://github.com/google/googletest
+    - version: latest
+    
 ### Compilation
 
 From a directory `./build`:
