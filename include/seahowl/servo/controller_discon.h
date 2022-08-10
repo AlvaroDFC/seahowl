@@ -39,35 +39,73 @@ struct DisconController {
     void ResetFirst() {
         avrSWAP[0] = 0;  // Initial step iStatus
     }
+
+     /// <summary>
+    /// Initialize the controller parameters
+    /// </summary>
+    /// <param name="infile">DISCON.IN input file path</param>
+    /// <param name="outname">a name (not a path)</param>
+    void Init(std::string infile=u8"DISCON.IN", std::string outname=u8"simDEBUG.RO.dbg");
+
     /// <summary>
     /// Call the DISCON controller
     /// </summary>
     void Call();
+
     /// <summary>
-    /// Set the guess pitch
+    /// Helper to set the guess pitch
     /// </summary>
     /// <param name="pitch_angle"></param>
     void SetPitch(double pitch_angle);
 
     /// <summary>
-    /// Inflow wind speed
+    /// Helper to set Inflow wind speed
     /// </summary>
     /// <param name="ws">The inflow wind speed. m.s^{-1}</param>
     void SetWindSpeed(double ws);
 
     /// <summary>
-    ///  PRIVATE
+    /// Set Value in avrSWAP array of DISCON
     /// </summary>
-    float avrSWAP[500];
+    /// <param name="index">Index Fortran. (eg +1 compared to C)</param>
+    /// <param name="value">The value to set</param>    
+    void SetAvrSWAP(size_t index, float value);
+
+    /// <summary>
+    /// Get Value from avrSWAP array of DISCON
+    /// </summary>
+    /// <param name="index">Index Fortran. (eg +1 compared to C)</param>
+    float GetAvrSWAP(size_t index) const;
+
+    /// <summary>
+    /// Set input filename with path relative to working directory.
+    /// Path is used for other files 
+    /// ex! control/DISCON.in find other files in control directory
+    /// </summary>
+    /// <param name="name">DISCON.IN input file path</param>
+    void SetINFILE(std::string name=u8"DISCON.IN");
+
+    /// <summary>
+    /// Set output base name (relative to working directory).
+    /// </summary>
+    /// <param name="name">a name (not a path)</param>
+    void SetOUTNAME(std::string name=u8"simDEBUG.RO.dbg");
+
+    /// <summary>
+    /// Print all output
+    /// </summary>
+    void PrintAllOut(std::ostream& ssout=std::cout) const;
+
+private:
+
+    static constexpr size_t MAX_SWAP=500;
+
+    float avrSWAP[MAX_SWAP];
     int aviFAIL;
     char accINFILE[4096];
     char avcOUTNAME[1024];
     char avcMSG[4096];
 
-    /// <summary>
-    /// Initialize the controller parameters
-    /// </summary>
-    void Init();
 };
 
 }  // namespace servo

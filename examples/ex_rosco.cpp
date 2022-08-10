@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
     seahowl::servo::DisconController discon_params;
 
     std::cout << "Initialize the controller\n";
-    discon_params.Init();
+    discon_params.Init(u8"controller/DISCON.IN");
 
     std::cout << "Call the controller\n";
     discon_params.Call();
@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
     std::cout << "DT    : " << discon_params.m_dt << "\n";
     std::cout << "Pitch : " << discon_params.m_pitch << "\n";
     std::cout << "Torque: " << discon_params.m_torque << "\n";
+    
+    auto increment = discon_params.GetAvrSWAP(94);
 
 
     discon_params.m_time = 1.5;
@@ -42,6 +44,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Pitch : " << discon_params.m_pitch << "\n";
     std::cout << "Torque: " << discon_params.m_torque << "\n";
 
+    std::cout << "-------------------------------\n";
+    discon_params.PrintAllOut(std::cout);
 
     ///std::cout << "MSG " << discon_params.avcMSG << std::endl;
     std::cout << "End controll\n";
