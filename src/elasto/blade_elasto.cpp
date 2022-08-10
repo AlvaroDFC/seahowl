@@ -87,7 +87,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
     }
 
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
@@ -159,7 +159,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
         mm(jj, jj) = 1.0;
     }
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+    auto section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
@@ -269,14 +269,14 @@ void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int ele
     // load on first node
     double weight0 = 0.5 * abs(eta - 1);
     auto load0 = load * weight0;
-    auto& node0 = element->GetNodeA();
+    auto node0 = element->GetNodeA();
     node0->SetForce(node0->GetForce() + load0);
     node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
 
     // load on second node
-    double weight1 = 0.5 * abs(eta + 1);
+    double weight1 = 0.5 * abs(eta -1);
     auto load1 = load * weight1;
-    auto& node1 = element->GetNodeB();
+    auto node1 = element->GetNodeB();
     node1->SetForce(node1->GetForce() + load1);
     node1->SetTorque(node1->GetTorque() + (position - node1->GetPos()) % load1);
 }
@@ -284,7 +284,7 @@ void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int ele
 void BladeElasto::apply_pitch_increment(double pitch_increment) {
     // apply pitch from root node direction and position
     auto root_dir = nodes.front()->TransformDirectionLocalToParent(chrono::ChVector<double>(1.0, 0.0, 0.0));
-    auto& root_pos = nodes.front()->GetPos();
+    auto root_pos = nodes.front()->GetPos();
     translate(-root_pos);
     rotate(pitch_increment, root_dir);
     translate(root_pos);

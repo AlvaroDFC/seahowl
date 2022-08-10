@@ -174,7 +174,7 @@ std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_fro
     auto points = json_obj.at("reference_points").get<json>();
     for (int ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto& reference_point = seahowl::elasto::TowerReferencePoint();
+        auto reference_point = seahowl::elasto::TowerReferencePoint();
         point.at("fraction").get_to(reference_point.fraction);
         reference_point.coordinates =
             chrono::ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);

@@ -87,7 +87,7 @@ void seahowl::servo::DisconController::Init() {
     aviFAIL = 1;  // c_int32();
 
     // accINFILE = ''; /// param_name
-    strcpy(accINFILE, "controller\\DISCON.IN");
+    strcpy(accINFILE, u8"controller/DISCON.IN");
     strcpy(avcOUTNAME, "simDEBUG.RO.dbg");
 
     // avcOUTNAME
