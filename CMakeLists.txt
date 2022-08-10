@@ -38,20 +38,23 @@ option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
 # =======================
 # External libraries
 # =======================
+
+# IRRLICHT Visualization library
 if(SEAHOWL_ENABLE_IRRLICHT)
     set(IRRLICHT_COMP Irrlicht )
     add_definitions("-DHAVE_IRRLICHT=1")
 endif(SEAHOWL_ENABLE_IRRLICHT)
 
+# Multy body dynamic library
 find_package(Chrono
             COMPONENTS ${IRRLICHT_COMP}
             OPTIONAL_COMPONENTS PardisoMKL
             CONFIG REQUIRED)
 
+# JSON Parser library
+find_package(nlohmann_json REQUIRED)
 
-
-find_package(nlohmann_json CONFIG REQUIRED)
-
+# ROSCO Discon Wind Turbine controller
 if (SEAHOWL_ENABLE_ROSCO)
     find_package(ROSCO REQUIRED)
     add_compile_definitions(SEAHOWL_HAVE_ROSCO=1)
@@ -62,36 +65,6 @@ if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
 	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
 endif()
 
-#--------------------------------------------------------------
-# Enable creation of "application bundles" on MacOSX.
-#--------------------------------------------------------------
-
-# This is necessary for any Irrlicht-based project (like the example here).
-# For OpenGL-based or non-graphics projects, this is optional and the block
-# below can be removed (or else explcitly set CMAKE_MACOSX_BUNDLE to 'OFF').
-#
-# If creating application bundles, the build output will be named 'myexe.app'.
-# Use the convenience script 'run_app.sh' available under 'contrib/appbundle-macosx/'
-# to run:
-#     start_demo.sh myexe.app
-
-if(APPLE)
-    set(CMAKE_MACOSX_BUNDLE ON)
-endif()
-
-#--------------------------------------------------------------
-# Add path to Chrono headers and to headers of all dependencies
-# of the requested modules.
-#--------------------------------------------------------------
-
-include_directories(/opt/homebrew/include)  ## TO BE REMOVED
-
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  if(MSVC AND ${MSVC_VERSION} GREATER_EQUAL 1915)
-    add_definitions( "-D_ENABLE_EXTENDED_ALIGNED_STORAGE" )
-  endif()
-endif()
 
 #--------------------------------------------------------------
 # Tweaks to disable some warnings with MSVC

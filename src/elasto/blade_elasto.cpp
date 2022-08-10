@@ -87,7 +87,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
     }
 
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
+    auto section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
@@ -159,7 +159,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
         mm(jj, jj) = 1.0;
     }
     // make first section for tapered section
-    auto& section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
+    auto section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
     auto& discretized_point = discretized_points[0];
     // offsets
     section->SetCenterOfMass(discretized_point.m_offset_gravity.y(), -discretized_point.m_offset_gravity.x());
