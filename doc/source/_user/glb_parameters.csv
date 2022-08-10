@@ -4,7 +4,7 @@ VOLTAGE, [in|out]   ,0.0, UNIT_U,
 EQ_POTENTIAL, [out]   ,0.0, UNIT_U, Equilibrium potential
 CURRENT, [in|out]   ,0.0, UNIT_I,
 CURRENT_DENSITY, [in|out]   ,0.0, UNIT_IBYA,
-IONIC_CONCENTRATION, [in|out]   ,0.0, |UNIT_CONC|,
+IONIC_CONCENTRATION, [in|out]   ,0.0, UNIT_CONC,
 SOC, [in|out]   ,0.0, |UNIT_NONE|, State Of Charge
 SOC_CATHODE, [out]   ,0.0, |UNIT_NONE|, State Of Charge
 SOC_ANODE, [out]   ,0.0, |UNIT_NONE|, State Of Charge
