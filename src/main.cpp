@@ -3,7 +3,15 @@
 #include "chrono/physics/ChLinkMate.h"
 #include "chrono/physics/ChSystemSMC.h"
 #include "chrono/solver/ChIterativeSolverLS.h"
-#include "chrono_irrlicht/ChIrrApp.h"
+
+
+using namespace chrono;
+
+#ifdef HAVE_IRRLICHT
+    #include "chrono_irrlicht/ChIrrApp.h"
+using namespace chrono::irrlicht;
+using namespace irr;
+#endif
 #include "chrono/physics/ChLinkMotorRotationSpeed.h"
 #include "chrono/solver/ChDirectSolverLS.h"
 #include <cmath>
@@ -12,9 +20,7 @@
 #include <seahowl/servo/controller.h>
 #include <seahowl/elasto/blade_elasto.h>
 
-using namespace chrono;
-using namespace chrono::irrlicht;
-using namespace irr;
+
 
 /*! \mainpage SEAHOWL
  *
@@ -27,13 +33,16 @@ using namespace irr;
  * etc...
  */
 
-
 /**@brief Driver main function */
 int main(int argc, char* argv[]) {
-    // SETUP
+// SETUP
 
-    // general options
+// general options
+#ifdef HAVE_IRRLICHT
     bool visualization_on = true;
+#else
+    bool visualization_on = false;
+#endif
     bool statics_prestep = true;
     // solver
     auto solver_type = ChSolver::Type::SPARSE_LU;
@@ -107,10 +116,10 @@ int main(int argc, char* argv[]) {
     std::vector<std::shared_ptr<seahowl::core::Turbine>> turbines;
     int nturbines = 1;
     for (int ii = 0; ii < nturbines; ii++) {
-        auto turbine = std::make_shared<seahowl::core::Turbine>(
-            get_turbine_from_json(blades_files, rotor_file, tower_file));
+        auto turbine =
+            std::make_shared<seahowl::core::Turbine>(get_turbine_from_json(blades_files, rotor_file, tower_file));
         // clear discretization defined in file
-        for (auto& blade: turbine->m_blades) {
+        for (auto& blade : turbine->m_blades) {
             blade->m_elasto->discretization_fractions.clear();
             blade->m_aero->discretization_fractions.clear();
         }
@@ -119,16 +128,16 @@ int main(int argc, char* argv[]) {
         turbines.push_back(turbine);
 
         // increase elements for visualization
-        for (auto& bladei: turbine->m_blades) {
+        for (auto& bladei : turbine->m_blades) {
             auto blade = bladei->m_elasto;
-            for (auto& elm: blade->elements) {
+            for (auto& elm : blade->elements) {
                 elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
                 elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
             }
         }
         // increase elements for visualization
         auto& tower = turbine->m_tower;
-        for (auto& elm:  tower.elements) {
+        for (auto& elm : tower.elements) {
             elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(3.0, 3.0);
             elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(3.0, 3.0);
         }
@@ -138,7 +147,7 @@ int main(int argc, char* argv[]) {
     }
 
     // VISUALIZATION
-
+#ifdef HAVE_IRRLICHT
     ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
     if (visualization_on) {
         // make visualization app
@@ -161,7 +170,8 @@ int main(int argc, char* argv[]) {
         blades_mesh->AddAsset(visualize_nodes);
 
         // visualize node coordinate systems
-        auto visualize_nodes_coordsys = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
+        auto visualize_nodes_coordsys =
+            chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
         visualize_nodes_coordsys->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
         visualize_nodes_coordsys->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NONE);
         visualize_nodes_coordsys->SetSymbolsThickness(10.0);
@@ -174,21 +184,22 @@ int main(int argc, char* argv[]) {
         application.AssetUpdateAll();
         application.AddShadowAll();
     }
-
+#endif
     // SIMULATION LOOP
-
+#ifdef HAVE_IRRLICHT
     if (visualization_on) {
         application.SetTimestep(dt);
         application.SetVideoframeSave(false);
         application.SetVideoframeSaveInterval(20);
     }
+#endif
 
     // simulation loop
     double time = 0.0;
     int step = 0;
     // initialization
 
-    for (auto& turbine: turbines) {
+    for (auto& turbine : turbines) {
         turbine->m_rotor.elasto.apply_collective_pitch_increment(initial_pitch);
         turbine->prestep(time);
         turbine->poststep(time);
@@ -206,8 +217,7 @@ int main(int argc, char* argv[]) {
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep
-        for (auto& turbine: turbines) {
-            
+        for (auto& turbine : turbines) {
             // compute forces
             turbine->m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
@@ -216,6 +226,7 @@ int main(int argc, char* argv[]) {
 
         // step
         if (visualization_on) {
+#ifdef HAVE_IRRLICHT
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
@@ -223,6 +234,7 @@ int main(int argc, char* argv[]) {
             application.DrawAll();
             application.DoStep();
             application.EndScene();
+#endif
         } else {
             system.DoStepDynamics(dt);
         }
@@ -232,8 +244,7 @@ int main(int argc, char* argv[]) {
                  << " average rpm: " << average_rpm << "\n";
 
         // poststep
-        for (auto& turbine:  turbines) {
-
+        for (auto& turbine : turbines) {
             turbine->poststep(time);
 
             if (controller.target_rpm > 0.0) {

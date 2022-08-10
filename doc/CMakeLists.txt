@@ -33,7 +33,7 @@ add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
     COMMENT "Generating documentation with Sphinx")
 
 add_custom_target(Sphinx DEPENDS ${SPHINX_SOURCE} ${SPHINX_INDEX_FILE})
-add_custom_target(documentation ALL DEPENDS Sphinx)
+
 
 
 # ===================
@@ -49,6 +49,7 @@ set(DOXYGEN_MATHJAX_EXTENSIONS YES)
 set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
 set(DOXYGEN_HIDE_UNDOC_CLASSES YES)
 set(DOXYGEN_GENERATE_TODOLIST YES)
+set(DOXYGEN_EXTRACT_STATIC YES)
 
 set(DOXYGEN_GENERATE_HTML YES)
 set(DOXYGEN_GENERATE_MAN NO)
@@ -60,6 +61,9 @@ doxygen_add_docs(
     ${PROJECT_SOURCE_DIR}/include
     COMMENT "Generate HTML pages"
 )
+
+
+add_custom_target(documentation ALL DEPENDS Sphinx doxygen)
 
 # For MSVC IDE
 set_target_properties(

@@ -27,7 +27,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 # OPTIONS
 # =============
 
-option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht library" ON)
+option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht 3D visualization library" OFF)
 option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
 option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
