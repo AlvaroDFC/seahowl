@@ -18,12 +18,13 @@
 ### Compilation
 
 From a directory `./build`:
-```
+
+```bash
 cmake .. -DChrono_DIR=/path/to/your/chrono/cmake/build/directory
 make
 ```
 
-Default CMAKE Options:
+#### Default CMAKE Options:
 
 ```cmake
 option (SEAHOWL_ENABLE_IRRLICHT "Enable Irrlicht 3D visualization library" OFF)

@@ -7,7 +7,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # SEAHOWL PROJECT
 # =================
 project( SEAHOWL 
-         VERSION 0.0.1
+         VERSION 0.0.2
          DESCRIPTION "Wind Turbine simulation with CHRONO"
          LANGUAGES CXX
 )
