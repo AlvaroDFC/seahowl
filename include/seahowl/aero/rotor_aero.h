@@ -12,10 +12,10 @@ namespace aero {
 class RotorAero {
   public:
     std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades; ///< Blades 
-    chrono::ChVector<double> hub_position;
+    chrono::ChVector<double> hub_position{0.0, 0.0, 0.0};
     chrono::ChQuaternion<double> hub_rotation;
-    double radius; ///< Total radius of the rotor (hub + blade)
-    double hub_radius; ///< Hub Radius @todo include a class Hub
+    double radius = 0.0; ///< Total radius of the rotor (hub + blade)
+    double hub_radius = 0.0; ///< Hub Radius @todo include a class Hub
 
     RotorAero(){};
     ~RotorAero(){};
