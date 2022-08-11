@@ -42,6 +42,7 @@ int main(int argc, char* argv[]) {
 // general options
 #ifdef HAVE_IRRLICHT
     bool visualization_on = true;
+    chrono::SetChronoDataPath(CHRONO_DATA_DIR); // Add path to texture data
 #else
     bool visualization_on = false;
 #endif
@@ -154,7 +155,7 @@ int main(int argc, char* argv[]) {
     if (visualization_on) {
         // make visualization app
         application.AddTypicalLights();
-        // application.AddTypicalSky();
+        application.AddTypicalSky();
         application.AddTypicalCamera(core::vector3df(-300, 150, -50));
 
         auto visualize_beam = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
