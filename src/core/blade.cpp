@@ -8,6 +8,8 @@
 #include <chrono/fea/ChMesh.h>
 #include <chrono/physics/ChSystemSMC.h>
 
+#include <memory>
+
 seahowl::core::Blade::Blade() {
     m_elasto = std::make_shared<seahowl::elasto::BladeElasto>();
     m_aero = std::make_shared<seahowl::aero::BladeAero>();

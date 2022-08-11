@@ -20,7 +20,8 @@ using namespace irr;
 #include <seahowl/io/read_json.h>
 #include <seahowl/servo/controller.h>
 #include <seahowl/elasto/blade_elasto.h>
-
+#include <seahowl/aero/wind_models.h>
+#include <seahowl/core/turbine.h>
 
 
 /*! \mainpage SEAHOWL

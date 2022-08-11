@@ -5,8 +5,6 @@
 
 namespace seahowl {
 namespace core {
-struct DiscretizationPoint;
-struct BladeReferencePoint;
 }
 namespace elasto {
 class BladeElasto;
@@ -16,7 +14,8 @@ class BladeAero;
 }
 }  // namespace seahowl
 
-
+#include <seahowl/core/reference_point.h> 
+#include <seahowl/core/utils.h> 
 
 namespace chrono {
 class ChSystemSMC;
@@ -36,10 +35,10 @@ class Blade {
   public:
     std::shared_ptr<seahowl::elasto::BladeElasto> m_elasto;  ///< Elastodynamic element mesh
     std::shared_ptr<seahowl::aero::BladeAero> m_aero;        ///< Aerodynamic element mesh
-    std::vector<BladeReferencePoint>
+    std::vector<seahowl::core::BladeReferencePoint>
         m_reference_points;  ///<@todo  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
-    std::vector<DiscretizationPoint> m_mapping_aero2elasto;
-    std::vector<DiscretizationPoint> m_mapping_elasto2aero;
+    std::vector<seahowl::core::DiscretizationPoint> m_mapping_aero2elasto;
+    std::vector<seahowl::core::DiscretizationPoint> m_mapping_elasto2aero;
 
     Blade();
     ~Blade() {}

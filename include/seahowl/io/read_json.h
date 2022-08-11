@@ -1,11 +1,19 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-#include <seahowl/core/blade.h>
+namespace seahowl {
+namespace core {
+class Blade;
+class Rotor;
+class Turbine;
+struct BladeReferencePoint;
+}  // namespace core
 
-#include <seahowl/core/rotor.h>
-#include <seahowl/elasto/tower_elasto.h>
-#include <seahowl/core/turbine.h>
+namespace elasto {
+class TowerElasto;  ///< @todo not Elasto hear
+struct TowerReferencePoint;
+}  // namespace elasto
+}  // namespace seahowl
+
 
 #include <vector>
 #include <string>
@@ -22,7 +30,5 @@ seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath);
 seahowl::core::Rotor get_rotor_from_json(std::string filepath);
 
 seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_blades,
-                              std::string filepath_rotor,
-                              std::string filepath_tower);
-
-
+                                             std::string filepath_rotor,
+                                             std::string filepath_tower);
