@@ -30,7 +30,7 @@ namespace core {
 
 /**@brief Wind turbine blade base class
 
-Pattern <mediator> for elasto and aero
+Pattern "mediator" for elasto and aero
 */
 class Blade {
   public:

@@ -22,7 +22,7 @@ namespace elasto {
 
 struct BladeReferencePointElasto;
 
-/**@biref Component <<interface>>
+/**@brief Component "interface"
 
 
 */

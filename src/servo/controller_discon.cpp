@@ -289,15 +289,15 @@ void seahowl::servo::DisconController::Init(std::string infile, std::string outn
     avrSWAP[0] = 0;
     //1;                  // iStatus
     //avrSWAP[1] = 0.1;   // time
-    avrSWAP[2] = 0.1;   // dT
+    avrSWAP[2] = 0.1f;   // dT
     avrSWAP[60] = 3;    // n. blades
-    avrSWAP[19] = 1.0;  // Hard code initial gen speed
-    avrSWAP[20] = 1.0;  // Hard code initial rotation speed
+    avrSWAP[19] = 1.0f;  // Hard code initial gen speed
+    avrSWAP[20] = 1.0f;  // Hard code initial rotation speed
     avrSWAP[82] = 0;    // #HARD CODE initial nacIMU = 0
     avrSWAP[26] = 10;   // Initial wind speed m /s
-    avrSWAP[3] = 0.0;   // Initial blade pitch
-    avrSWAP[32] = 0.0;  //
-    avrSWAP[33] = 0.0;  // Troque initial
+    avrSWAP[3] = 0.0f;   // Initial blade pitch
+    avrSWAP[32] = 0.0f;  //
+    avrSWAP[33] = 0.0f;  // Troque initial
     avrSWAP[22] = 0;    //
     
     avrSWAP[58] = 500;  // Buffer chaar size
@@ -316,16 +316,16 @@ void seahowl::servo::DisconController::Init(std::string infile, std::string outn
 
 
     // Add states to avr
-    avrSWAP[1] = 0.1; //time
-    avrSWAP[2] = 0.1; //dt
-    avrSWAP[3] = 2.0; //pitch
-    avrSWAP[32] = 2.0; //pitch
-    avrSWAP[33] = 2.0; //pitch
-    //avrSWAP[14] = 0.0; /// genspeed*torque*geneff
-    avrSWAP[22] = 3.0;//torque
+    avrSWAP[1] = 0.1f; //time
+    avrSWAP[2] = 0.1f; //dt
+    avrSWAP[3] = 2.0f; //pitch
+    avrSWAP[32] = 2.0f; //pitch
+    avrSWAP[33] = 2.0f; //pitch
+    //avrSWAP[14] = 0.0f; /// genspeed*torque*geneff
+    avrSWAP[22] = 3.0f;//torque
     //avrSWAP[19] = genspeed
     //avrSWAP[20] = rotspeed
-    avrSWAP[26] = 10.0; //ws Wind speed initial
+    avrSWAP[26] = 10.0f; //ws Wind speed initial
     //avrSWAP[82] = NacIMU_FA_Acc
 
 
@@ -371,14 +371,14 @@ void seahowl::servo::DisconController::SetOUTNAME(std::string name) {
 void seahowl::servo::DisconController::SetPitch(double pitch_angle) {
 
 
-    SetAvrSWAP(4, pitch_angle);
-    SetAvrSWAP(33, pitch_angle);
-    SetAvrSWAP(34, pitch_angle);
+    SetAvrSWAP(4, static_cast<float>(pitch_angle));
+    SetAvrSWAP(33, static_cast<float>(pitch_angle));
+    SetAvrSWAP(34, static_cast<float>(pitch_angle));
 
 }
 
 void seahowl::servo::DisconController::SetWindSpeed(double ws) {
-    SetAvrSWAP(27, ws);
+    SetAvrSWAP(27, static_cast<float>(ws));
 }
 
 
@@ -396,7 +396,7 @@ void seahowl::servo::DisconController::SetAvrSWAP(size_t index, float value) {
 
     std::cout << "Set: "<< ap.description << ": " << value << " " << ap.unit << "\n";  
 
-    avrSWAP[ap.index-1] = value; 
+    avrSWAP[ap.index-1] = static_cast<float>(value); 
     
 }
 

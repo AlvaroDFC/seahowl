@@ -85,12 +85,12 @@ struct BladeReferencePointElasto {
 /**@brief Tower (DOF) reference point */
 struct TowerReferencePoint {
     chrono::ChVector<double> coordinates;
-    double fraction;
-    double density;
-    double stiffness_axial;
-    double stiffness_foreaft;
-    double stiffness_sideside;
-    double stiffness_torsion;
+    double fraction = 1.0;
+    double density = 0.0;
+    double stiffness_axial = 0.0;
+    double stiffness_foreaft = 0.0;
+    double stiffness_sideside = 0.0;
+    double stiffness_torsion = 0.0;
     chrono::fea::DampingCoefficients damping_coefficients;
 
     TowerReferencePoint operator*(const double factor) const {

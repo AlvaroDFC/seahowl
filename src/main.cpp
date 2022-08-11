@@ -1,19 +1,20 @@
-#include "chrono/fea/ChVisualizationFEAmesh.h"
-#include "chrono/physics/ChBodyEasy.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/solver/ChIterativeSolverLS.h"
+
+#include <chrono/fea/ChVisualizationFEAmesh.h>
+#include <chrono/physics/ChBodyEasy.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/solver/ChIterativeSolverLS.h>
 
 
 using namespace chrono;
 
 #ifdef HAVE_IRRLICHT
-    #include "chrono_irrlicht/ChIrrApp.h"
+    #include <chrono_irrlicht/ChIrrApp.h>
 using namespace chrono::irrlicht;
 using namespace irr;
 #endif
-#include "chrono/physics/ChLinkMotorRotationSpeed.h"
-#include "chrono/solver/ChDirectSolverLS.h"
+#include <chrono/physics/ChLinkMotorRotationSpeed.h>
+#include <chrono/solver/ChDirectSolverLS.h>
 #include <cmath>
 
 #include <seahowl/io/read_json.h>

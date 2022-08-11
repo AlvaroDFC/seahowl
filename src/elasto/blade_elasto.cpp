@@ -8,10 +8,10 @@
 #include <numeric>
 
 #include <chrono/fea/ChBuilderBeam.h>
-#include "chrono/fea/ChElementBeamTaperedTimoshenko.h"
-#include "chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h"
-#include "chrono/fea/ChMesh.h"
-#include "chrono/physics/ChSystemSMC.h"
+#include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
+#include <chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h>
+#include <chrono/fea/ChMesh.h>
+#include <chrono/physics/ChSystemSMC.h>
 #include <chrono/physics/ChLoadContainer.h>
 
 using namespace seahowl::elasto;

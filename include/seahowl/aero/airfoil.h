@@ -66,7 +66,7 @@ struct AirfoilProperties {
     };
 
     AirfoilCoefficients find_coefficients(double alpha) {
-        for (int ii = 0; ii < coefficients_list.size() - 1; ii++) {
+        for (auto ii = 0; ii < coefficients_list.size() - 1; ii++) {
             double alpha1 = coefficients_list[ii].alpha;
             double alpha2 = coefficients_list[ii + 1].alpha;
             if (alpha1 <= alpha && alpha <= alpha2) {

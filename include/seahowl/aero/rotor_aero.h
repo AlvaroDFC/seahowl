@@ -3,7 +3,7 @@
 #include <seahowl/aero/blade_aero.h>
 #include <seahowl/aero/wind_models.h>
 
-#include "chrono/core/ChVector.h"
+#include <chrono/core/ChVector.h>
 
 namespace seahowl {
 namespace aero {

@@ -3,11 +3,11 @@
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/elasto/tower_elasto.h>
 
-#include "chrono/physics/ChBodyEasy.h"
-#include "chrono/physics/ChBody.h"
-#include "chrono/physics/ChSystemSMC.h"
-#include "chrono/physics/ChLinkMate.h"
-#include "chrono/physics/ChLinkRevolute.h"
+#include <chrono/physics/ChBodyEasy.h>
+#include <chrono/physics/ChBody.h>
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChLinkRevolute.h>
 
 using seahowl::elasto::BladeElasto;
 using seahowl::elasto::RotorElasto;

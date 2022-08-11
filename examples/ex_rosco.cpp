@@ -17,10 +17,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Call the controller" << std::endl;
     
-    discon_params.m_time = 0.6;
+    discon_params.m_time = 0.6f;
 
-    discon_params.SetPitch(3.0);
-    discon_params.SetWindSpeed(13.0);
+    discon_params.SetPitch(3.0f);
+    discon_params.SetWindSpeed(13.0f);
 
     discon_params.Call();
 
