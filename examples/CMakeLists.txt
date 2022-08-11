@@ -88,7 +88,7 @@ set_target_properties(ex_blade
 	    LINK_FLAGS "${CHRONO_LINKER_FLAGS}"
 )
 
-
+message("CHRONO ${CHRONO_DATA_DIR}")
 target_link_libraries(ex_blade
     PRIVATE 
 	seahowl_core
