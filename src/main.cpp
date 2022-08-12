@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
         turbine->rotate(-CH_C_PI / 2.0, VECT_X);
     }
 
-    // VISUALIZATION
+    // VISUALIZATION WITH IRRLICHT
 #ifdef HAVE_IRRLICHT
     // Create the application UI
     ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(1200, 900), VerticalDir::Y, false, true);
