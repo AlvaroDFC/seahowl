@@ -85,8 +85,13 @@ int main(int argc, char* argv[]) {
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
     // set to 0.0 for no control
-    auto controller = seahowl::servo::ControllerVariableTorque();
-    controller.target_rpm = 0.0;
+    
+    // to have constant rotor speed 
+    // auto controller = seahowl::servo::ControllerVariableTorque();
+    // controller.target_rpm = 0.0;
+
+    // to have a Discon Controller 
+    auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
 
     // system
     ChSystemSMC system;
@@ -304,6 +309,7 @@ int main(int argc, char* argv[]) {
         for (auto& turbine : turbines) {
             turbine->poststep(time);
 
+            /*
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
                 double rpm = turbine->m_rotor.elasto.get_rpm();
@@ -314,6 +320,16 @@ int main(int argc, char* argv[]) {
                 // torque elec is apply on Z axis of hub body (locally)
                 turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
             }
+            */
+            double rpm = turbine->m_rotor.elasto.get_rpm();
+            double torque_elec = controller.get_torque_elec(rpm, time, dt);
+            // apply torque elec to hub rigid body
+            turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
+            // torque elec is apply on Z axis of hub body (locally)
+            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+
+
+
         }
     }
 

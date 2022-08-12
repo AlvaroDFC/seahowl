@@ -285,24 +285,8 @@ void seahowl::servo::DisconController::Init(std::string infile, std::string outn
         v = 0.0;
     }
 
-    avrSWAP[0] = 0;  // This the first call
-    avrSWAP[0] = 0;
-    //1;                  // iStatus
-    //avrSWAP[1] = 0.1;   // time
-    avrSWAP[2] = 0.1f;   // dT
-    avrSWAP[60] = 3;    // n. blades
-    avrSWAP[19] = 1.0f;  // Hard code initial gen speed
-    avrSWAP[20] = 1.0f;  // Hard code initial rotation speed
-    avrSWAP[82] = 0;    // #HARD CODE initial nacIMU = 0
-    avrSWAP[26] = 10;   // Initial wind speed m /s
-    avrSWAP[3] = 0.0f;   // Initial blade pitch
-    avrSWAP[32] = 0.0f;  //
-    avrSWAP[33] = 0.0f;  // Troque initial
-    avrSWAP[22] = 0;    //
-    
     avrSWAP[58] = 500;  // Buffer chaar size
 
-    // 9;                  // len(self.param_name)
     avrSWAP[50] = 500;  // self.char_buffer
 
     avrSWAP[51] = 500;  // self.char_buffer
@@ -313,24 +297,9 @@ void seahowl::servo::DisconController::Init(std::string infile, std::string outn
     SetOUTNAME(outname);
 
 
-
-
-    // Add states to avr
-    avrSWAP[1] = 0.1f; //time
-    avrSWAP[2] = 0.1f; //dt
-    avrSWAP[3] = 2.0f; //pitch
-    avrSWAP[32] = 2.0f; //pitch
-    avrSWAP[33] = 2.0f; //pitch
-    //avrSWAP[14] = 0.0f; /// genspeed*torque*geneff
-    avrSWAP[22] = 3.0f;//torque
-    //avrSWAP[19] = genspeed
-    //avrSWAP[20] = rotspeed
-    avrSWAP[26] = 10.0f; //ws Wind speed initial
-    //avrSWAP[82] = NacIMU_FA_Acc
-
-
     // First step
     ResetFirst();
+    Call();
 
     /* To check the array index match record numbers 
     for(int i=0; i<150;++i ) {
