@@ -14,7 +14,7 @@ class Controller {
 };
 
 /**@brief Variable torque controler */
-class ControllerVariableTorque : public Controller {
+class ControllerVariableTorque : public seahowl::servo::Controller {
   private:
     double torque_elec_previous = 0.0;
 
@@ -29,7 +29,7 @@ class ControllerVariableTorque : public Controller {
 
 
 /**@brief DISCON controler */
-class ControllerDISCON : public Controller {
+class ControllerDISCON : public seahowl::servo::Controller {
   private:
     double torque_elec_previous = 0.0;
 
