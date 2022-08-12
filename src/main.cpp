@@ -12,6 +12,7 @@ using namespace chrono;
     #include <chrono_irrlicht/ChIrrApp.h>
 using namespace chrono::irrlicht;
 using namespace irr;
+#include <irrlicht.h>
 #endif
 #include <chrono/physics/ChLinkMotorRotationSpeed.h>
 #include <chrono/solver/ChDirectSolverLS.h>
@@ -257,6 +258,9 @@ int main(int argc, char* argv[]) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
+
+
+
             application.BeginScene(true, true, video::SColor(255, 140, 161, 192));
             application.DrawAll();
 
@@ -265,6 +269,25 @@ int main(int argc, char* argv[]) {
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);
+            {
+                auto* font = application.GetIGUIEnvironment()->getBuiltInFont();  // Font is to small
+
+                // Write Time on UI Window
+                std::string stime(1024, '\0');
+                auto written = std::sprintf(&stime[0], "%.2f", time);
+                stime.resize(written);
+                auto sdtime = std::string("TIME: ") + stime;
+                font->draw(sdtime.c_str(), core::rect<s32>(330, 10, 450, 50), video::SColor(255, 0, 0, 0));
+
+                // Write RPM on UI Window
+                std::string srpm(1024, '\0');
+                written = std::sprintf(&srpm[0], "%.2f", turbines[0]->m_rotor.elasto.get_rpm());
+                srpm.resize(written);  
+                auto sdrpm = std::string("    RPM: ") + srpm;
+                font->draw(sdrpm.c_str(), core::rect<s32>(450, 10, 600, 50), video::SColor(255, 0, 0, 0));
+
+                //video::IVideoDriver* driver = application.GetDevice()->getVideoDriver();
+            }
 
             application.DoStep();
             application.EndScene();
