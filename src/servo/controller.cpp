@@ -1,5 +1,7 @@
 #include "seahowl/servo/controller.h"
 
+#include <seahowl/servo/controller_discon.h>
+
 #include <cmath>
 
 double seahowl::servo::ControllerVariableTorque::get_torque_elec(double torque_total, double rpm) {
@@ -14,4 +16,24 @@ double seahowl::servo::ControllerVariableTorque::get_torque_elec(double torque_t
     ///       same step might cause problems
     torque_elec_previous = torque_elec;
     return torque_elec;
+}
+
+
+
+double seahowl::servo::ControllerDISCON::get_torque_elec(double Omega, double time, double dt) {
+
+    pImpl.SetAvrSWAP(21,Omega);
+    pImpl.SetAvrSWAP(2,time);
+    pImpl.SetAvrSWAP(3,dt);
+
+    pImpl.Call();
+    double torque_elec = pImpl.GetAvrSWAP(47);
+    
+    return torque_elec;
+
+}
+
+
+seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname){
+    pImpl.Init(infile, outname);
 }

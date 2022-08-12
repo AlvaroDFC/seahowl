@@ -12,6 +12,7 @@ using namespace chrono;
     #include <chrono_irrlicht/ChIrrApp.h>
 using namespace chrono::irrlicht;
 using namespace irr;
+#include <irrlicht.h>
 #endif
 #include <chrono/physics/ChLinkMotorRotationSpeed.h>
 #include <chrono/solver/ChDirectSolverLS.h>
@@ -84,8 +85,13 @@ int main(int argc, char* argv[]) {
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
     // set to 0.0 for no control
-    auto controller = seahowl::servo::ControllerVariableTorque();
-    controller.target_rpm = 0.0;
+    
+    // to have constant rotor speed 
+    // auto controller = seahowl::servo::ControllerVariableTorque();
+    // controller.target_rpm = 0.0;
+
+    // to have a Discon Controller 
+    auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
 
     // system
     ChSystemSMC system;
@@ -147,7 +153,7 @@ int main(int argc, char* argv[]) {
             blade->m_aero->discretization_fractions.clear();
         }
         turbine->build(system, blades_mesh);
-        turbine->m_tower.nodes[0]->SetFixed(true);
+        turbine->m_tower.nodes[0]->SetFixed(true); // foundation of the tower
         turbines.push_back(turbine);
 
         // increase elements for visualization
@@ -161,26 +167,23 @@ int main(int argc, char* argv[]) {
         // increase elements for visualization
         auto& tower = turbine->m_tower;
         for (auto& elm : tower.elements) {
-            elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(3.0, 3.0);
-            elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(3.0, 3.0);
+            elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(6.0, 6.0);
+            elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
         }
 
         turbine->translate(ChVector<double>(150.0 * ii, 150.0 * ii * pow(-1.0, ii), -150.0));
         turbine->rotate(-CH_C_PI / 2.0, VECT_X);
     }
 
-    // VISUALIZATION
+    // VISUALIZATION WITH IRRLICHT
 #ifdef HAVE_IRRLICHT
     // Create the application UI
-    ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
-    application.AddTypicalLogo(logoname);
-    application.AddTypicalSky();
-    application.AddTypicalLights();
-    application.AddTypicalCamera(core::vector3df(0, 14, -20));
+    ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(1200, 900), VerticalDir::Y, false, true);
 
 
     if (visualization_on) {
         // make visualization app
+        application.AddTypicalLogo(logoname);
         application.AddTypicalLights();
         application.AddTypicalSky();
         application.AddTypicalCamera(core::vector3df(-300, 150, -50));
@@ -194,7 +197,7 @@ int main(int argc, char* argv[]) {
         auto visualize_nodes = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
         visualize_nodes->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
         visualize_nodes->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
-        visualize_nodes->SetSymbolsThickness(1.0);
+        visualize_nodes->SetSymbolsThickness(3.0);
         visualize_nodes->SetSymbolsScale(1.0);
         visualize_nodes->SetZbufferHide(false);
         blades_mesh->AddAsset(visualize_nodes);
@@ -260,14 +263,36 @@ int main(int argc, char* argv[]) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
+
+
+
             application.BeginScene(true, true, video::SColor(255, 140, 161, 192));
             application.DrawAll();
 
             // Draw also a grid on the horizontal XZ plane
-            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1];
+            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1]; // base (lower) position of the tower
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);
+            {
+                auto* font = application.GetIGUIEnvironment()->getBuiltInFont();  // Font is to small
+
+                // Write Time on UI Window
+                std::string stime(1024, '\0');
+                auto written = std::sprintf(&stime[0], "%.2f", time);
+                stime.resize(written);
+                auto sdtime = std::string("TIME: ") + stime;
+                font->draw(sdtime.c_str(), core::rect<s32>(330, 10, 450, 50), video::SColor(255, 0, 0, 0));
+
+                // Write RPM on UI Window
+                std::string srpm(1024, '\0');
+                written = std::sprintf(&srpm[0], "%.2f", turbines[0]->m_rotor.elasto.get_rpm());
+                srpm.resize(written);  
+                auto sdrpm = std::string("    RPM: ") + srpm;
+                font->draw(sdrpm.c_str(), core::rect<s32>(450, 10, 600, 50), video::SColor(255, 0, 0, 0));
+
+                //video::IVideoDriver* driver = application.GetDevice()->getVideoDriver();
+            }
 
             application.DoStep();
             application.EndScene();
@@ -284,6 +309,7 @@ int main(int argc, char* argv[]) {
         for (auto& turbine : turbines) {
             turbine->poststep(time);
 
+            /*
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
                 double rpm = turbine->m_rotor.elasto.get_rpm();
@@ -294,6 +320,16 @@ int main(int argc, char* argv[]) {
                 // torque elec is apply on Z axis of hub body (locally)
                 turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
             }
+            */
+            double rpm = turbine->m_rotor.elasto.get_rpm();
+            double torque_elec = controller.get_torque_elec(rpm, time, dt);
+            // apply torque elec to hub rigid body
+            turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
+            // torque elec is apply on Z axis of hub body (locally)
+            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+
+
+
         }
     }
 
