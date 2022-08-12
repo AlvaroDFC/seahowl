@@ -5,17 +5,25 @@
 #include <chrono/physics/ChSystemSMC.h>
 #include <chrono/solver/ChIterativeSolverLS.h>
 
-
 using namespace chrono;
 
 #ifdef HAVE_IRRLICHT
     #include <chrono_irrlicht/ChIrrApp.h>
 using namespace chrono::irrlicht;
 using namespace irr;
-#include <irrlicht.h>
+    #include <irrlicht.h>
 #endif
+
 #include <chrono/physics/ChLinkMotorRotationSpeed.h>
 #include <chrono/solver/ChDirectSolverLS.h>
+
+//#define POVRAY
+#ifdef POVRAY
+    #include <chrono_postprocess/ChPovRay.h>
+    #include <chrono_postprocess/ChPovRayAssetCustom.h>
+using namespace chrono::postprocess;
+#endif
+
 #include <cmath>
 
 #include <seahowl/io/read_json.h>
@@ -28,7 +36,6 @@ using namespace irr;
 
 using std::filesystem::path;
 
-
 /*! \mainpage SEAHOWL
  *
  * \section intro_sec Introduction
@@ -38,16 +45,16 @@ using std::filesystem::path;
  \image html NREL_ad_driver_geom.png "source image: NREL/Openfast" width=500cm
  *
  * usage: ./seahowl_friver <data_path>
- * 
- * <data path> is the location of input blade, rotar, ... sepc 
+ *
+ * <data path> is the location of input blade, rotar, ... sepc
  * by default ../data
- * 
+ *
  * etc...
  */
 
 /**@brief Driver main function */
 int main(int argc, char* argv[]) {
-// SETUP
+    // SETUP
 
     auto DATADIR = absolute(path(u8"../data"));
     if (argc > 1) {
@@ -62,11 +69,10 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::string> blades_files = {blade_file, blade_file, blade_file};
 
-
 // general options
 #ifdef HAVE_IRRLICHT
     bool visualization_on = true;
-    chrono::SetChronoDataPath(CHRONO_DATA_DIR); // Add path to texture data
+    chrono::SetChronoDataPath(CHRONO_DATA_DIR);  // Add path to texture data
     chrono::SetChronoOutputPath(".");
 #else
     bool visualization_on = false;
@@ -85,12 +91,12 @@ int main(int argc, char* argv[]) {
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
     // set to 0.0 for no control
-    
-    // to have constant rotor speed 
+
+    // to have constant rotor speed
     // auto controller = seahowl::servo::ControllerVariableTorque();
     // controller.target_rpm = 0.0;
 
-    // to have a Discon Controller 
+    // to have a Discon Controller
     auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
 
     // system
@@ -141,7 +147,6 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
-
     std::vector<std::shared_ptr<seahowl::core::Turbine>> turbines;
     int nturbines = 1;
     for (int ii = 0; ii < nturbines; ii++) {
@@ -153,7 +158,7 @@ int main(int argc, char* argv[]) {
             blade->m_aero->discretization_fractions.clear();
         }
         turbine->build(system, blades_mesh);
-        turbine->m_tower.nodes[0]->SetFixed(true); // foundation of the tower
+        turbine->m_tower.nodes[0]->SetFixed(true);  // foundation of the tower
         turbines.push_back(turbine);
 
         // increase elements for visualization
@@ -175,11 +180,22 @@ int main(int argc, char* argv[]) {
         turbine->rotate(-CH_C_PI / 2.0, VECT_X);
     }
 
+#ifdef POVRAY
+    // Create an exporter to POVray !!!
+    auto pov_exporter = ChPovRay(&system);
+
+    // Important: set the path to the template:
+    pov_exporter.SetTemplateFile(GetChronoDataFile("_template_POV.pov"));
+    pov_exporter.SetBasePath(GetChronoOutputPath() + "DEMO_POVRAY");
+    pov_exporter.AddAll();
+    pov_exporter.ExportScript();
+#endif
+
     // VISUALIZATION WITH IRRLICHT
 #ifdef HAVE_IRRLICHT
     // Create the application UI
-    ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(1200, 900), VerticalDir::Y, false, true);
-
+    ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(1200, 900), VerticalDir::Y, false,
+                         true);
 
     if (visualization_on) {
         // make visualization app
@@ -263,14 +279,11 @@ int main(int argc, char* argv[]) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
-
-
-
             application.BeginScene(true, true, video::SColor(255, 140, 161, 192));
             application.DrawAll();
 
             // Draw also a grid on the horizontal XZ plane
-            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1]; // base (lower) position of the tower
+            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1];  // base (lower) position of the tower
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);
@@ -287,11 +300,11 @@ int main(int argc, char* argv[]) {
                 // Write RPM on UI Window
                 std::string srpm(1024, '\0');
                 written = std::sprintf(&srpm[0], "%.2f", turbines[0]->m_rotor.elasto.get_rpm());
-                srpm.resize(written);  
+                srpm.resize(written);
                 auto sdrpm = std::string("    RPM: ") + srpm;
                 font->draw(sdrpm.c_str(), core::rect<s32>(450, 10, 600, 50), video::SColor(255, 0, 0, 0));
 
-                //video::IVideoDriver* driver = application.GetDevice()->getVideoDriver();
+                // video::IVideoDriver* driver = application.GetDevice()->getVideoDriver();
             }
 
             application.DoStep();
@@ -300,6 +313,9 @@ int main(int argc, char* argv[]) {
         } else {
             system.DoStepDynamics(dt);
         }
+#ifdef POVRAY
+        pov_exporter.ExportData();
+#endif
         time += system.GetStep();
         step += 1;
         GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->m_rotor.elasto.get_rpm()
@@ -327,9 +343,6 @@ int main(int argc, char* argv[]) {
             turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
             // torque elec is apply on Z axis of hub body (locally)
             turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
-
-
-
         }
     }
 
