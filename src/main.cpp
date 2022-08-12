@@ -20,7 +20,12 @@ using namespace irr;
 #include <seahowl/io/read_json.h>
 #include <seahowl/servo/controller.h>
 #include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/aero/wind_models.h>
+#include <seahowl/core/turbine.h>
 
+#include <filesystem>  // C++17
+
+using std::filesystem::path;
 
 
 /*! \mainpage SEAHOWL
@@ -31,6 +36,11 @@ using namespace irr;
  *
  \image html NREL_ad_driver_geom.png "source image: NREL/Openfast" width=500cm
  *
+ * usage: ./seahowl_friver <data_path>
+ * 
+ * <data path> is the location of input blade, rotar, ... sepc 
+ * by default ../data
+ * 
  * etc...
  */
 
@@ -38,9 +48,25 @@ using namespace irr;
 int main(int argc, char* argv[]) {
 // SETUP
 
+    auto DATADIR = absolute(path(u8"../data"));
+    if (argc > 1) {
+        DATADIR = absolute(path(argv[1]));
+    }
+
+    auto logoname = (DATADIR / ".." / "doc" / "source" / "totalenergies_alpha.png").generic_string();
+
+    auto blade_file = (DATADIR / "IEA15MW_blade.json").generic_string();
+    auto rotor_file = (DATADIR / "IEA15MW_RNA.json").generic_string();
+    auto tower_file = (DATADIR / "IEA15MW_tower.json").generic_string();
+
+    std::vector<std::string> blades_files = {blade_file, blade_file, blade_file};
+
+
 // general options
 #ifdef HAVE_IRRLICHT
     bool visualization_on = true;
+    chrono::SetChronoDataPath(CHRONO_DATA_DIR); // Add path to texture data
+    chrono::SetChronoOutputPath(".");
 #else
     bool visualization_on = false;
 #endif
@@ -109,10 +135,6 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
-    std::vector<std::string> blades_files = {"../data/IEA15MW_blade.json", "../data/IEA15MW_blade.json",
-                                             "../data/IEA15MW_blade.json"};
-    auto rotor_file = "../data/IEA15MW_RNA.json";
-    auto tower_file = "../data/IEA15MW_tower.json";
 
     std::vector<std::shared_ptr<seahowl::core::Turbine>> turbines;
     int nturbines = 1;
@@ -149,11 +171,18 @@ int main(int argc, char* argv[]) {
 
     // VISUALIZATION
 #ifdef HAVE_IRRLICHT
-    ChIrrApp application(&system, L"Blade", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
+    // Create the application UI
+    ChIrrApp application(&system, L"SEAHOWL: WindTurbine", core::dimension2d<u32>(800, 600), VerticalDir::Y, false, true);
+    application.AddTypicalLogo(logoname);
+    application.AddTypicalSky();
+    application.AddTypicalLights();
+    application.AddTypicalCamera(core::vector3df(0, 14, -20));
+
+
     if (visualization_on) {
         // make visualization app
         application.AddTypicalLights();
-        // application.AddTypicalSky();
+        application.AddTypicalSky();
         application.AddTypicalCamera(core::vector3df(-300, 150, -50));
 
         auto visualize_beam = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(blades_mesh.get()));
@@ -231,8 +260,15 @@ int main(int argc, char* argv[]) {
             // this should be in while(...) loop, but it is here to allow no visualization at all
             application.GetDevice()->run();
 
-            application.BeginScene();
+            application.BeginScene(true, true, video::SColor(255, 140, 161, 192));
             application.DrawAll();
+
+            // Draw also a grid on the horizontal XZ plane
+            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1];
+            tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
+                            ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
+                            video::SColor(255, 80, 100, 100), true);
+
             application.DoStep();
             application.EndScene();
 #endif

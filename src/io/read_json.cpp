@@ -1,6 +1,11 @@
 #include "seahowl/io/read_json.h"
-#include "seahowl/core/utils.h"
-#include "seahowl/elasto/blade_elasto.h"
+
+#include <seahowl/core/utils.h>
+#include <seahowl/core/blade.h>
+#include <seahowl/core/rotor.h>
+#include <seahowl/elasto/tower_elasto.h>
+#include <seahowl/core/turbine.h>
+#include <seahowl/elasto/blade_elasto.h>
 
 #include <string>
 #include <memory>
@@ -10,6 +15,7 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
 std::vector<seahowl::core::BladeReferencePoint> get_blade_reference_points_from_json(std::string filepath) {
