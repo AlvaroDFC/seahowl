@@ -351,7 +351,7 @@ void seahowl::servo::DisconController::SetWindSpeed(double ws) {
 }
 
 
-void seahowl::servo::DisconController::SetAvrSWAP(size_t index, float value) {
+void seahowl::servo::DisconController::SetAvrSWAP(size_t index, float value, bool log) {
 
     if(index <1 || index > MAX_SWAP) throw std::runtime_error("avrSWAP index out of bounds");
     
@@ -363,13 +363,20 @@ void seahowl::servo::DisconController::SetAvrSWAP(size_t index, float value) {
         std::cerr << "ERROR: avrSWAP[" << index << "] " << ap.inout  << "not an input parameter!\n";
     }
 
-    std::cout << "Set: "<< ap.description << ": " << value << " " << ap.unit << "\n";  
+    if(log)  std::cout << "Set: "<< ap.description << ": " << value << " " << ap.unit << "\n";  
 
-    avrSWAP[ap.index-1] = static_cast<float>(value); 
+    avrSWAP[ap.index-1] = value; 
     
 }
 
-float seahowl::servo::DisconController::GetAvrSWAP(size_t index) const {
+void seahowl::servo::DisconController::SetAvrSWAP(size_t index, size_t value, bool log) {
+    SetAvrSWAP(index, static_cast<float>(value));
+}
+void seahowl::servo::DisconController::SetAvrSWAP(size_t index, double value, bool log) {
+    SetAvrSWAP(index, static_cast<float>(value));
+}
+
+float seahowl::servo::DisconController::GetAvrSWAP(size_t index, bool log) const {
     if(index <1 || index > MAX_SWAP) throw std::runtime_error("avrSWAP index out of bounds");
     
     auto& ap = discon::ArrayInfo.at(index); 
@@ -381,7 +388,7 @@ float seahowl::servo::DisconController::GetAvrSWAP(size_t index) const {
     }
 
     auto& value = avrSWAP[index-1];
-    std::cout << "Get: "<< ap.description << ": " << value << " " << ap.unit << "\n";  
+    if(log) std::cout << "Get: "<< ap.description << ": " << value << " " << ap.unit << "\n";  
 
     return value;
 }
