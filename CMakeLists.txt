@@ -33,7 +33,7 @@ option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
-option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
+option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" OFF)
 
 # =======================
 # External libraries
@@ -58,6 +58,7 @@ find_package(nlohmann_json REQUIRED)
 if (SEAHOWL_ENABLE_ROSCO)
     find_package(ROSCO REQUIRED)
     add_compile_definitions(SEAHOWL_HAVE_ROSCO=1)
+    add_definitions("-DHAVE_ROSCO=1")
 endif( SEAHOWL_ENABLE_ROSCO)
 
 
@@ -120,8 +121,9 @@ set(SEAHOWL_SOURCES
     src/core/turbine.cpp
     src/core/utils.cpp 
 
-    src/aero/blade_aero.cpp 
+    src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
+
     src/servo/controller.cpp
 
 	src/io/read_json.cpp 	 

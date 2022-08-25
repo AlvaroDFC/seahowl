@@ -28,6 +28,11 @@ using namespace chrono::postprocess;
 
 #include <seahowl/io/read_json.h>
 #include <seahowl/servo/controller.h>
+
+#ifdef HAVE_ROSCO
+    #include <seahowl/servo/controller_discon.h>
+#endif
+
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/core/turbine.h>
@@ -97,7 +102,11 @@ int main(int argc, char* argv[]) {
     // controller.target_rpm = 0.0;
 
     // to have a Discon Controller
+#ifdef HAVE_ROSCO
     auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
+#else
+    auto controller = seahowl::servo::ControllerVariableTorque();
+#endif
 
     // system
     ChSystemSMC system;
@@ -326,23 +335,23 @@ int main(int argc, char* argv[]) {
             turbine->poststep(time);
 
             /*
+             */
+            double rpm = turbine->m_rotor.elasto.get_rpm();
+            double torque_elec;
+#ifdef HAVE_ROSCO
+            torque_elec = controller.get_torque_elec(rpm, time, dt);
+#else
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
                 double rpm = turbine->m_rotor.elasto.get_rpm();
                 double torque_total = turbine->m_rotor.elasto.get_torque();
-                double torque_elec = controller.get_torque_elec(torque_total, rpm);
-                // apply torque elec to hub rigid body
-                turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
-                // torque elec is apply on Z axis of hub body (locally)
-                turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+                torque_elec = controller.get_torque_elec(torque_total, rpm);
             }
-            */
-            double rpm = turbine->m_rotor.elasto.get_rpm();
-            double torque_elec = controller.get_torque_elec(rpm, time, dt);
+#endif
             // apply torque elec to hub rigid body
             turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
             // torque elec is apply on Z axis of hub body (locally)
-            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
         }
     }
 
