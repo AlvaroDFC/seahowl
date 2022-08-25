@@ -121,6 +121,7 @@ set(SEAHOWL_SOURCES
     src/core/turbine.cpp
     src/core/utils.cpp 
 
+    src/aero/airfoil.cpp
     src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
 
