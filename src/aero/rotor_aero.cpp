@@ -101,21 +101,26 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             }
             auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
 
-            // calculate drag and lift force
-            double vel = local_velocity.Length();
-            double chord = properties.chord;
-            double length = element.length;
-            double lift = 0.5 * density * vel * vel * chord * coefficients.lift * length;
-            double drag = 0.5 * density * vel * vel * chord * coefficients.drag * length;
-
+            // get drag and lift coefficients
+            auto cl = coefficients.lift;
+            auto cd = coefficients.drag;
             // projected to rotor local frame
-            double cx = lift * cos(phi) + drag * sin(phi);
-            double cy = lift * sin(phi) - drag * cos(phi);
+            double cos_phi = cos(phi);
+            double sin_phi = sin(phi);
+            double cn = cl * cos_phi + cd * sin_phi;
+            double ct = cl * sin_phi - cd * cos_phi;
+
+            // calculate drag and lift force
+            auto vel = local_velocity.Length();
+            auto chord = properties.chord;
+            auto length = element.length;
+            auto load_n = 0.5 * density * vel * vel * chord * cn * length;
+            auto load_t = 0.5 * density * vel * vel * chord * ct * length;
 
             // transform from local to global load
-            auto lift_global = global_direction_tangent * cy;
-            auto drag_global = global_direction_normal * cx;
-            auto load_global = lift_global + drag_global;
+            auto load_n_global = global_direction_normal * load_n;
+            auto load_t_global = global_direction_tangent * load_t;
+            auto load_global = load_n_global + load_t_global;
 
             // store load in global frame
             blade->loads[ii] = load_global;

@@ -2,7 +2,6 @@
 
 using seahowl::aero::BladeElementAero;
 using seahowl::aero::BladeAero;
-//using seahowl::aero::BladeReferencePointAero;
 
 BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferencePointAero& point2) {
     properties = (point1 + point2) * 0.5;
@@ -10,20 +9,26 @@ BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferen
 }
 
 chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::ChVector2<double>& local_velocity_rotor0,
-                                                               size_t nblades,
-                                                               bool tip_loss,
-                                                               bool hub_loss) {
+                                                                       size_t nblades,
+                                                                       bool tip_loss,
+                                                                       bool hub_loss) {
     // local_velocity is in local element frame
     chrono::ChVector2<double> local_velocity;
     chrono::ChVector2<double> local_velocity_rotor;
     double pitch_twist = pitch + properties.structural_twist;
 
     double tol_rel = 1e-3;
-    double max_iter = 100;
+    double tol_abs = 1e-3;
+    int max_iter = 100;
     double alpha = -1000.0;
     double alpha_previous;
     auto aa = induction_factor_axial;
     auto ap = induction_factor_tangential;
+    // limits
+    double aa_max = 1.0;
+    double aa_min = 0.0;
+    double ap_max = 1.5;
+    double ap_min = 0.0;
     for (int ii = 1; ii <= max_iter; ii++) {
         // store previous alpha
         alpha_previous = alpha;
@@ -49,20 +54,17 @@ chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::C
         // alpha = atan2(local_velocity.y(), -local_velocity.x());
         // double phi = alpha + pitch_twist;
 
-        if (phi == 0) {
-            // avoid division by zero
-            phi = 0.0001;
-        }
-
         // get aero coefficients
         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180.0 / chrono::CH_C_PI);
 
+        // get drag and lift coefficients
+        auto cl = coefficients.lift;
+        auto cd = coefficients.drag;
+        // projected to rotor local frame
         double cos_phi = cos(phi);
         double sin_phi = sin(phi);
-        double cl = coefficients.lift;
-        double cd = coefficients.drag;
-        double cx = cl * cos_phi + cd * sin_phi;
-        double cy = cl * sin_phi - cd * cos_phi;
+        double cn = cl * cos_phi + cd * sin_phi;
+        double ct = cl * sin_phi - cd * cos_phi;
 
         // losses
         double loss_factor = 1.0;
@@ -75,33 +77,55 @@ chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::C
             // hub loss
             double hub_radius = (radius - distance_from_hub);
             loss_factor *= (2.0 / chrono::CH_C_PI) * std::acos(std::exp(nblades * (-distance_from_hub)) /
-                                                       (2.0 * hub_radius * std::fabs(sin_phi)));
+                                                               (2.0 * hub_radius * std::fabs(sin_phi)));
         }
 
         // update induction factors
-        aa = (chord_solidity * cx - (pow(chord_solidity, 2) * cy * cy)) / (4.0 * sin_phi * sin_phi * loss_factor) *
-             (1.0 - aa);
-        ap = chord_solidity * cy / (4.0 * sin_phi * cos_phi * loss_factor) * (1.0 + ap);
+
+        // axial induction, based on AeroDyn v15 implementation
+        double kk = chord_solidity * cn / (4.0 * pow(sin_phi, 2));
+        if (kk <= 2.0 / 3.0) {
+            if (kk == -1.0) {
+                double temp = -aa_max * (1.0 + kk);
+                aa = (temp > 0.0) - (temp < 0.0);  // sign of temp
+            } else {
+                aa = kk / (1.0 + kk);
+            }
+            if (kk < -1.0) {
+                throw std::runtime_error("Not valid BEMT solution for axial induction.");
+            }
+        } else {
+            double ff = loss_factor;
+            double temp = 2.0 * ff * kk;
+            double g1 = temp - (10.0 / 9.0 - ff);
+            double g2 = temp - (4.0 / 3.0 - ff) * ff;
+            double g3 = temp - (25.0 / 9.0 - 2.0 * ff);
+
+            if (abs(g3) < 1e-6) {
+                aa = 1.0 - 0.5 / sqrt(g2);
+            } else {
+                aa = (g1 - sqrt(abs(g2))) / g3;
+            }
+        }
+
+        // tangential induction
+        ap = chord_solidity * ct / (4.0 * sin_phi * cos_phi * loss_factor) * (1.0 + ap);
 
         // apply limits on induction factors
-
-        if (aa > 0.3539) {
-            // // Glauert's correction for highly loaded rotors
-            aa *= 4.0 * aa * (1.0 - aa) / (0.6 + 0.61 * aa + 0.79 * aa * aa);
+        if (aa > aa_max) {
+            aa = aa_max;
+        } else if (aa < aa_min) {
+            aa = aa_min;
         }
-        if (aa > 1.0) {
-            aa = 1.0;
-        } else if (aa < 0.0) {
-            aa = 0.0;
-        }
-        if (ap < 0.0) {
-            ap = 0.0;
-        } else if (ap > 0.999) {
-            ap = 0.999;
+        if (ap < ap_min) {
+            ap = ap_min;
+        } else if (ap > ap_max) {
+            ap = ap_max;
         }
 
         if ((fabs(aa - aa_previous) <= tol_rel * fabs(std::max(aa_previous, aa))) &&
-            (fabs(ap - ap_previous) <= tol_rel * fabs(std::max(ap_previous, aa)))) {
+                (fabs(ap - ap_previous) <= tol_rel * fabs(std::max(ap_previous, aa))) ||
+            (fabs(aa - aa_previous) <= tol_abs) && (fabs(ap - ap_previous) <= tol_abs)) {
             break;
         } else if (ii >= max_iter) {
             std::cout << "Warning: could not converge to new induction factor after " + std::to_string(ii) +
@@ -109,7 +133,9 @@ chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::C
                              ", previous:" + std::to_string(aa) +
                              ". Tangential: " + std::to_string(induction_factor_tangential) + ", previous " +
                              std::to_string(ap) + ". Alpha: " + std::to_string(alpha) +
-                             ", previous: " + std::to_string(alpha_previous) + "."
+                             ", previous: " + std::to_string(alpha_previous) + ". Local velocity in: (" +
+                             std::to_string(local_velocity_rotor0.x()) + ", " +
+                             std::to_string(local_velocity_rotor0.y()) + ")."
                       << std::endl;
             std::cout << phi * 180 / chrono::CH_C_PI << " " << cos_phi << " " << sin_phi;
             // throw std::runtime_error(
