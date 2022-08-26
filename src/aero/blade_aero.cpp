@@ -8,6 +8,8 @@ BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferen
     length = (point1.m_coordinates - point2.m_coordinates).Length();
 }
 
+BladeElementAero::~BladeElementAero() {}
+
 chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::ChVector2<double>& local_velocity_rotor0,
                                                                        size_t nblades,
                                                                        bool tip_loss,
@@ -229,6 +231,10 @@ chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::C
 //     // return velocity in local
 //     return local_velocity;
 // }
+
+BladeAero::BladeAero() {}
+
+BladeAero::~BladeAero() {}
 
 void BladeAero::build() {
     // check that enough reference points were defined to create elements (at least 2)
