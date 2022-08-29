@@ -123,6 +123,7 @@ set(SEAHOWL_SOURCES
     src/core/utils.cpp 
 
     src/aero/airfoil.cpp
+    src/aero/reference_point_aero.cpp
     src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
 
