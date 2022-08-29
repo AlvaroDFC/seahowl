@@ -86,6 +86,7 @@ class RotorElasto : public ElastoComponent {
     ///@}
 
     RotorElasto();
+    ~RotorElasto();
 
     void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades);
     void link_tower(TowerElasto& tower, chrono::ChSystemSMC& system);

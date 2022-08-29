@@ -40,7 +40,7 @@ class Blade {
     std::vector<seahowl::core::DiscretizationPoint> m_mapping_elasto2aero;
 
     Blade();
-    ~Blade() {}
+    ~Blade();
 
     void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void set_discretization_elasto(std::vector<double> fractions);

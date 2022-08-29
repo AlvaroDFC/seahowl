@@ -6,6 +6,8 @@ seahowl::core::Turbine::Turbine() {
     m_tower = seahowl::elasto::TowerElasto();
 }
 
+seahowl::core::Turbine::~Turbine() {}
+
 void seahowl::core::Turbine::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // build blades
     for (auto& blade : m_blades) {

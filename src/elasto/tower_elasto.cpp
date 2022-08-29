@@ -10,6 +10,10 @@
 
 using seahowl::elasto::TowerElasto;
 
+TowerElasto::TowerElasto() {}
+
+TowerElasto::~TowerElasto() {}
+
 void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
     build_nodes(mesh);

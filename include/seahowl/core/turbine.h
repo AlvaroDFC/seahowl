@@ -24,8 +24,7 @@ class Turbine {
     seahowl::elasto::TowerElasto m_tower;          ///< Tower @todo for elasto ? No generic class Tower
 
     Turbine();
-
-    ~Turbine() {}
+    ~Turbine();
 
     void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void prestep(double time);

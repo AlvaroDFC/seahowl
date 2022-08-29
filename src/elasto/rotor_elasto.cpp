@@ -15,6 +15,8 @@ using seahowl::elasto::RotorElasto;
 
 RotorElasto::RotorElasto() {}
 
+RotorElasto::~RotorElasto() {}
+
 void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 

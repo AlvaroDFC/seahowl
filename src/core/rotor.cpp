@@ -4,12 +4,15 @@
 
 #include <memory>
 #include <vector>
+
 using seahowl::core::Rotor;
 
 Rotor::Rotor() {
     elasto = seahowl::elasto::RotorElasto();
     aero = seahowl::aero::RotorAero();
 }
+
+Rotor::~Rotor() {}
 
 void Rotor::update_positions_aero() {
     aero.hub_position = elasto.body_hub->GetPos();

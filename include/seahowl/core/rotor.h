@@ -18,7 +18,7 @@ class Rotor {
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;  ///< Blades @todo connect bladeaero through blade ?
 
     Rotor();
-    ~Rotor() {}
+    ~Rotor();
 
     void update_positions_aero();
     void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades);

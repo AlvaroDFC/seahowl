@@ -2,6 +2,9 @@
 using seahowl::aero::BladeAero;
 using seahowl::aero::RotorAero;
 
+RotorAero::RotorAero() {}
+RotorAero::~RotorAero() {}
+
 void RotorAero::build(std::vector<std::shared_ptr<BladeAero>> blades) {
     this->blades = blades;
 

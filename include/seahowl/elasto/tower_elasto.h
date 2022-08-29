@@ -25,8 +25,8 @@ class TowerElasto : public ElastoFEAComponent {
     double height;
     double base_height;
 
-    TowerElasto() {}
-    ~TowerElasto() {}
+    TowerElasto();
+    ~TowerElasto();
 
     void build(std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh);
