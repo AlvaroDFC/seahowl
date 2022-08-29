@@ -5,13 +5,13 @@
 namespace seahowl {
 namespace aero {
 
-/**@brief Base class for wind models 
+/**@brief Base class for wind models
 
 @todo Move in another module. Environment ?
 */
 class WindModel {
   public:
-    double density = 1.225; ///< Air density
+    double density = 1.225;  ///< Air density
 
     WindModel() {}
     ~WindModel() {}
@@ -24,7 +24,6 @@ class WindModel {
 /**@brief Constant wind models */
 class ConstantWind : public WindModel {
   public:
-
     chrono::ChVector<double> wind_velocity;
 
     ConstantWind() { wind_velocity = chrono::ChVector<double>(0.0, 0.0, 0.0); }

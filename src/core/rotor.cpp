@@ -22,7 +22,7 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
     // get elasto and aero blades pointers
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades_elasto;
     std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades_aero;
-    for (auto& blade:  blades) {
+    for (auto& blade : blades) {
         blades_elasto.push_back(blade->m_elasto);
         blades_aero.push_back(blade->m_aero);
         blade->update_positions_aero();
@@ -31,7 +31,7 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
     // build elasto
     elasto.build(system, blades_elasto);
     // update blade aero positions from new elasto positions
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         blade->update_positions_aero();
     }
     // update hub position from elasto
@@ -41,13 +41,13 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
 }
 
 void Rotor::prestep(double time) {
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         blade->prestep(time);
     }
 }
 
 void Rotor::poststep(double time) {
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         blade->poststep(time);
     }
     update_positions_aero();

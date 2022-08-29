@@ -13,14 +13,12 @@ class ChMesh;
 namespace seahowl {
 namespace elasto {
 
-
-/**@brief Wind turbine tower elastodynamic model 
+/**@brief Wind turbine tower elastodynamic model
 
 Implemented as Finite Element Beams
 */
 class TowerElasto : public ElastoFEAComponent {
   public:
-
     std::vector<TowerReferencePoint> reference_points;
     std::vector<TowerReferencePoint> discretized_points;
     std::vector<double> discretization_fractions;
@@ -34,9 +32,7 @@ class TowerElasto : public ElastoFEAComponent {
     void build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh);
 
-
     virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion) override;
-
 };
 
 }  // namespace elasto

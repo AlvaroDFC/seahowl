@@ -7,15 +7,15 @@
 namespace seahowl {
 namespace core {
 
-/**@brief Wind turbine rotor: Hub + blades 
+/**@brief Wind turbine rotor: Hub + blades
 
 @todo Rotor should be composed of blades  + hub
 */
 class Rotor {
   public:
-    seahowl::elasto::RotorElasto elasto; ///< Elastodynamic model
-    seahowl::aero::RotorAero aero; ///< Aerodynamic model
-    std::vector<std::shared_ptr<seahowl::core::Blade>> blades; ///< Blades @todo connect bladeaero through blade ?
+    seahowl::elasto::RotorElasto elasto;                        ///< Elastodynamic model
+    seahowl::aero::RotorAero aero;                              ///< Aerodynamic model
+    std::vector<std::shared_ptr<seahowl::core::Blade>> blades;  ///< Blades @todo connect bladeaero through blade ?
 
     Rotor();
     ~Rotor() {}

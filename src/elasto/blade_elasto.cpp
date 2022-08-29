@@ -1,7 +1,7 @@
 #include <seahowl/elasto/blade_elasto.h>
 
-#include <seahowl/elasto/utils_elasto.h> // WeightedElasto
-#include <seahowl/core/utils.h> // For DiscretizationPoint
+#include <seahowl/elasto/utils_elasto.h>  // WeightedElasto
+#include <seahowl/core/utils.h>           // For DiscretizationPoint
 #include <seahowl/elasto/reference_point_elasto.h>
 #include <seahowl/elasto/utils_elasto.h>
 
@@ -145,8 +145,8 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
         // apply prebend and structural twist
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
         // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
-        rotation_relative =
-            chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+        rotation_relative = chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2],
+                                                   rotation_relative[1]);
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
@@ -205,8 +205,8 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
         // apply prebend and structural twist
         auto rotation_relative = (nodes[ii]->GetRot() * nodes[ii - 1]->GetRot().GetInverse()).GetNormalized();
         // switch from IEC standard (Z along blade) to chrono element coordinate system (X along element)
-        rotation_relative =
-            chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2], rotation_relative[1]);
+        rotation_relative = chrono::ChQuaternion<>(rotation_relative[0], rotation_relative[3], rotation_relative[2],
+                                                   rotation_relative[1]);
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
@@ -216,17 +216,14 @@ void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
     system.Add(loadcontainer);
 
     for (auto element : elements) {
-        /// TO CHECK ???? 
-        std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>> loader_weighted(new chrono::ChLoad<ChLoaderWeighted>(element)); ///@todo POINTER NEW ???????? maje_shared ??
+        std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>> loader_weighted(
+            new chrono::ChLoad<ChLoaderWeighted>(element));
         loaders_aero.push_back(loader_weighted);
         loadcontainer->Add(loader_weighted);
     }
 }
 
-
-void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) 
-{
-    
+void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     const chrono::fea::DampingCoefficients damping_coefficients{axial, edge, flap, torsion};
 
     for (auto& point : reference_points) {
@@ -236,11 +233,9 @@ void BladeElasto::set_damping_coefficients(double axial, double edge, double fla
     for (auto element : elements) {
         auto section = element->GetTaperedSection();
         section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
-        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);  
+        section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
-
-
 
 void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              chrono::ChQuaternion<double>& rotation,
@@ -251,7 +246,7 @@ void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
 
 void BladeElasto::reset_loads() {
     for (auto node : nodes) {
-        node->SetForce({0.0, 0.0, 0.0}); 
+        node->SetForce({0.0, 0.0, 0.0});
         node->SetTorque({0.0, 0.0, 0.0});
     }
 }
@@ -274,7 +269,7 @@ void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int ele
     node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
 
     // load on second node
-    double weight1 = 0.5 * abs(eta -1);
+    double weight1 = 0.5 * abs(eta - 1);
     auto load1 = load * weight1;
     auto node1 = element->GetNodeB();
     node1->SetForce(node1->GetForce() + load1);

@@ -12,16 +12,16 @@ namespace seahowl {
 /**@brief Seahowl core module */
 namespace core {
 
-/**@brief The turbine (without support and foundations) 
+/**@brief The turbine (without support and foundations)
 
 
 @todo Turbine is par Turbine class part TurbineElasto class (translate , rotate, ...)
 */
 class Turbine {
   public:
-    std::vector<std::shared_ptr<Blade>> m_blades; ///< Blades => To be moved in Rotor
-    Rotor m_rotor; ///< Rotor.  @todo Should be Hub + Blades 
-    seahowl::elasto::TowerElasto m_tower; ///< Tower @todo for elasto ? No generic class Tower
+    std::vector<std::shared_ptr<Blade>> m_blades;  ///< Blades => To be moved in Rotor
+    Rotor m_rotor;                                 ///< Rotor.  @todo Should be Hub + Blades
+    seahowl::elasto::TowerElasto m_tower;          ///< Tower @todo for elasto ? No generic class Tower
 
     Turbine();
 

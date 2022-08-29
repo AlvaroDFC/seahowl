@@ -14,7 +14,6 @@ struct TowerReferencePoint;
 }  // namespace elasto
 }  // namespace seahowl
 
-
 #include <vector>
 #include <string>
 #include <memory>

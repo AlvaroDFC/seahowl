@@ -20,7 +20,7 @@ void TowerElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
     nodes.clear();
 
     const auto nnodes = discretized_points.size();
-    for (auto  ii = 0; ii < nnodes; ii++) {
+    for (auto ii = 0; ii < nnodes; ii++) {
         auto discretized_point = discretized_points[ii];
         auto node_pos = discretized_point.coordinates;
 
@@ -103,8 +103,7 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
     }
 }
 
-
-void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion)  {
+void TowerElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     chrono::fea::DampingCoefficients damping_coefficients;
     damping_coefficients.bx = axial;
     damping_coefficients.by = edge;
@@ -120,4 +119,3 @@ void TowerElasto::set_damping_coefficients(double axial, double edge, double fla
         section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
-

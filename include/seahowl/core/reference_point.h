@@ -1,7 +1,7 @@
 #pragma once
 
 #include <chrono/fea/ChElementBeamTaperedTimoshenko.h>
-#include <seahowl/aero/airfoil.h> ///< @todo Bad dependencyof aero on core ?
+#include <seahowl/aero/airfoil.h>  ///< @todo Bad dependencyof aero on core ?
 
 #include <vector>
 
@@ -10,16 +10,16 @@ namespace core {
 
 /**@brief Reference point (mesh) for Blade */
 struct BladeReferencePoint {
-    chrono::ChVector<double> m_coordinates{0.0, 0.0, 0.0}; ///< Reference corrdinate
-    chrono::ChVector2<double> m_offset_elastic{0.0, 0.0};  ///< ?? 
-    chrono::ChVector2<double> m_offset_gravity{0.0, 0.0};  ///< ??
-    chrono::ChMatrixNM<double, 6, 6> stiffness_matrix; ///< Stiffness matrix
-    chrono::ChMatrixNM<double, 6, 6> mass_matrix;  ///< Mass matrix
-    double fraction = 0.0; ///<??
-    double structural_twist = 0.0; ///<Twist
-    double chord = 0.0; ///<Chord (lenght ??)
+    chrono::ChVector<double> m_coordinates{0.0, 0.0, 0.0};             ///< Reference coordinates
+    chrono::ChVector2<double> m_offset_elastic{0.0, 0.0};              ///< Offset of center of elasticity
+    chrono::ChVector2<double> m_offset_gravity{0.0, 0.0};              ///< Offset of center of gravity
+    chrono::ChMatrixNM<double, 6, 6> stiffness_matrix;                 ///< Stiffness matrix
+    chrono::ChMatrixNM<double, 6, 6> mass_matrix;                      ///< Mass matrix
+    double fraction = 0.0;                                             ///< Fraction (normalized abscissa)
+    double structural_twist = 0.0;                                     ///< Twist
+    double chord = 0.0;                                                ///< Chord
     chrono::fea::DampingCoefficients damping_coefficients;             ///< Damping coefficients
-    std::vector<seahowl::aero::AirfoilProperties> airfoil_properties;  ///< Airfoil properties for each elemnts
+    std::vector<seahowl::aero::AirfoilProperties> airfoil_properties;  ///< Airfoil properties for each element
 
     BladeReferencePoint() {
         stiffness_matrix.setZero();
