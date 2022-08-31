@@ -51,8 +51,23 @@ BladeReferencePointElasto BladeReferencePointElasto::operator+(const BladeRefere
     return new_point;
 };
 
-TowerReferencePoint TowerReferencePoint::operator*(const double factor) const {
-    TowerReferencePoint new_point;
+TowerReferencePointElasto::TowerReferencePointElasto() {}
+
+TowerReferencePointElasto::TowerReferencePointElasto(seahowl::core::TowerReferencePoint point) {
+    coordinates = point.coordinates;
+    fraction = point.fraction;
+    density = point.density;
+    stiffness_axial = point.stiffness_axial;
+    stiffness_foreaft = point.stiffness_foreaft;
+    stiffness_sideside = point.stiffness_sideside;
+    stiffness_torsion = point.stiffness_torsion;
+    damping_coefficients = point.damping_coefficients;
+}
+
+TowerReferencePointElasto::~TowerReferencePointElasto() {}
+
+TowerReferencePointElasto TowerReferencePointElasto::operator*(const double factor) const {
+    TowerReferencePointElasto new_point;
     new_point.coordinates = coordinates * factor;
     new_point.fraction = fraction * factor;
     new_point.density = density * factor;
@@ -68,8 +83,8 @@ TowerReferencePoint TowerReferencePoint::operator*(const double factor) const {
     return new_point;
 };
 
-TowerReferencePoint TowerReferencePoint::operator+(const TowerReferencePoint& other) const {
-    TowerReferencePoint new_point = *this;
+TowerReferencePointElasto TowerReferencePointElasto::operator+(const TowerReferencePointElasto& other) const {
+    TowerReferencePointElasto new_point = *this;
     new_point.coordinates += other.coordinates;
     new_point.fraction += other.fraction;
     new_point.density += other.density;

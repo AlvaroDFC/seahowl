@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
             blade->m_aero->discretization_fractions.clear();
         }
         turbine->build(system, blades_mesh);
-        turbine->m_tower.nodes[0]->SetFixed(true);  // foundation of the tower
+        turbine->m_tower.elasto.nodes[0]->SetFixed(true);  // foundation of the tower
         turbines.push_back(turbine);
 
         // increase elements for visualization
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
         }
         // increase elements for visualization
         auto& tower = turbine->m_tower;
-        for (auto& elm : tower.elements) {
+        for (auto& elm : tower.elasto.elements) {
             elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(6.0, 6.0);
             elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
         }
@@ -292,7 +292,7 @@ int main(int argc, char* argv[]) {
             application.DrawAll();
 
             // Draw also a grid on the horizontal XZ plane
-            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1];  // base (lower) position of the tower
+            double Y0 = turbines[0]->m_tower.elasto.nodes[0]->coord.pos[1];  // base (lower) position of the tower
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);

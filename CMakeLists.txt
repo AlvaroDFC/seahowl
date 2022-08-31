@@ -116,9 +116,11 @@ set(SEAHOWL_SOURCES
     src/elasto/reference_point_elasto.cpp
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
-    
-    src/core/rotor.cpp 
+
+    src/core/reference_point.cpp
+    src/core/rotor.cpp
     src/core/blade.cpp
+    src/core/tower.cpp
     src/core/turbine.cpp
     src/core/utils.cpp 
 
@@ -126,6 +128,7 @@ set(SEAHOWL_SOURCES
     src/aero/reference_point_aero.cpp
     src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
+    src/aero/tower_aero.cpp
 
     src/servo/controller.cpp
 
@@ -134,9 +137,10 @@ set(SEAHOWL_SOURCES
 
 set(SEAHOWL_HEADERS
 
-    include/seahowl/core/blade.h
     include/seahowl/core/reference_point.h
+    include/seahowl/core/blade.h
     include/seahowl/core/rotor.h
+    include/seahowl/core/tower.h
     include/seahowl/core/turbine.h
     include/seahowl/core/utils.h
 
@@ -145,6 +149,7 @@ set(SEAHOWL_HEADERS
     include/seahowl/aero/blade_aero.h
     include/seahowl/aero/reference_point_aero.h
     include/seahowl/aero/rotor_aero.h
+    include/seahowl/aero/tower_aero.h
     include/seahowl/aero/wind_models.h
 
     include/seahowl/servo/controller.h

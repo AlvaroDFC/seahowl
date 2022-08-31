@@ -19,8 +19,8 @@ Implemented as Finite Element Beams
 */
 class TowerElasto : public ElastoFEAComponent {
   public:
-    std::vector<TowerReferencePoint> reference_points;
-    std::vector<TowerReferencePoint> discretized_points;
+    std::vector<TowerReferencePointElasto> reference_points;
+    std::vector<TowerReferencePointElasto> discretized_points;
     std::vector<double> discretization_fractions;
     double height;
     double base_height;

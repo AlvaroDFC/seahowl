@@ -43,3 +43,35 @@ BladeReferencePointAero BladeReferencePointAero::operator+(const BladeReferenceP
     }
     return new_point;
 };
+
+TowerReferencePointAero::TowerReferencePointAero() {}
+
+TowerReferencePointAero::TowerReferencePointAero(seahowl::core::TowerReferencePoint& point) {
+    fraction = point.fraction;
+    coordinates = point.coordinates;
+    velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
+    radius = point.radius;
+    drag_coefficient = point.drag_coefficient;
+}
+
+TowerReferencePointAero::~TowerReferencePointAero() {}
+
+TowerReferencePointAero TowerReferencePointAero::operator*(const double factor) const {
+    TowerReferencePointAero new_point = *this;
+    new_point.fraction *= factor;
+    new_point.coordinates *= factor;
+    new_point.velocity *= factor;
+    new_point.radius *= factor;
+    new_point.drag_coefficient *= factor;
+    return new_point;
+};
+
+TowerReferencePointAero TowerReferencePointAero::operator+(const TowerReferencePointAero& other) const {
+    TowerReferencePointAero new_point = *this;
+    new_point.fraction += other.fraction;
+    new_point.coordinates += other.coordinates;
+    new_point.velocity += other.velocity;
+    new_point.radius += other.radius;
+    new_point.drag_coefficient += other.drag_coefficient;
+    return new_point;
+};

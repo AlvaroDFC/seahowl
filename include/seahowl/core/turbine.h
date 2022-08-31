@@ -2,7 +2,7 @@
 
 #include <seahowl/core/blade.h>
 #include <seahowl/core/rotor.h>
-#include <seahowl/elasto/tower_elasto.h>
+#include <seahowl/core/tower.h>
 
 #include <vector>
 
@@ -21,7 +21,7 @@ class Turbine {
   public:
     std::vector<std::shared_ptr<Blade>> m_blades;  ///< Blades => To be moved in Rotor
     Rotor m_rotor;                                 ///< Rotor.  @todo Should be Hub + Blades
-    seahowl::elasto::TowerElasto m_tower;          ///< Tower @todo for elasto ? No generic class Tower
+    Tower m_tower;                                 ///< Tower
 
     Turbine();
     ~Turbine();

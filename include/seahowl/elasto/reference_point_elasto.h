@@ -27,7 +27,7 @@ struct BladeReferencePointElasto {
 };
 
 /**@brief Tower (DOF) reference point */
-struct TowerReferencePoint {
+struct TowerReferencePointElasto {
     chrono::ChVector<double> coordinates;                   ///< Coordinates of reference point
     double fraction = 0.0;                                  ///< Fraction (normalized abscissa along tower)
     double density = 0.0;                                   ///< Density
@@ -37,8 +37,12 @@ struct TowerReferencePoint {
     double stiffness_torsion = 0.0;                         ///< Torsional stiffness
     chrono::fea::DampingCoefficients damping_coefficients;  ///< Damping coefficients
 
-    TowerReferencePoint operator*(const double factor) const;
-    TowerReferencePoint operator+(const TowerReferencePoint& other) const;
+    TowerReferencePointElasto();
+    TowerReferencePointElasto(seahowl::core::TowerReferencePoint point);
+    ~TowerReferencePointElasto();
+
+    TowerReferencePointElasto operator*(const double factor) const;
+    TowerReferencePointElasto operator+(const TowerReferencePointElasto& other) const;
 };
 
 }  // namespace elasto
