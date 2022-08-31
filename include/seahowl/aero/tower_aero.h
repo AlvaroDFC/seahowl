@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <seahowl/aero/reference_point_aero.h>
+#include <seahowl/aero/wind_models.h>
 #include <seahowl/core/utils.h>
 
 #include <chrono/core/ChVector.h>
@@ -29,6 +30,7 @@ class TowerAero {
     std::vector<TowerReferencePointAero> discretized_points;  ///< Reference points interpolated at discretized points
     std::vector<TowerElementAero> elements;                   ///< Tower elements (between discretized points)
     std::vector<chrono::ChVector<double>> loads;              ///< Loads on blade elements
+    void compute_wind_loads_morison(WindModel& wind_model, double time);
 
     TowerAero();
     ~TowerAero();

@@ -241,7 +241,13 @@ void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              chrono::ChQuaternion<double>& rotation,
                                              int element_index,
                                              double eta) {
-    elements[element_index]->EvaluateSectionFrame(eta, position, rotation);
+    auto& element = elements[element_index];
+
+    // // unfortunately line below does not always work (returns nans sometimes)
+    // element->EvaluateSectionFrame(eta, position, rotation);
+
+    position = 0.5 * (element->GetNodeA()->GetPos() + element->GetNodeB()->GetPos());
+    rotation = (element->GetNodeA()->GetRot());
 }
 
 void BladeElasto::reset_loads() {

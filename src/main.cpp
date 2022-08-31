@@ -278,6 +278,7 @@ int main(int argc, char* argv[]) {
         for (auto& turbine : turbines) {
             // compute forces
             turbine->m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
+            turbine->m_tower.aero.compute_wind_loads_morison(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
             turbine->prestep(time);
         }

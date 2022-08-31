@@ -37,3 +37,26 @@ void TowerAero::build() {
         loads.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
     }
 }
+
+void TowerAero::compute_wind_loads_morison(WindModel& wind_model, double time) {
+    auto density = wind_model.get_density();
+    for (int ii = 0; ii < elements.size(); ii++) {
+        auto& element = elements[ii];
+        auto& properties = element.properties;
+
+        // get fluid relative velocity
+        auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, time);
+        auto velocity_relative = wind_velocity - properties.velocity;
+        auto dir = properties.rotation.GetVector();  // tangent direction
+        auto dot = velocity_relative ^ dir;
+        auto velocity_tangent = dir * dot;
+        auto velocity_normal = velocity_relative - velocity_tangent;
+
+        auto length = element.length;
+        auto diameter = properties.radius * 2.0;
+        auto cd = properties.drag_coefficient;
+        auto load_drag = 0.5 * density * cd * M_PI * diameter * velocity_normal.Length() * velocity_normal * length;
+
+        loads[ii] = load_drag;
+    }
+}

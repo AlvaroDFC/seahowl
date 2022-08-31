@@ -22,6 +22,8 @@ class Tower {
     seahowl::aero::TowerAero aero;        ///< Aerodynamic element mesh
     std::vector<seahowl::core::TowerReferencePoint>
         reference_points;  ///<@todo  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
+    std::vector<seahowl::core::DiscretizationPoint> mapping_aero2elasto;
+    std::vector<seahowl::core::DiscretizationPoint> mapping_elasto2aero;
 
     Tower();
     ~Tower();
@@ -29,8 +31,16 @@ class Tower {
     void build(std::shared_ptr<chrono::fea::ChMesh> mesh);
     void set_discretization_elasto(std::vector<double> fractions);
     void set_discretization_aero(std::vector<double> fractions);
+    void compute_mapping_aero2elasto();
+    void compute_mapping_elasto2aero();
     void prestep(double time);
     void poststep(double time);
+
+    /**@brief Updates positions for aero elements */
+    void update_positions_aero();
+
+    /**@brief Applies elastodynamic loadings */
+    void update_loads_elasto();
 };
 
 }  // namespace core

@@ -24,9 +24,11 @@ void seahowl::core::Turbine::build(chrono::ChSystemSMC& system, std::shared_ptr<
 
 void seahowl::core::Turbine::prestep(double time) {
     m_rotor.prestep(time);
+    m_tower.prestep(time);
 }
 void seahowl::core::Turbine::poststep(double time) {
     m_rotor.poststep(time);
+    m_tower.poststep(time);
 }
 
 void seahowl::core::Turbine::translate(chrono::ChVector<double> translation_vector) {
@@ -41,4 +43,5 @@ void seahowl::core::Turbine::rotate(double angle, chrono::ChVector<double> axis)
 
 void seahowl::core::Turbine::compute_wind_loads(seahowl::aero::WindModel& wind_model, double time) {
     m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
+    m_tower.aero.compute_wind_loads_morison(wind_model, time);
 }

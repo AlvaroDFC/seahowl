@@ -2,11 +2,15 @@
 
 using namespace seahowl::aero;
 
-BladeReferencePointAero::BladeReferencePointAero() {}
+BladeReferencePointAero::BladeReferencePointAero() {
+    rotation = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
+    velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
+}
 
 BladeReferencePointAero::BladeReferencePointAero(seahowl::core::BladeReferencePoint& point) {
     fraction = point.fraction;
     m_coordinates = point.m_coordinates;
+    rotation = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
     velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
     chord = point.chord;
     structural_twist = point.structural_twist;
@@ -19,6 +23,7 @@ BladeReferencePointAero BladeReferencePointAero::operator*(const double factor) 
     BladeReferencePointAero new_point = *this;
     new_point.fraction *= factor;
     new_point.m_coordinates *= factor;
+    new_point.rotation *= factor;
     new_point.velocity *= factor;
     new_point.chord *= factor;
     new_point.structural_twist *= factor;
@@ -32,6 +37,7 @@ BladeReferencePointAero BladeReferencePointAero::operator+(const BladeReferenceP
     BladeReferencePointAero new_point = *this;
     new_point.fraction += other.fraction;
     new_point.m_coordinates += other.m_coordinates;
+    new_point.rotation += other.rotation;
     new_point.velocity += other.velocity;
     new_point.chord += other.chord;
     new_point.structural_twist += other.structural_twist;
@@ -44,11 +50,15 @@ BladeReferencePointAero BladeReferencePointAero::operator+(const BladeReferenceP
     return new_point;
 };
 
-TowerReferencePointAero::TowerReferencePointAero() {}
+TowerReferencePointAero::TowerReferencePointAero() {
+    rotation = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
+    velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
+}
 
 TowerReferencePointAero::TowerReferencePointAero(seahowl::core::TowerReferencePoint& point) {
     fraction = point.fraction;
     coordinates = point.coordinates;
+    rotation = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
     velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
     radius = point.radius;
     drag_coefficient = point.drag_coefficient;
@@ -60,6 +70,7 @@ TowerReferencePointAero TowerReferencePointAero::operator*(const double factor) 
     TowerReferencePointAero new_point = *this;
     new_point.fraction *= factor;
     new_point.coordinates *= factor;
+    new_point.rotation *= factor;
     new_point.velocity *= factor;
     new_point.radius *= factor;
     new_point.drag_coefficient *= factor;
@@ -70,6 +81,7 @@ TowerReferencePointAero TowerReferencePointAero::operator+(const TowerReferenceP
     TowerReferencePointAero new_point = *this;
     new_point.fraction += other.fraction;
     new_point.coordinates += other.coordinates;
+    new_point.rotation += other.rotation;
     new_point.velocity += other.velocity;
     new_point.radius += other.radius;
     new_point.drag_coefficient += other.drag_coefficient;
