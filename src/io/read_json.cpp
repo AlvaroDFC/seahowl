@@ -186,6 +186,8 @@ std::vector<seahowl::core::TowerReferencePoint> get_tower_reference_points_from_
         point.at("stiffness_sideside").get_to(reference_point.stiffness_sideside);
         point.at("stiffness_foreaft").get_to(reference_point.stiffness_foreaft);
         point.at("density").get_to(reference_point.density);
+        point.at("diameter").get_to(reference_point.diameter);
+        point.at("drag_coefficient").get_to(reference_point.drag_coefficient);
         reference_point.damping_coefficients.bx = damping_coefficients[0];
         reference_point.damping_coefficients.by = damping_coefficients[1];
         reference_point.damping_coefficients.bz = damping_coefficients[2];

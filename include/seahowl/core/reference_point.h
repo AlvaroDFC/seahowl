@@ -40,7 +40,7 @@ struct TowerReferencePoint {
     double stiffness_torsion = 0.0;                         ///< Torsional stiffness
     chrono::fea::DampingCoefficients damping_coefficients;  ///< Damping coefficients
     // aero
-    double radius = 0.0;
+    double diameter = 0.0;
     double drag_coefficient = 0.0;
 
     TowerReferencePoint();

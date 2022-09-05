@@ -81,7 +81,7 @@ TowerReferencePoint TowerReferencePoint::operator*(const double factor) const {
     new_point.damping_coefficients.bz *= factor;
     new_point.damping_coefficients.bt *= factor;
     new_point.damping_coefficients.alpha *= factor;
-    new_point.radius *= factor;
+    new_point.diameter *= factor;
     new_point.drag_coefficient *= factor;
     return new_point;
 };
@@ -100,7 +100,7 @@ TowerReferencePoint TowerReferencePoint::operator+(const TowerReferencePoint& ot
     new_point.damping_coefficients.bz += other.damping_coefficients.bz;
     new_point.damping_coefficients.bt += other.damping_coefficients.bt;
     new_point.damping_coefficients.alpha += other.damping_coefficients.alpha;
-    new_point.radius += other.radius;
+    new_point.diameter += other.diameter;
     new_point.drag_coefficient += other.drag_coefficient;
     return new_point;
 };

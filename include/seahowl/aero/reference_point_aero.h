@@ -29,7 +29,7 @@ struct TowerReferencePointAero {
     chrono::ChVector<double> coordinates;   ///< Reference point coordinates
     chrono::ChQuaternion<double> rotation;  ///< Rotation of reference point
     chrono::ChVector<double> velocity;      ///< Velocity of reference point
-    double radius = 0.0;                    ///< Radius of tower at reference point
+    double diameter = 0.0;                  ///< Diameter of tower at reference point
     double drag_coefficient = 0.0;          ///< Drag coefficient of tower at reference point
 
     TowerReferencePointAero();

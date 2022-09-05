@@ -60,7 +60,7 @@ TowerReferencePointAero::TowerReferencePointAero(seahowl::core::TowerReferencePo
     coordinates = point.coordinates;
     rotation = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
     velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
-    radius = point.radius;
+    diameter = point.diameter;
     drag_coefficient = point.drag_coefficient;
 }
 
@@ -72,7 +72,7 @@ TowerReferencePointAero TowerReferencePointAero::operator*(const double factor) 
     new_point.coordinates *= factor;
     new_point.rotation *= factor;
     new_point.velocity *= factor;
-    new_point.radius *= factor;
+    new_point.diameter *= factor;
     new_point.drag_coefficient *= factor;
     return new_point;
 };
@@ -83,7 +83,7 @@ TowerReferencePointAero TowerReferencePointAero::operator+(const TowerReferenceP
     new_point.coordinates += other.coordinates;
     new_point.rotation += other.rotation;
     new_point.velocity += other.velocity;
-    new_point.radius += other.radius;
+    new_point.diameter += other.diameter;
     new_point.drag_coefficient += other.drag_coefficient;
     return new_point;
 };
