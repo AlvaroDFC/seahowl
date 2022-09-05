@@ -5,6 +5,7 @@ from pathlib import Path
 import json
 import jsbeautifier
 import numpy as np
+import copy
 
 options = jsbeautifier.default_options
 options.indent_size = 2
@@ -264,7 +265,8 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
         beamdyn_fractions.append(point["fraction"])
 
     idx = 0
-    for point in aerodyn_json["reference_points"]:
+    merged_json = copy.deepcopy(aerodyn_json)
+    for point in merged_json["reference_points"]:
         afraction = float(point["coordinates"][2]) / blade_length
         bfraction0 = float(beamdyn_fractions[idx])
         bfraction1 = float(beamdyn_fractions[idx + 1])
@@ -286,7 +288,7 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
         point["coordinates"][1] = 0.0
         point["stiffness_matrix"] = stiffness_matrix.tolist()
 
-    return aerodyn_json
+    return merged_json
 
 
 def convert_elastodyn_tower_file(filename, save_directory=None):
@@ -351,6 +353,12 @@ def convert_aerodyn_tower_file(filename, save_directory=None):
             point["TI"] = float(words[3])
             points.append(point)
 
+    tower_bottom = points[0]["elevation"]
+    tower_top = points[-1]["elevation"]
+    tower_length = tower_top-tower_bottom
+    for point in points:
+        point["fraction"] = (point["elevation"] - tower_bottom) / tower_length
+
     aerodyn_json["reference_points"] = points
 
     # save to file
@@ -358,7 +366,42 @@ def convert_aerodyn_tower_file(filename, save_directory=None):
         fullpath = Path(save_directory) / filepath.with_suffix(".json")
         save_json(aerodyn_json, fullpath)
 
-    return elastodyn_json
+    return aerodyn_json
+
+def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json):
+    aerodyn_fractions = list()
+    elastodyn_fractions = list()
+    for point in aerodyn_json["reference_points"]:
+        aerodyn_fractions.append(point["fraction"])
+    for point in elastodyn_json["reference_points"]:
+        elastodyn_fractions.append(point["fraction"])
+
+    idx = 0
+    merged_json = copy.deepcopy(elastodyn_json)
+    print(elastodyn_fractions)
+    for idx_b, point in enumerate(merged_json["reference_points"]):
+        afraction = float(elastodyn_fractions[idx_b])
+        bfraction0 = float(aerodyn_fractions[idx])
+        bfraction1 = float(aerodyn_fractions[idx + 1])
+        while afraction > bfraction1:
+            idx += 1
+            bfraction0 = float(aerodyn_fractions[idx])
+            bfraction1 = float(aerodyn_fractions[idx + 1])
+        bfraction_range = bfraction1 - bfraction0
+        dd1 = np.array(aerodyn_json["reference_points"][idx]["diameter"])
+        dd2 = np.array(aerodyn_json["reference_points"][idx + 1]["diameter"])
+        print(afraction, bfraction1, idx, dd1, idx+1, dd2)
+        cd1 = np.array(aerodyn_json["reference_points"][idx]["drag_coefficient"])
+        cd2 = np.array(aerodyn_json["reference_points"][idx + 1]["drag_coefficient"])
+        coeff1 = 1.0 - (afraction - bfraction0) / bfraction_range
+        coeff2 = 1.0 - (bfraction1 - afraction) / bfraction_range
+        dd = coeff1 * dd1 + coeff2 * dd2
+        cd = coeff1 * cd1 + coeff2 * cd2
+
+        point["diameter"] = dd
+        point["drag_coefficient"] = cd
+
+    return merged_json
 
 
 if __name__ == "__main__":
@@ -367,18 +410,18 @@ if __name__ == "__main__":
 
     filename = "./IEA-15-240-RWT_AeroDyn15.dat"
     blade_filename = "./IEA-15-240-RWT_AeroDyn15_blade.dat"
-    convert_aerodyn_files(filename, blade_filename, save_directory)
+    aerodyn_blade_json = convert_aerodyn_files(filename, blade_filename, save_directory)
 
     beamdyn_filename = "./IEA-15-240-RWT_BeamDyn_blade.dat"
-    convert_beamdyn_file(beamdyn_filename, save_directory)
+    beamdyn_blade_json = convert_beamdyn_file(beamdyn_filename, save_directory)
 
     elastodyn_tower_filename = "./IEA-15-240-RWT-Monopile_ElastoDyn_tower.dat"
-    convert_elastodyn_tower_file(elastodyn_tower_filename, save_directory)
+    elastodyn_tower_json = convert_elastodyn_tower_file(elastodyn_tower_filename, save_directory)
 
-    with open("./converted/IEA-15-240-RWT_BeamDyn_blade.json", "r") as f:
-        beamdyn_json = json.load(f)
-    with open("./converted/IEA-15-240-RWT_AeroDyn15_blade.json", "r") as f:
-        aerodyn_json = json.load(f)
+    merged_blade_json = merge_beamdyn2aerodyn(beamdyn_blade_json, aerodyn_blade_json)
+    save_json(merged_blade_json, save_directory + "/blade.json")
 
-    merged_json = merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json)
-    save_json(merged_json, save_directory + "/blade.json")
+    aerodyn_tower_json = convert_aerodyn_tower_file(filename, save_directory)
+
+    merged_tower_json = merge_elastodyn2aerodyn_tower(elastodyn_tower_json, aerodyn_tower_json)
+    save_json(merged_tower_json, save_directory + "/tower.json")

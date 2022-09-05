@@ -33,7 +33,7 @@ option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
-option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
+option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" OFF)
 
 # =======================
 # External libraries
@@ -58,6 +58,7 @@ find_package(nlohmann_json REQUIRED)
 if (SEAHOWL_ENABLE_ROSCO)
     find_package(ROSCO REQUIRED)
     add_compile_definitions(SEAHOWL_HAVE_ROSCO=1)
+    add_definitions("-DHAVE_ROSCO=1")
 endif( SEAHOWL_ENABLE_ROSCO)
 
 
@@ -111,17 +112,24 @@ add_library( seahowl_core )
 set(SEAHOWL_SOURCES 
 
     src/elasto/elasto.cpp
-	src/elasto/blade_elasto.cpp 
+    src/elasto/blade_elasto.cpp
+    src/elasto/reference_point_elasto.cpp
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
-    
-    src/core/rotor.cpp 
+
+    src/core/reference_point.cpp
+    src/core/rotor.cpp
     src/core/blade.cpp
+    src/core/tower.cpp
     src/core/turbine.cpp
     src/core/utils.cpp 
 
-    src/aero/blade_aero.cpp 
+    src/aero/airfoil.cpp
+    src/aero/reference_point_aero.cpp
+    src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
+    src/aero/tower_aero.cpp
+
     src/servo/controller.cpp
 
 	src/io/read_json.cpp 	 
@@ -129,9 +137,10 @@ set(SEAHOWL_SOURCES
 
 set(SEAHOWL_HEADERS
 
-    include/seahowl/core/blade.h
     include/seahowl/core/reference_point.h
+    include/seahowl/core/blade.h
     include/seahowl/core/rotor.h
+    include/seahowl/core/tower.h
     include/seahowl/core/turbine.h
     include/seahowl/core/utils.h
 
@@ -140,6 +149,7 @@ set(SEAHOWL_HEADERS
     include/seahowl/aero/blade_aero.h
     include/seahowl/aero/reference_point_aero.h
     include/seahowl/aero/rotor_aero.h
+    include/seahowl/aero/tower_aero.h
     include/seahowl/aero/wind_models.h
 
     include/seahowl/servo/controller.h

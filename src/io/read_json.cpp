@@ -3,6 +3,7 @@
 #include <seahowl/core/utils.h>
 #include <seahowl/core/blade.h>
 #include <seahowl/core/rotor.h>
+#include <seahowl/core/tower.h>
 #include <seahowl/elasto/tower_elasto.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/elasto/blade_elasto.h>
@@ -110,10 +111,8 @@ std::vector<seahowl::core::BladeReferencePoint> get_blade_reference_points_from_
 
             const auto nreynolds = json_airfoil.size();
             for (int jj = 0; jj < nreynolds; jj++) {
-
                 auto airfoil_properties = json_airfoil[jj];
                 auto coeffs = airfoil_properties.at("coefficients").get<std::vector<std::vector<double>>>();
-
 
                 std::vector<seahowl::aero::AirfoilCoefficients> coefficients_list;
 
@@ -163,7 +162,7 @@ seahowl::core::Blade get_blade_from_json(std::string filepath) {
     return blade;
 }
 
-std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
+std::vector<seahowl::core::TowerReferencePoint> get_tower_reference_points_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
@@ -176,17 +175,19 @@ std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_fro
     auto damping_coefficients = json_obj.at("damping_coefficients").get<std::vector<double>>();
 
     // MAKE TOWER REFERENCE POINTS
-    std::vector<seahowl::elasto::TowerReferencePoint> reference_points;
+    std::vector<seahowl::core::TowerReferencePoint> reference_points;
     auto points = json_obj.at("reference_points").get<json>();
     for (int ii = 0; ii < points.size(); ii++) {
         auto& point = points[ii];
-        auto reference_point = seahowl::elasto::TowerReferencePoint();
+        auto reference_point = seahowl::core::TowerReferencePoint();
         point.at("fraction").get_to(reference_point.fraction);
         reference_point.coordinates =
             chrono::ChVector<double>(0.0, 0.0, (height - base_height) * reference_point.fraction);
         point.at("stiffness_sideside").get_to(reference_point.stiffness_sideside);
         point.at("stiffness_foreaft").get_to(reference_point.stiffness_foreaft);
         point.at("density").get_to(reference_point.density);
+        point.at("diameter").get_to(reference_point.diameter);
+        point.at("drag_coefficient").get_to(reference_point.drag_coefficient);
         reference_point.damping_coefficients.bx = damping_coefficients[0];
         reference_point.damping_coefficients.by = damping_coefficients[1];
         reference_point.damping_coefficients.bz = damping_coefficients[2];
@@ -202,19 +203,25 @@ std::vector<seahowl::elasto::TowerReferencePoint> get_tower_reference_points_fro
     return reference_points;
 }
 
-seahowl::elasto::TowerElasto get_tower_from_json(std::string filepath) {
+seahowl::core::Tower get_tower_from_json(std::string filepath) {
     std::ifstream json_file(filepath);
 
     // populate json object
     json json_obj;
     json_file >> json_obj;
 
-    seahowl::elasto::TowerElasto tower{};
-    ;
-    tower.height = json_obj.at("height").get<double>();
-    tower.base_height = json_obj.at("base_height").get<double>();
+    seahowl::core::Tower tower{};
+    tower.elasto.height = json_obj.at("height").get<double>();
+    tower.elasto.base_height = json_obj.at("base_height").get<double>();
     tower.reference_points = get_tower_reference_points_from_json(filepath);
-    tower.discretization_fractions = json_obj.at("discretization_fractions").get<std::vector<double>>();
+    if (json_obj.contains("discretization_elasto")) {
+        auto discretization_elasto = json_obj.at("discretization_elasto").get<std::vector<double>>();
+        tower.set_discretization_elasto(discretization_elasto);
+    }
+    if (json_obj.contains("discretization_aero")) {
+        auto discretization_aero = json_obj.at("discretization_aero").get<std::vector<double>>();
+        tower.set_discretization_aero(discretization_aero);
+    }
 
     return tower;
 }
@@ -265,10 +272,10 @@ seahowl::core::Rotor get_rotor_from_json(std::string filepath) {
 }
 
 seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_blades,
-                              std::string filepath_rotor,
-                              std::string filepath_tower) {
+                                             std::string filepath_rotor,
+                                             std::string filepath_tower) {
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
-    for (auto& fpath:filepaths_blades) {
+    for (auto& fpath : filepaths_blades) {
         blades.push_back(std::make_shared<seahowl::core::Blade>(get_blade_from_json(fpath)));
     }
 

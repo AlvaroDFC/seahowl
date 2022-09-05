@@ -4,7 +4,7 @@ using seahowl::core::DiscretizationPoint;
 
 std::vector<seahowl::core::DiscretizationPoint> seahowl::core::get_indice_and_positions(
     std::vector<double>& discretization_fractions,
-                                                          std::vector<double>& reference_fractions) {
+    std::vector<double>& reference_fractions) {
     // check for potential errors
     if (discretization_fractions.size() == 0) {
         throw std::runtime_error("Cannot get discretization with empty array.");
@@ -27,7 +27,7 @@ std::vector<seahowl::core::DiscretizationPoint> seahowl::core::get_indice_and_po
             points.push_back(point);
         } else {
             auto idx = std::upper_bound(reference_fractions.begin(), reference_fractions.end(), fraction) -
-                      reference_fractions.begin();
+                       reference_fractions.begin();
             // decrease index for getting lower bound
             idx -= 1;
             if (idx == reference_fractions.size() - 1) {

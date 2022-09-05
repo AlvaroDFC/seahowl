@@ -4,8 +4,7 @@
 #include <vector>
 
 namespace seahowl {
-namespace core {
-}
+namespace core {}
 namespace elasto {
 class BladeElasto;
 }
@@ -14,8 +13,8 @@ class BladeAero;
 }
 }  // namespace seahowl
 
-#include <seahowl/core/reference_point.h> 
-#include <seahowl/core/utils.h> 
+#include <seahowl/core/reference_point.h>
+#include <seahowl/core/utils.h>
 
 namespace chrono {
 class ChSystemSMC;
@@ -41,7 +40,7 @@ class Blade {
     std::vector<seahowl::core::DiscretizationPoint> m_mapping_elasto2aero;
 
     Blade();
-    ~Blade() {}
+    ~Blade();
 
     void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void set_discretization_elasto(std::vector<double> fractions);

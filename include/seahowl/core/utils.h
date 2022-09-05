@@ -15,7 +15,6 @@ struct DiscretizationPoint {
     double eta;
 };
 
-
 std::vector<DiscretizationPoint> get_indice_and_positions(std::vector<double>& discretization_fractions,
                                                           std::vector<double>& reference_fractions);
 
@@ -71,7 +70,6 @@ std::vector<T> get_discretized_points(std::vector<double>& discretization_fracti
         return discretized_points;
     }
 }
-
 
 }  // namespace core
 }  // namespace seahowl

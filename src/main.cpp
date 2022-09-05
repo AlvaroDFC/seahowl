@@ -28,6 +28,11 @@ using namespace chrono::postprocess;
 
 #include <seahowl/io/read_json.h>
 #include <seahowl/servo/controller.h>
+
+#ifdef HAVE_ROSCO
+    #include <seahowl/servo/controller_discon.h>
+#endif
+
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/core/turbine.h>
@@ -97,7 +102,11 @@ int main(int argc, char* argv[]) {
     // controller.target_rpm = 0.0;
 
     // to have a Discon Controller
+#ifdef HAVE_ROSCO
     auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
+#else
+    auto controller = seahowl::servo::ControllerVariableTorque();
+#endif
 
     // system
     ChSystemSMC system;
@@ -158,7 +167,7 @@ int main(int argc, char* argv[]) {
             blade->m_aero->discretization_fractions.clear();
         }
         turbine->build(system, blades_mesh);
-        turbine->m_tower.nodes[0]->SetFixed(true);  // foundation of the tower
+        turbine->m_tower.elasto.nodes[0]->SetFixed(true);  // foundation of the tower
         turbines.push_back(turbine);
 
         // increase elements for visualization
@@ -171,7 +180,7 @@ int main(int argc, char* argv[]) {
         }
         // increase elements for visualization
         auto& tower = turbine->m_tower;
-        for (auto& elm : tower.elements) {
+        for (auto& elm : tower.elasto.elements) {
             elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(6.0, 6.0);
             elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
         }
@@ -269,6 +278,7 @@ int main(int argc, char* argv[]) {
         for (auto& turbine : turbines) {
             // compute forces
             turbine->m_rotor.aero.compute_wind_loads_bemt(wind_model, time);
+            turbine->m_tower.aero.compute_wind_loads_morison(wind_model, time);
             // prestep (accumulates loads from aero to elasto)
             turbine->prestep(time);
         }
@@ -283,7 +293,7 @@ int main(int argc, char* argv[]) {
             application.DrawAll();
 
             // Draw also a grid on the horizontal XZ plane
-            double Y0 = turbines[0]->m_tower.nodes[0]->coord.pos[1];  // base (lower) position of the tower
+            double Y0 = turbines[0]->m_tower.elasto.nodes[0]->coord.pos[1];  // base (lower) position of the tower
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);
@@ -326,23 +336,23 @@ int main(int argc, char* argv[]) {
             turbine->poststep(time);
 
             /*
+             */
+            double rpm = turbine->m_rotor.elasto.get_rpm();
+            double torque_elec;
+#ifdef HAVE_ROSCO
+            torque_elec = controller.get_torque_elec(rpm, time, dt);
+#else
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
                 double rpm = turbine->m_rotor.elasto.get_rpm();
                 double torque_total = turbine->m_rotor.elasto.get_torque();
-                double torque_elec = controller.get_torque_elec(torque_total, rpm);
-                // apply torque elec to hub rigid body
-                turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
-                // torque elec is apply on Z axis of hub body (locally)
-                turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+                torque_elec = controller.get_torque_elec(torque_total, rpm);
             }
-            */
-            double rpm = turbine->m_rotor.elasto.get_rpm();
-            double torque_elec = controller.get_torque_elec(rpm, time, dt);
+#endif
             // apply torque elec to hub rigid body
             turbine->m_rotor.elasto.body_hub->Empty_forces_accumulators();
             // torque elec is apply on Z axis of hub body (locally)
-            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+            turbine->m_rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
         }
     }
 

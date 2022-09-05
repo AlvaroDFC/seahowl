@@ -15,6 +15,8 @@ seahowl::core::Blade::Blade() {
     m_aero = std::make_shared<seahowl::aero::BladeAero>();
 }
 
+seahowl::core::Blade::~Blade() {}
+
 void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
     // push reference points
     m_elasto->reference_points.clear();

@@ -19,7 +19,7 @@
 
 using namespace chrono;
 
-#include <filesystem> // C++17
+#include <filesystem>  // C++17
 
 using std::filesystem::path;
 using std::filesystem::absolute;
@@ -92,10 +92,8 @@ TEST(test_rotor, mass) {
     system.AddMesh(blades_mesh);
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
     for (int ii = 0; ii < 3; ii++) {
-
         auto blade_core = std::make_shared<seahowl::core::Blade>(
-            get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string())
-            );
+            get_blade_from_json((DATADIR / "IEA15MW_blade.json").generic_string()));
 
         std::vector<double> fractions;
         fractions.clear();
@@ -104,7 +102,7 @@ TEST(test_rotor, mass) {
         blades.push_back(blade_core);
     }
 
-    auto rotor = get_rotor_from_json((DATADIR / "IEA15MW_RNA.json").generic_string() );
+    auto rotor = get_rotor_from_json((DATADIR / "IEA15MW_RNA.json").generic_string());
     rotor.build(system, blades);
     rotor.elasto.body_yaw_bearing->SetBodyFixed(true);
 
@@ -138,7 +136,7 @@ TEST(test_tower, mass) {
 
     // check mass
     double tower_mass = 870880.97;
-    ASSERT_NEAR(tower_mass, tower.get_mass(), 1.0);
+    ASSERT_NEAR(tower_mass, tower.elasto.get_mass(), 1.0);
 }
 
 TEST(test_blade, natural_period_dynamic_edge) {
@@ -302,12 +300,12 @@ TEST(test_turbine, rpm_initial_pitch) {
     auto tower_file = "../../data/IEA15MW_tower.json";
     auto turbine = get_turbine_from_json(blades_files, rotor_file, tower_file);
     // clear discretization defined in file
-    for (auto& blade: turbine.m_blades) {
+    for (auto& blade : turbine.m_blades) {
         blade->m_elasto->discretization_fractions.clear();
         blade->m_aero->discretization_fractions.clear();
     }
     turbine.build(system, blades_mesh);
-    turbine.m_tower.nodes[0]->SetFixed(true);
+    turbine.m_tower.elasto.nodes[0]->SetFixed(true);
 
     turbine.rotate(-CH_C_PI / 2.0, VECT_X);
 

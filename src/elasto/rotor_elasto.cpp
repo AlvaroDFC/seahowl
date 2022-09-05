@@ -11,9 +11,11 @@
 
 using seahowl::elasto::BladeElasto;
 using seahowl::elasto::RotorElasto;
-//using seahowl::elasto::TowerElasto;
+// using seahowl::elasto::TowerElasto;
 
 RotorElasto::RotorElasto() {}
+
+RotorElasto::~RotorElasto() {}
 
 void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
@@ -110,7 +112,7 @@ void RotorElasto::link_tower(TowerElasto& tower, chrono::ChSystemSMC& system) {
 
 void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) const {
     // blades
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         blade->rotate(angle, axis);
     }
     auto rotation = Q_from_AngAxis(angle, axis);
@@ -138,7 +140,7 @@ void RotorElasto::rotate(double angle, chrono::ChVector<double> axis) const {
 
 void RotorElasto::translate(chrono::ChVector<double> translation_vector) const {
     // blades
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         blade->translate(translation_vector);
     }
     // hub
@@ -154,7 +156,7 @@ void RotorElasto::translate(chrono::ChVector<double> translation_vector) const {
 double RotorElasto::get_mass() const {
     double total_mass = 0.0;
     // blades
-    for (auto& blade: blades) {
+    for (auto& blade : blades) {
         total_mass += blade->get_mass();
     }
     // hub
