@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     auto verbose = false;
     // timestepping
     auto timestepper_type = ChTimestepper::Type::HHT;
-    double dt = 0.1;
+    double dt = 0.05;
     // wind
     auto wind_model = seahowl::aero::ConstantWind();
     wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 
     // to have a Discon Controller
 #ifdef HAVE_ROSCO
-    auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
+    auto controller = seahowl::servo::ControllerDISCON(dt, initial_pitch, u8"controller/DISCON.IN");
 #else
     auto controller = seahowl::servo::ControllerVariableTorque();
 #endif
@@ -328,8 +328,11 @@ int main(int argc, char* argv[]) {
 #endif
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
-                 << " average rpm: " << average_rpm << "\n";
+
+        if (step % 10 == 0) {
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
+                     << " average rpm: " << average_rpm << "\n";
+        }
 
         // poststep
         for (auto& turbine : turbines) {
@@ -340,7 +343,12 @@ int main(int argc, char* argv[]) {
             double rpm = turbine->rotor.elasto.get_rpm();
             double torque_elec;
 #ifdef HAVE_ROSCO
-            torque_elec = controller.get_torque_elec(rpm, time, dt);
+            torque_elec =
+                controller.get_torque_elec(time, dt, rpm * (2 * CH_C_PI) / 60, turbine->rotor.blades[0]->elasto->pitch);
+            turbine->rotor.elasto.apply_collective_pitch_increment(-turbine->rotor.blades[0]->elasto->pitch +
+                                                                   controller.pImpl.GetAvrSWAP(45));
+            if (step == 100)
+                controller.pImpl.PrintAllOut();
 #else
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
@@ -352,7 +360,7 @@ int main(int argc, char* argv[]) {
             // apply torque elec to hub rigid body
             turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
             // torque elec is apply on Z axis of hub body (locally)
-            turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
+            turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
         }
     }
 

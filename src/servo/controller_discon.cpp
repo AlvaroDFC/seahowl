@@ -5,19 +5,41 @@
 #include <string>
 #include <iostream>
 
-double seahowl::servo::ControllerDISCON::get_torque_elec(double Omega, double time, double dt) {
+double seahowl::servo::ControllerDISCON::get_torque_elec(double time, double dt, double Omega, double pitch) {
+    pImpl.SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first)
+
+    pImpl.SetAvrSWAP(20, Omega);
     pImpl.SetAvrSWAP(21, Omega);
     pImpl.SetAvrSWAP(2, time);
     pImpl.SetAvrSWAP(3, dt);
+    pImpl.SetAvrSWAP(61, 3.0);
+    // collective pitch
+    pImpl.SetAvrSWAP(7, pitch);
+    // pitch 1, 2, 3
+    pImpl.SetAvrSWAP(4, pitch);
+    pImpl.SetAvrSWAP(33, pitch);
+    pImpl.SetAvrSWAP(34, pitch);
+
+    //pImpl.SetAvrSWAP(27, 8.0);
+    double azimuth = pImpl.GetAvrSWAP(60) + Omega * dt;
+    if (azimuth > 2 * 3.14) {
+        azimuth -= 2 * 3.14;
+    }
+    pImpl.SetAvrSWAP(60, pImpl.GetAvrSWAP(60) + Omega * dt);
+
+
+    // power
+    pImpl.SetAvrSWAP(15, pImpl.GetAvrSWAP(47) * Omega);
 
     pImpl.Call();
     double torque_elec = pImpl.GetAvrSWAP(47);
+    //pImpl.SetAvrSWAP(47, torque_elec);
 
     return torque_elec;
 }
 
-seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
-    pImpl.Init(infile, outname);
+seahowl::servo::ControllerDISCON::ControllerDISCON(double dt, double pitch, std::string infile, std::string outname) {
+    pImpl.Init(dt, pitch, infile, outname);
 }
 
 /**@brief Discon controller */
@@ -113,7 +135,7 @@ static std::vector<discon::ParamDef> ArrayInfo{
     {57, "out", 'R', "Reserved", ""},
     {58, "out", 'R', "Reserved", ""},
     {59, "out", 'R', "Reserved", ""},
-    {60, "in", 'R', "Rotor azimuth angle", "rad"},
+    {60, "both", 'R', "Rotor azimuth angle", "rad"},
     {61, "in", 'I', "No. of blades", "-"},
     {62, "in", 'I', "Max. number of values which can be returned for logging", "-"},
     {63, "in", 'I', "Record number for start of logging output", "-"},
@@ -290,7 +312,7 @@ not... IF (LocalVar%iStatus == 0) THEN LocalVar%BlPitch(1) = avrSWAP(4) LocalVar
 
     */
 
-void seahowl::servo::DisconController::Init(std::string infile, std::string outname) {
+void seahowl::servo::DisconController::Init(double dt, double pitch, std::string infile, std::string outname) {
     for (auto& v : avrSWAP) {
         v = 0.0;
     }
@@ -301,7 +323,17 @@ void seahowl::servo::DisconController::Init(std::string infile, std::string outn
 
     avrSWAP[51] = 500;  // self.char_buffer
 
+    // collective pitch
+    SetAvrSWAP(7, pitch);
+    // pitch 1, 2, 3
+    SetAvrSWAP(4, pitch);
+    SetAvrSWAP(33, pitch);
+    SetAvrSWAP(34, pitch);
+
     aviFAIL = 1;  // c_int32();
+
+    SetAvrSWAP(61, 3.0);
+    SetAvrSWAP(3, dt);
 
     SetINFILE(infile);
     SetOUTNAME(outname);
@@ -397,5 +429,4 @@ float seahowl::servo::DisconController::GetAvrSWAP(size_t index, bool log) const
 
 void seahowl::servo::DisconController::Call() {
     DISCON(avrSWAP, &aviFAIL, accINFILE, avcOUTNAME, avcMSG);
-    avrSWAP[0] = 1;  // iStatus : standard  step (not the first)
 }

@@ -40,9 +40,10 @@ struct DisconController {
     /// <summary>
     /// Initialize the controller parameters
     /// </summary>
+    /// <param name="dt">timestep</param>
     /// <param name="infile">DISCON.IN input file path</param>
     /// <param name="outname">a name (not a path)</param>
-    void Init(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
+    void Init(double dt, double pitch, std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
 
     /// <summary>
     /// Call the DISCON controller
@@ -119,10 +120,10 @@ class ControllerDISCON : public seahowl::servo::Controller {
     seahowl::servo::DisconController pImpl;
     double target_rpm = 0.0;
 
-    ControllerDISCON(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
+    ControllerDISCON(double dt, double pitch, std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
     ~ControllerDISCON(){};
 
-    double get_torque_elec(double Omega, double time, double dt);
+    double get_torque_elec(double time, double dt, double Omega, double pitch);
 };
 
 }  // namespace servo

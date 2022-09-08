@@ -33,7 +33,7 @@ option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
-option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" OFF)
+option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
 
 # =======================
 # External libraries
