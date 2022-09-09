@@ -32,12 +32,12 @@ Pattern "mediator" for elasto and aero
 */
 class Blade {
   public:
-    std::shared_ptr<seahowl::elasto::BladeElasto> m_elasto;  ///< Elastodynamic element mesh
-    std::shared_ptr<seahowl::aero::BladeAero> m_aero;        ///< Aerodynamic element mesh
+    std::shared_ptr<seahowl::elasto::BladeElasto> elasto;  ///< Elastodynamic element mesh
+    std::shared_ptr<seahowl::aero::BladeAero> aero;        ///< Aerodynamic element mesh
     std::vector<seahowl::core::BladeReferencePoint>
-        m_reference_points;  ///<@todo  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
-    std::vector<seahowl::core::DiscretizationPoint> m_mapping_aero2elasto;
-    std::vector<seahowl::core::DiscretizationPoint> m_mapping_elasto2aero;
+        reference_points;  ///<@todo  Refactor: Only used for construction to pass to elasto and aero. Use a Builder
+    std::vector<seahowl::core::DiscretizationPoint> mapping_aero2elasto;
+    std::vector<seahowl::core::DiscretizationPoint> mapping_elasto2aero;
 
     Blade();
     ~Blade();

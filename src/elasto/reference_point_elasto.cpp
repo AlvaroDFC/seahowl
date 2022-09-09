@@ -5,9 +5,9 @@ using namespace seahowl::elasto;
 BladeReferencePointElasto::BladeReferencePointElasto() {}
 
 BladeReferencePointElasto::BladeReferencePointElasto(seahowl::core::BladeReferencePoint point) {
-    m_coordinates = point.m_coordinates;
-    m_offset_elastic = point.m_offset_elastic;
-    m_offset_gravity = point.m_offset_gravity;
+    coordinates = point.m_coordinates;
+    offset_elastic = point.m_offset_elastic;
+    offset_gravity = point.m_offset_gravity;
     stiffness_matrix = point.stiffness_matrix;
     mass_matrix = point.mass_matrix;
     fraction = point.fraction;
@@ -19,9 +19,9 @@ BladeReferencePointElasto::~BladeReferencePointElasto() {}
 
 BladeReferencePointElasto BladeReferencePointElasto::operator*(const double factor) const {
     BladeReferencePointElasto new_point = *this;
-    new_point.m_coordinates *= factor;
-    new_point.m_offset_elastic *= factor;
-    new_point.m_offset_gravity *= factor;
+    new_point.coordinates *= factor;
+    new_point.offset_elastic *= factor;
+    new_point.offset_gravity *= factor;
     new_point.fraction *= factor;
     new_point.structural_twist *= factor;
     new_point.mass_matrix *= factor;
@@ -36,9 +36,9 @@ BladeReferencePointElasto BladeReferencePointElasto::operator*(const double fact
 
 BladeReferencePointElasto BladeReferencePointElasto::operator+(const BladeReferencePointElasto& other) const {
     BladeReferencePointElasto new_point = *this;
-    new_point.m_coordinates += other.m_coordinates;
-    new_point.m_offset_elastic += other.m_offset_elastic;
-    new_point.m_offset_gravity += other.m_offset_gravity;
+    new_point.coordinates += other.coordinates;
+    new_point.offset_elastic += other.offset_elastic;
+    new_point.offset_gravity += other.offset_gravity;
     new_point.fraction += other.fraction;
     new_point.structural_twist += other.structural_twist;
     new_point.stiffness_matrix += other.stiffness_matrix;

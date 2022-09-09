@@ -148,8 +148,8 @@ seahowl::core::Blade get_blade_from_json(std::string filepath) {
     json_file >> json_obj;
 
     seahowl::core::Blade blade{};
-    blade.m_elasto->fpm_mode = json_obj.at("fpm_mode").get<bool>();
-    blade.m_reference_points = get_blade_reference_points_from_json(filepath);
+    blade.elasto->fpm_mode = json_obj.at("fpm_mode").get<bool>();
+    blade.reference_points = get_blade_reference_points_from_json(filepath);
     if (json_obj.contains("discretization_elasto")) {
         auto discretization_elasto = json_obj.at("discretization_elasto").get<std::vector<double>>();
         blade.set_discretization_elasto(discretization_elasto);
@@ -284,9 +284,9 @@ seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_
     auto tower = get_tower_from_json(filepath_tower);
 
     auto turbine = seahowl::core::Turbine();
-    turbine.m_rotor = rotor;
-    turbine.m_tower = tower;
-    turbine.m_blades = blades;
+    turbine.rotor = rotor;
+    turbine.tower = tower;
+    turbine.blades = blades;
 
     return turbine;
 }

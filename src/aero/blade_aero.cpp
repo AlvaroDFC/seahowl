@@ -5,7 +5,7 @@ using seahowl::aero::BladeAero;
 
 BladeElementAero::BladeElementAero(BladeReferencePointAero& point1, BladeReferencePointAero& point2) {
     properties = (point1 + point2) * 0.5;
-    length = (point1.m_coordinates - point2.m_coordinates).Length();
+    length = (point1.coordinates - point2.coordinates).Length();
 }
 
 BladeElementAero::~BladeElementAero() {}
@@ -265,26 +265,26 @@ void BladeAero::build() {
 
 void BladeAero::compute_distances_from_tip() {
     // this is the position of the element at the tip
-    auto& element_tip_position = elements.back().properties.m_coordinates;
+    auto& element_tip_position = elements.back().properties.coordinates;
     // need to add 0.5*length of the element to get actual distance from tip
     double offset = 0.5 * elements.back().length;
     for (int ii = 0; ii < elements.size(); ii++) {
         auto& element = elements[ii];
-        element.distance_from_tip = (element.properties.m_coordinates - element_tip_position).Length() + offset;
+        element.distance_from_tip = (element.properties.coordinates - element_tip_position).Length() + offset;
     }
 }
 
 void BladeAero::compute_distances_from_hub(chrono::ChVector<double> hub_apex_position, double hub_radius) {
     for (int ii = 0; ii < elements.size(); ii++) {
         auto& element = elements[ii];
-        element.distance_from_hub = (element.properties.m_coordinates - hub_apex_position).Length() - hub_radius;
+        element.distance_from_hub = (element.properties.coordinates - hub_apex_position).Length() - hub_radius;
     }
 }
 
 void BladeAero::compute_radii(chrono::ChVector<double> hub_apex_position) {
     for (int ii = 0; ii < elements.size(); ii++) {
         auto& element = elements[ii];
-        element.radius = (element.properties.m_coordinates - hub_apex_position).Length();
+        element.radius = (element.properties.coordinates - hub_apex_position).Length();
     }
 }
 

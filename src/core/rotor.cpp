@@ -26,8 +26,8 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades_elasto;
     std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades_aero;
     for (auto& blade : blades) {
-        blades_elasto.push_back(blade->m_elasto);
-        blades_aero.push_back(blade->m_aero);
+        blades_elasto.push_back(blade->elasto);
+        blades_aero.push_back(blade->aero);
         blade->update_positions_aero();
     }
 

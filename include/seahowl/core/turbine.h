@@ -19,9 +19,9 @@ namespace core {
 */
 class Turbine {
   public:
-    std::vector<std::shared_ptr<Blade>> m_blades;  ///< Blades => To be moved in Rotor
-    Rotor m_rotor;                                 ///< Rotor.  @todo Should be Hub + Blades
-    Tower m_tower;                                 ///< Tower
+    std::vector<std::shared_ptr<Blade>> blades;  ///< Blades => To be moved in Rotor
+    Rotor rotor;                                 ///< Rotor.  @todo Should be Hub + Blades
+    Tower tower;                                 ///< Tower
 
     Turbine();
     ~Turbine();
