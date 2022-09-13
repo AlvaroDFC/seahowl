@@ -41,9 +41,10 @@ struct DisconController {
     /// Initialize the controller parameters
     /// </summary>
     /// <param name="dt">timestep</param>
-    /// <param name="infile">DISCON.IN input file path</param>
-    /// <param name="outname">a name (not a path)</param>
-    void Init(double dt, double pitch, std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
+    /// <param name="omega">rotor speed</param>
+    /// <param name="pitch">pitch collective</param>
+    /// <param name="nblades">number of blades</param>
+    void Init(double time, double dt, double omega, double pitch_collective, size_t nblades);
 
     /// <summary>
     /// Call the DISCON controller
@@ -61,6 +62,42 @@ struct DisconController {
     /// </summary>
     /// <param name="ws">The inflow wind speed. m.s^{-1}</param>
     void SetWindSpeed(double ws);
+
+    /// <summary>
+    /// Helper to set rotor speed
+    /// </summary>
+    /// <param name="omega">The rotor speed. rad.s^{-1}</param>
+    void SetRotorSpeed(double omega);
+
+    /// <summary>
+    /// Helper to set time
+    /// </summary>
+    /// <param name="time">The time. s</param>
+    void SetTime(double time);
+
+    /// <summary>
+    /// Helper to set time step size
+    /// </summary>
+    /// <param name="dt">The time step size. s</param>
+    void SetDeltaTime(double dt);
+
+    /// <summary>
+    /// Helper to set rotor azimuth
+    /// </summary>
+    /// <param name="azimuth">The rotor azimuth. rad</param>
+    void SetRotorAzimuth(double azimuth);
+
+    /// <summary>
+    /// Helper to set the generated power
+    /// </summary>
+    /// <param name="power">The generated power. W</param>
+    void SetGeneratedPower(double power);
+
+    /// <summary>
+    /// Helper to set number of blades
+    /// </summary>
+    /// <param name="nblades">The number of blades.</param>
+    void SetNumberOfBlades(size_t nblades);
 
     /// <summary>
     /// Set Value in avrSWAP array of DISCON
@@ -120,10 +157,13 @@ class ControllerDISCON : public seahowl::servo::Controller {
     seahowl::servo::DisconController pImpl;
     double target_rpm = 0.0;
 
-    ControllerDISCON(double dt, double pitch, std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
+    ControllerDISCON(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
     ~ControllerDISCON(){};
 
-    double get_torque_elec(double time, double dt, double Omega, double pitch);
+    void init(double time, double dt, double omega, double pitch_collective, size_t nblades);
+    void prestep(double time, double dt, double omega, double pitch_collective);
+    double get_torque_elec();
+    double get_collective_pitch();
 };
 
 }  // namespace servo

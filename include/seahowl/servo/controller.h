@@ -1,5 +1,7 @@
 #pragma once
 
+#include <seahowl/core/turbine.h>
+
 namespace seahowl {
 
 /**@brief Servo controller module */
@@ -10,11 +12,15 @@ class Controller {
   public:
     Controller(){};
     ~Controller(){};
+
+    virtual double get_torque_elec() = 0;
+    virtual double get_collective_pitch() = 0;
 };
 
 /**@brief Variable torque controler */
 class ControllerVariableTorque : public seahowl::servo::Controller {
   private:
+    double torque_elec = 0.0;
     double torque_elec_previous = 0.0;
 
   public:
@@ -23,7 +29,10 @@ class ControllerVariableTorque : public seahowl::servo::Controller {
     ControllerVariableTorque(){};
     ~ControllerVariableTorque(){};
 
-    double get_torque_elec(double torque_total, double rpm);
+    void prestep(double torque_total, double rpm);
+    void poststep();
+    virtual double get_torque_elec();
+    virtual double get_collective_pitch();
 };
 
 }  // namespace servo

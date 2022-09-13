@@ -59,6 +59,7 @@ Implemented as collection of rigid bodies + blades
 class RotorElasto : public ElastoComponent {
   public:
     std::vector<double> blade_precones;  ///< Blade precones (radians)
+    double pitch_collective;             ///< Collective pitch (for all blades)
 
     // bodies
     ///@{
