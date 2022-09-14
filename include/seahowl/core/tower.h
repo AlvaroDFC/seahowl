@@ -28,7 +28,8 @@ class Tower {
     Tower();
     ~Tower();
 
-    void build(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void assemble(std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build();
     void set_discretization_elasto(std::vector<double> fractions);
     void set_discretization_aero(std::vector<double> fractions);
     void compute_mapping_aero2elasto();

@@ -17,12 +17,24 @@ RotorElasto::RotorElasto() {}
 
 RotorElasto::~RotorElasto() {}
 
-void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<BladeElasto>> blades) {
+void RotorElasto::assemble(chrono::ChSystemSMC& system) {
+    system.Add(body_hub);
+    system.Add(body_shaft);
+    system.Add(link_shaft_hub);
+    system.Add(body_nacelle);
+    system.Add(link_shaft_nacelle);
+    system.Add(body_yaw_bearing);
+    system.Add(link_shaft_yaw_bearing);
+    for (auto link_blade : links_blades) {
+        system.Add(link_blade);
+    }
+}
+
+void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 
     // hub
     body_hub = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
-    system.Add(body_hub);
     // move hub along X for overhang and COG offset, and along Z for distance from towertop
     body_hub->SetPos(chrono::ChVector<double>(hub.overhang + hub.center_of_mass, 0.0, shaft.distance_from_towertop));
     // local Z axis along global X axis + shaft tilt along global Y axis
@@ -35,7 +47,6 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
 
     // shaft
     body_shaft = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
-    system.Add(body_shaft);
     // move end of shaft at yaw axis of nacelle
     body_shaft->SetPos(chrono::ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
     // align rotation
@@ -44,12 +55,10 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
     body_shaft->SetMass(0.0);
     // link hub to shaft
     link_shaft_hub = chrono_types::make_shared<chrono::ChLinkRevolute>();
-    system.Add(link_shaft_hub);
     link_shaft_hub->Initialize(body_hub, body_shaft, body_shaft->GetAssetsFrame());
 
     // nacelle
     body_nacelle = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
-    system.Add(body_nacelle);
     body_nacelle->SetPos(nacelle.center_of_mass);
     // mass and inertia
     body_nacelle->SetMass(nacelle.mass);
@@ -57,18 +66,15 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
     body_nacelle->SetInertiaXX(chrono::ChVector<double>(0.0, 0.0, nacelle.inertia));
     // link nacelle body to shaft body
     link_shaft_nacelle = chrono_types::make_shared<chrono::ChLinkMateFix>();
-    system.Add(link_shaft_nacelle);
     link_shaft_nacelle->Initialize(body_nacelle, body_shaft);
 
     // yaw bearing
     body_yaw_bearing = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
-    system.Add(body_yaw_bearing);
     body_yaw_bearing->SetPos(chrono::ChVector<double>(0.0, 0.0, 0.0));
     body_yaw_bearing->SetMass(nacelle.yaw_bearing_mass);
     // link yaw bearing body to shaft body
     // link_shaft_yaw_bearing = chrono_types::make_shared<ChLinkRevolute>();
     link_shaft_yaw_bearing = chrono_types::make_shared<chrono::ChLinkMateFix>();
-    system.Add(link_shaft_yaw_bearing);
     link_shaft_yaw_bearing->Initialize(body_shaft, body_yaw_bearing, body_yaw_bearing->GetAssetsFrame());
 
     // blades
@@ -94,7 +100,6 @@ void RotorElasto::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr
 
         // link root node of blade to rotor center
         auto link_hub_blade = chrono_types::make_shared<chrono::ChLinkMateFix>();
-        system.Add(link_hub_blade);
         link_hub_blade->Initialize(blade->nodes[0], body_hub);
         links_blades.push_back(link_hub_blade);
     }

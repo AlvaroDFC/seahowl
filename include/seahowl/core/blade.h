@@ -42,7 +42,8 @@ class Blade {
     Blade();
     ~Blade();
 
-    void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build();
     void set_discretization_elasto(std::vector<double> fractions);
     void set_discretization_aero(std::vector<double> fractions);
     void compute_mapping_aero2elasto();

@@ -21,7 +21,8 @@ class Rotor {
     ~Rotor();
 
     void update_positions_aero();
-    void build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
+    void assemble(chrono::ChSystemSMC& system);
+    void build(std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
     void prestep(double time);
     void poststep(double time);
 };

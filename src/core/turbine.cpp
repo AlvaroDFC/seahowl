@@ -8,18 +8,29 @@ seahowl::core::Turbine::Turbine() {
 
 seahowl::core::Turbine::~Turbine() {}
 
-void seahowl::core::Turbine::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
-    // build blades
+void seahowl::core::Turbine::assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+    // assemble blades
     for (auto& blade : blades) {
-        blade->build(system, mesh);
+        blade->assemble(system, mesh);
     }
 
-    // build rotor & tower
-    rotor.build(system, blades);
-    tower.build(mesh);
+    // assemble rotor & tower
+    rotor.assemble(system);
+    tower.assemble(mesh);
 
     // link tower to rotor
     rotor.elasto.link_tower(tower.elasto, system);
+}
+
+void seahowl::core::Turbine::build() {
+    // build blades
+    for (auto& blade : blades) {
+        blade->build();
+    }
+
+    // build rotor & tower
+    rotor.build(blades);
+    tower.build();
 }
 
 void seahowl::core::Turbine::prestep(double time) {

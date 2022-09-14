@@ -14,7 +14,16 @@ TowerElasto::TowerElasto() {}
 
 TowerElasto::~TowerElasto() {}
 
-void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void TowerElasto::assemble(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+    for (auto node : nodes) {
+        mesh->AddNode(node);
+    }
+    for (auto element : elements) {
+        mesh->AddElement(element);
+    }
+}
+
+void TowerElasto::build() {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
         throw std::runtime_error("Not enough elasto reference points defined for blade.");
@@ -29,11 +38,11 @@ void TowerElasto::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
 
     // build
     discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
-    build_nodes(mesh);
-    build_elements_tapered_timoshenko(mesh);
+    build_nodes();
+    build_elements_tapered_timoshenko();
 };
 
-void TowerElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void TowerElasto::build_nodes() {
     nodes.clear();
 
     const auto nnodes = discretized_points.size();
@@ -61,12 +70,10 @@ void TowerElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
         auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
         // add node to tower nodes vector
         nodes.push_back(node);
-        // add node to mesh
-        mesh->AddNode(node);
     };
 }
 
-void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void TowerElasto::build_elements_tapered_timoshenko() {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -90,8 +97,6 @@ void TowerElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
         auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenko>();
         // add element to tower elements vector
         elements.push_back(element);
-        // add element to mesh
-        mesh->AddElement(element);
         // set element nodes
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 

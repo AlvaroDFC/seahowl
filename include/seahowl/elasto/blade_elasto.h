@@ -28,11 +28,12 @@ class BladeElasto : public ElastoFEAComponent {
 
     BladeElasto();
 
-    void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
-    void build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh);
-    void build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh);
-    void build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::fea::ChMesh> mesh);
-    void build_loads(chrono::ChSystemSMC& system);
+    void assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build();
+    void build_nodes();
+    void build_elements_tapered_timoshenko();
+    void build_elements_tapered_timoshenko_fpm();
+    // void build_loads(chrono::ChSystemSMC& system);
     virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion) override;
     void evaluate_position_rotation(chrono::ChVector<double>& position,
                                     chrono::ChQuaternion<double>& rotation,

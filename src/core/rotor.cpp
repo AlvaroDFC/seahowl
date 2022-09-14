@@ -19,7 +19,11 @@ void Rotor::update_positions_aero() {
     aero.hub_rotation = elasto.body_hub->GetRot();
 }
 
-void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
+void Rotor::assemble(chrono::ChSystemSMC& system) {
+    elasto.assemble(system);
+}
+
+void Rotor::build(std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
     this->blades = blades;
 
     // get elasto and aero blades pointers
@@ -32,7 +36,7 @@ void Rotor::build(chrono::ChSystemSMC& system, std::vector<std::shared_ptr<seaho
     }
 
     // build elasto
-    elasto.build(system, blades_elasto);
+    elasto.build(blades_elasto);
     // update blade aero positions from new elasto positions
     for (auto& blade : blades) {
         blade->update_positions_aero();

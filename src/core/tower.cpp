@@ -11,7 +11,11 @@ Tower::Tower() {
 
 Tower::~Tower() {}
 
-void Tower::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void Tower::assemble(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+    elasto.assemble(mesh);
+}
+
+void Tower::build() {
     // push reference points
     elasto.reference_points.clear();
     aero.reference_points.clear();
@@ -20,7 +24,7 @@ void Tower::build(std::shared_ptr<chrono::fea::ChMesh> mesh) {
         aero.reference_points.push_back(TowerReferencePointAero(pt));
     }
     // build
-    elasto.build(mesh);
+    elasto.build();
     aero.build();
 
     // mappings

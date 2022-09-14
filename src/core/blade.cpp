@@ -17,7 +17,11 @@ seahowl::core::Blade::Blade() {
 
 seahowl::core::Blade::~Blade() {}
 
-void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void seahowl::core::Blade::assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+    elasto->assemble(system, mesh);
+}
+
+void seahowl::core::Blade::build() {
     // push reference points
     elasto->reference_points.clear();
     aero->reference_points.clear();
@@ -26,7 +30,7 @@ void seahowl::core::Blade::build(chrono::ChSystemSMC& system, std::shared_ptr<ch
         aero->reference_points.push_back(seahowl::aero::BladeReferencePointAero(pt));
     }
     // build aero & elasto
-    elasto->build(system, mesh);
+    elasto->build();
     aero->build();
 
     // mappings

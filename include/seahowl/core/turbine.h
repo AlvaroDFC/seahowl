@@ -27,7 +27,8 @@ class Turbine {
     Turbine();
     ~Turbine();
 
-    void build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
+    void build();
     void prestep(double time);
     void poststep(double time);
     void translate(chrono::ChVector<double> translation_vector);

@@ -55,7 +55,8 @@ TEST(test_blade, mass_deflection) {
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
-    blade_core.build(system, blades_mesh);
+    blade_core.build();
+    blade_core.assemble(system, blades_mesh);
     auto blade = blade_core.elasto;
     blade->nodes[0]->SetFixed(true);
 
@@ -98,12 +99,14 @@ TEST(test_rotor, mass) {
         std::vector<double> fractions;
         fractions.clear();
         blade_core->set_discretization_elasto(fractions);
-        blade_core->build(system, blades_mesh);
+        blade_core->build();
+        blade_core->assemble(system, blades_mesh)
         blades.push_back(blade_core);
     }
 
     auto rotor = get_rotor_from_json((DATADIR / "IEA15MW_RNA.json").generic_string());
-    rotor.build(system, blades);
+    rotor.build();
+    rotor.assemble(system, blades);
     rotor.elasto.body_yaw_bearing->SetBodyFixed(true);
 
     system.Setup();
@@ -129,7 +132,8 @@ TEST(test_tower, mass) {
     system.AddMesh(tower_mesh);
     // tower
     auto tower = get_tower_from_json((DATADIR / "IEA15MW_tower.json").generic_string());
-    tower.build(tower_mesh);
+    tower.build();
+    tower.assemble(tower_mesh);
 
     system.Setup();
     system.DoStaticLinear();
@@ -156,7 +160,8 @@ TEST(test_blade, natural_period_dynamic_edge) {
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
-    blade_core.build(system, blades_mesh);
+    blade_core.build();
+    blade_core.assemble(system, blades_mesh)
     auto blade = blade_core.elasto;
     blade->nodes[0]->SetFixed(true);
 
@@ -216,7 +221,8 @@ TEST(test_blade, natural_period_dynamic_flap) {
     std::vector<double> fractions;
     fractions.clear();
     blade_core.set_discretization_elasto(fractions);
-    blade_core.build(system, blades_mesh);
+    blade_core.build();
+    blade_core.assemble(system, blades_mesh)
     auto blade = blade_core.elasto;
     blade->nodes[0]->SetFixed(true);
 
@@ -304,7 +310,8 @@ TEST(test_turbine, rpm_initial_pitch) {
         blade->elasto->discretization_fractions.clear();
         blade->aero->discretization_fractions.clear();
     }
-    turbine.build(system, blades_mesh);
+    turbine.build();
+    turbine.assemble(system, blades_mesh)
     turbine.tower.elasto.nodes[0]->SetFixed(true);
 
     turbine.rotate(-CH_C_PI / 2.0, VECT_X);

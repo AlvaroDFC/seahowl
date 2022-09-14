@@ -18,7 +18,16 @@ using namespace seahowl::elasto;
 
 BladeElasto::BladeElasto() {}
 
-void BladeElasto::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void BladeElasto::assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
+    for (auto node : nodes) {
+        mesh->AddNode(node);
+    }
+    for (auto element : elements) {
+        mesh->AddElement(element);
+    }
+}
+
+void BladeElasto::build() {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
         throw std::runtime_error("Not enough elasto reference points defined for blade.");
@@ -33,17 +42,17 @@ void BladeElasto::build(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea
 
     // build
     discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
-    build_nodes(mesh);
+    build_nodes();
     if (fpm_mode) {
-        build_elements_tapered_timoshenko_fpm(mesh);
+        build_elements_tapered_timoshenko_fpm();
     } else {
-        build_elements_tapered_timoshenko(mesh);
+        build_elements_tapered_timoshenko();
     }
     // commented out since loads are applied to nodes;
     // build_loads(system);
 };
 
-void BladeElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void BladeElasto::build_nodes() {
     nodes.clear();
     const auto nnodes = discretized_points.size();
     for (size_t ii = 0; ii < nnodes; ii++) {
@@ -73,12 +82,10 @@ void BladeElasto::build_nodes(std::shared_ptr<chrono::fea::ChMesh> mesh) {
         auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
         // add node to blade nodes vector
         nodes.push_back(node);
-        // add node to mesh
-        mesh->AddNode(node);
     };
 };
 
-void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko() {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -110,8 +117,6 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
         auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenko>();
         // add element to blade elements vector
         elements.push_back(element);
-        // add element to mesh
-        mesh->AddElement(element);
         // set element nodes
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 
@@ -150,7 +155,7 @@ void BladeElasto::build_elements_tapered_timoshenko(std::shared_ptr<chrono::fea:
         element->SetNodeBreferenceRot(rotation_relative);
     }
 }
-void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::fea::ChMesh> mesh) {
+void BladeElasto::build_elements_tapered_timoshenko_fpm() {
     elements.clear();
     const auto nelements = nodes.size() - 1;
 
@@ -176,8 +181,6 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
         auto element = chrono_types::make_shared<chrono::fea::ChElementBeamTaperedTimoshenkoFPM>();
         // add element to blade elements vector
         elements.push_back(element);
-        // add element to mesh
-        mesh->AddElement(element);
         // set element nodes
         element->SetNodes(nodes[ii - 1], nodes[ii]);
 
@@ -211,17 +214,17 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm(std::shared_ptr<chrono::
     }
 }
 
-void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
-    auto loadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
-    system.Add(loadcontainer);
-
-    for (auto element : elements) {
-        std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>> loader_weighted(
-            new chrono::ChLoad<ChLoaderWeighted>(element));
-        loaders_aero.push_back(loader_weighted);
-        loadcontainer->Add(loader_weighted);
-    }
-}
+//void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
+//    auto loadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
+//    system.Add(loadcontainer);
+//
+//    for (auto element : elements) {
+//        std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>> loader_weighted(
+//            new chrono::ChLoad<ChLoaderWeighted>(element));
+//        loaders_aero.push_back(loader_weighted);
+//        loadcontainer->Add(loader_weighted);
+//    }
+//}
 
 void BladeElasto::set_damping_coefficients(double axial, double edge, double flap, double torsion) {
     const chrono::fea::DampingCoefficients damping_coefficients{axial, edge, flap, torsion};

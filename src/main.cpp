@@ -166,7 +166,8 @@ int main(int argc, char* argv[]) {
             blade->elasto->discretization_fractions.clear();
             blade->aero->discretization_fractions.clear();
         }
-        turbine->build(system, blades_mesh);
+        turbine->build();
+        turbine->assemble(system, blades_mesh);
         turbine->tower.elasto.nodes[0]->SetFixed(true);  // foundation of the tower
         turbines.push_back(turbine);
 
