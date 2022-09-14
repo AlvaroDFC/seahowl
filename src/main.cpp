@@ -88,10 +88,10 @@ int main(int argc, char* argv[]) {
     auto verbose = false;
     // timestepping
     auto timestepper_type = ChTimestepper::Type::HHT;
-    double dt = 0.1;
+    double dt = 0.05;
     // wind
     auto wind_model = seahowl::aero::ConstantWind();
-    wind_model.set_wind_velocity(ChVector<double>(8.0, 0.0, 0.0));
+    wind_model.set_wind_velocity(ChVector<double>(12.0, 0.0, 0.0));
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
     // target RPM for simple generator control
@@ -261,6 +261,10 @@ int main(int argc, char* argv[]) {
         turbine->rotor.elasto.apply_collective_pitch_increment(initial_pitch);
         turbine->prestep(time);
         turbine->poststep(time);
+#ifdef HAVE_ROSCO
+        double omega = turbine->rotor.elasto.get_rpm() * (2 * CH_C_PI) / 60;
+        controller.init(time, dt, omega, turbine->rotor.elasto.pitch_collective, turbine->rotor.blades.size());
+#endif
     }
 
     double torque_aero = 0.0;
@@ -328,8 +332,11 @@ int main(int argc, char* argv[]) {
 #endif
         time += system.GetStep();
         step += 1;
-        GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
-                 << " average rpm: " << average_rpm << "\n";
+
+        if (step % 10 == 0) {
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
+                     << " average rpm: " << average_rpm << "\n";
+        }
 
         // poststep
         for (auto& turbine : turbines) {
@@ -339,20 +346,31 @@ int main(int argc, char* argv[]) {
              */
             double rpm = turbine->rotor.elasto.get_rpm();
             double torque_elec;
+            double collective_pitch_increment;
 #ifdef HAVE_ROSCO
-            torque_elec = controller.get_torque_elec(rpm, time, dt);
+
+            controller.prestep(time, dt, rpm * (2 * CH_C_PI) / 60, turbine->rotor.elasto.pitch_collective);
+            torque_elec = controller.get_torque_elec();
+            collective_pitch_increment = -turbine->rotor.blades[0]->elasto->pitch + controller.get_collective_pitch();
+            if (step == 100)
+                controller.pImpl.PrintAllOut();
 #else
             if (controller.target_rpm > 0.0) {
                 // get torque elec from controller
                 double rpm = turbine->rotor.elasto.get_rpm();
                 double torque_total = turbine->rotor.elasto.get_torque();
-                torque_elec = controller.get_torque_elec(torque_total, rpm);
+                controller.prestep(torque_total, rpm);
+                torque_elec = controller.get_torque_elec();
+                collective_pitch_increment = 0.0;
             }
 #endif
             // apply torque elec to hub rigid body
             turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
             // torque elec is apply on Z axis of hub body (locally)
-            turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, -torque_elec), true);
+            turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
+
+            // apply pitch from controller
+            turbine->rotor.elasto.apply_collective_pitch_increment(collective_pitch_increment);
         }
     }
 

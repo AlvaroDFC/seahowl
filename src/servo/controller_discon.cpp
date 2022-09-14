@@ -5,19 +5,53 @@
 #include <string>
 #include <iostream>
 
-double seahowl::servo::ControllerDISCON::get_torque_elec(double Omega, double time, double dt) {
-    pImpl.SetAvrSWAP(21, Omega);
-    pImpl.SetAvrSWAP(2, time);
-    pImpl.SetAvrSWAP(3, dt);
+void seahowl::servo::ControllerDISCON::prestep(double time, double dt, double omega, double pitch_collective) {
+    // rotor speed
+    pImpl.SetRotorSpeed(omega);
 
+    // time
+    pImpl.SetTime(time);
+    pImpl.SetDeltaTime(dt);
+
+    // collective pitch
+    pImpl.SetPitch(pitch_collective);
+
+    // azimuth
+    auto azimuth = pImpl.GetAvrSWAP(60) + omega * dt;
+    if (azimuth > 2 * 3.14) {
+        azimuth -= 2 * 3.14;
+    }
+    pImpl.SetRotorAzimuth(azimuth);
+
+    // power
+    auto power = pImpl.GetAvrSWAP(47) * omega;
+    pImpl.SetGeneratedPower(power);
+
+    // call controller
     pImpl.Call();
-    double torque_elec = pImpl.GetAvrSWAP(47);
+}
 
+void seahowl::servo::ControllerDISCON::init(double time,
+                                            double dt,
+                                            double omega,
+                                            double pitch_collective,
+                                            size_t nblades) {
+    pImpl.Init(time, dt, omega, pitch_collective, nblades);
+}
+
+double seahowl::servo::ControllerDISCON::get_torque_elec() {
+    double torque_elec = pImpl.GetAvrSWAP(47);
     return torque_elec;
 }
 
+double seahowl::servo::ControllerDISCON::get_collective_pitch() {
+    double collective_pitch = pImpl.GetAvrSWAP(45);
+    return collective_pitch;
+}
+
 seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
-    pImpl.Init(infile, outname);
+    pImpl.SetINFILE(infile);
+    pImpl.SetOUTNAME(outname);
 }
 
 /**@brief Discon controller */
@@ -113,7 +147,7 @@ static std::vector<discon::ParamDef> ArrayInfo{
     {57, "out", 'R', "Reserved", ""},
     {58, "out", 'R', "Reserved", ""},
     {59, "out", 'R', "Reserved", ""},
-    {60, "in", 'R', "Rotor azimuth angle", "rad"},
+    {60, "both", 'R', "Rotor azimuth angle", "rad"},
     {61, "in", 'I', "No. of blades", "-"},
     {62, "in", 'I', "Max. number of values which can be returned for logging", "-"},
     {63, "in", 'I', "Record number for start of logging output", "-"},
@@ -290,25 +324,27 @@ not... IF (LocalVar%iStatus == 0) THEN LocalVar%BlPitch(1) = avrSWAP(4) LocalVar
 
     */
 
-void seahowl::servo::DisconController::Init(std::string infile, std::string outname) {
-    for (auto& v : avrSWAP) {
-        v = 0.0;
-    }
-
+void seahowl::servo::DisconController::Init(double time,
+                                            double dt,
+                                            double omega,
+                                            double pitch_collective,
+                                            size_t nblades) {
     avrSWAP[58] = 500;  // Buffer chaar size
-
     avrSWAP[50] = 500;  // self.char_buffer
-
     avrSWAP[51] = 500;  // self.char_buffer
 
-    aviFAIL = 1;  // c_int32();
+    // collective pitch
+    SetPitch(pitch_collective);
+    SetRotorSpeed(omega);
+    SetDeltaTime(dt);
+    SetNumberOfBlades(nblades);
 
-    SetINFILE(infile);
-    SetOUTNAME(outname);
+    aviFAIL = 1;  // c_int32();
 
     // First step
     ResetFirst();
     Call();
+    SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first, which was already just called)
 
     /* To check the array index match record numbers
     for(int i=0; i<150;++i ) {
@@ -349,6 +385,31 @@ void seahowl::servo::DisconController::SetPitch(double pitch_angle) {
 
 void seahowl::servo::DisconController::SetWindSpeed(double ws) {
     SetAvrSWAP(27, static_cast<float>(ws));
+}
+
+void seahowl::servo::DisconController::SetRotorSpeed(double omega) {
+    SetAvrSWAP(20, omega);
+    SetAvrSWAP(21, omega);
+}
+
+void seahowl::servo::DisconController::SetTime(double time) {
+    SetAvrSWAP(2, time);
+}
+
+void seahowl::servo::DisconController::SetDeltaTime(double dt) {
+    SetAvrSWAP(3, dt);
+}
+
+void seahowl::servo::DisconController::SetRotorAzimuth(double azimuth) {
+    SetAvrSWAP(60, azimuth);
+}
+
+void seahowl::servo::DisconController::SetGeneratedPower(double power) {
+    SetAvrSWAP(15, power);
+}
+
+void seahowl::servo::DisconController::SetNumberOfBlades(size_t nblades) {
+    SetAvrSWAP(61, nblades);
 }
 
 void seahowl::servo::DisconController::SetAvrSWAP(size_t index, float value, bool log) {
@@ -397,5 +458,4 @@ float seahowl::servo::DisconController::GetAvrSWAP(size_t index, bool log) const
 
 void seahowl::servo::DisconController::Call() {
     DISCON(avrSWAP, &aviFAIL, accINFILE, avcOUTNAME, avcMSG);
-    avrSWAP[0] = 1;  // iStatus : standard  step (not the first)
 }

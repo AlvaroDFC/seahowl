@@ -3,6 +3,7 @@
 #include <seahowl/core/blade.h>
 #include <seahowl/core/rotor.h>
 #include <seahowl/core/tower.h>
+#include <seahowl/servo/controller.h>
 
 #include <vector>
 

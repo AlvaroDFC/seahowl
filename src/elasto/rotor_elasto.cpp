@@ -179,6 +179,7 @@ void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
         auto link = links_blades[ii];
         link->Initialize(blade->nodes.front(), body_hub);
     }
+    pitch_collective += pitch_increment;
 }
 
 double RotorElasto::get_rpm() {
