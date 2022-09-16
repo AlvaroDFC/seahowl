@@ -144,10 +144,10 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
-    auto seahowl_system =
-        seahowl::core::SystemDISCON(seahowl::core::Turbine(get_turbine_from_json(blades_files, rotor_file, tower_file)),
-                                    wind_model, seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN"));
+    auto seahowl_system = seahowl::core::System(
+        seahowl::core::Turbine(get_turbine_from_json(blades_files, rotor_file, tower_file)), wind_model);
     auto& turbine = seahowl_system.turbine;
+    turbine.controller = std::make_shared<seahowl::servo::ControllerDISCON>(u8"controller/DISCON.IN");
 
     // clear discretization defined in file
     for (auto& blade : turbine.blades) {

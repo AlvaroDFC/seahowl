@@ -20,29 +20,5 @@ class System {
     virtual void prestep(double time, double dt);
     virtual void poststep(double time, double dt);
 };
-
-class SystemVariableTorque : public System {
-  public:
-    seahowl::servo::ControllerVariableTorque controller;
-    SystemVariableTorque(Turbine turbine,
-                         seahowl::aero::WindModel& wind_model,
-                         seahowl::servo::ControllerVariableTorque controller);
-    ~SystemVariableTorque();
-
-    void init(double time, double dt);
-    void prestep(double time, double dt);
-    void poststep(double time, double dt);
-};
-
-class SystemDISCON : public System {
-  public:
-    seahowl::servo::ControllerDISCON controller;
-
-    SystemDISCON(Turbine turbine, seahowl::aero::WindModel& wind_model, seahowl::servo::ControllerDISCON controller);
-    ~SystemDISCON();
-
-    virtual void init(double time, double dt);
-    virtual void poststep(double time, double dt);
-};
 }  // namespace core
 }  // namespace seahowl

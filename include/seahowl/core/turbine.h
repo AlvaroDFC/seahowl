@@ -9,6 +9,9 @@
 
 /**@brief Seahowl base namespace */
 namespace seahowl {
+namespace servo {
+class Controller;
+}
 
 /**@brief Seahowl core module */
 namespace core {
@@ -20,17 +23,19 @@ namespace core {
 */
 class Turbine {
   public:
-    std::vector<std::shared_ptr<Blade>> blades;  ///< Blades => To be moved in Rotor
-    Rotor rotor;                                 ///< Rotor.  @todo Should be Hub + Blades
-    Tower tower;                                 ///< Tower
+    std::vector<std::shared_ptr<Blade>> blades;              ///< Blades => To be moved in Rotor
+    Rotor rotor;                                             ///< Rotor.  @todo Should be Hub + Blades
+    Tower tower;                                             ///< Tower
+    std::shared_ptr<seahowl::servo::Controller> controller;  ///< Controller
 
     Turbine();
     ~Turbine();
 
     void assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build();
-    void prestep(double time);
-    void poststep(double time);
+    void init(double time, double dt);
+    void prestep(double time, double dt);
+    void poststep(double time, double dt);
     void translate(chrono::ChVector<double> translation_vector);
     void rotate(double angle, chrono::ChVector<double> axis);
     void compute_wind_loads(seahowl::aero::WindModel& wind_model, double time);
