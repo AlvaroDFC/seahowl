@@ -147,7 +147,8 @@ int main(int argc, char* argv[]) {
     auto seahowl_system = seahowl::core::System(
         seahowl::core::Turbine(get_turbine_from_json(blades_files, rotor_file, tower_file)), wind_model);
     auto& turbine = seahowl_system.turbine;
-    turbine.controller = std::make_shared<seahowl::servo::ControllerDISCON>(u8"controller/DISCON.IN");
+    turbine.controller =
+        std::make_shared<seahowl::servo::ControllerDISCON>((DATADIR / "controller/DISCON.IN").generic_string());
 
     // clear discretization defined in file
     for (auto& blade : turbine.blades) {
