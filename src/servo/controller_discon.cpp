@@ -5,6 +5,17 @@
 #include <string>
 #include <iostream>
 
+seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
+    has_pitch_control = true;
+    has_torque_control = true;
+
+    pImpl.ResetAll();
+    pImpl.SetINFILE(infile);
+    pImpl.SetOUTNAME(outname);
+}
+
+seahowl::servo::ControllerDISCON::~ControllerDISCON() {}
+
 void seahowl::servo::ControllerDISCON::step(double time, double dt, seahowl::core::Turbine& turbine) {
     auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
     auto pitch_collective = turbine.rotor.elasto.pitch_collective;
@@ -69,12 +80,6 @@ double seahowl::servo::ControllerDISCON::get_torque_elec() {
 double seahowl::servo::ControllerDISCON::get_collective_pitch() {
     double collective_pitch = pImpl.GetAvrSWAP(45);
     return collective_pitch;
-}
-
-seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
-    pImpl.ResetAll();
-    pImpl.SetINFILE(infile);
-    pImpl.SetOUTNAME(outname);
 }
 
 /**@brief Discon controller */

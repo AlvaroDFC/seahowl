@@ -245,6 +245,11 @@ int main(int argc, char* argv[]) {
     double time = 0.0;
     int step = 0;
     // initialization
+    // statics
+    if (statics_prestep) {
+        system.DoStaticLinear();
+        system.DoStaticNonlinear(10, true);
+    }
 
     turbine.rotor.elasto.apply_collective_pitch_increment(initial_pitch);
     seahowl_system.init(time, dt);
@@ -257,11 +262,6 @@ int main(int argc, char* argv[]) {
     double average_torque_aero = 0.0;
     double torque_elec = 0.0;
     double average_rpm = 0.0;
-    // statics
-    if (statics_prestep) {
-        system.DoStaticLinear();
-        system.DoStaticNonlinear(10, true);
-    }
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep

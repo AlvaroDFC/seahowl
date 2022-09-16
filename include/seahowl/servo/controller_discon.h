@@ -164,7 +164,7 @@ class ControllerDISCON : public Controller {
     double target_rpm = 0.0;
 
     ControllerDISCON(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
-    ~ControllerDISCON(){};
+    ~ControllerDISCON();
 
     virtual void init(double time, double dt, seahowl::core::Turbine& turbine) override;
     void init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);

@@ -4,6 +4,34 @@
 
 using namespace seahowl::servo;
 
+Controller::Controller() {
+    has_pitch_control = false;
+    has_torque_control = false;
+}
+
+Controller::~Controller() {}
+
+void Controller::init(double time, double dt, seahowl::core::Turbine& turbine) {}
+
+void Controller::step(double time, double dt, seahowl::core::Turbine& turbine) {}
+
+void Controller::poststep(double time, double dt, seahowl::core::Turbine& turbine) {}
+
+double Controller::get_torque_elec() {
+    return 0.0;
+}
+
+double Controller::get_collective_pitch() {
+    return 0.0;
+}
+
+ControllerVariableTorque::ControllerVariableTorque() {
+    has_pitch_control = false;
+    has_torque_control = true;
+}
+
+ControllerVariableTorque::~ControllerVariableTorque() {}
+
 void ControllerVariableTorque::step(double torque_total, double rpm) {
     // total_torque includes aero torque + previous elec torque
     double torque_aero = torque_total + torque_elec_previous;
@@ -34,8 +62,4 @@ void ControllerVariableTorque::step(double time, double dt, seahowl::core::Turbi
 
 double ControllerVariableTorque::get_torque_elec() {
     return torque_elec;
-}
-
-double ControllerVariableTorque::get_collective_pitch() {
-    return 0.0;
 }
