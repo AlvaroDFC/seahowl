@@ -5,11 +5,18 @@
 #include <string>
 #include <iostream>
 
-void seahowl::servo::ControllerDISCON::prestep(double time,
-                                               double dt,
-                                               double omega,
-                                               double pitch_collective,
-                                               double rotor_azimuth) {
+void seahowl::servo::ControllerDISCON::step(double time, double dt, seahowl::core::Turbine& turbine) {
+    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto pitch_collective = turbine.rotor.elasto.pitch_collective;
+    auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
+    this->step(time, dt, omega, pitch_collective, rotor_azimuth);
+}
+
+void seahowl::servo::ControllerDISCON::step(double time,
+                                            double dt,
+                                            double omega,
+                                            double pitch_collective,
+                                            double rotor_azimuth) {
     // rotor speed
     pImpl.SetRotorSpeed(omega);
 
@@ -36,6 +43,15 @@ void seahowl::servo::ControllerDISCON::prestep(double time,
     pImpl.Call();
 }
 
+
+void seahowl::servo::ControllerDISCON::init(double time, double dt, seahowl::core::Turbine& turbine) {
+    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto pitch_collective = turbine.rotor.elasto.pitch_collective;
+    auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
+    auto nblades = turbine.blades.size();
+    this->init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
+}
+
 void seahowl::servo::ControllerDISCON::init(double time,
                                             double dt,
                                             double omega,
@@ -45,6 +61,7 @@ void seahowl::servo::ControllerDISCON::init(double time,
     ///@todo include power in init in case rotor is not idle when starting
     pImpl.Init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
 }
+
 
 double seahowl::servo::ControllerDISCON::get_torque_elec() {
     double torque_elec = pImpl.GetAvrSWAP(47);

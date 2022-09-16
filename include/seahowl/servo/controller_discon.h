@@ -155,7 +155,7 @@ struct DisconController {
 };
 
 /**@brief DISCON controler */
-class ControllerDISCON : public seahowl::servo::Controller {
+class ControllerDISCON : public Controller {
   private:
     double torque_elec_previous = 0.0;
 
@@ -166,9 +166,10 @@ class ControllerDISCON : public seahowl::servo::Controller {
     ControllerDISCON(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
     ~ControllerDISCON(){};
 
+    virtual void init(double time, double dt, seahowl::core::Turbine& turbine) override;
     void init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
-    void prestep(double time, double dt, double omega, double pitch_collective, double rotor_azimuth);
-    void poststep(double time){};
+    virtual void step(double time, double dt, seahowl::core::Turbine& turbine) override;
+    void step(double time, double dt, double omega, double pitch_collective, double rotor_azimuth);
     double get_torque_elec();
     double get_collective_pitch();
 };

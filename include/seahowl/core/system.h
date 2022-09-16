@@ -42,7 +42,6 @@ class SystemDISCON : public System {
     ~SystemDISCON();
 
     virtual void init(double time, double dt);
-    virtual void prestep(double time, double dt);
     virtual void poststep(double time, double dt);
 };
 }  // namespace core

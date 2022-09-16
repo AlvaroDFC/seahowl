@@ -96,7 +96,6 @@ int main(int argc, char* argv[]) {
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
 
-
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
