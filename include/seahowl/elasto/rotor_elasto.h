@@ -101,8 +101,9 @@ class RotorElasto : public ElastoComponent {
 
     ///@{
     void apply_collective_pitch_increment(double pitch_increment);
-    double get_rpm();     ///< Rotation speed @todo in general class Rotor
-    double get_torque();  ///< Torque @todo in general class Rotor
+    double get_rpm();      ///< Rotation speed @todo in general class Rotor
+    double get_torque();   ///< Torque @todo in general class Rotor
+    double get_azimuth();  ///< Azimuth @todo in general class Rotor
     ///@}
 };
 
