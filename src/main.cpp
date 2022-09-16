@@ -154,6 +154,7 @@ int main(int argc, char* argv[]) {
         blade->elasto->discretization_fractions.clear();
         blade->aero->discretization_fractions.clear();
     }
+    // build turbine (Chrono)
     turbine.build();
     turbine.assemble(system, blades_mesh);
     turbine.tower.elasto.nodes.front()->SetFixed(true);  // foundation of the tower
@@ -314,8 +315,7 @@ int main(int argc, char* argv[]) {
         step += 1;
 
         if (step % 10 == 0) {
-            GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm()
-                     << " average rpm: " << average_rpm << " " << turbine.rotor.elasto.get_azimuth() << "\n";
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm() << "\n";
         }
 
         // poststep

@@ -38,17 +38,17 @@ void seahowl::core::Turbine::build() {
 
 
 void seahowl::core::Turbine::init(double time, double dt) {
-    rotor.prestep(time);
-    tower.prestep(time);
-    rotor.poststep(time);
-    tower.poststep(time);
+    rotor.prestep(time, dt);
+    tower.prestep(time, dt);
+    rotor.poststep(time, dt);
+    tower.poststep(time, dt);
 
     controller->init(time, dt, *this);
 }
 
 void seahowl::core::Turbine::prestep(double time, double dt) {
-    rotor.prestep(time);
-    tower.prestep(time);
+    rotor.prestep(time, dt);
+    tower.prestep(time, dt);
 }
 void seahowl::core::Turbine::poststep(double time, double dt) {
     // controller step
@@ -63,8 +63,8 @@ void seahowl::core::Turbine::poststep(double time, double dt) {
     rotor.elasto.apply_collective_pitch_increment(collective_pitch_increment);
 
     // poststeps
-    rotor.poststep(time);
-    tower.poststep(time);
+    rotor.poststep(time, dt);
+    tower.poststep(time, dt);
 
     
     // controller poststep

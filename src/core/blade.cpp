@@ -61,12 +61,12 @@ void seahowl::core::Blade::compute_mapping_elasto2aero() {
         seahowl::core::get_indice_and_positions(elasto->discretization_fractions, aero->discretization_fractions);
 }
 
-void seahowl::core::Blade::prestep(double time) {
+void seahowl::core::Blade::prestep(double time, double dt) {
     // update loads on elasto part
     update_loads_elasto();
 }
 
-void seahowl::core::Blade::poststep(double time) {
+void seahowl::core::Blade::poststep(double time, double dt) {
     // update position of aero points
     update_positions_aero();
 }

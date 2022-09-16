@@ -23,8 +23,8 @@ class Rotor {
     void update_positions_aero();
     void assemble(chrono::ChSystemSMC& system);
     void build(std::vector<std::shared_ptr<seahowl::core::Blade>> blades);
-    void prestep(double time);
-    void poststep(double time);
+    void prestep(double time, double dt);
+    void poststep(double time, double dt);
 };
 
 }  // namespace core
