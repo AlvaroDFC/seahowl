@@ -3,18 +3,26 @@
 #include <seahowl/core/turbine.h>
 
 namespace seahowl {
-
+namespace core {
+class Turbine;
+}
 /**@brief Servo controller module */
 namespace servo {
 
 /**@brief Base class for controller */
 class Controller {
   public:
-    Controller(){};
-    ~Controller(){};
+    bool has_pitch_control;
+    bool has_torque_control;
 
-    virtual double get_torque_elec() = 0;
-    virtual double get_collective_pitch() = 0;
+    Controller();
+    ~Controller();
+
+    virtual void init(double time, double dt, seahowl::core::Turbine& turbine);
+    virtual void step(double time, double dt, seahowl::core::Turbine& turbine);
+    virtual void poststep(double time, double dt, seahowl::core::Turbine& turbine);
+    virtual double get_torque_elec();
+    virtual double get_collective_pitch();
 };
 
 /**@brief Variable torque controler */
@@ -26,13 +34,14 @@ class ControllerVariableTorque : public seahowl::servo::Controller {
   public:
     double target_rpm = 0.0;
 
-    ControllerVariableTorque(){};
-    ~ControllerVariableTorque(){};
+    ControllerVariableTorque();
+    ~ControllerVariableTorque();
 
-    void prestep(double torque_total, double rpm);
+    void step(double torque_total, double rpm);
+    virtual void step(double time, double dt, seahowl::core::Turbine& turbine) override;
+    virtual void poststep(double time, double dt, seahowl::core::Turbine& turbine) override;
     void poststep();
-    virtual double get_torque_elec();
-    virtual double get_collective_pitch();
+    virtual double get_torque_elec() override;
 };
 
 }  // namespace servo

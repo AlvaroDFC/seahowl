@@ -1,9 +1,12 @@
 #include "seahowl/core/turbine.h"
 
+#include <chrono/physics/ChBody.h>
+
 seahowl::core::Turbine::Turbine() {
     blades.resize(0);
     rotor = Rotor();
     tower = Tower();
+    controller = std::make_shared<seahowl::servo::Controller>();
 }
 
 seahowl::core::Turbine::~Turbine() {}
@@ -33,13 +36,42 @@ void seahowl::core::Turbine::build() {
     tower.build();
 }
 
-void seahowl::core::Turbine::prestep(double time) {
-    rotor.prestep(time);
-    tower.prestep(time);
+void seahowl::core::Turbine::init(double time, double dt) {
+    rotor.prestep(time, dt);
+    tower.prestep(time, dt);
+    rotor.poststep(time, dt);
+    tower.poststep(time, dt);
+
+    controller->init(time, dt, *this);
 }
-void seahowl::core::Turbine::poststep(double time) {
-    rotor.poststep(time);
-    tower.poststep(time);
+
+void seahowl::core::Turbine::prestep(double time, double dt) {
+    rotor.prestep(time, dt);
+    tower.prestep(time, dt);
+}
+void seahowl::core::Turbine::poststep(double time, double dt) {
+    // controller step
+    controller->step(time, dt, *this);
+    // apply torque from comtroller
+    if (controller->has_torque_control) {
+        auto torque_elec = controller->get_torque_elec();
+        // apply torque elec to hub rigid body
+        rotor.elasto.body_hub->Empty_forces_accumulators();
+        // torque elec is apply on Z axis of hub body (locally)
+        rotor.elasto.body_hub->Accumulate_torque(chrono::ChVector<double>(0.0, 0.0, torque_elec), true);
+    }
+    // apply pitch from controller
+    if (controller->has_pitch_control) {
+        auto collective_pitch_increment = controller->get_collective_pitch() - rotor.elasto.pitch_collective;
+        rotor.elasto.apply_collective_pitch_increment(collective_pitch_increment);
+    }
+
+    // poststeps
+    rotor.poststep(time, dt);
+    tower.poststep(time, dt);
+
+    // controller poststep
+    controller->poststep(time, dt, *this);
 }
 
 void seahowl::core::Turbine::translate(chrono::ChVector<double> translation_vector) {

@@ -48,6 +48,10 @@ class ElastoFEAComponent : public ElastoComponent {
     virtual void translate(chrono::ChVector<double> translation_vector) const override;  ///< Translate the system
     virtual double get_mass() const override;                                            ///< Get total mass
     virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion) = 0;
+    std::vector<chrono::ChVector<double>> get_nodes_positions();
+    std::vector<chrono::ChVector<double>> get_nodes_velocities();
+    std::vector<chrono::ChVector<double>> get_nodes_loads();
+
     ///@}
 };
 

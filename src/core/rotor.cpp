@@ -47,15 +47,15 @@ void Rotor::build(std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
     aero.build(blades_aero);
 }
 
-void Rotor::prestep(double time) {
+void Rotor::prestep(double time, double dt) {
     for (auto& blade : blades) {
-        blade->prestep(time);
+        blade->prestep(time, dt);
     }
 }
 
-void Rotor::poststep(double time) {
+void Rotor::poststep(double time, double dt) {
     for (auto& blade : blades) {
-        blade->poststep(time);
+        blade->poststep(time, dt);
     }
     update_positions_aero();
     aero.compute_chords_solidity();

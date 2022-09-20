@@ -5,7 +5,29 @@
 #include <string>
 #include <iostream>
 
-void seahowl::servo::ControllerDISCON::prestep(double time, double dt, double omega, double pitch_collective) {
+seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
+    has_pitch_control = true;
+    has_torque_control = true;
+
+    pImpl.ResetAll();
+    pImpl.SetINFILE(infile);
+    pImpl.SetOUTNAME(outname);
+}
+
+seahowl::servo::ControllerDISCON::~ControllerDISCON() {}
+
+void seahowl::servo::ControllerDISCON::step(double time, double dt, seahowl::core::Turbine& turbine) {
+    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto pitch_collective = turbine.rotor.elasto.pitch_collective;
+    auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
+    this->step(time, dt, omega, pitch_collective, rotor_azimuth);
+}
+
+void seahowl::servo::ControllerDISCON::step(double time,
+                                            double dt,
+                                            double omega,
+                                            double pitch_collective,
+                                            double rotor_azimuth) {
     // rotor speed
     pImpl.SetRotorSpeed(omega);
 
@@ -17,13 +39,14 @@ void seahowl::servo::ControllerDISCON::prestep(double time, double dt, double om
     pImpl.SetPitch(pitch_collective);
 
     // azimuth
-    auto azimuth = pImpl.GetAvrSWAP(60) + omega * dt;
-    if (azimuth > 2 * 3.14) {
-        azimuth -= 2 * 3.14;
-    }
-    pImpl.SetRotorAzimuth(azimuth);
+    // auto rotor_azimuth = pImpl.GetAvrSWAP(60) + omega * dt;
+    // if (rotor_azimuth > 2 * 3.14) {
+    //    rotor_azimuth -= 2 * 3.14;
+    //}
+    pImpl.SetRotorAzimuth(rotor_azimuth);
 
     // power
+    ///@todo get actual power as input from Turbine
     auto power = pImpl.GetAvrSWAP(47) * omega;
     pImpl.SetGeneratedPower(power);
 
@@ -31,12 +54,22 @@ void seahowl::servo::ControllerDISCON::prestep(double time, double dt, double om
     pImpl.Call();
 }
 
+void seahowl::servo::ControllerDISCON::init(double time, double dt, seahowl::core::Turbine& turbine) {
+    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto pitch_collective = turbine.rotor.elasto.pitch_collective;
+    auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
+    auto nblades = turbine.blades.size();
+    this->init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
+}
+
 void seahowl::servo::ControllerDISCON::init(double time,
                                             double dt,
                                             double omega,
                                             double pitch_collective,
+                                            double rotor_azimuth,
                                             size_t nblades) {
-    pImpl.Init(time, dt, omega, pitch_collective, nblades);
+    ///@todo include power in init in case rotor is not idle when starting
+    pImpl.Init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
 }
 
 double seahowl::servo::ControllerDISCON::get_torque_elec() {
@@ -47,11 +80,6 @@ double seahowl::servo::ControllerDISCON::get_torque_elec() {
 double seahowl::servo::ControllerDISCON::get_collective_pitch() {
     double collective_pitch = pImpl.GetAvrSWAP(45);
     return collective_pitch;
-}
-
-seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::string outname) {
-    pImpl.SetINFILE(infile);
-    pImpl.SetOUTNAME(outname);
 }
 
 /**@brief Discon controller */
@@ -134,7 +162,8 @@ static std::vector<discon::ParamDef> ArrayInfo{
     {46, "out", 'R', "Demanded pitch rate (Collective pitch)", "rad/s"},
     {47, "out", 'R', "Demanded generator torque", "Nm"},
     {48, "out", 'R', "Demanded nacelle yaw rate", "rad/s"},
-    // Bug in bladed doc ? 2 times in the doc a in or out . 2 different significations {49, "out", 'I', "Message length
+    // Bug in bladed doc ? 2 times in the doc a in or out . 2 different significations {49, "out", 'I', "Message
+    // length
     // OR -M0", "-"},
     {49, "inout", 'I', "Maximum no. of characters allowed in the MESSAGE", "-"},
     {50, "in", 'I', "No. of characters in the 'INFILE' argument", "-"},
@@ -279,10 +308,10 @@ Units
 
 CHARACTER(KIND=C_CHAR),         INTENT(IN   )   :: accINFILE(NINT(avrSWAP(50)))     ! The name of the parameter
 input file CHARACTER(KIND=C_CHAR),         INTENT(IN   )   :: avcOUTNAME(NINT(avrSWAP(51)))    ! OUTNAME (Simulation
-RootName) CHARACTER(KIND=C_CHAR),         INTENT(INOUT)   :: avcMSG(NINT(avrSWAP(49)))        ! MESSAGE (Message from
-DLL to simulation code [ErrMsg])  The message which will be displayed by the calling program if aviFAIL <> 0.
-CHARACTER(SIZE(avcOUTNAME)-1)                   :: RootName                         ! a Fortran version of the input C
-string (not considered an array here)    [subtract 1 for the C null-character] CHARACTER(SIZE(avcMSG)-1) :: ErrMsg
+RootName) CHARACTER(KIND=C_CHAR),         INTENT(INOUT)   :: avcMSG(NINT(avrSWAP(49)))        ! MESSAGE (Message
+from DLL to simulation code [ErrMsg])  The message which will be displayed by the calling program if aviFAIL <> 0.
+CHARACTER(SIZE(avcOUTNAME)-1)                   :: RootName                         ! a Fortran version of the input
+C string (not considered an array here)    [subtract 1 for the C null-character] CHARACTER(SIZE(avcMSG)-1) :: ErrMsg
 
 
     LocalVar%GenSpeed           = avrSWAP(20)
@@ -328,6 +357,7 @@ void seahowl::servo::DisconController::Init(double time,
                                             double dt,
                                             double omega,
                                             double pitch_collective,
+                                            double rotor_azimuth,
                                             size_t nblades) {
     avrSWAP[58] = 500;  // Buffer chaar size
     avrSWAP[50] = 500;  // self.char_buffer
@@ -337,6 +367,7 @@ void seahowl::servo::DisconController::Init(double time,
     SetPitch(pitch_collective);
     SetRotorSpeed(omega);
     SetDeltaTime(dt);
+    SetRotorAzimuth(rotor_azimuth);
     SetNumberOfBlades(nblades);
 
     aviFAIL = 1;  // c_int32();
@@ -352,6 +383,12 @@ void seahowl::servo::DisconController::Init(double time,
     std::endl; if(discon::ArrayInfo[i].index  != i) { std::cerr << "ERROR IN ARRAY index " << i << std::endl;
         }
     }*/
+}
+
+void seahowl::servo::DisconController::ResetAll() {
+    for (auto& v : avrSWAP) {
+        v = 0.0;
+    }
 }
 
 void seahowl::servo::DisconController::PrintAllOut(std::ostream& ssout) const {

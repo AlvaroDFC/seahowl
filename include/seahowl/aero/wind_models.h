@@ -16,7 +16,9 @@ class WindModel {
     WindModel() {}
     ~WindModel() {}
 
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) = 0;
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) {
+        return chrono::ChVector<double>(0.0, 0.0, 0.0);
+    };
 
     double get_density() { return density; }
 };
@@ -31,7 +33,8 @@ class ConstantWind : public WindModel {
     ~ConstantWind() {}
 
     void set_wind_velocity(chrono::ChVector<double> velocity) { wind_velocity = velocity; }
-    chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) {
+
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) override {
         return wind_velocity;
     }
 };

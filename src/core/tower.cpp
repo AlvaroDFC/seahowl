@@ -53,12 +53,12 @@ void Tower::compute_mapping_elasto2aero() {
     mapping_elasto2aero = get_indice_and_positions(elasto.discretization_fractions, aero.discretization_fractions);
 }
 
-void Tower::prestep(double time) {
+void Tower::prestep(double time, double dt) {
     // update loads on elasto part
     update_loads_elasto();
 };
 
-void Tower::poststep(double time) {
+void Tower::poststep(double time, double dt) {
     // update position of aero points
     update_positions_aero();
 }

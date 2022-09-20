@@ -36,6 +36,7 @@ using namespace chrono::postprocess;
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/core/turbine.h>
+#include <seahowl/core/system.h>
 
 #include <filesystem>  // C++17
 
@@ -94,19 +95,6 @@ int main(int argc, char* argv[]) {
     wind_model.set_wind_velocity(ChVector<double>(12.0, 0.0, 0.0));
     // turbine
     double initial_pitch = CH_C_PI / 8.0;
-    // target RPM for simple generator control
-    // set to 0.0 for no control
-
-    // to have constant rotor speed
-    // auto controller = seahowl::servo::ControllerVariableTorque();
-    // controller.target_rpm = 0.0;
-
-    // to have a Discon Controller
-#ifdef HAVE_ROSCO
-    auto controller = seahowl::servo::ControllerDISCON(u8"controller/DISCON.IN");
-#else
-    auto controller = seahowl::servo::ControllerVariableTorque();
-#endif
 
     // system
     ChSystemSMC system;
@@ -156,39 +144,39 @@ int main(int argc, char* argv[]) {
     auto blades_mesh = chrono_types::make_shared<chrono::fea::ChMesh>();
     system.AddMesh(blades_mesh);
 
-    std::vector<std::shared_ptr<seahowl::core::Turbine>> turbines;
-    int nturbines = 1;
-    for (int ii = 0; ii < nturbines; ii++) {
-        auto turbine =
-            std::make_shared<seahowl::core::Turbine>(get_turbine_from_json(blades_files, rotor_file, tower_file));
-        // clear discretization defined in file
-        for (auto& blade : turbine->blades) {
-            blade->elasto->discretization_fractions.clear();
-            blade->aero->discretization_fractions.clear();
-        }
-        turbine->build();
-        turbine->assemble(system, blades_mesh);
-        turbine->tower.elasto.nodes[0]->SetFixed(true);  // foundation of the tower
-        turbines.push_back(turbine);
+    auto seahowl_system = seahowl::core::System(
+        seahowl::core::Turbine(get_turbine_from_json(blades_files, rotor_file, tower_file)), wind_model);
+    auto& turbine = seahowl_system.turbine;
+    turbine.controller =
+        std::make_shared<seahowl::servo::ControllerDISCON>((DATADIR / "controller/DISCON.IN").generic_string());
 
-        // increase elements for visualization
-        for (auto& bladei : turbine->blades) {
-            auto blade = bladei->elasto;
-            for (auto& elm : blade->elements) {
-                elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
-                elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
-            }
-        }
-        // increase elements for visualization
-        auto& tower = turbine->tower;
-        for (auto& elm : tower.elasto.elements) {
-            elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(6.0, 6.0);
-            elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
-        }
-
-        turbine->translate(ChVector<double>(150.0 * ii, 150.0 * ii * pow(-1.0, ii), -150.0));
-        turbine->rotate(-CH_C_PI / 2.0, VECT_X);
+    // clear discretization defined in file
+    for (auto& blade : turbine.blades) {
+        blade->elasto->discretization_fractions.clear();
+        blade->aero->discretization_fractions.clear();
     }
+    // build turbine (Chrono)
+    turbine.build();
+    turbine.assemble(system, blades_mesh);
+    turbine.tower.elasto.nodes.front()->SetFixed(true);  // foundation of the tower
+
+    // increase elements for visualization
+    for (auto& bladei : turbine.blades) {
+        auto blade = bladei->elasto;
+        for (auto& elm : blade->elements) {
+            elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(2.0, 0.5);
+            elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(2.0, 0.5);
+        }
+    }
+    // increase elements for visualization
+    auto& tower = turbine.tower;
+    for (auto& elm : tower.elasto.elements) {
+        elm->GetTaperedSection()->GetSectionA()->SetDrawThickness(6.0, 6.0);
+        elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
+    }
+
+    turbine.translate(ChVector<double>(0.0, 0.0, -150.0));
+    turbine.rotate(-CH_C_PI / 2.0, VECT_X);
 
 #ifdef POVRAY
     // Create an exporter to POVray !!!
@@ -257,36 +245,29 @@ int main(int argc, char* argv[]) {
     double time = 0.0;
     int step = 0;
     // initialization
-
-    for (auto& turbine : turbines) {
-        turbine->rotor.elasto.apply_collective_pitch_increment(initial_pitch);
-        turbine->prestep(time);
-        turbine->poststep(time);
-#ifdef HAVE_ROSCO
-        double omega = turbine->rotor.elasto.get_rpm() * (2 * CH_C_PI) / 60;
-        controller.init(time, dt, omega, turbine->rotor.elasto.pitch_collective, turbine->rotor.blades.size());
-#endif
-    }
-
-    double torque_aero = 0.0;
-    double average_torque_aero = 0.0;
-    double torque_elec = 0.0;
-    double average_rpm = 0.0;
     // statics
     if (statics_prestep) {
         system.DoStaticLinear();
         system.DoStaticNonlinear(10, true);
     }
+
+    turbine.rotor.elasto.apply_collective_pitch_increment(initial_pitch);
+    seahowl_system.init(time, dt);
+#ifdef HAVE_ROSCO
+    double omega = turbine.rotor.elasto.get_rpm() * (2 * CH_C_PI) / 60;
+    // controller.init(time, dt, omega, turbine.rotor.elasto.pitch_collective, turbine.rotor.blades.size());
+#endif
+
+    double torque_aero = 0.0;
+    double average_torque_aero = 0.0;
+    double torque_elec = 0.0;
+    double average_rpm = 0.0;
     // while (application.GetDevice()->run()) {
     while (true) {
         // prestep
-        for (auto& turbine : turbines) {
-            // compute forces
-            turbine->rotor.aero.compute_wind_loads_bemt(wind_model, time);
-            turbine->tower.aero.compute_wind_loads_morison(wind_model, time);
-            // prestep (accumulates loads from aero to elasto)
-            turbine->prestep(time);
-        }
+        // compute forces
+
+        seahowl_system.prestep(time, dt);
 
         // step
         if (visualization_on) {
@@ -298,7 +279,7 @@ int main(int argc, char* argv[]) {
             application.DrawAll();
 
             // Draw also a grid on the horizontal XZ plane
-            double Y0 = turbines[0]->tower.elasto.nodes[0]->coord.pos[1];  // base (lower) position of the tower
+            double Y0 = turbine.tower.elasto.nodes[0]->coord.pos[1];  // base (lower) position of the tower
             tools::drawGrid(application.GetVideoDriver(), 20, 20, 20, 20,
                             ChCoordsys<>(ChVector<>(0, Y0, 0), Q_from_AngX(CH_C_PI_2)),
                             video::SColor(255, 80, 100, 100), true);
@@ -314,7 +295,7 @@ int main(int argc, char* argv[]) {
 
                 // Write RPM on UI Window
                 std::string srpm(1024, '\0');
-                written = std::sprintf(&srpm[0], "%.2f", turbines[0]->rotor.elasto.get_rpm());
+                written = std::sprintf(&srpm[0], "%.2f", turbine.rotor.elasto.get_rpm());
                 srpm.resize(written);
                 auto sdrpm = std::string("    RPM: ") + srpm;
                 font->draw(sdrpm.c_str(), core::rect<s32>(450, 10, 600, 50), video::SColor(255, 0, 0, 0));
@@ -335,44 +316,11 @@ int main(int argc, char* argv[]) {
         step += 1;
 
         if (step % 10 == 0) {
-            GetLog() << "time " << time << " step: " << step << " rpm: " << turbines[0]->rotor.elasto.get_rpm()
-                     << " average rpm: " << average_rpm << "\n";
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm() << "\n";
         }
 
         // poststep
-        for (auto& turbine : turbines) {
-            turbine->poststep(time);
-
-            /*
-             */
-            double rpm = turbine->rotor.elasto.get_rpm();
-            double torque_elec;
-            double collective_pitch_increment;
-#ifdef HAVE_ROSCO
-
-            controller.prestep(time, dt, rpm * (2 * CH_C_PI) / 60, turbine->rotor.elasto.pitch_collective);
-            torque_elec = controller.get_torque_elec();
-            collective_pitch_increment = -turbine->rotor.blades[0]->elasto->pitch + controller.get_collective_pitch();
-            if (step == 100)
-                controller.pImpl.PrintAllOut();
-#else
-            if (controller.target_rpm > 0.0) {
-                // get torque elec from controller
-                double rpm = turbine->rotor.elasto.get_rpm();
-                double torque_total = turbine->rotor.elasto.get_torque();
-                controller.prestep(torque_total, rpm);
-                torque_elec = controller.get_torque_elec();
-                collective_pitch_increment = 0.0;
-            }
-#endif
-            // apply torque elec to hub rigid body
-            turbine->rotor.elasto.body_hub->Empty_forces_accumulators();
-            // torque elec is apply on Z axis of hub body (locally)
-            turbine->rotor.elasto.body_hub->Accumulate_torque(ChVector<double>(0.0, 0.0, torque_elec), true);
-
-            // apply pitch from controller
-            turbine->rotor.elasto.apply_collective_pitch_increment(collective_pitch_increment);
-        }
+        seahowl_system.poststep(time, dt);
     }
 
     return 0;

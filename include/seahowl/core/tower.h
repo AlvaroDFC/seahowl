@@ -34,8 +34,8 @@ class Tower {
     void set_discretization_aero(std::vector<double> fractions);
     void compute_mapping_aero2elasto();
     void compute_mapping_elasto2aero();
-    void prestep(double time);
-    void poststep(double time);
+    void prestep(double time, double dt);
+    void poststep(double time, double dt);
 
     /**@brief Updates positions for aero elements */
     void update_positions_aero();

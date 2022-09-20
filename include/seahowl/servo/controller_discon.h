@@ -38,13 +38,19 @@ struct DisconController {
     }
 
     /// <summary>
+    /// Reset all controller fields to 0
+    ///
+    /// </summary>
+    void ResetAll();
+
+    /// <summary>
     /// Initialize the controller parameters
     /// </summary>
     /// <param name="dt">timestep</param>
     /// <param name="omega">rotor speed</param>
     /// <param name="pitch">pitch collective</param>
     /// <param name="nblades">number of blades</param>
-    void Init(double time, double dt, double omega, double pitch_collective, size_t nblades);
+    void Init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
 
     /// <summary>
     /// Call the DISCON controller
@@ -149,7 +155,7 @@ struct DisconController {
 };
 
 /**@brief DISCON controler */
-class ControllerDISCON : public seahowl::servo::Controller {
+class ControllerDISCON : public Controller {
   private:
     double torque_elec_previous = 0.0;
 
@@ -158,10 +164,12 @@ class ControllerDISCON : public seahowl::servo::Controller {
     double target_rpm = 0.0;
 
     ControllerDISCON(std::string infile = u8"DISCON.IN", std::string outname = u8"simDEBUG.RO.dbg");
-    ~ControllerDISCON(){};
+    ~ControllerDISCON();
 
-    void init(double time, double dt, double omega, double pitch_collective, size_t nblades);
-    void prestep(double time, double dt, double omega, double pitch_collective);
+    virtual void init(double time, double dt, seahowl::core::Turbine& turbine) override;
+    void init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
+    virtual void step(double time, double dt, seahowl::core::Turbine& turbine) override;
+    void step(double time, double dt, double omega, double pitch_collective, double rotor_azimuth);
     double get_torque_elec();
     double get_collective_pitch();
 };

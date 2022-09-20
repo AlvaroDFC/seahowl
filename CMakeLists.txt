@@ -123,6 +123,7 @@ set(SEAHOWL_SOURCES
     src/core/tower.cpp
     src/core/turbine.cpp
     src/core/utils.cpp 
+    src/core/system.cpp
 
     src/aero/airfoil.cpp
     src/aero/reference_point_aero.cpp
@@ -143,6 +144,7 @@ set(SEAHOWL_HEADERS
     include/seahowl/core/tower.h
     include/seahowl/core/turbine.h
     include/seahowl/core/utils.h
+    include/seahowl/core/system.h
 
 
     include/seahowl/aero/airfoil.h
