@@ -24,3 +24,27 @@ double seahowl::elasto::ElastoFEAComponent::get_mass() const {
         cbegin(elements), cend(elements), 0.0,
         [](double total, decltype(elements)::value_type pElem) { return total += pElem->GetMass(); });
 }
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_positions() {
+    std::vector<chrono::ChVector<double>> positions;
+    for (auto& node : nodes) {
+        positions.push_back(node->GetPos());
+    }
+    return positions;
+}
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_velocities() {
+    std::vector<chrono::ChVector<double>> velocities;
+    for (auto& node : nodes) {
+        velocities.push_back(node->GetPos_dt());
+    }
+    return velocities;
+}
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_loads() {
+    std::vector<chrono::ChVector<double>> loads;
+    for (auto& node : nodes) {
+        loads.push_back(node->GetForce());
+    }
+    return loads;
+}
