@@ -214,7 +214,7 @@ void BladeElasto::build_elements_tapered_timoshenko_fpm() {
     }
 }
 
-//void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
+// void BladeElasto::build_loads(chrono::ChSystemSMC& system) {
 //    auto loadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
 //    system.Add(loadcontainer);
 //
@@ -246,10 +246,12 @@ void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              double eta) {
     auto& element = elements[element_index];
 
-    // // unfortunately line below does not always work (returns nans sometimes)
-    // element->EvaluateSectionFrame(eta, position, rotation);
+    // // unfortunately line below does not always work (returns nans sometimes when fpm_mode is true)
+    element->EvaluateSectionFrame(eta, position, rotation);
 
-    position = 0.5 * (element->GetNodeA()->GetPos() + element->GetNodeB()->GetPos());
+    auto w1 = std::abs(eta - 1.0) * 0.5;
+    auto w2 = std::abs(eta + 1.0) * 0.5;
+    position = w1 * element->GetNodeA()->GetPos() + w2 * element->GetNodeB()->GetPos();
     rotation = (element->GetNodeA()->GetRot());
 }
 

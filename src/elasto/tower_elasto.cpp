@@ -148,11 +148,7 @@ void TowerElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              double eta) {
     auto& element = elements[element_index];
 
-    // // unfortunately line below does not alway work (returns nans sometimes)
-    // element->EvaluateSectionFrame(eta, position, rotation);
-
-    position = 0.5 * (element->GetNodeA()->GetPos() + element->GetNodeB()->GetPos());
-    rotation = (element->GetNodeA()->GetRot());
+    element->EvaluateSectionFrame(eta, position, rotation);
 }
 
 void TowerElasto::reset_loads() {
