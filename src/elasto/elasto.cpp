@@ -14,6 +14,7 @@ void seahowl::elasto::ElastoFEAComponent::rotate(double angle, chrono::ChVector<
         node->SetRot(new_rotation);
     }
 }
+
 void seahowl::elasto::ElastoFEAComponent::translate(chrono::ChVector<double> translation_vector) const {
     for (auto& node : nodes) {
         node->SetPos(node->GetPos() + translation_vector);
@@ -39,6 +40,38 @@ std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_n
         velocities.push_back(node->GetPos_dt());
     }
     return velocities;
+}
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_accelerations() {
+    std::vector<chrono::ChVector<double>> accelerations;
+    for (auto& node : nodes) {
+        accelerations.push_back(node->GetPos_dtdt());
+    }
+    return accelerations;
+}
+
+std::vector<chrono::ChQuaternion<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_rotations() {
+    std::vector<chrono::ChQuaternion<double>> rotations;
+    for (auto& node : nodes) {
+        rotations.push_back(node->GetRot());
+    }
+    return rotations;
+}
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_rotational_velocities() {
+    std::vector<chrono::ChVector<double>> rotational_velocities;
+    for (auto& node : nodes) {
+        rotational_velocities.push_back(node->GetWvel_loc());
+    }
+    return rotational_velocities;
+}
+
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_rotational_accelerations() {
+    std::vector<chrono::ChVector<double>> rotational_accelerations;
+    for (auto& node : nodes) {
+        rotational_accelerations.push_back(node->GetWacc_loc());
+    }
+    return rotational_accelerations;
 }
 
 std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_loads() {
