@@ -33,6 +33,8 @@ void RotorElasto::assemble(chrono::ChSystemSMC& system) {
 void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     this->blades = blades;
 
+    auto rotation0 = chrono::ChQuaternion<double>(1.0, 0.0, 0.0, 0.0);
+
     // hub
     body_hub = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     // move hub along X for overhang and COG offset, and along Z for distance from towertop
@@ -60,6 +62,7 @@ void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     // nacelle
     body_nacelle = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     body_nacelle->SetPos(nacelle.center_of_mass);
+    body_nacelle->SetRot(rotation0);
     // mass and inertia
     body_nacelle->SetMass(nacelle.mass);
     ///@todo  change to full 3x3 inertia matrix
@@ -71,6 +74,7 @@ void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     // yaw bearing
     body_yaw_bearing = chrono_types::make_shared<chrono::ChBodyEasyBox>(2.0, 2.0, 4.0, 0, true, false);
     body_yaw_bearing->SetPos(chrono::ChVector<double>(0.0, 0.0, 0.0));
+    body_yaw_bearing->SetRot(rotation0);
     body_yaw_bearing->SetMass(nacelle.yaw_bearing_mass);
     // link yaw bearing body to shaft body
     // link_shaft_yaw_bearing = chrono_types::make_shared<ChLinkRevolute>();
