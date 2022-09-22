@@ -169,7 +169,7 @@ class ControllerDISCON : public Controller {
     virtual void init(double time, double dt, seahowl::core::Turbine& turbine) override;
     void init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
     virtual void step(double time, double dt, seahowl::core::Turbine& turbine) override;
-    void step(double time, double dt, double omega, double pitch_collective, double rotor_azimuth);
+    void step(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, double power);
     double get_torque_elec();
     double get_collective_pitch();
 };

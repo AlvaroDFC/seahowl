@@ -28,6 +28,10 @@ class Turbine {
     Tower tower;                                             ///< Tower
     std::shared_ptr<seahowl::servo::Controller> controller;  ///< Controller
 
+    double generator_efficiency = 1.0;  ///< Efficiency of generator
+    double gearbox_ratio = 1.0;         ///< Gearbox ratio
+    double gearbox_efficiency = 1.0;    ///< Efficiency of gearbox
+
     Turbine();
     ~Turbine();
 
@@ -39,6 +43,7 @@ class Turbine {
     void translate(chrono::ChVector<double> translation_vector);
     void rotate(double angle, chrono::ChVector<double> axis);
     void compute_wind_loads(seahowl::aero::WindModel& wind_model, double time);
+    double get_generated_power();
 };
 
 }  // namespace core
