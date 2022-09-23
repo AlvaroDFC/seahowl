@@ -51,7 +51,7 @@ void ControllerVariableTorque::poststep(double time, double dt, seahowl::core::T
 
 void ControllerVariableTorque::step(double time, double dt, seahowl::core::Turbine& turbine) {
     double rpm = turbine.rotor.elasto.get_rpm();
-    double torque_total = turbine.rotor.elasto.get_torque();
+    double torque_total = turbine.rotor.elasto.get_axial_torque();
     // total_torque includes aero torque + previous elec torque
     double torque_aero = torque_total + torque_elec_previous;
     double torque_elec = torque_aero * std::pow(rpm / target_rpm, 2);

@@ -191,21 +191,27 @@ void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
     pitch_collective += pitch_increment;
 }
 
-double RotorElasto::get_rpm() {
+double RotorElasto::get_rpm() const {
     chrono::ChVector<double> angles;
     body_hub->coord.rot.Qdt_to_Wrel(angles, body_hub->coord_dt.rot);
     double rpm = angles.z() * 60 / (2 * chrono::CH_C_PI);
     return rpm;
 }
 
-double RotorElasto::get_torque() {
-    return -link_shaft_hub->Get_react_torque().x();
-}
-
-double RotorElasto::get_azimuth() {
+double RotorElasto::get_azimuth() const {
     auto rotation_relative = (body_hub->GetRot() * body_shaft->GetRot().GetInverse());
     double angle = 0.0;
     auto axis = chrono::ChVector<double>(0.0, 0.0, 0.0);
     rotation_relative.Q_to_AngAxis(angle, axis);
     return angle;
+}
+
+double RotorElasto::get_axial_thrust() const {
+    auto react_force = link_shaft_hub->Get_react_force();
+    return react_force.z();
+}
+
+double RotorElasto::get_axial_torque() const {
+    auto react_torque = link_shaft_hub->Get_react_torque();
+    return react_torque.x();
 }
