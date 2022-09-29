@@ -39,6 +39,7 @@ using namespace chrono::postprocess;
 #endif
 
 #include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/elasto/elasto.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/core/system.h>
@@ -47,6 +48,7 @@ using namespace chrono::postprocess;
 
 using std::filesystem::path;
 using std::filesystem::create_directory;
+using std::filesystem::remove_all;
 
 //#include <format> // c++20
 
@@ -267,15 +269,17 @@ int main(int argc, char* argv[]) {
 #endif
 
 #ifdef HAVE_VTK
+    std::vector<OutputMeshVTK> vtk_outputs;
+    remove_all("./vtk");
     create_directory("./vtk");
-    OutputMeshVTK post_blade1;
-    post_blade1.init(*seahowl_system.turbine.rotor.blades[0]->elasto.get(), "./vtk/blade1");
-    OutputMeshVTK post_blade2;
-    post_blade2.init(*seahowl_system.turbine.rotor.blades[1]->elasto.get(), "./vtk/blade2");
-    OutputMeshVTK post_blade3;
-    post_blade3.init(*seahowl_system.turbine.rotor.blades[2]->elasto.get(), "./vtk/blade3");
-    OutputMeshVTK post_tower;
-    post_tower.init(seahowl_system.turbine.tower.elasto, "./vtk/tower");
+    for (int ii = 0; ii < seahowl_system.turbine.rotor.blades.size(); ii++) {
+        auto post_blade = OutputMeshVTK(*seahowl_system.turbine.rotor.blades[ii]->elasto.get());
+        post_blade.init(("./vtk/blade" + std::to_string(ii + 1)).c_str());
+        vtk_outputs.push_back(post_blade);
+    }
+    auto post_tower = OutputMeshVTK(seahowl_system.turbine.tower.elasto);
+    post_tower.init("./vtk/tower");
+    vtk_outputs.push_back(post_tower);
 #endif
 
     double torque_aero = 0.0;
@@ -295,10 +299,9 @@ int main(int argc, char* argv[]) {
         seahowl_system.prestep(time, dt);
 #ifdef HAVE_VTK
         if (step % 10 == 0) {
-            post_blade1.write(*seahowl_system.turbine.rotor.blades[0]->elasto.get(), time, step);
-            post_blade2.write(*seahowl_system.turbine.rotor.blades[1]->elasto.get(), time, step);
-            post_blade3.write(*seahowl_system.turbine.rotor.blades[2]->elasto.get(), time, step);
-            post_tower.write(seahowl_system.turbine.tower.elasto, time, step);
+            for (auto const& vtk_output : vtk_outputs) {
+                vtk_output.write(time, step);
+            }
         }
 
 #endif

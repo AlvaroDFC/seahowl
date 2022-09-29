@@ -11,15 +11,16 @@
 struct OutputMeshVTK {
     vtkSmartPointer<vtkUnstructuredGrid> mesh;
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer;
-    std::map<std::string, vtkSmartPointer<vtkDoubleArray>> arrays;
+    std::map<std::string, vtkSmartPointer<vtkDoubleArray>> arrays_map;
+    seahowl::elasto::ElastoFEAComponent& component;
 
     double time;
     double dt;
     std::string base = "";
 
-    OutputMeshVTK();
+    OutputMeshVTK(seahowl::elasto::ElastoFEAComponent& component);
     ~OutputMeshVTK();
 
-    void init(seahowl::elasto::ElastoFEAComponent& component, const char* base_name);
-    void write(seahowl::elasto::ElastoFEAComponent& component, double time, int time_step);
+    void init(const char* base_name);
+    void write(double time, int time_step) const;
 };
