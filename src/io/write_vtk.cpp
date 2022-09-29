@@ -1,0 +1,90 @@
+#include <seahowl/io/write_vtk.h>
+
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkXMLUnstructuredGridWriter.h>
+#include <vtkPoints.h>
+#include <vtkPointData.h>
+#include <vtkDoubleArray.h>
+
+#include <chrono/core/ChVector.h>
+
+OutputMeshVTK::OutputMeshVTK() {
+    mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+}
+
+OutputMeshVTK::~OutputMeshVTK() {}
+
+void OutputMeshVTK::init(seahowl::elasto::ElastoFEAComponent& component, const char* base_name) {
+    base = base_name;
+
+    auto coords = component.get_nodes_positions();
+
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->SetDataTypeToDouble();
+    const vtkIdType nPoints = coords.size();
+    points->SetNumberOfPoints(nPoints);
+    double* pDst = static_cast<double*>(points->GetVoidPointer(0));
+    memcpy(pDst, &coords[0], sizeof(double) * nPoints * 3);
+    mesh->SetPoints(points);
+
+    const vtkIdType nCells = nPoints - 1;
+    vtkIdType ptIds[2] = {0, 1};
+
+    for (vtkIdType iCell = 0; iCell < nCells; ++iCell) {
+        ptIds[0] = iCell;
+        ptIds[1] = iCell + 1;
+        mesh->InsertNextCell(VTK_LINE, 2, ptIds);
+    }
+
+    arrays.insert({"Displacement", vtkSmartPointer<vtkDoubleArray>::New()});
+    arrays.insert({"Forces", vtkSmartPointer<vtkDoubleArray>::New()});
+    arrays.insert({"Velocity", vtkSmartPointer<vtkDoubleArray>::New()});
+    arrays.insert({"Acceleration", vtkSmartPointer<vtkDoubleArray>::New()});
+    arrays.insert({"Direction", vtkSmartPointer<vtkDoubleArray>::New()});
+    // initialize arrays properties
+    for (auto const& keyval : arrays) {
+        auto& key = keyval.first;
+        auto& val = keyval.second;
+        val->SetName(key.c_str());
+        val->SetNumberOfComponents(3);
+        val->SetNumberOfTuples(nPoints);
+        val->Fill(0.0);
+        mesh->GetPointData()->AddArray(val);
+    }
+}
+
+void OutputMeshVTK::write(seahowl::elasto::ElastoFEAComponent& component, double time, int time_step) {
+    std::map<std::string, std::vector<chrono::ChVector<double>>> arrays_values;
+
+    arrays_values.insert({"Displacement", component.get_nodes_positions()});
+    arrays_values.insert({"Forces", component.get_nodes_loads()});
+    arrays_values.insert({"Velocities", component.get_nodes_velocities()});
+    arrays_values.insert({"Accelerations", component.get_nodes_accelerations()});
+    arrays_values.insert({"Directions", component.get_nodes_directions()});
+
+    auto* initial_coords = static_cast<double*>(mesh->GetPoints()->GetVoidPointer(0));
+    for (auto const& keyval : arrays) {
+        auto& key = keyval.first;
+        auto& val = keyval.second;
+        auto arr = mesh->GetPointData()->GetArray(key.c_str());
+
+        double* pDst = static_cast<double*>(val->GetVoidPointer(0));
+        auto& values = arrays_values[key];
+        memcpy(pDst, &arrays_values[key][0], sizeof(double) * values.size() * 3);
+
+        // remove initial coords for displacement
+        if (key == "Displacement") {
+            for (auto idx = 0; idx < 3 * values.size(); ++idx) {
+                pDst[idx] -= initial_coords[idx];
+            }
+        }
+    }
+
+    char fname[2048];
+    std::sprintf(fname, "%s_%03d.vtu", base.c_str(), time_step);
+    writer->SetFileName(fname);
+    writer->SetInputData(mesh);
+    writer->Write();
+}

@@ -58,6 +58,14 @@ std::vector<chrono::ChQuaternion<double>> seahowl::elasto::ElastoFEAComponent::g
     return rotations;
 }
 
+std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_directions() {
+    std::vector<chrono::ChVector<double>> directions;
+    for (auto& node : nodes) {
+        directions.push_back(node->GetRot().GetVector());
+    }
+    return directions;
+}
+
 std::vector<chrono::ChVector<double>> seahowl::elasto::ElastoFEAComponent::get_nodes_rotational_velocities() {
     std::vector<chrono::ChVector<double>> rotational_velocities;
     for (auto& node : nodes) {

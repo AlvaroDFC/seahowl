@@ -31,9 +31,9 @@ class ElastoComponent {
     virtual void rotate(double angle, chrono::ChVector<double> axis) const = 0;     ///< Rotate the system.
     virtual void translate(chrono::ChVector<double> translation_vector) const = 0;  ///< Translate the system.
     virtual double get_mass() const = 0;                                            ///< Get total mass.
-    std::vector<double> discretization_fractions;                                   ///< Fractions (normalized abscissa).
-    std::vector<BladeReferencePointElasto> reference_points;                        ///< Original points.
-    std::vector<BladeReferencePointElasto> discretized_points;                      ///< Discretized points.
+    std::vector<double> discretization_fractions;               ///< Fractions (normalized abscissa).
+    std::vector<BladeReferencePointElasto> reference_points;    ///< Original points.
+    std::vector<BladeReferencePointElasto> discretized_points;  ///< Discretized points.
     ///@}
 };
 
@@ -53,6 +53,7 @@ class ElastoFEAComponent : public ElastoComponent {
     std::vector<chrono::ChVector<double>> get_nodes_velocities();     ///< Get all nodes velocities.
     std::vector<chrono::ChVector<double>> get_nodes_accelerations();  ///< Get all nodes accelerations.
     std::vector<chrono::ChQuaternion<double>> get_nodes_rotations();  ///< Get all nodes rotations.
+    std::vector<chrono::ChVector<double>> get_nodes_directions();     ///< Get all nodes directions.
     std::vector<chrono::ChVector<double>>
     get_nodes_rotational_velocities();  ///< Get all nodes rotational velocity (local).
     std::vector<chrono::ChVector<double>>

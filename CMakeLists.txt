@@ -197,6 +197,15 @@ if (SEAHOWL_ENABLE_ROSCO)
     )
 endif (SEAHOWL_ENABLE_ROSCO)
 
+if (SEAHOWL_ENABLE_VTK)
+    list(APPEND SEAHOWL_HEADERS
+        include/seahowl/io/write_vtk.h
+    )
+    list(APPEND SEAHOWL_SOURCES
+        src/io/write_vtk.cpp
+    )
+endif (SEAHOWL_ENABLE_VTK)
+
 target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
