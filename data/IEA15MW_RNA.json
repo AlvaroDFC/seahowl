@@ -13,6 +13,12 @@
       4.2751
     ]
   },
+  "drivetrain": {
+    "generator_efficiency": 95.756,
+    "generator_inertia": 1836784,
+    "gearbox_ratio": 1.0,
+    "gearbox_efficiency": 100.0
+  },
   "hub": {
     "radius": 3.97,
     "overhang": -12.098,

@@ -133,7 +133,8 @@ set(SEAHOWL_SOURCES
 
     src/servo/controller.cpp
 
-	src/io/read_json.cpp 	 
+    src/io/read_json.cpp
+    src/io/write_csv.cpp
 )
 
 set(SEAHOWL_HEADERS
@@ -164,6 +165,7 @@ set(SEAHOWL_HEADERS
     include/seahowl/elasto/utils_elasto.h
 
     include/seahowl/io/read_json.h
+    include/seahowl/io/write_csv.h
 
 )
 
@@ -187,11 +189,11 @@ target_include_directories(seahowl_core
 	PUBLIC
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
+    ${CHRONO_INCLUDE_DIRS}
 
 	PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/
 	${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CHRONO_INCLUDE_DIRS}
 )
 
 target_compile_features(

@@ -27,6 +27,7 @@ using namespace chrono::postprocess;
 #include <cmath>
 
 #include <seahowl/io/read_json.h>
+#include <seahowl/io/write_csv.h>
 #include <seahowl/servo/controller.h>
 
 #ifdef HAVE_ROSCO
@@ -267,6 +268,11 @@ int main(int argc, char* argv[]) {
         // prestep
         // compute forces
 
+        if (step % 10 == 0) {
+            GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm() << "\n";
+            write_turbine_info_to_csv("output.csv", seahowl_system, time);
+        }
+
         seahowl_system.prestep(time, dt);
 
         // step
@@ -314,10 +320,6 @@ int main(int argc, char* argv[]) {
 #endif
         time += system.GetStep();
         step += 1;
-
-        if (step % 10 == 0) {
-            GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm() << "\n";
-        }
 
         // poststep
         seahowl_system.poststep(time, dt);

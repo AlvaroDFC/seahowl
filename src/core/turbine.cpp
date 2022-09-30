@@ -88,3 +88,14 @@ void seahowl::core::Turbine::compute_wind_loads(seahowl::aero::WindModel& wind_m
     rotor.aero.compute_wind_loads_bemt(wind_model, time);
     tower.aero.compute_wind_loads_morison(wind_model, time);
 }
+
+double seahowl::core::Turbine::get_generated_power() {
+    // get generator rotation in rad/s scaled by gearbox ratio and efficiency
+    auto rot_rads = rotor.elasto.get_rpm() * (2.0 * chrono::CH_C_PI / 60.0) * gearbox_ratio * gearbox_efficiency;
+    // get torque elec from rotor
+    auto torque_elec = controller->get_torque_elec();
+
+    // calculate power
+    auto power = torque_elec * rot_rads * generator_efficiency;
+    return power;
+}

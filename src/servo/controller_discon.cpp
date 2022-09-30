@@ -20,14 +20,16 @@ void seahowl::servo::ControllerDISCON::step(double time, double dt, seahowl::cor
     auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
     auto pitch_collective = turbine.rotor.elasto.pitch_collective;
     auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
-    this->step(time, dt, omega, pitch_collective, rotor_azimuth);
+    auto power = turbine.get_generated_power();
+    this->step(time, dt, omega, pitch_collective, rotor_azimuth, power);
 }
 
 void seahowl::servo::ControllerDISCON::step(double time,
                                             double dt,
                                             double omega,
                                             double pitch_collective,
-                                            double rotor_azimuth) {
+                                            double rotor_azimuth,
+                                            double power) {
     // rotor speed
     pImpl.SetRotorSpeed(omega);
 
@@ -46,8 +48,6 @@ void seahowl::servo::ControllerDISCON::step(double time,
     pImpl.SetRotorAzimuth(rotor_azimuth);
 
     // power
-    ///@todo get actual power as input from Turbine
-    auto power = pImpl.GetAvrSWAP(47) * omega;
     pImpl.SetGeneratedPower(power);
 
     // call controller

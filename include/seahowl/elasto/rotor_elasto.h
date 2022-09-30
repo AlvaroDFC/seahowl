@@ -100,10 +100,11 @@ class RotorElasto : public ElastoComponent {
     ///@}
 
     ///@{
-    void apply_collective_pitch_increment(double pitch_increment);
-    double get_rpm();      ///< Rotation speed @todo in general class Rotor
-    double get_torque();   ///< Torque @todo in general class Rotor
-    double get_azimuth();  ///< Azimuth @todo in general class Rotor
+    void apply_collective_pitch_increment(double pitch_increment);  ///< Applies pitch on all blades
+    double get_rpm() const;                                         ///< Rotation speed @todo in general class Rotor
+    double get_axial_torque() const;  ///< Reaction torque on hub @todo in general class Rotor
+    double get_azimuth() const;       ///< Azimuth @todo in general class Rotor
+    double get_axial_thrust() const;  ///< Reaction thrust on hub @todo in general class Rotor
     ///@}
 };
 

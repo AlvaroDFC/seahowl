@@ -247,7 +247,6 @@ seahowl::core::Rotor get_rotor_from_json(std::string filepath) {
     hub.at("CM").get_to(rotor.elasto.hub.center_of_mass);
     hub.at("mass").get_to(rotor.elasto.hub.mass);
     hub.at("inertia").get_to(rotor.elasto.hub.inertia);
-    rotor.elasto.hub.inertia += 1836784;
     hub.at("overhang").get_to(rotor.elasto.hub.overhang);
     hub.at("radius").get_to(rotor.elasto.hub.radius);
     hub.at("radius").get_to(rotor.aero.hub_radius);
@@ -287,6 +286,22 @@ seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_
     turbine.rotor = rotor;
     turbine.tower = tower;
     turbine.blades = blades;
+
+    // get extra drivetrain info
+    std::ifstream json_file(filepath_rotor);
+    // populate json object
+    json json_obj;
+    json_file >> json_obj;
+    auto drivetrain = json_obj.at("drivetrain");
+    // gearbox
+    drivetrain.at("gearbox_ratio").get_to(turbine.gearbox_ratio);
+    drivetrain.at("gearbox_efficiency").get_to(turbine.gearbox_efficiency);
+    turbine.gearbox_efficiency /= 100.0;
+    // generator
+    drivetrain.at("generator_efficiency").get_to(turbine.generator_efficiency);
+    turbine.generator_efficiency /= 100.0;
+    // add inertia of generator to hub directly
+    turbine.rotor.elasto.hub.inertia += drivetrain.at("generator_inertia");
 
     return turbine;
 }
