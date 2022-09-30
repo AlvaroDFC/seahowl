@@ -63,6 +63,13 @@ void OutputMeshVTK::init(const char* base_name) {
 void OutputMeshVTK::write(double time, int time_step) const {
     std::map<std::string, std::vector<chrono::ChVector<double>>> arrays_values;
 
+    // positions
+    auto points = mesh->GetPoints();
+    double* pDst0 = static_cast<double*>(points->GetVoidPointer(0));
+    auto& values0 = component.get_nodes_positions();
+    memcpy(pDst0, &values0[0], sizeof(double) * values0.size() * 3);
+    mesh->SetPoints(points);
+
     // vectors
     arrays_values.insert({"Displacement", component.get_nodes_positions()});
     arrays_values.insert({"Forces", component.get_nodes_loads()});
