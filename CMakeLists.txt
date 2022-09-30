@@ -189,11 +189,11 @@ target_include_directories(seahowl_core
 	PUBLIC
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
+    ${CHRONO_INCLUDE_DIRS}
 
 	PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/
 	${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CHRONO_INCLUDE_DIRS}
 )
 
 target_compile_features(
