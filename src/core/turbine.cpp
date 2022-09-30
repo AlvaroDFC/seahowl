@@ -58,7 +58,7 @@ void seahowl::core::Turbine::poststep(double time, double dt) {
         // apply torque elec to hub rigid body
         rotor.elasto.body_hub->Empty_forces_accumulators();
         // torque elec is apply on Z axis of hub body (locally)
-        rotor.elasto.body_hub->Accumulate_torque(chrono::ChVector<double>(0.0, 0.0, torque_elec), true);
+        rotor.elasto.body_hub->Accumulate_torque(chrono::ChVector<double>(0.0, 0.0, -torque_elec), true);
     }
     // apply pitch from controller
     if (controller->has_pitch_control) {

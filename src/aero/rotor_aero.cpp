@@ -79,7 +79,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             // pointing from hub to element position
             auto global_direction_hub2element = (properties.coordinates - hub_position).GetNormalized();
             // pointing in tangential direction
-            auto global_direction_tangent = (global_direction_hub2element % global_direction_normal).GetNormalized();
+            auto global_direction_tangent = (global_direction_normal % global_direction_hub2element).GetNormalized();
 
             // uninduced local velocity (2D)
             // frame perpendicular to rotor disc
