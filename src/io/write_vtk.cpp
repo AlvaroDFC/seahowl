@@ -43,12 +43,17 @@ void OutputMeshVTK::init(const char* base_name) {
     arrays_map.insert({"Velocity", vtkSmartPointer<vtkDoubleArray>::New()});
     arrays_map.insert({"Acceleration", vtkSmartPointer<vtkDoubleArray>::New()});
     arrays_map.insert({"Direction", vtkSmartPointer<vtkDoubleArray>::New()});
+    arrays_map.insert({"Rotation", vtkSmartPointer<vtkDoubleArray>::New()});
     // initialize arrays properties
     for (auto const& keyval : arrays_map) {
         auto& key = keyval.first;
         auto& val = keyval.second;
         val->SetName(key.c_str());
-        val->SetNumberOfComponents(3);
+        if (key == "Rotation") {
+            val->SetNumberOfComponents(4);
+        } else {
+            val->SetNumberOfComponents(3);
+        }
         val->SetNumberOfTuples(nPoints);
         val->Fill(0.0);
         mesh->GetPointData()->AddArray(val);
@@ -58,6 +63,7 @@ void OutputMeshVTK::init(const char* base_name) {
 void OutputMeshVTK::write(double time, int time_step) const {
     std::map<std::string, std::vector<chrono::ChVector<double>>> arrays_values;
 
+    // vectors
     arrays_values.insert({"Displacement", component.get_nodes_positions()});
     arrays_values.insert({"Forces", component.get_nodes_loads()});
     arrays_values.insert({"Velocity", component.get_nodes_velocities()});
@@ -73,7 +79,7 @@ void OutputMeshVTK::write(double time, int time_step) const {
 
         double* pDst = static_cast<double*>(val->GetVoidPointer(0));
         auto& values = arrays_values[key];
-        memcpy(pDst, &arrays_values[key][0], sizeof(double) * values.size() * 3);
+        memcpy(pDst, &values[0], sizeof(double) * values.size() * 3);
 
         // remove initial coords for displacement
         if (key == "Displacement") {
@@ -82,6 +88,13 @@ void OutputMeshVTK::write(double time, int time_step) const {
             }
         }
     }
+
+    // quaternions
+    auto arr = mesh->GetPointData()->GetArray("Rotation");
+    double* pDst = static_cast<double*>(arr->GetVoidPointer(0));
+    auto& values = component.get_nodes_rotations();
+    memcpy(pDst, &values[0], sizeof(double) * values.size() * 4);
+
     char fname[2048];
     std::sprintf(fname, "%s_%03d.vtu", base.c_str(), time_step);
     writer->SetFileName(fname);
