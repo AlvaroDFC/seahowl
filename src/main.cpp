@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 // general options
 #ifdef HAVE_IRRLICHT
-    bool visualization_on = true;
+    bool visualization_on = false;
     chrono::SetChronoDataPath(CHRONO_DATA_DIR);  // Add path to texture data
     chrono::SetChronoOutputPath(".");
 #else
@@ -100,16 +100,23 @@ int main(int argc, char* argv[]) {
     // timestepping
     auto timestepper_type = ChTimestepper::Type::HHT;
     double dt = 0.05;
-    // wind
-    auto wind_model = seahowl::aero::ConstantWind();
-    wind_model.set_wind_velocity(ChVector<double>(12.0, 0.0, 0.0));
-    // turbine
-    double initial_pitch = CH_C_PI / 8.0;
-
     // system
     ChSystemSMC system;
     system.Set_G_acc(ChVector<double>(0.0, -9.81, 0.0));
     system.SetNumThreads(ChOMP::GetNumProcs(), 0, 1);
+    // wind
+    auto wind_model = seahowl::aero::WindRamp();
+    wind_model.wind_velocity_start = ChVector<double>(3.0, 0.0, 0.0);
+    wind_model.wind_velocity_stop = ChVector<double>(30.0, 0.0, 0.0);
+    wind_model.direction_gravity = system.Get_G_acc().GetNormalized();
+    wind_model.reference_height = 0.0;
+    wind_model.time_start = 300.0;
+    wind_model.time_stop = 1500;
+    wind_model.shear_coefficient = 0.12;
+    wind_model.reference_height = 150.0;
+    // turbine
+    double initial_pitch = 0.0 * CH_C_PI / 8.0;
+
 
     switch (solver_type) {
         case ChSolver::Type::SPARSE_QR: {
@@ -185,7 +192,7 @@ int main(int argc, char* argv[]) {
         elm->GetTaperedSection()->GetSectionB()->SetDrawThickness(6.0, 6.0);
     }
 
-    turbine.translate(ChVector<double>(0.0, 0.0, -150.0));
+    turbine.translate(ChVector<double>(0.0, 0.0, 0.0));
     turbine.rotate(-CH_C_PI / 2.0, VECT_X);
 
 #ifdef POVRAY
@@ -258,7 +265,7 @@ int main(int argc, char* argv[]) {
     // statics
     if (statics_prestep) {
         system.DoStaticLinear();
-        system.DoStaticNonlinear(10, true);
+        system.DoStaticNonlinear(1000, true);
     }
 
     turbine.rotor.elasto.apply_collective_pitch_increment(initial_pitch);
@@ -291,7 +298,7 @@ int main(int argc, char* argv[]) {
         // prestep
         // compute forces
 
-        if (step % 10 == 0) {
+        if (step % 100 == 0) {
             GetLog() << "time " << time << " step: " << step << " rpm: " << turbine.rotor.elasto.get_rpm() << "\n";
             write_turbine_info_to_csv("output.csv", seahowl_system, time);
         }
@@ -300,7 +307,7 @@ int main(int argc, char* argv[]) {
 #ifdef HAVE_VTK
         if (step % 10 == 0) {
             for (auto const& vtk_output : vtk_outputs) {
-                vtk_output.write(time, step);
+                //vtk_output.write(time, step);
             }
         }
 
