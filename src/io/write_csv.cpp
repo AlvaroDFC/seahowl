@@ -26,7 +26,7 @@ void write_turbine_info_to_csv(std::string filename, seahowl::core::System ssyst
     myfile << std::to_string(ssystem.turbine.controller->get_torque_elec());
     myfile << ",";
     myfile << std::to_string(ssystem.turbine.rotor.elasto.get_axial_thrust());
-    myfile << ",\n";
+    myfile << ",";
     myfile << std::to_string(ssystem.turbine.rotor.elasto.get_axial_torque());
     myfile << ",\n";
     myfile.close();
