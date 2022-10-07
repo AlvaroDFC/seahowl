@@ -68,7 +68,6 @@ void seahowl::servo::ControllerDISCON::init(double time,
                                             double pitch_collective,
                                             double rotor_azimuth,
                                             size_t nblades) {
-    ///@todo include power in init in case rotor is not idle when starting
     pImpl.Init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
 }
 
@@ -362,6 +361,7 @@ void seahowl::servo::DisconController::Init(double time,
     avrSWAP[58] = 500;  // Buffer chaar size
     avrSWAP[50] = 500;  // self.char_buffer
     avrSWAP[51] = 500;  // self.char_buffer
+    avrSWAP[26] = 1;    // estimated wind speed (needs to be != 0 qt init for it to work in ROSCO!)
 
     // collective pitch
     SetPitch(pitch_collective);
