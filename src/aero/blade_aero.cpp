@@ -257,6 +257,8 @@ void BladeAero::build() {
         elements.push_back(element);
         // push empty load
         loads.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
+        relative_velocities_induced.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
+        wind_velocities.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
     }
 
     // get distance from tip

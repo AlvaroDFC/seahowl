@@ -42,6 +42,9 @@ class BladeAero {
     std::vector<BladeReferencePointAero> discretized_points;  ///< Reference points interpolated at discretized points
     std::vector<BladeElementAero> elements;                   ///< Blade elements (between discretized points)
     std::vector<chrono::ChVector<double>> loads;              ///< Loads on blade elements
+    std::vector<chrono::ChVector<double>>
+        relative_velocities_induced;                        ///< Induced relative wind velocities on blade elements
+    std::vector<chrono::ChVector<double>> wind_velocities;  ///< Uninduced wind velocities on blade elements
 
     BladeAero();
     ~BladeAero();

@@ -89,7 +89,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             double local_velocity_tangent = (global_velocity ^ global_direction_tangent);
             auto local_velocity0 = chrono::ChVector2<double>(local_velocity_tangent, local_velocity_normal);
 
-            if (local_velocity0.Length() == 0.0) {
+            if (local_velocity0.Length()  == 0.0) {
                 blade->loads[ii] = chrono::ChVector<double>(0.0, 0.0, 0.0);
             } else {
                 // get induced velocity (2D) from blade element
@@ -127,6 +127,10 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
 
                 // store load in global frame
                 blade->loads[ii] = load_global;
+                blade->wind_velocities[ii] =
+                    wind_velocity;
+                blade->relative_velocities_induced[ii] =
+                    global_direction_normal * local_velocity.y() + global_direction_tangent * local_velocity.x();
             }
         }
     }
