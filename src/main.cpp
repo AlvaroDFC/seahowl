@@ -110,8 +110,8 @@ int main(int argc, char* argv[]) {
     wind_model.wind_velocity_stop = ChVector<double>(30.0, 0.0, 0.0);
     wind_model.direction_gravity = system.Get_G_acc().GetNormalized();
     wind_model.reference_height = 0.0;
-    wind_model.time_start = 300.0;
-    wind_model.time_stop = 1500;
+    wind_model.time_start = 500.0;
+    wind_model.time_stop = 1700;
     wind_model.shear_coefficient = 0.12;
     wind_model.reference_height = 150.0;
     // turbine

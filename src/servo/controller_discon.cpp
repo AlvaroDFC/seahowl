@@ -17,21 +17,39 @@ seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::stri
 seahowl::servo::ControllerDISCON::~ControllerDISCON() {}
 
 void seahowl::servo::ControllerDISCON::step(double time, double dt, seahowl::core::Turbine& turbine) {
-    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto omega_rotor = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto omega_generator = turbine.get_generator_rpm() * (2 * chrono::CH_C_PI / 60.0);
     auto pitch_collective = turbine.rotor.elasto.pitch_collective;
     auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
     auto power = turbine.get_generated_power();
-    this->step(time, dt, omega, pitch_collective, rotor_azimuth, power);
+    this->step(time, dt, omega_rotor, omega_generator, pitch_collective, rotor_azimuth, power);
 }
 
 void seahowl::servo::ControllerDISCON::step(double time,
                                             double dt,
-                                            double omega,
+                                            double omega_rotor,
+                                            double omega_generator,
                                             double pitch_collective,
                                             double rotor_azimuth,
                                             double power) {
+    // update variables
+    update_turbine_variables(time, dt, omega_rotor, omega_generator, pitch_collective, rotor_azimuth, power);
+
+    // call controller
+    pImpl.Call();
+}
+
+void seahowl::servo::ControllerDISCON::update_turbine_variables(double time,
+                                                                double dt,
+                                                                double omega_rotor,
+                                                                double omega_generator,
+                                                                double pitch_collective,
+                                                                double rotor_azimuth,
+                                                                double power) {
     // rotor speed
-    pImpl.SetRotorSpeed(omega);
+    pImpl.SetRotorSpeed(omega_rotor);
+    // generator speed
+    pImpl.SetGeneratorSpeed(omega_generator);
 
     // time
     pImpl.SetTime(time);
@@ -49,26 +67,37 @@ void seahowl::servo::ControllerDISCON::step(double time,
 
     // power
     pImpl.SetGeneratedPower(power);
-
-    // call controller
-    pImpl.Call();
 }
 
 void seahowl::servo::ControllerDISCON::init(double time, double dt, seahowl::core::Turbine& turbine) {
-    auto omega = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto omega_rotor = turbine.rotor.elasto.get_rpm() * (2 * chrono::CH_C_PI / 60.0);
+    auto omega_generator = turbine.get_generator_rpm() * (2 * chrono::CH_C_PI / 60.0);
     auto pitch_collective = turbine.rotor.elasto.pitch_collective;
     auto rotor_azimuth = turbine.rotor.elasto.get_azimuth();
     auto nblades = turbine.blades.size();
-    this->init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
+    this->init(time, dt, omega_rotor, omega_generator, pitch_collective, rotor_azimuth, nblades);
 }
 
 void seahowl::servo::ControllerDISCON::init(double time,
                                             double dt,
-                                            double omega,
+                                            double omega_rotor,
+                                            double omega_generator,
                                             double pitch_collective,
                                             double rotor_azimuth,
                                             size_t nblades) {
-    pImpl.Init(time, dt, omega, pitch_collective, rotor_azimuth, nblades);
+    pImpl.SetNumberOfBlades(nblades);
+
+    // update variables
+    update_turbine_variables(time, dt, omega_rotor, omega_generator, pitch_collective, rotor_azimuth, 0.0);
+
+    pImpl.SetAvrSWAP(50, 500.0);  // self.char_buffer
+    pImpl.SetAvrSWAP(51, 500.0);  // self.char_buffer
+    pImpl.SetAvrSWAP(27, 10.0);   // estimated wind speed (needs to be != 0 qt init for it to work in ROSCO!)
+
+    // First step
+    pImpl.ResetFirst();
+    pImpl.Call();
+    pImpl.SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first, which was already just called)
 }
 
 double seahowl::servo::ControllerDISCON::get_torque_elec() {
@@ -352,39 +381,6 @@ not... IF (LocalVar%iStatus == 0) THEN LocalVar%BlPitch(1) = avrSWAP(4) LocalVar
 
     */
 
-void seahowl::servo::DisconController::Init(double time,
-                                            double dt,
-                                            double omega,
-                                            double pitch_collective,
-                                            double rotor_azimuth,
-                                            size_t nblades) {
-    avrSWAP[58] = 500;  // Buffer chaar size
-    avrSWAP[50] = 500;  // self.char_buffer
-    avrSWAP[51] = 500;  // self.char_buffer
-    avrSWAP[26] = 1;    // estimated wind speed (needs to be != 0 qt init for it to work in ROSCO!)
-
-    // collective pitch
-    SetPitch(pitch_collective);
-    SetRotorSpeed(omega);
-    SetDeltaTime(dt);
-    SetRotorAzimuth(rotor_azimuth);
-    SetNumberOfBlades(nblades);
-
-    aviFAIL = 1;  // c_int32();
-
-    // First step
-    ResetFirst();
-    Call();
-    SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first, which was already just called)
-
-    /* To check the array index match record numbers
-    for(int i=0; i<150;++i ) {
-        std::cout << i << "  "<< discon::ArrayInfo[i].index << "  " << discon::ArrayInfo[i].description << "" <<
-    std::endl; if(discon::ArrayInfo[i].index  != i) { std::cerr << "ERROR IN ARRAY index " << i << std::endl;
-        }
-    }*/
-}
-
 void seahowl::servo::DisconController::ResetAll() {
     for (auto& v : avrSWAP) {
         v = 0.0;
@@ -425,8 +421,11 @@ void seahowl::servo::DisconController::SetWindSpeed(double ws) {
 }
 
 void seahowl::servo::DisconController::SetRotorSpeed(double omega) {
-    SetAvrSWAP(20, omega);
     SetAvrSWAP(21, omega);
+}
+
+void seahowl::servo::DisconController::SetGeneratorSpeed(double omega) {
+    SetAvrSWAP(20, omega);
 }
 
 void seahowl::servo::DisconController::SetTime(double time) {

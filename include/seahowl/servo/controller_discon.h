@@ -76,6 +76,12 @@ struct DisconController {
     void SetRotorSpeed(double omega);
 
     /// <summary>
+    /// Helper to set rotor speed
+    /// </summary>
+    /// <param name="omega">The rotor speed. rad.s^{-1}</param>
+    void SetGeneratorSpeed(double omega);
+
+    /// <summary>
     /// Helper to set time
     /// </summary>
     /// <param name="time">The time. s</param>
@@ -148,7 +154,7 @@ struct DisconController {
     static constexpr size_t MAX_SWAP = 500;
 
     float avrSWAP[MAX_SWAP];
-    int aviFAIL;
+    int aviFAIL = 1;
     char accINFILE[4096];
     char avcOUTNAME[1024];
     char avcMSG[4096];
@@ -167,9 +173,28 @@ class ControllerDISCON : public Controller {
     ~ControllerDISCON();
 
     virtual void init(double time, double dt, seahowl::core::Turbine& turbine) override;
-    void init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
     virtual void step(double time, double dt, seahowl::core::Turbine& turbine) override;
-    void step(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, double power);
+    void init(double time,
+              double dt,
+              double omega_rotor,
+              double omega_generator,
+              double pitch_collective,
+              double rotor_azimuth,
+              size_t nblades);
+    void update_turbine_variables(double time,
+                                  double dt,
+                                  double omega_rotor,
+                                  double omega_generator,
+                                  double pitch_collective,
+                                  double rotor_azimuth,
+                                  double power);
+    void step(double time,
+              double dt,
+              double omega_rotor,
+              double omega_generator,
+              double pitch_collective,
+              double rotor_azimuth,
+              double power);
     double get_torque_elec();
     double get_collective_pitch();
 };

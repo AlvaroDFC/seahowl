@@ -44,6 +44,7 @@ class Turbine {
     void rotate(double angle, chrono::ChVector<double> axis);
     void compute_wind_loads(seahowl::aero::WindModel& wind_model, double time);
     double get_generated_power();
+    double get_generator_rpm();
 };
 
 }  // namespace core

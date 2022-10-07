@@ -99,3 +99,9 @@ double seahowl::core::Turbine::get_generated_power() {
     auto power = torque_elec * rot_rads * generator_efficiency;
     return power;
 }
+
+double seahowl::core::Turbine::get_generator_rpm() {
+    // get generator rotation in rad/s scaled by gearbox ratio and efficiency
+    auto rpm = rotor.elasto.get_rpm() * gearbox_ratio * gearbox_efficiency;
+    return rpm;
+}
