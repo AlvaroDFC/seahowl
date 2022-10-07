@@ -74,7 +74,7 @@ void BladeElasto::build_nodes() {
             node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
         }
         // apply structural twist
-        chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(discretized_point.structural_twist, node_axis));
+        chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(-discretized_point.structural_twist, node_axis));
         node_rotation = twist_matrix * node_rotation;
         auto node_frame = chrono::ChFrame<>(node_pos, node_rotation);
 
@@ -292,7 +292,7 @@ void BladeElasto::apply_pitch_increment(double pitch_increment) {
     auto root_dir = nodes.front()->TransformDirectionLocalToParent(chrono::ChVector<double>(1.0, 0.0, 0.0));
     auto root_pos = nodes.front()->GetPos();
     translate(-root_pos);
-    rotate(pitch_increment, root_dir);
+    rotate(-pitch_increment, root_dir);
     translate(root_pos);
     pitch += pitch_increment;
 };

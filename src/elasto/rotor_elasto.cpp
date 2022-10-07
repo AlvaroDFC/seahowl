@@ -194,7 +194,7 @@ void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
 double RotorElasto::get_rpm() const {
     chrono::ChVector<double> angles;
     body_hub->coord.rot.Qdt_to_Wrel(angles, body_hub->coord_dt.rot);
-    double rpm = angles.z() * 60 / (2 * chrono::CH_C_PI);
+    double rpm = -angles.z() * 60 / (2 * chrono::CH_C_PI);
     return rpm;
 }
 

@@ -34,6 +34,7 @@ option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
+option (SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 
 # =======================
 # External libraries
@@ -66,6 +67,24 @@ if( NOT CMAKE_SIZEOF_VOID_P EQUAL 8 )
 	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
 endif()
 
+if (SEAHOWL_ENABLE_VTK)
+	find_package(VTK 9
+
+		COMPONENTS
+		CommonDataModel
+		IOXML
+		FiltersGeneral
+		FiltersModeling
+		FiltersSources
+		FiltersExtraction
+
+	)
+endif (SEAHOWL_ENABLE_VTK)
+
+if(VTK_FOUND)
+    add_compile_definitions(SEAHOWL_HAVE_VTK=1)
+    add_definitions("-DHAVE_VTK=1")
+endif()
 
 #--------------------------------------------------------------
 # Tweaks to disable some warnings with MSVC
@@ -178,6 +197,15 @@ if (SEAHOWL_ENABLE_ROSCO)
     )
 endif (SEAHOWL_ENABLE_ROSCO)
 
+if (SEAHOWL_ENABLE_VTK)
+    list(APPEND SEAHOWL_HEADERS
+        include/seahowl/io/write_vtk.h
+    )
+    list(APPEND SEAHOWL_SOURCES
+        src/io/write_vtk.cpp
+    )
+endif (SEAHOWL_ENABLE_VTK)
+
 target_sources(seahowl_core 
     PRIVATE 
     ${SEAHOWL_SOURCES}
@@ -226,6 +254,14 @@ target_link_libraries(seahowl_core
     ROSCO::ROSCO
 )
 endif (SEAHOWL_ENABLE_ROSCO)
+
+if(SEAHOWL_ENABLE_VTK) 
+    target_link_libraries(seahowl_core
+        PRIVATE
+        VTK::CommonDataModel
+	    VTK::IOXML
+    )
+endif(SEAHOWL_ENABLE_VTK) 
 
 # =============
 # DRIVER 

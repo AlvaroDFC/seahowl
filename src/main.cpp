@@ -24,6 +24,10 @@ using namespace irr;
 using namespace chrono::postprocess;
 #endif
 
+#ifdef HAVE_VTK
+    #include <seahowl/io/write_vtk.h>
+#endif
+
 #include <cmath>
 
 #include <seahowl/io/read_json.h>
@@ -35,6 +39,7 @@ using namespace chrono::postprocess;
 #endif
 
 #include <seahowl/elasto/blade_elasto.h>
+#include <seahowl/elasto/elasto.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/core/system.h>
@@ -42,6 +47,10 @@ using namespace chrono::postprocess;
 #include <filesystem>  // C++17
 
 using std::filesystem::path;
+using std::filesystem::create_directory;
+using std::filesystem::remove_all;
+
+//#include <format> // c++20
 
 /*! \mainpage SEAHOWL
  *
@@ -259,6 +268,20 @@ int main(int argc, char* argv[]) {
     // controller.init(time, dt, omega, turbine.rotor.elasto.pitch_collective, turbine.rotor.blades.size());
 #endif
 
+#ifdef HAVE_VTK
+    std::vector<OutputMeshVTK> vtk_outputs;
+    remove_all("./vtk");
+    create_directory("./vtk");
+    for (int ii = 0; ii < seahowl_system.turbine.rotor.blades.size(); ii++) {
+        auto post_blade = OutputMeshVTK(*seahowl_system.turbine.rotor.blades[ii]->elasto.get());
+        post_blade.init(("./vtk/blade" + std::to_string(ii + 1)).c_str());
+        vtk_outputs.push_back(post_blade);
+    }
+    auto post_tower = OutputMeshVTK(seahowl_system.turbine.tower.elasto);
+    post_tower.init("./vtk/tower");
+    vtk_outputs.push_back(post_tower);
+#endif
+
     double torque_aero = 0.0;
     double average_torque_aero = 0.0;
     double torque_elec = 0.0;
@@ -274,6 +297,14 @@ int main(int argc, char* argv[]) {
         }
 
         seahowl_system.prestep(time, dt);
+#ifdef HAVE_VTK
+        if (step % 10 == 0) {
+            for (auto const& vtk_output : vtk_outputs) {
+                vtk_output.write(time, step);
+            }
+        }
+
+#endif
 
         // step
         if (visualization_on) {

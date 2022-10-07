@@ -60,6 +60,7 @@ option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
 option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
+option (SEAHOWL_ENABLE_VTK_OUTPUT "Enable VTK library for output" OFF)
 
 ```
 
