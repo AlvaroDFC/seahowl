@@ -139,13 +139,6 @@ chrono::ChVector2<double> BladeElementAero::get_induced_velocity_rotor(chrono::C
                              std::to_string(local_velocity_rotor0.x()) + ", " +
                              std::to_string(local_velocity_rotor0.y()) + ")."
                       << std::endl;
-            std::cout << phi * 180 / chrono::CH_C_PI << " " << cos_phi << " " << sin_phi;
-            // throw std::runtime_error(
-            //     "Could not find new induction factor after " + std::to_string(ii) + " iterations. Axial: " +
-
-            //     std::to_string(induction_factor_axial) + ", previous:" + std::to_string(aa) +
-            //     ". Tangential: " + std::to_string(induction_factor_tangential) + ", previous " + std::to_string(ap) +
-            //     ". Alpha: " + std::to_string(alpha) + ", previous: " + std::to_string(alpha_previous) + ".");
         }
     }
 
@@ -259,6 +252,7 @@ void BladeAero::build() {
         loads.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
         relative_velocities_induced.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
         wind_velocities.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
+        wind_velocities_shadowed.push_back(chrono::ChVector<double>(0.0, 0.0, 0.0));
     }
 
     // get distance from tip
@@ -277,15 +271,13 @@ void BladeAero::compute_distances_from_tip() {
 }
 
 void BladeAero::compute_distances_from_hub(chrono::ChVector<double> hub_apex_position, double hub_radius) {
-    for (int ii = 0; ii < elements.size(); ii++) {
-        auto& element = elements[ii];
+    for (auto& element : elements) {
         element.distance_from_hub = (element.properties.coordinates - hub_apex_position).Length() - hub_radius;
     }
 }
 
 void BladeAero::compute_radii(chrono::ChVector<double> hub_apex_position) {
-    for (int ii = 0; ii < elements.size(); ii++) {
-        auto& element = elements[ii];
+    for (auto& element : elements) {
         element.radius = (element.properties.coordinates - hub_apex_position).Length();
     }
 }

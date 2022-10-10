@@ -45,6 +45,9 @@ class BladeAero {
     std::vector<chrono::ChVector<double>>
         relative_velocities_induced;                        ///< Induced relative wind velocities on blade elements
     std::vector<chrono::ChVector<double>> wind_velocities;  ///< Uninduced wind velocities on blade elements
+    std::vector<chrono::ChVector<double>>
+        wind_velocities_shadowed;  ///< Wind velocities on blade elements with tower shadow effect
+    double azimuth0 = 0.0;         ///< Initial azimuth of blade
 
     BladeAero();
     ~BladeAero();

@@ -77,7 +77,7 @@ void seahowl::core::Blade::update_positions_aero() {
         int elasto_element_index = mapping_aero2elasto[ii].index;
         double eta = mapping_aero2elasto[ii].eta;
         elasto->evaluate_position_rotation(aero->elements[ii].properties.coordinates,
-                                             aero->elements[ii].properties.rotation, elasto_element_index, eta);
+                                           aero->elements[ii].properties.rotation, elasto_element_index, eta);
 
         // update velocity of aero elements
         aero->elements[ii].properties.velocity =
@@ -95,7 +95,6 @@ void seahowl::core::Blade::update_loads_elasto() {
         throw std::runtime_error("length of vector of loads and aero to elasto mapping do not match.");
     }
     for (int ii = 0; ii < aero->loads.size(); ii++) {
-        elasto->accumulate_element_load(aero->loads[ii], mapping_aero2elasto[ii].index,
-                                          mapping_aero2elasto[ii].eta);
+        elasto->accumulate_element_load(aero->loads[ii], mapping_aero2elasto[ii].index, mapping_aero2elasto[ii].eta);
     }
 }

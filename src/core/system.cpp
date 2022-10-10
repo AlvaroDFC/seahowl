@@ -12,8 +12,7 @@ void System::init(double time, double dt) {
 
 void System::prestep(double time, double dt) {
     // compute forces on rotor and tower
-    turbine.rotor.aero.compute_wind_loads_bemt(wind_model, time);
-    turbine.tower.aero.compute_wind_loads_morison(wind_model, time);
+    turbine.compute_wind_loads(wind_model, time);
 
     // turbine prestep (accumulates loads from aero to elasto)
     turbine.prestep(time, dt);
