@@ -27,7 +27,7 @@ class RotorAero {
     void compute_distances_from_hub();
     void compute_distances_from_tip();
     void compute_radii();
-    void compute_wind_loads_bemt(WindModel& wind_model, double time, TowerAero& tower_aero);
+    void compute_wind_loads_bemt(const WindModel& wind_model, double time, const TowerAero& tower_aero);
 };
 
 }  // namespace aero

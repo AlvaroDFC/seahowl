@@ -16,11 +16,11 @@ class WindModel {
     WindModel() {}
     ~WindModel() {}
 
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) {
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const {
         return chrono::ChVector<double>(0.0, 0.0, 0.0);
     };
 
-    double get_density() { return density; }
+    double get_density() const { return density; }
 };
 
 /**@brief Constant wind models */
@@ -41,7 +41,7 @@ class ConstantWind : public WindModel {
 
     void set_wind_velocity(chrono::ChVector<double> velocity) { wind_velocity = velocity; }
 
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) override {
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const override {
         double distance = position ^ (-direction_gravity);
         if (distance > reference_length) {
             distance = reference_length;
@@ -73,7 +73,7 @@ class WindRamp : public WindModel {
     void set_wind_velocity_start(chrono::ChVector<double> velocity) { wind_velocity_start = velocity; }
     void set_wind_velocity_stop(chrono::ChVector<double> velocity) { wind_velocity_stop = velocity; }
 
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) override {
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const override {
         auto velocity = wind_velocity_start;
         if (time >= time_start) {
             double w1 = 1.0 - std::min((time - time_start) / time_stop, 1.0);
