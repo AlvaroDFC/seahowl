@@ -3,8 +3,8 @@
 using seahowl::core::DiscretizationPoint;
 
 std::vector<seahowl::core::DiscretizationPoint> seahowl::core::get_indice_and_positions(
-    std::vector<double>& discretization_fractions,
-    std::vector<double>& reference_fractions) {
+    const std::vector<double>& discretization_fractions,
+    const std::vector<double>& reference_fractions) {
     // check for potential errors
     if (discretization_fractions.size() == 0) {
         throw std::runtime_error("Cannot get discretization with empty array.");

@@ -92,11 +92,12 @@ void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
         // blade root node is assumed to be originally at (0,0,0) and using IEC standard for coordinate system
         // apply precone
         blade->rotate(precone, chrono::VECT_Y);  // Y is the edge-wise axis for blade (IEC standard)
-        double angle = ii * chrono::CH_C_2PI / nblades;
+        double azimuth0 = ii * chrono::CH_C_2PI / nblades;
+        blade->azimuth0 = azimuth0;
         // offset blade from hub apex and add overhang
         blade->translate(chrono::ChVector<double>(hub.overhang, 0.0, hub.radius));
         // rotate blade around hub
-        blade->rotate(angle, chrono::VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
+        blade->rotate(azimuth0, chrono::VECT_X);  // X is the axis pointing towards nacelle for blade (IEC standard)
         // offset with distance from towertop
         blade->translate(chrono::ChVector<double>(0.0, 0.0, shaft.distance_from_towertop));
         // apply shaft tilt to blades
@@ -199,10 +200,9 @@ double RotorElasto::get_rpm() const {
 }
 
 double RotorElasto::get_azimuth() const {
-    auto rotation_relative = (body_hub->GetRot() * body_shaft->GetRot().GetInverse());
-    double angle = 0.0;
-    auto axis = chrono::ChVector<double>(0.0, 0.0, 0.0);
-    rotation_relative.Q_to_AngAxis(angle, axis);
+    auto rotation_relative = body_shaft->GetCoord().TransformParentToLocal(
+        body_hub->GetCoord()).rot.Q_to_Euler123();
+    double angle = rotation_relative.z();
     return angle;
 }
 

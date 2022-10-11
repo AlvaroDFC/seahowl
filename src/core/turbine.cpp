@@ -85,7 +85,7 @@ void seahowl::core::Turbine::rotate(double angle, chrono::ChVector<double> axis)
 }
 
 void seahowl::core::Turbine::compute_wind_loads(seahowl::aero::WindModel& wind_model, double time) {
-    rotor.aero.compute_wind_loads_bemt(wind_model, time);
+    rotor.aero.compute_wind_loads_bemt(wind_model, time, tower.aero, true, true, true);
     tower.aero.compute_wind_loads_morison(wind_model, time);
 }
 

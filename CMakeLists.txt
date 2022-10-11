@@ -32,7 +32,7 @@ option (SEAHOWL_ENABLE_TESTS "Enable tests" ON)
 option (SEAHOWL_ENABLE_DOC "Generate html documentation" ON)
 option (SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option (SEAHOWL_ENABLE_PYTHON "Enable python binding" ON)
-option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
+option (SEAHOWL_ENABLE_EXAMPLES "Enable examples" OFF)
 option (SEAHOWL_ENABLE_ROSCO "Enable ROSCO controller" ON)
 option (SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 
@@ -145,6 +145,7 @@ set(SEAHOWL_SOURCES
     src/core/system.cpp
 
     src/aero/airfoil.cpp
+    src/aero/bemt.cpp
     src/aero/reference_point_aero.cpp
     src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
@@ -168,6 +169,7 @@ set(SEAHOWL_HEADERS
 
 
     include/seahowl/aero/airfoil.h
+    include/seahowl/aero/bemt.h
     include/seahowl/aero/blade_aero.h
     include/seahowl/aero/reference_point_aero.h
     include/seahowl/aero/rotor_aero.h

@@ -1,6 +1,11 @@
 #include "seahowl/aero/rotor_aero.h"
+#include <seahowl/core/utils.h>
+#include <seahowl/aero/bemt.h>
+#include <cmath>
+
 using seahowl::aero::BladeAero;
 using seahowl::aero::RotorAero;
+using seahowl::aero::TowerAero;
 
 RotorAero::RotorAero() {}
 RotorAero::~RotorAero() {}
@@ -58,17 +63,37 @@ void RotorAero::compute_radii() {
     }
 }
 
-void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
+void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model,
+                                        double time,
+                                        const TowerAero& tower_aero,
+                                        bool tower_shadow,
+                                        bool tip_loss,
+                                        bool hub_loss) {
     double density = wind_model.get_density();
     for (int kk = 0; kk < 3; kk++) {
         auto& blade = blades[kk];
+        auto blade_azimuth = azimuth + blade->azimuth0;
+        // check that blade_azimuth is between pi and -pi
+        if (blade_azimuth < -chrono::CH_C_PI || blade_azimuth > chrono::CH_C_PI) {
+            blade_azimuth =
+                abs(std::fmod((blade_azimuth + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
+        }
         for (int ii = 0; ii < blade->elements.size(); ii++) {
             auto& element = blade->elements[ii];
-            auto& properties = element.properties;
+            auto& position = element.properties.coordinates;
+            auto& rotation = element.properties.rotation;
+            auto& velocity = element.properties.velocity;
 
             // get fluid relative velocity
-            auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, time);
-            auto global_velocity = wind_velocity - properties.velocity;
+            auto wind_velocity0 = wind_model.get_wind_velocity(position, time);
+            auto wind_velocity = wind_velocity0;
+
+            // correct wind velocity with tower shadow (if activated)
+            if (tower_shadow) {
+                seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity, position, blade_azimuth, tower_aero);
+            }
+
+            auto global_velocity = wind_velocity - velocity;
             // project in disc frame
             auto local_velocity_disc = hub_rotation.RotateBack(global_velocity);
 
@@ -77,7 +102,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             auto local_direction_normal = chrono::ChVector<double>(0.0, 0.0, 1.0);
             auto global_direction_normal = hub_rotation.Rotate(local_direction_normal);
             // pointing from hub to element position
-            auto global_direction_hub2element = (properties.coordinates - hub_position).GetNormalized();
+            auto global_direction_hub2element = (position - hub_position).GetNormalized();
             // pointing in tangential direction
             auto global_direction_tangent = (global_direction_normal % global_direction_hub2element).GetNormalized();
 
@@ -89,20 +114,19 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
             double local_velocity_tangent = (global_velocity ^ global_direction_tangent);
             auto local_velocity0 = chrono::ChVector2<double>(local_velocity_tangent, local_velocity_normal);
 
-            if (local_velocity0.Length()  == 0.0) {
+            if (local_velocity0.Length() == 0.0) {
                 blade->loads[ii] = chrono::ChVector<double>(0.0, 0.0, 0.0);
             } else {
                 // get induced velocity (2D) from blade element
-                auto local_velocity = element.get_induced_velocity_rotor(local_velocity0, blades.size());
+                auto local_velocity =
+                    element.get_induced_velocity_rotor(local_velocity0, blades.size(), tip_loss, hub_loss);
 
                 // get coefficients from angle of attack
-                double phi = atan2(local_velocity.y(), -local_velocity.x());
-                double alpha = phi - (element.pitch + element.properties.structural_twist);
-                // check that alpha is still in range
-                if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
-                    alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
-                }
-                auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
+                double phi = seahowl::aero::get_phi(local_velocity);
+                double alpha =
+                    seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
+                auto coefficients =
+                    seahowl::aero::get_aero_coefficients_from_alpha(alpha, element.properties.airfoil_properties);
 
                 // get drag and lift coefficients
                 auto cl = coefficients.lift;
@@ -115,7 +139,7 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
 
                 // calculate drag and lift force
                 auto vel = local_velocity.Length();
-                auto chord = properties.chord;
+                auto chord = element.properties.chord;
                 auto length = element.length;
                 auto load_n = 0.5 * density * vel * vel * chord * cn * length;
                 auto load_t = 0.5 * density * vel * vel * chord * ct * length;
@@ -127,8 +151,8 @@ void RotorAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
 
                 // store load in global frame
                 blade->loads[ii] = load_global;
-                blade->wind_velocities[ii] =
-                    wind_velocity;
+                blade->wind_velocities[ii] = wind_velocity0;
+                blade->wind_velocities_shadowed[ii] = wind_velocity;
                 blade->relative_velocities_induced[ii] =
                     global_direction_normal * local_velocity.y() + global_direction_tangent * local_velocity.x();
             }

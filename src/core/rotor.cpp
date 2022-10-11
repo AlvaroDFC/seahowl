@@ -1,5 +1,7 @@
 #include "seahowl/core/rotor.h"
 
+#include <seahowl/elasto/blade_elasto.h>
+
 #include <chrono/physics/ChBody.h>
 
 #include <memory>
@@ -40,6 +42,7 @@ void Rotor::build(std::vector<std::shared_ptr<seahowl::core::Blade>> blades) {
     // update blade aero positions from new elasto positions
     for (auto& blade : blades) {
         blade->update_positions_aero();
+        blade->aero->azimuth0 = blade->elasto->azimuth0;
     }
     // update hub position from elasto
     update_positions_aero();
@@ -59,4 +62,5 @@ void Rotor::poststep(double time, double dt) {
     }
     update_positions_aero();
     aero.compute_chords_solidity();
+    aero.azimuth = elasto.get_azimuth();
 }

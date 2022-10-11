@@ -45,6 +45,9 @@ class BladeAero {
     std::vector<chrono::ChVector<double>>
         relative_velocities_induced;                        ///< Induced relative wind velocities on blade elements
     std::vector<chrono::ChVector<double>> wind_velocities;  ///< Uninduced wind velocities on blade elements
+    std::vector<chrono::ChVector<double>>
+        wind_velocities_shadowed;  ///< Wind velocities on blade elements with tower shadow effect
+    double azimuth0 = 0.0;         ///< Initial azimuth of blade
 
     BladeAero();
     ~BladeAero();
@@ -53,6 +56,9 @@ class BladeAero {
     void compute_distances_from_tip();
     void compute_distances_from_hub(chrono::ChVector<double> hub_apex_position, double hub_radius);
     void compute_radii(chrono::ChVector<double> hub_apex_position);
+    chrono::ChVector<double> get_average_wind_velocity();
+    chrono::ChVector<double> get_total_load();
+    chrono::ChVector<double> get_total_load_barycenter();
     // void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 

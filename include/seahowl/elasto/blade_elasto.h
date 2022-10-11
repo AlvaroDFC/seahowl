@@ -23,8 +23,9 @@ class BladeElasto : public ElastoFEAComponent {
   public:
     std::vector<std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>>> loaders_aero;
 
-    double pitch = 0;
-    bool fpm_mode = false;
+    double pitch = 0.0;     ///< pitch of blade
+    bool fpm_mode = false;  ///< FPM mode
+    double azimuth0 = 0.0;  ///< Initial azimuth of blade
 
     BladeElasto();
 
