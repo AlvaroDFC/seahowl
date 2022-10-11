@@ -1,11 +1,41 @@
 #include <seahowl/aero/bemt.h>
 
+#include <seahowl/aero/airfoil.h>
 #include <seahowl/aero/blade_aero.h>
 #include <seahowl/aero/tower_aero.h>
 #include <seahowl/core/utils.h>
 
 #include <chrono/core/ChVector.h>
 #include <chrono/core/ChVector2.h>
+
+
+double seahowl::aero::get_phi(const chrono::ChVector2<double>& fluid_velocity) {
+    double phi = atan2(fluid_velocity.y(), -fluid_velocity.x());
+    return phi;
+}
+
+double seahowl::aero::get_alpha_from_phi(const double phi, const double pitch) {
+    double alpha = phi - pitch;
+    // check that alpha is still in range
+    if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
+        alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
+    }
+    return alpha;
+}
+
+double seahowl::aero::get_alpha(const chrono::ChVector2<double>& fluid_velocity, const double pitch) {
+    double phi = get_phi(fluid_velocity);
+    double alpha = get_alpha_from_phi(phi, pitch);
+    return alpha;
+}
+
+seahowl::aero::AirfoilCoefficients& seahowl::aero::get_aero_coefficients_from_alpha(
+    const double alpha,
+    std::vector<seahowl::aero::AirfoilProperties>& airfoil_properties) {
+    // get coefficients from angle of attack
+    auto& coefficients = airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
+    return coefficients;
+}
 
 chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::BladeElementAero& element,
                                                               const chrono::ChVector2<double>& local_velocity_rotor0,
@@ -39,23 +69,13 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
         // local velocity updated with induction factors
         local_velocity_rotor =
             chrono::ChVector2<double>(local_velocity_rotor0.x() * (1.0 + ap), local_velocity_rotor0.y() * (1.0 - aa));
-        double phi = atan2(local_velocity_rotor.y(), -local_velocity_rotor.x());
-        alpha = phi - pitch_twist;
-        // check that alpha is still in range
-        if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
-            alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
-        }
 
-        // // other way to get alpha and phi
-        // // reproject to blade element frame
-        // local_velocity = local_velocity_rotor;
-        // local_velocity.Rotate(pitch_twist);  // rotation is positive counter-clockwise
-        // // get coefficients from angle of attack
-        // alpha = atan2(local_velocity.y(), -local_velocity.x());
-        // double phi = alpha + pitch_twist;
-
-        // get aero coefficients
-        auto coefficients = element.properties.airfoil_properties[0].find_coefficients(alpha * 180.0 / chrono::CH_C_PI);
+        // get coefficients from angle of attack
+        double phi = seahowl::aero::get_phi(local_velocity_rotor);
+        double alpha =
+            seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
+        auto coefficients =
+            seahowl::aero::get_aero_coefficients_from_alpha(alpha, element.properties.airfoil_properties);
 
         // get drag and lift coefficients
         auto cl = coefficients.lift;

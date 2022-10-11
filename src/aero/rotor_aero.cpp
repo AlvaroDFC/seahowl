@@ -112,14 +112,11 @@ void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model, double time
                 auto local_velocity = element.get_induced_velocity_rotor(local_velocity0, blades.size());
 
                 // get coefficients from angle of attack
-                double phi = atan2(local_velocity.y(), -local_velocity.x());
-                double alpha = phi - (element.pitch + element.properties.structural_twist);
-                // check that alpha is still in range
-                if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
-                    alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
-                }
+                double phi = seahowl::aero::get_phi(local_velocity);
+                double alpha =
+                    seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
                 auto coefficients =
-                    element.properties.airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
+                    seahowl::aero::get_aero_coefficients_from_alpha(alpha, element.properties.airfoil_properties);
 
                 // get drag and lift coefficients
                 auto cl = coefficients.lift;
