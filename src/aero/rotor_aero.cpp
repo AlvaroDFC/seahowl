@@ -63,11 +63,21 @@ void RotorAero::compute_radii() {
     }
 }
 
-void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model, double time, const TowerAero& tower_aero) {
+void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model,
+                                        double time,
+                                        const TowerAero& tower_aero,
+                                        bool tower_shadow,
+                                        bool tip_loss,
+                                        bool hub_loss) {
     double density = wind_model.get_density();
     for (int kk = 0; kk < 3; kk++) {
         auto& blade = blades[kk];
         auto blade_azimuth = azimuth + blade->azimuth0;
+        // check that blade_azimuth is between pi and -pi
+        if (blade_azimuth < -chrono::CH_C_PI || blade_azimuth > chrono::CH_C_PI) {
+            blade_azimuth =
+                abs(std::fmod((blade_azimuth + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
+        }
         for (int ii = 0; ii < blade->elements.size(); ii++) {
             auto& element = blade->elements[ii];
             auto& position = element.properties.coordinates;
@@ -79,7 +89,6 @@ void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model, double time
             auto wind_velocity = wind_velocity0;
 
             // correct wind velocity with tower shadow (if activated)
-            bool tower_shadow = true;
             if (tower_shadow) {
                 seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity, position, blade_azimuth, tower_aero);
             }
@@ -109,7 +118,8 @@ void RotorAero::compute_wind_loads_bemt(const WindModel& wind_model, double time
                 blade->loads[ii] = chrono::ChVector<double>(0.0, 0.0, 0.0);
             } else {
                 // get induced velocity (2D) from blade element
-                auto local_velocity = element.get_induced_velocity_rotor(local_velocity0, blades.size());
+                auto local_velocity =
+                    element.get_induced_velocity_rotor(local_velocity0, blades.size(), tip_loss, hub_loss);
 
                 // get coefficients from angle of attack
                 double phi = seahowl::aero::get_phi(local_velocity);

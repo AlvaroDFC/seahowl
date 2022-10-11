@@ -76,44 +76,19 @@ void BladeAero::compute_radii(chrono::ChVector<double> hub_apex_position) {
     }
 }
 
-// // DO NOT USE: use compute_wind_loads_bemt from RotorAero class instead
-// // method is kept here for testing purposes
-// void BladeAero::compute_wind_loads_bemt(WindModel& wind_model, double time) {
-//     double density = wind_model.get_density();
-//     for (int ii = 0; ii < elements.size(); ii++) {
-//         auto& element = elements[ii];
-//         auto& properties = element.properties;
+chrono::ChVector<double> BladeAero::get_average_wind_velocity() {
+    auto average = chrono::ChVector<double>(0.0, 0.0, 0.0);
+    for (auto& vel : wind_velocities_shadowed) {
+        average += vel;
+    }
+    average /= wind_velocities_shadowed.size();
+    return average;
+}
 
-//         // get fluid relative velocity
-//         auto wind_velocity = wind_model.get_wind_velocity(properties.coordinates, time);
-//         auto global_velocity = wind_velocity - properties.velocity;
-//         // project locally
-//         auto local_velocity0_3d = properties.rotation.RotateBack(global_velocity);
-//         // project using BEMT convention: x along chord, y along thickness up
-//         auto local_velocity0 = ChVector2<double>(local_velocity0_3d[1], -local_velocity0_3d[2]);
-
-//         // update induction factors and return local velocity
-//         auto local_velocity = element.get_induced_velocity_element(local_velocity0);
-
-//         // get coefficients from angle of attack
-//         double alpha = atan2(local_velocity.y(), -local_velocity.x());
-//         auto coefficients = properties.airfoil_properties[0].find_coefficients(alpha * 180 / CH_C_PI);
-
-//         // calculate drag and lift force
-//         double vel = local_velocity.Length();
-//         double chord = properties.chord;
-//         double length = element.length;
-//         double lift = 0.5 * density * vel * vel * chord * coefficients.lift * length;
-//         double drag = 0.5 * density * vel * vel * chord * coefficients.drag * length;
-
-//         // project to element local frame
-//         double lift_local = lift * cos(alpha) + drag * sin(alpha);
-//         double drag_local = lift * sin(alpha) - drag * cos(alpha);
-
-//         // transform from local to global load
-//         // use chrono convention
-//         auto load_local = ChVector<double>(0.0, lift_local, -drag_local);
-//         auto load_global = properties.rotation.Rotate(load_local);
-//         loads[ii] = load_global;
-//     }
-// }
+chrono::ChVector<double> BladeAero::get_total_load() {
+    auto total = chrono::ChVector<double>(0.0, 0.0, 0.0);
+    for (auto& load : loads) {
+        total += load;
+    }
+    return total;
+}

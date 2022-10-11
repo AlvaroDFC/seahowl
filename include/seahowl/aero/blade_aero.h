@@ -56,6 +56,9 @@ class BladeAero {
     void compute_distances_from_tip();
     void compute_distances_from_hub(chrono::ChVector<double> hub_apex_position, double hub_radius);
     void compute_radii(chrono::ChVector<double> hub_apex_position);
+    chrono::ChVector<double> get_average_wind_velocity();
+    chrono::ChVector<double> get_total_load();
+    chrono::ChVector<double> get_total_load_barycenter();
     // void compute_wind_loads_bemt(WindModel& wind_model, double time);
 };
 

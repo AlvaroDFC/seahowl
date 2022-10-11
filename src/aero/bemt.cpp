@@ -8,7 +8,6 @@
 #include <chrono/core/ChVector.h>
 #include <chrono/core/ChVector2.h>
 
-
 double seahowl::aero::get_phi(const chrono::ChVector2<double>& fluid_velocity) {
     double phi = atan2(fluid_velocity.y(), -fluid_velocity.x());
     return phi;
@@ -72,8 +71,7 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
 
         // get coefficients from angle of attack
         double phi = seahowl::aero::get_phi(local_velocity_rotor);
-        double alpha =
-            seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
+        double alpha = seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
         auto coefficients =
             seahowl::aero::get_aero_coefficients_from_alpha(alpha, element.properties.airfoil_properties);
 
@@ -170,18 +168,18 @@ void seahowl::aero::apply_tower_shadow_effect_on_wind(chrono::ChVector<double>& 
                                                       const chrono::ChVector<double>& position,
                                                       double blade_azimuth,
                                                       const seahowl::aero::TowerAero& tower_aero) {
-    if (blade_azimuth > chrono::CH_C_PI / 2.0 && blade_azimuth < 3.0 * chrono::CH_C_PI / 2.0) {
+    if (blade_azimuth > chrono::CH_C_PI / 2.0 || blade_azimuth < -chrono::CH_C_PI / 2.0) {
         // get wind velocity in tower reference frame
-        auto wind_velocity_tower0 = tower_aero.elements.back().properties.rotation.RotateBack(wind_velocity);
+        auto& towertop_position = tower_aero.elements.back().properties.coordinates;
+        auto& towertop_rotation = tower_aero.elements.back().properties.rotation;
+        auto wind_velocity_tower0 = towertop_rotation.RotateBack(wind_velocity);
         // only take wind velocity perpendicular to tower axis
         auto wind_velocity_tower = wind_velocity_tower0;
         wind_velocity_tower.Set(0.0, wind_velocity.y(), wind_velocity_tower.z());
 
         // project element coordinates to tower reference frame
         auto& tower_top = tower_aero.elements.back();
-        auto& tower_top_coords = tower_aero.elements.back().properties.coordinates;
-        auto coordinates_projected =
-            -tower_aero.elements.back().properties.rotation.RotateBack(position - tower_top_coords);
+        auto coordinates_projected = -towertop_rotation.RotateBack(position - towertop_position);
 
         // find tower radius
         auto tower_length =
@@ -194,11 +192,12 @@ void seahowl::aero::apply_tower_shadow_effect_on_wind(chrono::ChVector<double>& 
             auto xx2 = pow(xx, 2);
             auto yy = coordinates_projected.y();
             auto yy2 = pow(yy, 2);
-            wind_velocity_tower *= (1.0 + (yy2 - xx2) / pow(yy2 + xx2, 2) * pow(tower_radius, 2));
-            wind_velocity_tower.Set(wind_velocity_tower0.x(), wind_velocity_tower.y(), wind_velocity_tower.z());
+            wind_velocity_tower =
+                (wind_velocity_tower + wind_velocity_tower * pow(tower_radius, 2) / pow(yy2 + xx2, 2) *
+                                           chrono::ChVector<double>(0.0, (-2.0 * xx * yy), (yy2 - xx2)));
 
             // correct wind velocity
-            wind_velocity = tower_aero.elements.back().properties.rotation.Rotate(wind_velocity_tower);
+            wind_velocity = towertop_rotation.Rotate(wind_velocity_tower);
         }
     }
 }

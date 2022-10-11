@@ -200,10 +200,9 @@ double RotorElasto::get_rpm() const {
 }
 
 double RotorElasto::get_azimuth() const {
-    auto rotation_relative = (body_hub->GetRot() * body_shaft->GetRot().GetInverse());
-    double angle = 0.0;
-    auto axis = chrono::ChVector<double>(0.0, 0.0, 0.0);
-    rotation_relative.Q_to_AngAxis(angle, axis);
+    auto rotation_relative = body_shaft->GetCoord().TransformParentToLocal(
+        body_hub->GetCoord()).rot.Q_to_Euler123();
+    double angle = rotation_relative.z();
     return angle;
 }
 
