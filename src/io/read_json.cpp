@@ -301,7 +301,9 @@ seahowl::core::Turbine get_turbine_from_json(std::vector<std::string> filepaths_
     drivetrain.at("generator_efficiency").get_to(turbine.generator_efficiency);
     turbine.generator_efficiency /= 100.0;
     // add inertia of generator to hub directly
-    turbine.rotor.elasto.hub.inertia += drivetrain.at("generator_inertia");
+    double drivetrain_inertia;
+    drivetrain.at("generator_inertia").get_to(drivetrain_inertia);
+    turbine.rotor.elasto.hub.inertia += drivetrain_inertia;
 
     return turbine;
 }

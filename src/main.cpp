@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 // general options
 #ifdef HAVE_IRRLICHT
-    bool visualization_on = false;
+    bool visualization_on = true;
     chrono::SetChronoDataPath(CHRONO_DATA_DIR);  // Add path to texture data
     chrono::SetChronoOutputPath(".");
 #else

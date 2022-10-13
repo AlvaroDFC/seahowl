@@ -16,7 +16,7 @@ double get_alpha_from_phi(const double phi, const double pitch);
 
 double get_alpha(const chrono::ChVector2<double>& fluid_velocity, const double pitch);
 
-AirfoilCoefficients& get_aero_coefficients_from_alpha(
+AirfoilCoefficients get_aero_coefficients_from_alpha(
     const double alpha,
     std::vector<AirfoilProperties>& airfoil_properties);
 

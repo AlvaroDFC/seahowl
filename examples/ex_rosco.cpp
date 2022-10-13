@@ -5,10 +5,12 @@ int main(int argc, char* argv[]) {
     seahowl::servo::DisconController discon_params;
 
     std::cout << "Initialize the controller\n";
-    discon_params.Init(u8"controller/DISCON.IN");
+    discon_params.ResetAll();
+    discon_params.SetINFILE(u8"../data/controller/DISCON.IN");
 
     std::cout << "Call the controller\n";
     discon_params.Call();
+    discon_params.SetAvrSWAP(1, 1.0);
 
     std::cout << "Time  : " << discon_params.m_time << "\n";
     std::cout << "DT    : " << discon_params.m_dt << "\n";

@@ -68,13 +68,14 @@ TEST(test_blade, mass_deflection) {
     ASSERT_NEAR(blade_mass, blade->get_mass(), 1.0);
 
     // check deflection from gravity (edge)
-    double deflection_edge = -1.4705;
+    double deflection_edge = -1.2164;
+    blade->rotate(CH_C_PI, VECT_Z);
     system.DoStaticLinear();
     ASSERT_NEAR(deflection_edge, blade->nodes.back()->GetPos().y(), 0.001);
 
     // check deflection from gravity (flap)
-    double deflection_flap = 1.6295;
-    blade->rotate(-CH_C_PI / 2.0, VECT_Z);
+    double deflection_flap = 2.9169;
+    blade->rotate(CH_C_PI / 2.0, VECT_Z);
     system.DoStaticLinear();
     ASSERT_NEAR(deflection_flap, blade->nodes.back()->GetPos().y(), 0.001);
 }
@@ -331,7 +332,7 @@ TEST(test_turbine, rpm_initial_pitch) {
     while (time < 50) {
         // prestep
         // compute forces
-        turbine.rotor.aero.compute_wind_loads_bemt(wind_model, time);
+        turbine.compute_wind_loads(wind_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

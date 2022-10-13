@@ -28,11 +28,11 @@ double seahowl::aero::get_alpha(const chrono::ChVector2<double>& fluid_velocity,
     return alpha;
 }
 
-seahowl::aero::AirfoilCoefficients& seahowl::aero::get_aero_coefficients_from_alpha(
+seahowl::aero::AirfoilCoefficients seahowl::aero::get_aero_coefficients_from_alpha(
     const double alpha,
     std::vector<seahowl::aero::AirfoilProperties>& airfoil_properties) {
     // get coefficients from angle of attack
-    auto& coefficients = airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
+    auto coefficients = airfoil_properties[0].find_coefficients(alpha * 180 / chrono::CH_C_PI);
     return coefficients;
 }
 
