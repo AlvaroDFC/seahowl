@@ -150,6 +150,7 @@ set(SEAHOWL_SOURCES
     src/aero/blade_aero.cpp
     src/aero/rotor_aero.cpp
     src/aero/tower_aero.cpp
+    src/aero/wind_models.cpp
 
     src/servo/controller.cpp
 

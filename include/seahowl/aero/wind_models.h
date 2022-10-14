@@ -13,14 +13,11 @@ class WindModel {
   public:
     double density = 1.225;  ///< Air density
 
-    WindModel() {}
-    ~WindModel() {}
+    WindModel();
+    ~WindModel();
 
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const {
-        return chrono::ChVector<double>(0.0, 0.0, 0.0);
-    };
-
-    double get_density() const { return density; }
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const;
+    double get_density() const;
 };
 
 /**@brief Constant wind models */
@@ -32,22 +29,11 @@ class ConstantWind : public WindModel {
     double reference_length = 240.0;
     chrono::ChVector<double> direction_gravity;
 
-    ConstantWind() {
-        wind_velocity = chrono::ChVector<double>(0.0, 0.0, 0.0);
-        direction_gravity = chrono::ChVector<double>(0.0, 0.0, -1.0);
-    }
+    ConstantWind();
+    ~ConstantWind();
 
-    ~ConstantWind() {}
-
-    void set_wind_velocity(chrono::ChVector<double> velocity) { wind_velocity = velocity; }
-
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const override {
-        double distance = position ^ (-direction_gravity);
-        if (distance > reference_length) {
-            distance = reference_length;
-        }
-        return wind_velocity * pow(distance / reference_height, shear_coefficient);
-    }
+    void set_wind_velocity(chrono::ChVector<double> velocity);
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const;
 };
 
 /**@brief Wind ramp model */
@@ -62,31 +48,12 @@ class WindRamp : public WindModel {
     double reference_length = 240.0;
     chrono::ChVector<double> direction_gravity;
 
-    WindRamp() {
-        wind_velocity_start = chrono::ChVector<double>(0.0, 0.0, 0.0);
-        wind_velocity_stop = chrono::ChVector<double>(0.0, 0.0, 0.0);
-        direction_gravity = chrono::ChVector<double>(0.0, 0.0, -1.0);
-    }
+    WindRamp();
+    ~WindRamp();
 
-    ~WindRamp() {}
-
-    void set_wind_velocity_start(chrono::ChVector<double> velocity) { wind_velocity_start = velocity; }
-    void set_wind_velocity_stop(chrono::ChVector<double> velocity) { wind_velocity_stop = velocity; }
-
-    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const override {
-        auto velocity = wind_velocity_start;
-        if (time >= time_start) {
-            double w1 = 1.0 - std::min((time - time_start) / time_stop, 1.0);
-            double w2 = 1.0 - w1;
-            velocity = w1 * wind_velocity_start + w2 * wind_velocity_stop;
-        }
-        double distance = position ^ (-direction_gravity);
-        if (distance > reference_length) {
-            distance = reference_length;
-        }
-        velocity *= pow(distance / reference_height, shear_coefficient);
-        return velocity;
-    }
+    void set_wind_velocity_start(chrono::ChVector<double> velocity);
+    void set_wind_velocity_stop(chrono::ChVector<double> velocity);
+    virtual chrono::ChVector<double> get_wind_velocity(chrono::ChVector<double>& position, double time) const;
 };
 
 }  // namespace aero
