@@ -50,7 +50,7 @@ struct DisconController {
     /// <param name="omega">rotor speed</param>
     /// <param name="pitch">pitch collective</param>
     /// <param name="nblades">number of blades</param>
-    void Init(double time, double dt, double omega, double pitch_collective, double rotor_azimuth, size_t nblades);
+    void Init();
 
     /// <summary>
     /// Call the DISCON controller
@@ -154,7 +154,7 @@ struct DisconController {
     static constexpr size_t MAX_SWAP = 500;
 
     float avrSWAP[MAX_SWAP];
-    int aviFAIL = 1;
+    int aviFAIL;
     char accINFILE[4096];
     char avcOUTNAME[1024];
     char avcMSG[4096];

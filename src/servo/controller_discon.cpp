@@ -90,14 +90,9 @@ void seahowl::servo::ControllerDISCON::init(double time,
     // update variables
     update_turbine_variables(time, dt, omega_rotor, omega_generator, pitch_collective, rotor_azimuth, 0.0);
 
-    pImpl.SetAvrSWAP(50, 500.0);  // self.char_buffer
-    pImpl.SetAvrSWAP(51, 500.0);  // self.char_buffer
-    pImpl.SetAvrSWAP(27, 10.0);   // estimated wind speed (needs to be != 0 qt init for it to work in ROSCO!)
+    pImpl.SetAvrSWAP(27, 10.0);  // estimated wind speed (needs to be != 0 at init for it to work in ROSCO!)
 
-    // First step
-    pImpl.ResetFirst();
-    pImpl.Call();
-    pImpl.SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first, which was already just called)
+    pImpl.Init();
 }
 
 double seahowl::servo::ControllerDISCON::get_torque_elec() {
@@ -380,6 +375,19 @@ not... IF (LocalVar%iStatus == 0) THEN LocalVar%BlPitch(1) = avrSWAP(4) LocalVar
 
 
     */
+
+void seahowl::servo::DisconController::Init() {
+    avrSWAP[58] = 500;  // Buffer chaar size
+    avrSWAP[50] = 500;  // self.char_buffer
+    avrSWAP[51] = 500;  // self.char_buffer
+
+    aviFAIL = 1;
+
+    // First step
+    ResetFirst();
+    Call();
+    SetAvrSWAP(1, 1.0);  // iStatus : standard  step (not the first, which was already just called)
+};
 
 void seahowl::servo::DisconController::ResetAll() {
     for (auto& v : avrSWAP) {
