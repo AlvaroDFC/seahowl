@@ -5,22 +5,17 @@
 #include <vector>
 #include <memory>
 
+#include <chrono/physics/ChBody.h>
+#include <chrono/physics/ChSystemSMC.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChLinkRevolute.h>
+
 namespace seahowl {
 namespace elasto {
 class BladeElasto;
 class TowerElasto;  ///@todo move out of rotor
 }  // namespace elasto
 }  // namespace seahowl
-
-#include <chrono/core/ChVector.h>
-
-namespace chrono {
-class ChBody;
-class ChLinkMateFix;
-class ChLinkRevolute;
-class ChSystemSMC;
-
-}  // namespace chrono
 
 namespace seahowl {
 namespace elasto {
