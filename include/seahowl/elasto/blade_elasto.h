@@ -14,8 +14,10 @@ namespace seahowl {
 namespace elasto {
 
 /**@brief Elastodynamic model for blade */
-class BladeElasto : public ElastoFEAComponent {
+class BladeElasto : public ComponentElastoFEA {
   public:
+    std::vector<BladeReferencePointElasto> reference_points;
+    std::vector<BladeReferencePointElasto> discretized_points;
     std::vector<std::shared_ptr<chrono::ChLoad<ChLoaderWeighted>>> loaders_aero;
 
     double pitch = 0.0;     ///< pitch of blade
@@ -24,19 +26,15 @@ class BladeElasto : public ElastoFEAComponent {
 
     BladeElasto();
 
-    void assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh);
     void build();
-    void build_nodes();
     void build_elements_tapered_timoshenko();
     void build_elements_tapered_timoshenko_fpm();
     // void build_loads(chrono::ChSystemSMC& system);
-    virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion) override;
-    void evaluate_position_rotation(chrono::ChVector<double>& position,
-                                    chrono::ChQuaternion<double>& rotation,
-                                    int element_index,
-                                    double eta);
-    void reset_loads();
-    void accumulate_element_load(chrono::ChVector<double> load, int element_index, double eta);
+    virtual void set_damping_coefficients(double axial, double edge, double flap, double torsion);
+    virtual void evaluate_position_rotation(chrono::ChVector<double>& position,
+                                            chrono::ChQuaternion<double>& rotation,
+                                            int element_index,
+                                            double eta) const override;
     void apply_pitch_increment(double pitch_increment);
 };
 

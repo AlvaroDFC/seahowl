@@ -126,7 +126,6 @@ endif()
 # ================
 add_library( seahowl_core )
 
-
 # core
 set(SEAHOWL_CORE_SOURCES
     src/core/reference_point.cpp
@@ -157,6 +156,7 @@ set(SEAHOWL_ELASTO_SOURCES
     src/elasto/reference_point_elasto.cpp
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
+    src/elasto/mooring_elasto.cpp
     )
 set(SEAHOWL_ELASTO_HEADERS
     include/seahowl/elasto/blade_elasto.h
@@ -164,6 +164,7 @@ set(SEAHOWL_ELASTO_HEADERS
     include/seahowl/elasto/reference_point_elasto.h
     include/seahowl/elasto/rotor_elasto.h
     include/seahowl/elasto/tower_elasto.h
+    include/seahowl/elasto/mooring_elasto.h
     include/seahowl/elasto/utils_elasto.h
     )
 source_group(elasto FILES

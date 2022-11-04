@@ -18,15 +18,6 @@ using namespace seahowl::elasto;
 
 BladeElasto::BladeElasto() {}
 
-void BladeElasto::assemble(chrono::ChSystemSMC& system, std::shared_ptr<chrono::fea::ChMesh> mesh) {
-    for (auto node : nodes) {
-        mesh->AddNode(node);
-    }
-    for (auto element : elements) {
-        mesh->AddElement(element);
-    }
-}
-
 void BladeElasto::build() {
     // check that enough reference points were defined to create elements (at least 2)
     if (reference_points.size() <= 2) {
@@ -42,7 +33,24 @@ void BladeElasto::build() {
 
     // build
     discretized_points = seahowl::core::get_discretized_points(discretization_fractions, reference_points);
-    build_nodes();
+    ///@todo find better way to build ReferencePointElasto from BladeReferencePointElasto
+    std::vector<ReferencePointElasto> discretized_points0;
+    for (int ii = 0; ii < discretized_points.size(); ii++) {
+        auto discretized_point0 = ReferencePointElasto();
+        discretized_point0.coordinates = discretized_points[ii].coordinates;
+        discretized_point0.fraction = discretized_points[ii].fraction;
+        discretized_points0.push_back(discretized_point0);
+    }
+    build_nodes(discretized_points0);
+    // apply structural twist
+    for (int ii = 0; ii < nodes.size(); ii++) {
+        auto& node = nodes[ii];
+        auto& point = discretized_points[ii];
+        auto axis = node->TransformDirectionLocalToParent(chrono::ChVector<double>(1.0, 0.0, 0.0));
+        chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(-point.structural_twist, axis));
+        nodes[ii]->Frame().SetRot(twist_matrix * chrono::ChMatrix33(nodes[ii]->Frame().coord.rot));
+    }
+
     if (fpm_mode) {
         build_elements_tapered_timoshenko_fpm();
     } else {
@@ -50,39 +58,6 @@ void BladeElasto::build() {
     }
     // commented out since loads are applied to nodes;
     // build_loads(system);
-};
-
-void BladeElasto::build_nodes() {
-    nodes.clear();
-    const auto nnodes = discretized_points.size();
-    for (size_t ii = 0; ii < nnodes; ii++) {
-        auto& discretized_point = discretized_points[ii];
-        auto& node_pos = discretized_point.coordinates;
-
-        // get node coordinate system
-        chrono::ChVector<> node_axis;
-        chrono::ChMatrix33<> node_rotation;
-        if (ii == 0) {
-            node_axis = (discretized_points[ii + 1].coordinates - node_pos).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
-        } else if (ii == nnodes - 1) {
-            node_axis = (node_pos - discretized_points[ii - 1].coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
-        } else {
-            node_axis =
-                (discretized_points[ii + 1].coordinates - discretized_points[ii - 1].coordinates).GetNormalized();
-            node_rotation.Set_A_Xdir(node_axis, chrono::VECT_Y);
-        }
-        // apply structural twist
-        chrono::ChMatrix33<> twist_matrix(Q_from_AngAxis(-discretized_point.structural_twist, node_axis));
-        node_rotation = twist_matrix * node_rotation;
-        auto node_frame = chrono::ChFrame<>(node_pos, node_rotation);
-
-        // make node
-        auto node = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(node_frame);
-        // add node to blade nodes vector
-        nodes.push_back(node);
-    };
 };
 
 void BladeElasto::build_elements_tapered_timoshenko() {
@@ -233,8 +208,9 @@ void BladeElasto::set_damping_coefficients(double axial, double edge, double fla
         point.damping_coefficients = damping_coefficients;
     }
 
-    for (auto element : elements) {
-        auto section = element->GetTaperedSection();
+    for (auto& element : elements) {
+        auto section =
+            std::dynamic_pointer_cast<chrono::fea::ChElementBeamTaperedTimoshenko>(element)->GetTaperedSection();
         section->GetSectionA()->SetBeamRaleyghDamping(damping_coefficients);
         section->GetSectionB()->SetBeamRaleyghDamping(damping_coefficients);
     }
@@ -243,48 +219,15 @@ void BladeElasto::set_damping_coefficients(double axial, double edge, double fla
 void BladeElasto::evaluate_position_rotation(chrono::ChVector<double>& position,
                                              chrono::ChQuaternion<double>& rotation,
                                              int element_index,
-                                             double eta) {
-    auto& element = elements[element_index];
+                                             double eta) const {
+    auto& element = std::dynamic_pointer_cast<chrono::fea::ChElementBeamTaperedTimoshenko>(elements[element_index]);
 
     // // unfortunately line below does not always work (returns nans sometimes when fpm_mode is true)
     element->EvaluateSectionFrame(eta, position, rotation);
-
     auto w1 = std::abs(eta - 1.0) * 0.5;
     auto w2 = std::abs(eta + 1.0) * 0.5;
     position = w1 * element->GetNodeA()->GetPos() + w2 * element->GetNodeB()->GetPos();
-    rotation = (element->GetNodeA()->GetRot());
-}
-
-void BladeElasto::reset_loads() {
-    for (auto node : nodes) {
-        node->SetForce({0.0, 0.0, 0.0});
-        node->SetTorque({0.0, 0.0, 0.0});
-    }
-}
-
-void BladeElasto::accumulate_element_load(chrono::ChVector<double> load, int element_index, double eta) {
-    if (element_index >= elements.size() || element_index < 0) {
-        throw std::runtime_error("Element index " + std::to_string(element_index) + " does not exist (max " +
-                                 std::to_string(elements.size()) + ").");
-    }
-    auto& element = elements[element_index];
-    chrono::ChVector<double> position{0.0, 0.0, 0.0};
-    chrono::ChQuaternion<double> rotation{0.0, 0.0, 0.0, 0.0};
-    element->EvaluateSectionFrame(eta, position, rotation);
-
-    // load on first node
-    double weight0 = 0.5 * abs(eta - 1);
-    auto load0 = load * weight0;
-    auto node0 = element->GetNodeA();
-    node0->SetForce(node0->GetForce() + load0);
-    node0->SetTorque(node0->GetTorque() + (position - node0->GetPos()) % load0);
-
-    // load on second node
-    double weight1 = 0.5 * abs(eta - 1);
-    auto load1 = load * weight1;
-    auto node1 = element->GetNodeB();
-    node1->SetForce(node1->GetForce() + load1);
-    node1->SetTorque(node1->GetTorque() + (position - node1->GetPos()) % load1);
+    rotation = element->GetNodeA()->GetRot();
 }
 
 void BladeElasto::apply_pitch_increment(double pitch_increment) {
