@@ -6,6 +6,7 @@ import json
 import jsbeautifier
 import numpy as np
 import copy
+import argparse
 
 options = jsbeautifier.default_options
 options.indent_size = 2
@@ -64,8 +65,9 @@ def convert_polar_file(filename, save_directory=None):
     return airfoils_per_reynolds
 
 
-def convert_aerodyn_files(filename, blade_filename, save_directory=None):
+def convert_aerodyn_files(filename, save_directory=None):
     filepath = Path(filename)
+    filedir = filepath.parents[0]
     aerodyn_json = dict()
     polar_filenames = list()
     airfoil_files = list()
@@ -86,7 +88,10 @@ def convert_aerodyn_files(filename, blade_filename, save_directory=None):
                     )
                     airfoil_files.append(str(polar_filepath.with_suffix(".json")))
 
-    filepath = Path(blade_filename)
+            if len(words) >= 2 and words[1] == "ADBlFile(1)":
+                path_blade_file = filedir / words[0].replace('"', '')
+
+    filepath = path_blade_file
     aerodyn_json = dict()
     polar_filenames = list()
     reference_points = list()
@@ -255,7 +260,7 @@ def convert_beamdyn_file(filename, save_directory=None):
     return beamdyn_json
 
 
-def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
+def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json, save_directory=None):
     blade_length = aerodyn_json["reference_points"][-1]["coordinates"][2]
     aerodyn_fractions = list()
     beamdyn_fractions = list()
@@ -287,6 +292,11 @@ def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json):
         point["mass_matrix"] = mass_matrix.tolist()
         point["coordinates"][1] = 0.0
         point["stiffness_matrix"] = stiffness_matrix.tolist()
+
+    # save to file
+    if save_directory is not None:
+        fullpath = Path(save_directory) / "blade.json"
+        save_json(merged_json, fullpath)
 
     return merged_json
 
@@ -368,7 +378,7 @@ def convert_aerodyn_tower_file(filename, save_directory=None):
 
     return aerodyn_json
 
-def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json):
+def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json, save_directory=None):
     aerodyn_fractions = list()
     elastodyn_fractions = list()
     for point in aerodyn_json["reference_points"]:
@@ -378,7 +388,6 @@ def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json):
 
     idx = 0
     merged_json = copy.deepcopy(elastodyn_json)
-    print(elastodyn_fractions)
     for idx_b, point in enumerate(merged_json["reference_points"]):
         afraction = float(elastodyn_fractions[idx_b])
         bfraction0 = float(aerodyn_fractions[idx])
@@ -390,7 +399,6 @@ def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json):
         bfraction_range = bfraction1 - bfraction0
         dd1 = np.array(aerodyn_json["reference_points"][idx]["diameter"])
         dd2 = np.array(aerodyn_json["reference_points"][idx + 1]["diameter"])
-        print(afraction, bfraction1, idx, dd1, idx+1, dd2)
         cd1 = np.array(aerodyn_json["reference_points"][idx]["drag_coefficient"])
         cd2 = np.array(aerodyn_json["reference_points"][idx + 1]["drag_coefficient"])
         coeff1 = 1.0 - (afraction - bfraction0) / bfraction_range
@@ -400,28 +408,69 @@ def merge_elastodyn2aerodyn_tower(elastodyn_json, aerodyn_json):
 
         point["diameter"] = dd
         point["drag_coefficient"] = cd
+    
+    # save to file
+    if save_directory is not None:
+        fullpath = Path(save_directory) / "tower.json"
+        save_json(merged_json, fullpath)
 
     return merged_json
 
 
+def convert_openfast_fst(filename, save_directory=None):
+    filepath = Path(filename)
+    filedir = filepath.parents[0]
+
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+        npoints = 0
+        start_idx = 0
+        npoints = 0
+        for ii, line in enumerate(lines):
+            words = line.split()
+            if words[1] == 'EDFile':
+                path_ED = filedir / words[0].replace('"', '')
+                with open(path_ED, "r") as f2:
+                    lines2 = f2.readlines()
+                    for line2 in lines2:
+                        words2 = line2.split()
+                        if words2[1] == 'TwrFile':
+                            path_ED_tower = path_ED.parents[0] / words2[0].replace('"', '')
+                            break
+                tower_elasto_json = convert_elastodyn_tower_file(filename=path_ED_tower, save_directory=save_directory)
+            if words[1] == 'BDBldFile(1)':
+                path_BD = filedir / words[0].replace('"', '')
+                with open(path_BD, "r") as f2:
+                    lines2 = f2.readlines()
+                    for line2 in lines2:
+                        words2 = line2.split()
+                        if words2[1] == 'BldFile':
+                            path_BD_blade = path_BD.parents[0] / words2[0].replace('"', '')
+                            break
+                blade_elasto_json = convert_beamdyn_file(filename=path_BD_blade, save_directory=save_directory)
+            if words[1] == 'AeroFile':
+                path_AD = filedir / words[0].replace('"', '')
+                blade_aero_json = convert_aerodyn_files(filename=path_AD, save_directory=save_directory)
+                tower_aero_json = convert_aerodyn_tower_file(filename=path_AD, save_directory=save_directory)
+        blade_json = merge_beamdyn2aerodyn(beamdyn_json=blade_elasto_json, aerodyn_json=blade_aero_json, save_directory=save_directory)
+        tower_json = merge_elastodyn2aerodyn_tower(elastodyn_json=tower_elasto_json, aerodyn_json=tower_aero_json, save_directory=save_directory)
+
+
 if __name__ == "__main__":
 
-    save_directory = "./converted"
+    # make command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--filename", help="Name of OpenFAST .fst file.", default="./IEA-15-240-RWT-Monopile.fst"
+    )
+    parser.add_argument(
+        "--save-directory", help="Directory to save output files.", default="./converted"
+    )
+    args = parser.parse_args()
 
-    filename = "./IEA-15-240-RWT_AeroDyn15.dat"
-    blade_filename = "./IEA-15-240-RWT_AeroDyn15_blade.dat"
-    aerodyn_blade_json = convert_aerodyn_files(filename, blade_filename, save_directory)
+    # get arguments
+    filename = args.filename
+    save_directory = Path(args.save_directory)
 
-    beamdyn_filename = "./IEA-15-240-RWT_BeamDyn_blade.dat"
-    beamdyn_blade_json = convert_beamdyn_file(beamdyn_filename, save_directory)
-
-    elastodyn_tower_filename = "./IEA-15-240-RWT-Monopile_ElastoDyn_tower.dat"
-    elastodyn_tower_json = convert_elastodyn_tower_file(elastodyn_tower_filename, save_directory)
-
-    merged_blade_json = merge_beamdyn2aerodyn(beamdyn_blade_json, aerodyn_blade_json)
-    save_json(merged_blade_json, save_directory + "/blade.json")
-
-    aerodyn_tower_json = convert_aerodyn_tower_file(filename, save_directory)
-
-    merged_tower_json = merge_elastodyn2aerodyn_tower(elastodyn_tower_json, aerodyn_tower_json)
-    save_json(merged_tower_json, save_directory + "/tower.json")
+    # convert files
+    convert_openfast_fst(filename=filename, save_directory=save_directory)
