@@ -17,7 +17,7 @@ double seahowl::aero::get_alpha_from_phi(const double phi, const double pitch) {
     double alpha = phi - pitch;
     // check that alpha is still in range
     if (alpha < -chrono::CH_C_PI || alpha > chrono::CH_C_PI) {
-        alpha = abs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
+        alpha = fabs(std::fmod((alpha + 3 * chrono::CH_C_PI), 2 * chrono::CH_C_PI)) - chrono::CH_C_PI;
     }
     return alpha;
 }
@@ -55,9 +55,9 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
     auto ap = element.induction_factor_tangential;
     // limits
     double aa_max = 1.0;
-    double aa_min = 0.0;
+    double aa_min = -1.0;
     double ap_max = 1.5;
-    double ap_min = 0.0;
+    double ap_min = -1.0;
     for (int ii = 1; ii <= max_iter; ii++) {
         // store previous alpha
         alpha_previous = alpha;
@@ -71,7 +71,7 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
 
         // get coefficients from angle of attack
         double phi = seahowl::aero::get_phi(local_velocity_rotor);
-        double alpha = seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
+        alpha = seahowl::aero::get_alpha_from_phi(phi, (element.pitch + element.properties.structural_twist));
         auto coefficients =
             seahowl::aero::get_aero_coefficients_from_alpha(alpha, element.properties.airfoil_properties);
 
@@ -88,24 +88,24 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
         double loss_factor = 1.0;
         if (tip_loss) {
             // Prandtl's approximation for tip-loss factor
-            loss_factor *= (2.0 / chrono::CH_C_PI) * std::acos(std::exp(nblades * (-element.distance_from_tip) /
-                                                               (2.0 * element.radius * std::fabs(sin_phi))));
+            loss_factor *= (2.0 / chrono::CH_C_PI) *
+                           acos(exp(nblades * (-element.distance_from_tip) / (2.0 * element.radius * fabs(sin_phi))));
         }
         if (hub_loss) {
             // hub loss
             double hub_radius = (element.radius - element.distance_from_hub);
-            loss_factor *= (2.0 / chrono::CH_C_PI) * std::acos(std::exp(nblades * (-element.distance_from_hub) /
-                                                               (2.0 * hub_radius * std::fabs(sin_phi))));
+            loss_factor *= (2.0 / chrono::CH_C_PI) *
+                           acos(exp(nblades * (-element.distance_from_hub) / (2.0 * hub_radius * fabs(sin_phi))));
         }
 
         // update induction factors
 
+        double tol_induction = 1e-6;  // tolerance for induction variables to avoid singularities
         // axial induction, based on AeroDyn v15 implementation
         double kk = element.chord_solidity * cn / (4.0 * loss_factor * pow(sin_phi, 2));
         if (kk <= 2.0 / 3.0) {
-            if (kk == -1.0) {
-                double temp = -aa_max * (1.0 + kk);
-                aa = (temp > 0.0) - (temp < 0.0);  // sign of temp
+            if (fabs(kk + 1.0) < tol_induction) {
+                aa = copysign(aa_max, -(1.0 + kk));
             } else {
                 aa = kk / (1.0 + kk);
             }
@@ -119,15 +119,29 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
             double g2 = temp - (4.0 / 3.0 - ff) * ff;
             double g3 = temp - (25.0 / 9.0 - 2.0 * ff);
 
-            if (abs(g3) < 1e-6) {
+            if (fabs(g3) < tol_induction) {
                 aa = 1.0 - 0.5 / sqrt(g2);
             } else {
-                aa = (g1 - sqrt(abs(g2))) / g3;
+                aa = (g1 - sqrt(fabs(g2))) / g3;
             }
         }
 
-        // tangential induction
-        ap = element.chord_solidity * ct / (4.0 * sin_phi * cos_phi * loss_factor) * (1.0 + ap);
+        // @todo fix tangential induction factor calculation (convergence)
+        //// tangential induction
+        //if (fabs(cos_phi) < tol_induction) {
+        //    ap = -1.0;
+        //} else {
+        //    double kp = element.chord_solidity * ct / (4.0 * loss_factor * sin_phi * cos_phi);
+        //    if (local_velocity_rotor.y() < 0.0) {
+        //        kp = -kp;
+        //    }
+        //    if (fabs(kp - 1.0) < tol_induction) {
+        //        ap = copysign(ap_max, 1.0 - kp);
+        //    } else {
+        //        ap = kp / (1.0 - kp);
+        //    }
+        //}
+        ap = 0.0;  // deactivate tangential induction
 
         // apply limits on induction factors
         if (aa > aa_max) {
@@ -141,16 +155,16 @@ chrono::ChVector2<double> seahowl::aero::get_induced_velocity(seahowl::aero::Bla
             ap = ap_max;
         }
 
-        if ((fabs(aa - aa_previous) <= tol_rel * fabs(std::max(aa_previous, aa))) &&
-                (fabs(ap - ap_previous) <= tol_rel * fabs(std::max(ap_previous, ap))) ||
-            (fabs(aa - aa_previous) <= tol_abs) && (fabs(ap - ap_previous) <= tol_abs)) {
+        if ((fabs(alpha - alpha_previous) <= tol_rel * fabs(std::max(alpha_previous, alpha))) ||
+            (fabs(alpha - alpha_previous) <= tol_abs)) {
             break;
         } else if (ii >= max_iter) {
             std::cout << "Warning: could not converge to new induction factor after " + std::to_string(ii) +
-                             " iterations. Axial: " + std::to_string(aa) + ", previous:" + std::to_string(aa_previous) +
-                             ". Tangential: " + std::to_string(ap) + ", previous " + std::to_string(ap_previous) +
-                             ". Alpha: " + std::to_string(alpha) + ", previous: " + std::to_string(alpha_previous) +
-                             ". Local velocity in: (" + std::to_string(local_velocity_rotor0.x()) + ", " +
+                             " iterations. Axial: " + std::to_string(aa) +
+                             ", previous: " + std::to_string(aa_previous) + ". Tangential: " + std::to_string(ap) +
+                             ", previous: " + std::to_string(ap_previous) + ". Alpha: " + std::to_string(alpha) +
+                             ", previous: " + std::to_string(alpha_previous) + ". Local velocity in: (" +
+                             std::to_string(local_velocity_rotor0.x()) + ", " +
                              std::to_string(local_velocity_rotor0.y()) + ")."
                       << std::endl;
         }
