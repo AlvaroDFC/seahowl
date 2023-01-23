@@ -1,61 +1,57 @@
 #include "seahowl/io/viz_insitu.h"
 
-#include <chrono/fea/ChVisualizationFEAmesh.h>
-
-void draw_system_init(chrono::ChSystem& system, chrono::irrlicht::ChIrrApp& application) {
+void draw_system_init(chrono::ChSystem& system, std::shared_ptr<chrono::irrlicht::ChVisualSystemIrrlicht> application) {
     // initialize default
-    application.AddTypicalLights();
-    application.AddTypicalSky();
-    application.AddTypicalCamera(irr::core::vector3df(-150, -150, 150), irr::core::vector3df(0, 0, 150.));
+    application->AddTypicalLights();
+    application->AddSkyBox();
+    application->AddCamera(chrono::ChVector<double>(-150, -150, 150), chrono::ChVector<double>(0, 0, 150.));
 
     // meshes
     for (auto mesh : system.Get_meshlist()) {
         // beams
-        auto beams_visu = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(mesh.get()));
-        beams_visu->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_ELEM_BEAM_MZ);
+        auto beams_visu = chrono_types::make_shared<chrono::ChVisualShapeFEA>(mesh);
+        beams_visu->SetFEMdataType(chrono::ChVisualShapeFEA::DataType::ELEM_BEAM_MZ);
         beams_visu->SetColorscaleMinMax(-0.4, 0.4);
-        mesh->AddAsset(beams_visu);
+        mesh->AddVisualShapeFEA(beams_visu);
 
         // nodes
-        auto nodes_visu = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(mesh.get()));
-        nodes_visu->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_DOT_POS);
-        nodes_visu->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NODE_DISP_Y);
+        auto nodes_visu = chrono_types::make_shared<chrono::ChVisualShapeFEA>(mesh);
+        nodes_visu->SetFEMglyphType(chrono::ChVisualShapeFEA::GlyphType::NODE_DOT_POS);
+        nodes_visu->SetFEMdataType(chrono::ChVisualShapeFEA::DataType::NODE_DISP_Y);
         nodes_visu->SetSymbolsThickness(1.5);
         nodes_visu->SetSymbolsScale(1.0);
         nodes_visu->SetZbufferHide(false);
-        mesh->AddAsset(nodes_visu);
+        mesh->AddVisualShapeFEA(nodes_visu);
 
         // nodes coordinate system
-        auto nodes_visu2 = chrono_types::make_shared<chrono::fea::ChVisualizationFEAmesh>(*(mesh.get()));
-        nodes_visu2->SetFEMglyphType(chrono::fea::ChVisualizationFEAmesh::E_GLYPH_NODE_CSYS);
-        nodes_visu2->SetFEMdataType(chrono::fea::ChVisualizationFEAmesh::E_PLOT_NONE);
+        auto nodes_visu2 = chrono_types::make_shared<chrono::ChVisualShapeFEA>(mesh);
+        nodes_visu2->SetFEMglyphType(chrono::ChVisualShapeFEA::GlyphType::NODE_CSYS);
+        nodes_visu2->SetFEMdataType(chrono::ChVisualShapeFEA::DataType::NONE);
         nodes_visu2->SetSymbolsThickness(10.0);
         nodes_visu2->SetSymbolsScale(1.0);
         nodes_visu2->SetZbufferHide(false);
-        mesh->AddAsset(nodes_visu2);
+        mesh->AddVisualShapeFEA(nodes_visu2);
     }
 
     // bind assets
-    application.AssetBindAll();
-    application.AssetUpdateAll();
-    application.AddShadowAll();
+
+    application->AttachSystem(&system);
+    application->SetShadows(true);
 }
 
-void draw_system(chrono::ChSystem& system, chrono::irrlicht::ChIrrApp& application) {
+void draw_system(chrono::ChSystem& system, std::shared_ptr<chrono::irrlicht::ChVisualSystemIrrlicht> application) {
     // irrlicht must prepare frame to draw
-    application.BeginScene(true, true, irr::video::SColor(255, 140, 161, 192));
+    application->BeginScene(true, true, chrono::ChColor(255, 140, 161));
 
     // draw items belonging to Irrlicht scene, if any
-    application.DrawAll();
+    application->Render();
 
     // draw bodies
     for (auto body : system.Get_bodylist()) {
-        chrono::irrlicht::tools::drawCircle(application.GetVideoDriver(), 5.0, body->GetCoord());
+        chrono::irrlicht::tools::drawCircle(application.get(), 5.0, body->GetCoord());
     }
-    chrono::irrlicht::tools::drawAllCOGs(system, application.GetVideoDriver(), 5.0);
+    chrono::irrlicht::tools::drawAllCOGs(application.get(), 5.0);
 
     // grid
-    chrono::irrlicht::tools::drawGrid(application.GetVideoDriver(), 10, 10);
-
-    application.GetIGUIEnvironment()->drawAll();
+    //chrono::irrlicht::tools::drawGrid(application, 10, 10);
 }

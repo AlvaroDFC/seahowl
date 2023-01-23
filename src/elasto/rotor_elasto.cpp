@@ -56,7 +56,7 @@ void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     body_shaft->SetMass(0.0);
     // link hub to shaft
     link_shaft_hub = chrono_types::make_shared<chrono::ChLinkRevolute>();
-    link_shaft_hub->Initialize(body_hub, body_shaft, body_shaft->GetAssetsFrame());
+    link_shaft_hub->Initialize(body_hub, body_shaft, body_shaft->GetFrame_COG_to_abs());
 
     // nacelle
     body_nacelle = chrono_types::make_shared<chrono::ChBody>();
@@ -78,7 +78,7 @@ void RotorElasto::build(std::vector<std::shared_ptr<BladeElasto>> blades) {
     // link yaw bearing body to shaft body
     // link_shaft_yaw_bearing = chrono_types::make_shared<ChLinkRevolute>();
     link_shaft_yaw_bearing = chrono_types::make_shared<chrono::ChLinkMateFix>();
-    link_shaft_yaw_bearing->Initialize(body_shaft, body_yaw_bearing, body_yaw_bearing->GetAssetsFrame());
+    link_shaft_yaw_bearing->Initialize(body_shaft, body_yaw_bearing, body_yaw_bearing->GetFrame_COG_to_abs());
 
     // blades
     links_blades.clear();

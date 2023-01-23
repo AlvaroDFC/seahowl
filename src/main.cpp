@@ -1,5 +1,4 @@
 
-#include <chrono/fea/ChVisualizationFEAmesh.h>
 #include <chrono/physics/ChBodyEasy.h>
 #include <chrono/physics/ChLinkMate.h>
 #include <chrono/physics/ChSystemSMC.h>
@@ -15,7 +14,7 @@ using json = nlohmann::json;
 #endif
 
 #ifdef HAVE_IRRLICHT
-    #include <chrono_irrlicht/ChIrrApp.h>
+#include <chrono_irrlicht/ChVisualSystemIrrlicht.h>
     #include <seahowl/io/viz_insitu.h>
 #endif
 
@@ -169,10 +168,11 @@ int main(int argc, char* argv[]) {
 #endif
 
 #ifdef HAVE_IRRLICHT
-    chrono::irrlicht::ChIrrApp application(&system, L"SEAHOWL: WindTurbine",
-                                           irr::core::dimension2d<std::uint32_t>(1200, 900),
-                                           chrono::irrlicht::VerticalDir::Z, false, true);
-    application.AddTypicalLogo(logoname);
+    auto application = chrono_types::make_shared<chrono::irrlicht::ChVisualSystemIrrlicht>();
+    application->SetWindowTitle("SEAHOWL");
+    application->Initialize();
+    application->SetCameraVertical(chrono::CameraVerticalDir::Z);
+    application->AddLogo(logoname);
     draw_system_init(system, application);
 #endif
 
@@ -219,9 +219,9 @@ int main(int argc, char* argv[]) {
             }
 #endif
 #ifdef HAVE_IRRLICHT
-            application.GetDevice()->run();
+            application->GetDevice()->run();
             draw_system(system, application);
-            application.EndScene();
+            application->EndScene();
 #endif
         }
         while (system.GetChTime() >= (dt_outputs_next - dt_outputs_next * 1e-6)) {
