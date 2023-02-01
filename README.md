@@ -32,7 +32,7 @@ option(SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 
 #### Core
 
-- Chrono (7.0.3): https://github.com/projectchrono/chrono
+- Chrono (8.0.0): https://github.com/projectchrono/chrono
 - nlohmann-json (v3.10.5): https://github.com/nlohmann/json
 - ROSCO (v2.5.0): https://github.com/NREL/ROSCO
 
