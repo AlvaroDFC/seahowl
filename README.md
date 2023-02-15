@@ -101,7 +101,26 @@ It is a JSON dictionary containing:
   - **translation**: (float array of length 3) translation of turbine in space [m].
   - **rotation**: rotation of turbine (yaw) [°].
   - **file**: file path of turbine file (relative to this file path).
+  - **use_aerodyn**: whether to use AeroDyn or not for this turbine.
+  - **file_aerodyn**: path to AeroDyn .dat input file (only used if use_aerodyn is true).
+  - **file_inflowwind**: path to InflowWind .dat input file (only used if use_aerodyn is true).
 
+#### Available Wind Models
+
+- Wind ramp:
+```json
+{
+  "type": "ramp",
+  "options": {
+    "reference_height": 150,
+    "shear_coefficient": 0.12,
+     "velocity_start": [12, 0, 0],
+     "velocity_stop": [25, 0, 0],
+     "time_start": 500,
+     "time_stop": 1700   
+  }
+}
+```
 
 #### Turbine file (turbine.json)
 
