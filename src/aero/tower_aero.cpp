@@ -60,7 +60,7 @@ void TowerAero::compute_aero_loads(WindModel& wind_model, double time) {
         auto length = element.length;
         auto diameter = properties.diameter;
         auto cd = properties.drag_coefficient;
-        auto load_drag = 0.5 * density * cd * PI * diameter * velocity_normal.norm() * velocity_normal * length;
+        auto load_drag = 0.5 * density * cd * diameter * velocity_normal.norm() * velocity_normal * length;
 
         loads[ii] = load_drag;
     }
