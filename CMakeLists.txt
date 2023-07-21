@@ -7,7 +7,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # =================
 project(
     SEAHOWL
-    VERSION 0.3.2
+    VERSION 0.3.3
     DESCRIPTION "SEAHOWL: Servo-Elasto-Aero-Hydro Offsore Wind Lab"
     LANGUAGES CXX
 )
