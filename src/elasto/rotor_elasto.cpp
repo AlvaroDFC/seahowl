@@ -43,7 +43,7 @@ void RotorElasto::build() {
     body_hub->set_position((tilt_hub * body_hub->get_position()) + Vector3d(0.0, 0.0, shaft.distance_from_towertop));
     // mass and inertia
     body_hub->set_mass(hub.mass);
-    body_hub->set_inertia_diagonal(Vector3d(0., 0., hub.inertia));
+    body_hub->set_inertia_diagonal(Vector3d(hub.inertia, 0., 0.));
 
     // shaft
     body_shaft = std::make_unique<BodyElastoChrono>();
