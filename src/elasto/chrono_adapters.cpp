@@ -154,6 +154,14 @@ void BodyElastoChrono::set_inertia_diagonal(const Vector3d& inertia) {
     chobj->SetInertiaXX(vec2ch(inertia));
 }
 
+void BodyElastoChrono::set_inertia_matrix(const Eigen::Matrix<double, 3, 3>& inertia) {
+    chobj->SetInertia(inertia);
+};
+
+Eigen::Matrix<double, 3, 3> BodyElastoChrono::get_inertia_matrix() const {
+    return chobj->GetInertia();
+}
+
 void BodyElastoChrono::reset_loads() {
     chobj->Empty_forces_accumulators();
 }

@@ -92,6 +92,18 @@ class BodyElasto : public virtual EntityLoadable {
     virtual void set_inertia_diagonal(const Vector3d& inertia) = 0;
 
     /**
+     * @brief Sets inertia matrix (3x3) of body.
+     *
+     * @param[in] inertia Inertia matrix of body.
+     */
+    virtual void set_inertia_matrix(const Eigen::Matrix<double, 3, 3>& inertia) = 0;
+
+    /**
+     * @brief Returns inertia matrix (3x3) of body.
+     */
+    virtual Eigen::Matrix<double, 3, 3> get_inertia_matrix() const = 0;
+
+    /**
      * @brief Fix body in space.
      *
      * param[in] is_fixed Fixed if true, free if false.

@@ -32,6 +32,8 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def("set_mass", &seahowl::elasto::BodyElasto::set_mass)
         .def("get_mass", &seahowl::elasto::BodyElasto::get_mass)
         .def("set_inertia_diagonal", &seahowl::elasto::BodyElasto::set_inertia_diagonal)
+        .def("set_inertia_matrix", &seahowl::elasto::BodyElasto::set_inertia_matrix)
+        .def("get_inertia_matrix", &seahowl::elasto::BodyElasto::get_inertia_matrix)
         .def("set_fixed", &seahowl::elasto::BodyElasto::set_fixed);
     py::class_<seahowl::elasto::NodeElasto, std::shared_ptr<seahowl::elasto::NodeElasto>,
                seahowl::elasto::EntityLoadable>(m_elasto, "NodeElasto", pybind11::multiple_inheritance())
