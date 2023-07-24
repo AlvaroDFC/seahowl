@@ -170,10 +170,10 @@ TEST(test_blade, natural_period_dynamic_edge) {
     double time = 0.0;
     double end_time = 10.0;
     double start_time = 0.0;
-    blade.nodes.back()->set_load(Vector3d(0.0, 1000.0, 0.0));
+    blade.nodes.back()->set_force(Vector3d(0.0, 1000.0, 0.0), false);
     while (time < end_time) {
         if (time > 0.5) {
-            blade.nodes.back()->set_load(Vector3d(0.0, 0.0, 0.0));
+            blade.nodes.back()->reset_loads();
             if (blade.nodes.back()->get_position().y() < pos0 && pos_y > pos0) {
                 if (start_time == 0.0) {
                     start_time = time;
@@ -228,10 +228,10 @@ TEST(test_blade, natural_period_dynamic_flap) {
     double time = 0.0;
     double end_time = 10.0;
     double start_time = 0.0;
-    blade.nodes.back()->set_load(Vector3d(0.0, 1000.0, 0.0));
+    blade.nodes.back()->set_force(Vector3d(0.0, 1000.0, 0.0), false);
     while (time < end_time) {
         if (time > 0.5) {
-            blade.nodes.back()->set_load(Vector3d(0.0, 0.0, 0.0));
+            blade.nodes.back()->reset_loads();
             if (blade.nodes.back()->get_position().y() < pos0 && pos_y > pos0) {
                 if (start_time == 0.0) {
                     start_time = time;

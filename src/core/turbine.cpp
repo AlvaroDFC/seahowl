@@ -35,7 +35,7 @@ void Turbine::poststep(double time, double dt) {
     if (controller->has_torque_control) {
         auto torque_elec = controller->get_torque_elec() * gearbox_ratio * gearbox_efficiency;
         // apply torque elec to hub rigid body
-        rotor.elasto.body_hub->reset_forces();
+        rotor.elasto.body_hub->reset_loads();
         // torque elec is applied on hub body (locally)
         rotor.elasto.accumulate_axial_torque(-torque_elec);
     }

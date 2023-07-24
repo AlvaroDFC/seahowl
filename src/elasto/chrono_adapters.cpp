@@ -79,6 +79,20 @@ Vector3d vec_ch2iec(const chrono::ChVector<double>& vector_in) {
     return Vector3d(-vector_in[2], vector_in[1], vector_in[0]);
 }
 
+Vector3d vec_iec2ch(const Vector3d& vector_in) {
+    // Convert from IEC standard to Chrono standard.
+    // IEC convention:
+    // x-axis: flapwise pointing towards nacelle,
+    // y-axis : edgewise pointing towards trailing edge,
+    // z-axis : longitudinal pointing towards blade tip.
+    // Chrono convention:
+    // x-axis: longitudinal pointing towards blade tip,
+    // y-axis : edgewise pointing towards trailing edge,
+    // z-axis : flapwise pointing away from nacelle.
+    // ==> need to rotate -90 degrees around IEC y-axis to transform to Chrono convention.
+    return Vector3d(vector_in[2], vector_in[1], -vector_in[0]);
+}
+
 void EntityDynamicChrono::set_position(const Vector3d& position) {
     chobj->SetPos(vec2ch(position));
 }
@@ -140,8 +154,34 @@ void BodyElastoChrono::set_inertia_diagonal(const Vector3d& inertia) {
     chobj->SetInertiaXX(vec2ch(inertia));
 }
 
-void BodyElastoChrono::reset_forces() {
+void BodyElastoChrono::reset_loads() {
     chobj->Empty_forces_accumulators();
+}
+
+Vector3d BodyElastoChrono::get_force(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chobj->GetAppliedForce());
+    } else {
+        return ch2vec(chobj->GetAppliedForce());
+    }
+}
+
+Vector3d BodyElastoChrono::get_torque(bool is_local) const {
+    if (is_local) {
+        return ch2vec(chobj->GetAppliedTorque());
+    } else {
+        return get_rotation() * ch2vec(chobj->GetAppliedTorque());
+    }
+}
+
+void BodyElastoChrono::set_force(const Vector3d& force, bool is_local) {
+    chobj->Empty_forces_accumulators();
+    chobj->Accumulate_force(force, chobj->GetPos(), is_local);
+}
+
+void BodyElastoChrono::set_torque(const Vector3d& torque, bool is_local) {
+    chobj->Empty_forces_accumulators();
+    chobj->Accumulate_torque(torque, is_local);
 }
 
 void BodyElastoChrono::accumulate_force(const Vector3d& force, bool is_local) {
@@ -178,24 +218,53 @@ Vector3d NodeElastoChrono::get_direction() const {
     return ch2vec(chobj->TransformDirectionLocalToParent(chrono::ChVector<double>(1.0, 0.0, 0.0)));
 }
 
-void NodeElastoChrono::set_load(const Vector3d& force) {
-    chobj->SetForce(vec2ch(force));
+void NodeElastoChrono::reset_loads() {
+    set_force(Vector3d(0.0, 0.0, 0.0), false);
+    set_torque(Vector3d(0.0, 0.0, 0.0), true);
 }
 
-void NodeElastoChrono::set_torque(const Vector3d& torque) {
-    chobj->SetTorque(vec2ch(torque));
+Vector3d NodeElastoChrono::get_force(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chobj->GetForce());
+    } else {
+        return ch2vec(chobj->GetForce());
+    }
+}
+
+Vector3d NodeElastoChrono::get_torque(bool is_local) const {
+    if (is_local) {
+        return vec_ch2iec(chobj->GetTorque());
+    } else {
+        return get_rotation() * vec_ch2iec(chobj->GetTorque());
+    }
+}
+
+void NodeElastoChrono::set_force(const Vector3d& force, bool is_local) {
+    if (is_local) {
+        chobj->SetForce(vec2ch(get_rotation() * force));
+    } else {
+        chobj->SetForce(vec2ch(force));
+    }
+}
+
+void NodeElastoChrono::set_torque(const Vector3d& torque, bool is_local) {
+    if (is_local) {
+        chobj->SetTorque(vec_iec2ch(torque));
+    } else {
+        chobj->SetTorque(vec_iec2ch(get_rotation().inverse() * torque));
+    }
+}
+
+void NodeElastoChrono::accumulate_force(const Vector3d& force, bool is_local) {
+    set_force(get_force(is_local) + force, is_local);
+}
+
+void NodeElastoChrono::accumulate_torque(const Vector3d& torque, bool is_local) {
+    set_torque(get_torque(is_local) + torque, is_local);
 }
 
 void NodeElastoChrono::set_fixed(bool is_fixed) {
     chobj->SetFixed(is_fixed);
-}
-
-Vector3d NodeElastoChrono::get_load() const {
-    return ch2vec(chobj->GetForce());
-}
-
-Vector3d NodeElastoChrono::get_torque() const {
-    return ch2vec(chobj->GetTorque());
 }
 
 void NodeElastoChrono::set_properties(const BladeReferencePointElasto& ref, bool fpm) {

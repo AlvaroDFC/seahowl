@@ -75,8 +75,7 @@ double ComponentElastoFEA::get_mass() const {
 
 void ComponentElastoFEA::reset_loads() {
     for (auto& node : nodes) {
-        node->set_load(Vector3d(0.0, 0.0, 0.0));
-        node->set_torque(Vector3d(0.0, 0.0, 0.0));
+        node->reset_loads();
     }
 }
 
@@ -110,14 +109,22 @@ void ComponentElastoFEA::accumulate_element_load(const Vector3d& load,
     double weight0 = 0.5 * abs(eta - 1);
     auto load0 = load * weight0;
     auto node0 = element->nodes[0];
-    node0->set_load(node0->get_load() + load0);
-    node0->set_torque(node0->get_torque() + (position + offset - node0->get_position()).cross(load0));
+    // load in global reference
+    node0->set_force(node0->get_force() + load0, false);
+    // torque in node reference
+    node0->set_torque(node0->get_torque() +
+                          node0->get_rotation().inverse() * ((position + offset - node0->get_position()).cross(load0)),
+                      true);
     // load on second node
     double weight1 = 0.5 * abs(eta + 1);
     auto load1 = load * weight1;
     auto node1 = element->nodes[1];
-    node1->set_load(node1->get_load() + load1);
-    node1->set_torque(node1->get_torque() + (position + offset - node1->get_position()).cross(load1));
+    // load in global reference
+    node1->set_force(node1->get_force() + load1, false);
+    // torque in node reference
+    node1->set_torque(node1->get_torque() +
+                          node1->get_rotation().inverse() * ((position + offset - node1->get_position()).cross(load1)),
+                      true);
 }
 
 std::vector<Vector3d> ComponentElastoFEA::get_nodes_positions() const {
@@ -179,7 +186,7 @@ std::vector<Vector3d> ComponentElastoFEA::get_nodes_rotational_accelerations() c
 std::vector<Vector3d> ComponentElastoFEA::get_nodes_loads() const {
     std::vector<Vector3d> loads;
     for (auto& node : nodes) {
-        loads.push_back(node->get_load());
+        loads.push_back(node->get_force());
     }
     return loads;
 }
