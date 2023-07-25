@@ -168,32 +168,40 @@ void BodyElastoChrono::reset_loads() {
 
 Vector3d BodyElastoChrono::get_force(bool is_local) const {
     if (is_local) {
-        return get_rotation().inverse() * ch2vec(chobj->GetAppliedForce());
+        return get_rotation().inverse() * ch2vec(chobj->Get_accumulated_force());
     } else {
-        return ch2vec(chobj->GetAppliedForce());
+        return ch2vec(chobj->Get_accumulated_force());
     }
 }
 
 Vector3d BodyElastoChrono::get_torque(bool is_local) const {
     if (is_local) {
-        return ch2vec(chobj->GetAppliedTorque());
+        return ch2vec(chobj->Get_accumulated_torque());
     } else {
-        return get_rotation() * ch2vec(chobj->GetAppliedTorque());
+        return get_rotation() * ch2vec(chobj->Get_accumulated_torque());
     }
 }
 
 void BodyElastoChrono::set_force(const Vector3d& force, bool is_local) {
-    chobj->Empty_forces_accumulators();
-    chobj->Accumulate_force(force, chobj->GetPos(), is_local);
+    auto torque = get_torque(true);      // get previously accumulated torque
+    chobj->Empty_forces_accumulators();  // empty accumulated forces and torques
+    accumulate_torque(torque, true);     // set previously accumulated torque
+    accumulate_force(force, is_local);
 }
 
 void BodyElastoChrono::set_torque(const Vector3d& torque, bool is_local) {
-    chobj->Empty_forces_accumulators();
-    chobj->Accumulate_torque(torque, is_local);
+    auto force = get_force(false);       // get previously accumulated force
+    chobj->Empty_forces_accumulators();  // empty accumulated forces and torques
+    accumulate_force(force, false);      // set previously accumulated force
+    accumulate_torque(torque, is_local);
 }
 
 void BodyElastoChrono::accumulate_force(const Vector3d& force, bool is_local) {
-    chobj->Accumulate_force(force, chobj->GetPos(), is_local);
+    if (is_local) {
+        chobj->Accumulate_force(force, Vector3d(0.0, 0.0, 0.0), is_local);
+    } else {
+        chobj->Accumulate_force(force, chobj->GetPos(), is_local);
+    }
 }
 
 void BodyElastoChrono::accumulate_torque(const Vector3d& torque, bool is_local) {
