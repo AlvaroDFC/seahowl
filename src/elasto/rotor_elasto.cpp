@@ -188,8 +188,7 @@ void RotorElasto::apply_collective_pitch_increment(double pitch_increment) {
 
 double RotorElasto::get_rpm() const {
     // relative rotational velocity between hub and shaft (in local reference frame of the hub)
-    auto rotational_velocity = body_hub->get_rotation().inverse() *
-                               (body_hub->get_rotational_velocity() - body_shaft->get_rotational_velocity());
+    auto rotational_velocity = (body_hub->get_rotational_velocity(true) - body_shaft->get_rotational_velocity(true));
     // convert to rpm
     auto rpm = rotational_velocity.x() * 60 / (2 * PI);
     return rpm;
