@@ -71,24 +71,24 @@ class EntityDynamic : public virtual Entity {
      *
      * @param[in] rotational_velocity_global of entity.
      */
-    virtual void set_rotational_velocity(const Vector3d& rotational_velocity) = 0;
+    virtual void set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local = true) = 0;
 
     /**
      * @brief Returns rotational velocity of entity (global reference frame).
      */
-    virtual Vector3d get_rotational_velocity() const = 0;
+    virtual Vector3d get_rotational_velocity(bool is_local = true) const = 0;
 
     /**
      * @brief Sets rotational acceleration of entity (global reference frame).
      *
      * @param[in] rotational_acceleration_global of entity.
      */
-    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration) = 0;
+    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration, bool is_local = true) = 0;
 
     /**
      * @brief Returns rotational acceleration of entity (global reference frame).
      */
-    virtual Vector3d get_rotational_acceleration() const = 0;
+    virtual Vector3d get_rotational_acceleration(bool is_local = true) const = 0;
 };
 
 /**
@@ -127,10 +127,10 @@ class EntityDynamicEigen : public EntityDynamic, public EntityEigen {
     virtual Vector3d get_velocity() const override;
     virtual void set_acceleration(const Vector3d& acceleration) override;
     virtual Vector3d get_acceleration() const override;
-    virtual void set_rotational_velocity(const Vector3d& rotational_velocity) override;
-    virtual Vector3d get_rotational_velocity() const override;
-    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration) override;
-    virtual Vector3d get_rotational_acceleration() const override;
+    virtual void set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local = true) override;
+    virtual Vector3d get_rotational_velocity(bool is_local = true) const override;
+    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration, bool is_local = true) override;
+    virtual Vector3d get_rotational_acceleration(bool is_local = true) const override;
 };
 
 }  // namespace seahowl

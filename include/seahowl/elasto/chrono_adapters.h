@@ -60,10 +60,10 @@ class EntityDynamicChrono : public virtual EntityDynamic {
     virtual Vector3d get_velocity() const override;
     virtual void set_acceleration(const Vector3d& acceleration) override;
     virtual Vector3d get_acceleration() const override;
-    virtual void set_rotational_velocity(const Vector3d& rotational_velocity) override;
-    virtual Vector3d get_rotational_velocity() const override;
-    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration) override;
-    virtual Vector3d get_rotational_acceleration() const override;
+    virtual void set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local = true) override;
+    virtual Vector3d get_rotational_velocity(bool is_local = true) const override;
+    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration, bool is_local = true) override;
+    virtual Vector3d get_rotational_acceleration(bool is_local = true) const override;
 };
 
 /**

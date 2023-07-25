@@ -72,9 +72,9 @@ void seahowl::aero::AeroDynAdapter::setMotionHub(seahowl::aero::TurbineAero& tur
     auto hubPos = turbine.rotor.body_hub.get_position();
     auto hubOri = turbine.rotor.body_hub.get_rotation().toRotationMatrix();  // get a rotation matrix 3x3
     auto hubTranVel = turbine.rotor.body_hub.get_velocity();
-    auto hubRotVel = turbine.rotor.body_hub.get_rotational_velocity();
+    auto hubRotVel = turbine.rotor.body_hub.get_rotational_velocity(false);  // in global frame
     auto hubTranAcc = turbine.rotor.body_hub.get_acceleration();
-    auto hubRotAcc = turbine.rotor.body_hub.get_rotational_acceleration();
+    auto hubRotAcc = turbine.rotor.body_hub.get_rotational_acceleration(false);  // in global frame
 
     for (int i = 0; i < 3; i++) {
         hubPos_C[i] = hubPos[i];
@@ -110,9 +110,9 @@ void seahowl::aero::AeroDynAdapter::setMotionNac(seahowl::aero::TurbineAero& tur
     auto nacPos = turbine.rotor.body_nacelle.get_position();
     auto nacOri = turbine.rotor.body_nacelle.get_rotation().toRotationMatrix();  // get a rotation matrix 3x3
     auto nacTranVel = turbine.rotor.body_nacelle.get_velocity();
-    auto nacRotVel = turbine.rotor.body_nacelle.get_rotational_velocity();
+    auto nacRotVel = turbine.rotor.body_nacelle.get_rotational_velocity(false);  // in global frame
     auto nacTranAcc = turbine.rotor.body_nacelle.get_acceleration();
-    auto nacRotAcc = turbine.rotor.body_nacelle.get_rotational_acceleration();
+    auto nacRotAcc = turbine.rotor.body_nacelle.get_rotational_acceleration(false);  // in global frame
 
     for (int i = 0; i < 3; i++) {
         nacPos_C[i] = nacPos[i];
@@ -149,9 +149,9 @@ void seahowl::aero::AeroDynAdapter::setMotionRoot(seahowl::aero::TurbineAero& tu
         auto bldRootPos = turbine.rotor.blades[i]->nodes[0].get_position();
         auto bldRootOri = turbine.rotor.blades[i]->nodes[0].get_rotation().toRotationMatrix();
         auto bldRootTranVel = turbine.rotor.blades[i]->nodes[0].get_velocity();
-        auto bldRootRotVel = turbine.rotor.blades[i]->nodes[0].get_rotational_velocity();
+        auto bldRootRotVel = turbine.rotor.blades[i]->nodes[0].get_rotational_velocity(false);  // in global frame
         auto bldRootTranAcc = turbine.rotor.blades[i]->nodes[0].get_acceleration();
-        auto bldRootRotAcc = turbine.rotor.blades[i]->nodes[0].get_rotational_acceleration();
+        auto bldRootRotAcc = turbine.rotor.blades[i]->nodes[0].get_rotational_acceleration(false);  // in global frame
         for (int j = 0; j < 3; j++) {
             int p = i * 3 + j;
             int q = i * 6 + j;
@@ -194,9 +194,9 @@ void seahowl::aero::AeroDynAdapter::setMotionMesh(seahowl::aero::TurbineAero& tu
             auto meshPos = turbine.rotor.blades[i]->nodes[j].get_position();
             auto meshOri = turbine.rotor.blades[i]->nodes[j].get_rotation().toRotationMatrix();
             auto meshTranVel = turbine.rotor.blades[i]->nodes[j].get_velocity();
-            auto meshRotVel = turbine.rotor.blades[i]->nodes[j].get_rotational_velocity();
+            auto meshRotVel = turbine.rotor.blades[i]->nodes[j].get_rotational_velocity(false);  // in global frame
             auto meshTranAcc = turbine.rotor.blades[i]->nodes[j].get_acceleration();
-            auto meshRotAcc = turbine.rotor.blades[i]->nodes[j].get_rotational_acceleration();
+            auto meshRotAcc = turbine.rotor.blades[i]->nodes[j].get_rotational_acceleration(false);  // in global frame
 
             auto ii = i * nMeshPerBlade + j;
             for (int k = 0; k < 3; k++) {
