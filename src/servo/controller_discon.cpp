@@ -77,7 +77,7 @@ void seahowl::servo::ControllerDISCON::update_turbine_variables(double time,
     pImpl.SetTowerTopAcceleration(nacelle_acceleration[0], nacelle_acceleration[1]);
     // get local rotational acceleration in shaft (tilted) coordinate system
     auto& shaft = *turbine.rotor.elasto.body_shaft;
-    auto nacelle_acceleration_rotational = shaft.get_rotation().inverse() * nacelle.get_rotational_acceleration();
+    auto nacelle_acceleration_rotational = shaft.get_rotation().inverse() * nacelle.get_rotational_acceleration(false);
     pImpl.SetNacelleRotationalAcceleration(nacelle_acceleration_rotational[0], nacelle_acceleration_rotational[1],
                                            nacelle_acceleration_rotational[2]);
 

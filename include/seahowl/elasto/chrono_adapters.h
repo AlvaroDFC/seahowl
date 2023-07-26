@@ -60,10 +60,10 @@ class EntityDynamicChrono : public virtual EntityDynamic {
     virtual Vector3d get_velocity() const override;
     virtual void set_acceleration(const Vector3d& acceleration) override;
     virtual Vector3d get_acceleration() const override;
-    virtual void set_rotational_velocity(const Vector3d& rotational_velocity) override;
-    virtual Vector3d get_rotational_velocity() const override;
-    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration) override;
-    virtual Vector3d get_rotational_acceleration() const override;
+    virtual void set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local = true) override;
+    virtual Vector3d get_rotational_velocity(bool is_local = true) const override;
+    virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration, bool is_local = true) override;
+    virtual Vector3d get_rotational_acceleration(bool is_local = true) const override;
 };
 
 /**
@@ -77,9 +77,15 @@ class BodyElastoChrono : public BodyElasto, public EntityDynamicChrono {
     BodyElastoChrono();
     virtual void set_mass(double mass) override;
     virtual void set_inertia_diagonal(const Vector3d& inertia) override;
-    virtual void reset_forces() override;
-    virtual void accumulate_force(const Vector3d& force, bool is_local) override;
-    virtual void accumulate_torque(const Vector3d& torque, bool is_local) override;
+    virtual void set_inertia_matrix(const Eigen::Matrix<double, 3, 3>& inertia) override;
+    virtual Eigen::Matrix<double, 3, 3> get_inertia_matrix() const override;
+    virtual void reset_loads() override;
+    virtual Vector3d get_force(bool is_local = false) const override;
+    virtual Vector3d get_torque(bool is_local = true) const override;
+    virtual void set_force(const Vector3d& force, bool is_local = false) override;
+    virtual void set_torque(const Vector3d& torque, bool is_local = true) override;
+    virtual void accumulate_force(const Vector3d& force, bool is_local = false) override;
+    virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void set_fixed(bool is_fixed) override;
     virtual double get_mass() override;
 };
@@ -97,10 +103,13 @@ class NodeElastoChrono : public NodeElasto, public EntityDynamicChrono {
     virtual void set_rotation(const Quaternion& rotation) override;
     virtual Quaternion get_rotation() const override;
     virtual Vector3d get_direction() const override;
-    virtual void set_load(const Vector3d& force) override;
-    virtual Vector3d get_load() const override;
-    virtual void set_torque(const Vector3d& torque) override;
-    virtual Vector3d get_torque() const override;
+    virtual void reset_loads() override;
+    virtual Vector3d get_force(bool is_local = false) const override;
+    virtual Vector3d get_torque(bool is_local = true) const override;
+    virtual void set_force(const Vector3d& force, bool is_local = false) override;
+    virtual void set_torque(const Vector3d& torque, bool is_local = true) override;
+    virtual void accumulate_force(const Vector3d& force, bool is_local = false) override;
+    virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void set_fixed(bool is_fixed) override;
     void set_properties(const BladeReferencePointElasto& ref, bool fpm = false);
     void set_properties(const TowerReferencePointElasto& ref);

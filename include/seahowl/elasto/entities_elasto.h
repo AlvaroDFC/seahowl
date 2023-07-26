@@ -10,9 +10,67 @@ namespace seahowl {
 namespace elasto {
 
 /**
+ * @brief Elasto loadable entiry base class.
+ */
+class EntityLoadable : public virtual EntityDynamic {
+  public:
+    /**
+    /**
+     * @brief Resets forces and moments of loadable entity.
+     */
+    virtual void reset_loads() = 0;
+
+    /**
+     * @brief Returns applied force on entity.
+     *
+     * @param[in] is_local Whether the force is returned from local or global reference frame.
+     */
+    virtual Vector3d get_force(bool is_local = false) const = 0;
+
+    /**
+     * @brief Returns applied torque on entity.
+     *
+     * @param[in] is_local Whether the torque is returned from local or global reference frame.
+     */
+    virtual Vector3d get_torque(bool is_local = true) const = 0;
+
+    /**
+     * @brief Sets force on entity.
+     *
+     * @param[in] force Force to be set.
+     * @param[in] is_local Whether the force is applied from local or global reference frame.
+     */
+    virtual void set_force(const Vector3d& force, bool is_local = false) = 0;
+
+    /**
+     * @brief Sets torque on entity.
+     *
+     * @param[in] torque Torque to be set.
+     * @param[in] is_local Whether the torque is applied from local or global reference frame.
+     */
+    virtual void set_torque(const Vector3d& torque, bool is_local = true) = 0;
+
+    /**
+     * @brief Accumulates force on entity.
+     *
+     * @param[in] force Force to be accumulated.
+     * @param[in] is_local Whether the force is applied from local or global reference frame.
+     */
+    virtual void accumulate_force(const Vector3d& force, bool is_local = false) = 0;
+
+    /**
+     * @brief Accumulates torque on entity.
+     *
+     * @param[in] torque Torque to be accumulated.
+     * @param[in] is_local Whether the torque is applied from local or global reference frame.
+     */
+    virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) = 0;
+};
+
+/**
  * @brief Elasto rigid body base class.
  */
-class BodyElasto : public virtual EntityDynamic {
+class BodyElasto : public virtual EntityLoadable {
   public:
     /**
      * @brief Sets mass of body.
@@ -34,25 +92,16 @@ class BodyElasto : public virtual EntityDynamic {
     virtual void set_inertia_diagonal(const Vector3d& inertia) = 0;
 
     /**
-     * @brief Resets forces of body.
+     * @brief Sets inertia matrix (3x3) of body.
+     *
+     * @param[in] inertia Inertia matrix of body.
      */
-    virtual void reset_forces() = 0;
+    virtual void set_inertia_matrix(const Eigen::Matrix<double, 3, 3>& inertia) = 0;
 
     /**
-     * @brief Accumulates force on body.
-     *
-     * @param[in] force Force to be accumulated.
-     * @param[in] is_local Whether the force is applied from local or global reference frame.
+     * @brief Returns inertia matrix (3x3) of body.
      */
-    virtual void accumulate_force(const Vector3d& force, bool is_local) = 0;
-
-    /**
-     * @brief Accumulates torque on body.
-     *
-     * @param[in] torque Torque to be accumulated.
-     * @param[in] is_local Whether the torque is applied from local or global reference frame.
-     */
-    virtual void accumulate_torque(const Vector3d& torque, bool is_local) = 0;
+    virtual Eigen::Matrix<double, 3, 3> get_inertia_matrix() const = 0;
 
     /**
      * @brief Fix body in space.
@@ -65,33 +114,12 @@ class BodyElasto : public virtual EntityDynamic {
 /**
  * @brief Elasto node base class.
  */
-class NodeElasto : public virtual EntityDynamic {
+class NodeElasto : public virtual EntityLoadable {
   public:
     /**
      * @brief Returns main direction of node.
      */
     virtual Vector3d get_direction() const = 0;
-    /**
-     * @brief Sets load on node.
-     *
-     * @param[in] force Load to apply on node.
-     */
-    virtual void set_load(const Vector3d& force) = 0;
-
-    /**
-     * @brief Returns load applied on node.
-     */
-    virtual Vector3d get_load() const = 0;
-
-    /**
-     * @brief Sets torque on node.
-     */
-    virtual void set_torque(const Vector3d& torque) = 0;
-
-    /**
-     * @brief Returns torque applied on node.
-     */
-    virtual Vector3d get_torque() const = 0;
 
     /**
      * @brief Fix node in space.
