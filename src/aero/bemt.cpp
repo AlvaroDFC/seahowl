@@ -215,19 +215,19 @@ void seahowl::aero::apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
         // find tower radius
         auto tower_length =
             (tower_aero.reference_points.back().coordinates - tower_aero.reference_points.front().coordinates).norm();
-        if (coordinates_projected.x() > 0) {
-            std::vector<double> fractions{(tower_length - coordinates_projected.x()) / tower_length};
+        if (coordinates_projected.z() > 0) {
+            std::vector<double> fractions{(tower_length - coordinates_projected.z()) / tower_length};
             auto tower_radius =
                 seahowl::get_discretized_points(fractions, tower_aero.reference_points)[0].diameter / 2.0;
             // front distance of point from tower
-            auto xx = coordinates_projected.z();
+            auto xx = coordinates_projected.x();
             auto xx2 = pow(xx, 2);
             // side distance from tower of point
             auto yy = coordinates_projected.y();
             auto yy2 = pow(yy, 2);
             wind_velocity_tower =
                 (wind_velocity_tower + wind_velocity_tower.cwiseProduct(pow(tower_radius, 2) / pow(yy2 + xx2, 2) *
-                                                                        Vector3d(0.0, (-2.0 * xx * yy), (yy2 - xx2))));
+                                                                        Vector3d((yy2 - xx2), (-2.0 * xx * yy), 0.0)));
 
             // correct wind velocity
             wind_velocity = towertop_rotation * wind_velocity_tower;
