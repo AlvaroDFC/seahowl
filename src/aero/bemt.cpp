@@ -211,7 +211,7 @@ void seahowl::aero::apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
     // find tower radius
     auto tower_length =
         (tower_aero.reference_points.back().coordinates - tower_aero.reference_points.front().coordinates).norm();
-    if (coordinates_projected.z() > 0) {
+    if (coordinates_projected.z() >= 0 && coordinates_projected.z() <= tower_length) {
         std::vector<double> fractions{(tower_length - coordinates_projected.z()) / tower_length};
         auto tower_radius = seahowl::get_discretized_points(fractions, tower_aero.reference_points)[0].diameter / 2.0;
         // front distance of point from tower
