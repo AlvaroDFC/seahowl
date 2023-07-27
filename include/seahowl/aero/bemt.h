@@ -72,9 +72,6 @@ Vector2d get_induced_velocity(BladeNodeAero& node,
  * @param[in] blade_azimuth Azimuth of blade.
  * @param[in] tower_aero Tower from which tower shadow effect is felt.
  */
-void apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
-                                       const Vector3d& position,
-                                       double blade_azimuth,
-                                       const TowerAero& tower_aero);
+void apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity, const Vector3d& position, const TowerAero& tower_aero);
 }  // namespace aero
 }  // namespace seahowl
