@@ -198,39 +198,33 @@ Vector2d seahowl::aero::get_induced_velocity(seahowl::aero::BladeNodeAero& node,
 
 void seahowl::aero::apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
                                                       const Vector3d& position,
-                                                      double blade_azimuth,
                                                       const seahowl::aero::TowerAero& tower_aero) {
-    if (blade_azimuth > PI / 2.0 || blade_azimuth < -PI / 2.0) {
-        // get wind velocity in tower reference frame
-        auto& towertop_position = tower_aero.elements.back().properties.coordinates;
-        auto& towertop_rotation = tower_aero.elements.back().properties.rotation;
-        auto wind_velocity_tower0 = towertop_rotation.inverse() * wind_velocity;
-        // only take wind velocity perpendicular to tower axis
-        auto wind_velocity_tower = Vector3d(wind_velocity.x(), wind_velocity.y(), 0.0);
+    // get wind velocity in tower reference frame
+    auto& towertop_position = tower_aero.elements.back().properties.coordinates;
+    auto& towertop_rotation = tower_aero.elements.back().properties.rotation;
+    // only take wind velocity perpendicular to tower axis
+    auto wind_velocity_tower = Vector3d(wind_velocity.x(), wind_velocity.y(), 0.0);
 
-        // project element coordinates to tower reference frame
-        auto& tower_top = tower_aero.elements.back();
-        Vector3d coordinates_projected = -(towertop_rotation.inverse() * (position - towertop_position));
+    // project element coordinates to tower reference frame
+    Vector3d coordinates_projected = -(towertop_rotation.inverse() * (position - towertop_position));
 
-        // find tower radius
-        auto tower_length =
-            (tower_aero.reference_points.back().coordinates - tower_aero.reference_points.front().coordinates).norm();
-        if (coordinates_projected.x() > 0) {
-            std::vector<double> fractions{(tower_length - coordinates_projected.x()) / tower_length};
-            auto tower_radius =
-                seahowl::get_discretized_points(fractions, tower_aero.reference_points)[0].diameter / 2.0;
-            // front distance of point from tower
-            auto xx = coordinates_projected.z();
-            auto xx2 = pow(xx, 2);
-            // side distance from tower of point
-            auto yy = coordinates_projected.y();
-            auto yy2 = pow(yy, 2);
-            wind_velocity_tower =
-                (wind_velocity_tower + wind_velocity_tower.cwiseProduct(pow(tower_radius, 2) / pow(yy2 + xx2, 2) *
-                                                                        Vector3d(0.0, (-2.0 * xx * yy), (yy2 - xx2))));
+    // find tower radius
+    auto tower_length =
+        (tower_aero.reference_points.back().coordinates - tower_aero.reference_points.front().coordinates).norm();
+    if (coordinates_projected.z() >= 0 && coordinates_projected.z() <= tower_length) {
+        std::vector<double> fractions{(tower_length - coordinates_projected.z()) / tower_length};
+        auto tower_radius = seahowl::get_discretized_points(fractions, tower_aero.reference_points)[0].diameter / 2.0;
+        // front distance of point from tower
+        auto xx = coordinates_projected.x();
+        auto xx2 = pow(xx, 2);
+        // side distance from tower of point
+        auto yy = coordinates_projected.y();
+        auto yy2 = pow(yy, 2);
+        wind_velocity_tower =
+            (wind_velocity_tower + wind_velocity_tower.cwiseProduct(pow(tower_radius, 2) / pow(yy2 + xx2, 2) *
+                                                                    Vector3d((yy2 - xx2), (-2.0 * xx * yy), 0.0)));
 
-            // correct wind velocity
-            wind_velocity = towertop_rotation * wind_velocity_tower;
-        }
+        // correct wind velocity
+        wind_velocity = towertop_rotation * wind_velocity_tower;
     }
 }

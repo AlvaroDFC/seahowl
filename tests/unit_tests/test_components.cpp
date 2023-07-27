@@ -11,6 +11,7 @@
 #include <seahowl/core/rotor.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/core/system.h>
+#include <seahowl/aero/bemt.h>
 #include <seahowl/aero/system_aero.h>
 #include <seahowl/aero/wind_models.h>
 #include <seahowl/servo/controller.h>
@@ -250,6 +251,47 @@ TEST(test_blade, natural_period_dynamic_flap) {
     // literature flapwise natural frequency for IEA15MW: 0.555Hz (1.802s)
     double natural_period_ref = 1.92;
     ASSERT_NEAR(natural_period_ref, natural_period, 0.01);
+}
+
+TEST(test_tower, tower_shadow_check) {
+    // system
+    auto system_elasto = SystemElastoChrono();
+
+    // tower
+    auto tower_elasto = seahowl::elasto::TowerElasto();
+    auto tower_aero = seahowl::aero::TowerAero();
+    auto tower = seahowl::core::Tower(tower_elasto, tower_aero);
+    populate_tower_from_json((DATADIR / "tower.json").generic_string(), tower);
+
+    // build elasto and aero parts
+    tower.build();
+    // assemble elasto part (add to elasto system)
+    tower.elasto.assemble(system_elasto);
+    // do a statics step to initialize all elasto variables
+    tower.elasto.nodes.front()->set_fixed(true);
+    system_elasto.do_statics(true, 0);
+    // initialize tower to get elasto pos/rot into aero class
+    tower.initialize(0.0, 0.1);
+
+    auto wind_velocity = Vector3d(10.0, 3.0, 1.0);
+
+    // position 1
+    auto position1 = Vector3d(-14.0, -5.0, 50.0);
+    Vector3d wind_velocity1 = wind_velocity;
+    seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity1, position1, tower_aero);
+    ASSERT_NEAR(wind_velocity1.x(), 9.223643, 0.001);
+
+    // position 2
+    auto position2 = Vector3d(-15.0, 0.0, 45.0);
+    Vector3d wind_velocity2 = wind_velocity;
+    seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity2, position2, tower_aero);
+    ASSERT_NEAR(wind_velocity2.x(), 8.964047, 0.001);
+
+    // position 3
+    auto position3 = Vector3d(-16.0, 2.0, 20.0);
+    Vector3d wind_velocity3 = wind_velocity;
+    seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity3, position3, tower_aero);
+    ASSERT_NEAR(wind_velocity3.x(), 9.056021, 0.001);
 }
 
 TEST(test_turbine, rpm_initial_pitch) {

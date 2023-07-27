@@ -99,7 +99,9 @@ void RotorAero::compute_aero_loads(const WindModel& wind_model,
 
             // correct wind velocity with tower shadow (if activated)
             if (tower_shadow) {
-                seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity, position, blade_azimuth, tower_aero);
+                if (blade_azimuth > PI / 2.0 || blade_azimuth < -PI / 2.0) {
+                    seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity, position, tower_aero);
+                }
             }
 
             auto global_velocity = Vector3d(wind_velocity - velocity);
