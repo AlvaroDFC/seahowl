@@ -58,47 +58,13 @@ struct ShaftProperties {
     double distance_from_towertop = 0.0;
 };
 
-/**
- * @brief Rotor Nacelle Assembly (RNA) of wind turbine as an elasto component.
- *
- * The RNA is composed of rigid bodies (hub, shaft, nacelle, yaw bearing), links (hub-shaft, shaft-nacelle, shaft-yaw
- * bearing, yaw bearing-towertop), and blades (FEA components).
- */
 class RotorElasto : public ComponentElasto {
   public:
-    // RNA components
-    //
     /** @brief List of blades. */
-    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades;
+    std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades{};
     /** @brief Hub rigid body. */
     std::unique_ptr<seahowl::elasto::BodyElasto> body_hub;
-    /** @brief Shaft rigid body. */
-    std::unique_ptr<seahowl::elasto::BodyElasto> body_shaft;
-    /** @brief Nacelle rigid body. */
-    std::unique_ptr<seahowl::elasto::BodyElasto> body_nacelle;
-    /** @brief Yaw bearing rigid body. */
-    std::unique_ptr<seahowl::elasto::BodyElasto> body_yaw_bearing;
 
-    // links
-    //
-    /** @brief Links between blades and hub. */
-    std::vector<std::unique_ptr<Link>> links_blades;
-    /** @brief Link between shaft and hub (revolute). */
-    std::unique_ptr<Link> link_shaft_hub;
-    /** @brief Link between shaft and nacelle (fixed). */
-    std::unique_ptr<Link> link_shaft_nacelle;
-    /** @brief Link between shaft and yaw bearing (fixed). */
-    std::unique_ptr<Link> link_shaft_yaw_bearing;
-    /** @brief Link between towertop (if any) and yaw bearing (fixed). */
-    std::unique_ptr<Link> link_towertop_yaw_bearing;
-    ///@}
-
-    // reference properties
-    //
-    /** @brief Shaft reference properties. */
-    ShaftProperties shaft;
-    /** @brief Nacelle reference properties. */
-    NacelleProperties nacelle;
     /** @brief Hub reference properties. */
     HubProperties hub;
     /** @brief Blades precones (in radians). */
@@ -124,9 +90,9 @@ class RotorElasto : public ComponentElasto {
      */
     void build();
 
-    void rotate(double angle, const Vector3d& axis) const override;     ///< @see ElastoComponent::rotate
-    void translate(const Vector3d& translation_vector) const override;  ///< @see ElastoComponent::translate
-    double get_mass() const override;                                   ///< @see ElastoComponent::get_mass
+    virtual void rotate(double angle, const Vector3d& axis) const override;
+    virtual void translate(const Vector3d& translation_vector) const override;
+    virtual double get_mass() const override;
 
     /**
      * @brief Applies pitch increment to all blades (i.e. rotates blades around their respective longitudinal axis).
@@ -138,6 +104,66 @@ class RotorElasto : public ComponentElasto {
      * @param[in] pitch_increment Pitch increment to apply (in radians).
      */
     void apply_collective_pitch_increment(double pitch_increment);
+};
+
+/**
+ * @brief Rotor Nacelle Assembly (RNA) of wind turbine as an elasto component.
+ *
+ * The RNA is composed of rigid bodies (hub, shaft, nacelle, yaw bearing), links (hub-shaft, shaft-nacelle, shaft-yaw
+ * bearing, yaw bearing-towertop), and blades (FEA components).
+ */
+class RotorNacelleAssemblyElasto : public ComponentElasto {
+  public:
+    // RNA components
+    //
+    /** @brief Rotor. */
+    std::unique_ptr<seahowl::elasto::RotorElasto> rotor;
+    /** @brief Shaft rigid body. */
+    std::unique_ptr<seahowl::elasto::BodyElasto> body_shaft;
+    /** @brief Nacelle rigid body. */
+    std::unique_ptr<seahowl::elasto::BodyElasto> body_nacelle;
+    /** @brief Yaw bearing rigid body. */
+    std::unique_ptr<seahowl::elasto::BodyElasto> body_yaw_bearing;
+
+    // links
+    //
+    /** @brief Link between shaft and hub (revolute). */
+    std::unique_ptr<Link> link_shaft_hub;
+    /** @brief Link between shaft and nacelle (fixed). */
+    std::unique_ptr<Link> link_shaft_nacelle;
+    /** @brief Link between shaft and yaw bearing (fixed). */
+    std::unique_ptr<Link> link_shaft_yaw_bearing;
+    /** @brief Link between towertop (if any) and yaw bearing (fixed). */
+    std::unique_ptr<Link> link_towertop_yaw_bearing;
+    ///@}
+
+    // reference properties
+    //
+    /** @brief Shaft reference properties. */
+    ShaftProperties shaft;
+    /** @brief Nacelle reference properties. */
+    NacelleProperties nacelle;
+
+    /**
+     * @brief Constructor.
+     */
+    RotorNacelleAssemblyElasto();
+
+    /**
+     * @brief Assembles the component (adds all rigid bodies and links to the system).
+     *
+     * @param[out] system System to which rigid bodies and links are added.
+     */
+    void assemble(seahowl::elasto::SystemElasto& system);
+
+    /**
+     * @brief Builds the rotor.
+     */
+    void build();
+
+    void rotate(double angle, const Vector3d& axis) const override;     ///< @see ElastoComponent::rotate
+    void translate(const Vector3d& translation_vector) const override;  ///< @see ElastoComponent::translate
+    double get_mass() const override;                                   ///< @see ElastoComponent::get_mass
 
     /**
      * @brief Returns the RPM of the rotor.
