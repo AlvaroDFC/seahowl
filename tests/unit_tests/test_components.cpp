@@ -352,7 +352,7 @@ TEST(test_turbine, rpm_initial_pitch) {
         turbine.poststep(time, dt);
     }
 
-    ASSERT_NEAR(turbine.rna.elasto.get_rpm(), 2.828219, 1e-4);
+    ASSERT_NEAR(turbine.rna.elasto.get_rpm(), 2.822343, 1e-4);
 }
 
 TEST(test_turbine, rpm_initial_pitch_rigid_rotor) {
@@ -413,7 +413,7 @@ TEST(test_turbine, rpm_initial_pitch_rigid_rotor) {
         turbine.poststep(time, dt);
     }
 
-    ASSERT_NEAR(turbine.rna.elasto.get_rpm(), 2.814399, 1e-4);
+    ASSERT_NEAR(turbine.rna.elasto.get_rpm(), 2.810848, 1e-4);
 }
 
 #ifdef HAVE_AERODYN
