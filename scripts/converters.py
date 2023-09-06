@@ -637,8 +637,11 @@ def convert_elastodyn_rna_file(
                         rna_json["drivetrain"]["generator_efficiency"] = float(words[0])
 
     if save_directory is not None:
+        # remove precones for RNA file (will be added to turbine file)
+        rna_json2 = copy.deepcopy(rna_json)
+        del rna_json2["precones"]
         fullpath = Path(save_directory) / "rna.json"
-        save_json(rna_json, fullpath)
+        save_json(rna_json2, fullpath)
 
     return rna_json
 
@@ -810,8 +813,9 @@ def convert_openfast_fst(filename, save_directory=None):
                     {
                         "file": str(Path("./blade.json")),
                         "initial_pitch": 0.0,
+                        "precone": rna_json["precones"][ii],
                     }
-                    for _ in range(3)
+                    for ii in range(3)
                 ],
             },
             "rna": {
