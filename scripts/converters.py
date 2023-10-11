@@ -411,6 +411,45 @@ def convert_beamdyn_blade_file(filename, save_directory=None):
     return beamdyn_json
 
 
+def convert_elastodyn_blade_file(filename, blade_length, save_directory=None):
+    filepath = Path(filename)
+    elastodyn_json = dict()
+    fractions = list()
+    with open(filepath, "r") as f:
+        lines = f.readlines()
+        start_idx = 16
+        points = list()
+        nprops = int(lines[3].split()[0])
+        for ii in range(int(nprops)):
+            idx = start_idx + ii
+            props = lines[idx].split()
+            point = dict()
+            point["fraction"] = float(props[0])
+            fractions.append(point["fraction"])
+            point["coordinates"] = [0.0, 0.0, point["fraction"] * blade_length]
+            point["twist"] = float(props[2])
+            point["mass_matrix"] = np.zeros((6, 6)).tolist()
+            point["mass_matrix"][2][2] = float(props[3])
+            point["stiffness_matrix"] = np.zeros((6, 6)).tolist()
+            point["stiffness_matrix"][2][2] = 1e9
+            point["stiffness_matrix"][3][3] = float(props[5])
+            point["stiffness_matrix"][4][4] = float(props[4])
+            point["stiffness_matrix"][5][5] = 1e9
+            points.append(point)
+
+    elastodyn_json["reference_points"] = points
+
+    # add default options
+    elastodyn_json["discretization_elasto"] = fractions
+    elastodyn_json["damping_coefficients"] = [0.03, 0.03, 0.03, 0.06]
+
+    if save_directory is not None:
+        fullpath = Path(save_directory) / filepath.with_suffix(".json")
+        save_json(elastodyn_json, fullpath)
+
+    return elastodyn_json
+
+
 def merge_beamdyn2aerodyn(beamdyn_json, aerodyn_json, save_directory=None):
     merged_json = copy.deepcopy(beamdyn_json)
     merged_json.pop("discretization_aero", None)
@@ -519,7 +558,10 @@ def convert_aerodyn_tower_file(filename, save_directory=None):
             point["elevation"] = float(words[0])
             point["diameter"] = float(words[1])
             point["drag_coefficient"] = float(words[2])
-            point["TI"] = float(words[3])
+            if len(words) > 3:
+                point["TI"] = float(words[3])
+            else:
+                point["TI"] = 0.0
             points.append(point)
 
     tower_bottom = points[0]["elevation"]
@@ -646,7 +688,7 @@ def convert_elastodyn_rna_file(
     return rna_json
 
 
-def convert_openfast_fst(filename, save_directory=None):
+def convert_openfast_fst(filename, save_directory=None, use_beamdyn=True):
     filepath = Path(filename)
     filedir = filepath.parents[0]
 
@@ -684,61 +726,96 @@ def convert_openfast_fst(filename, save_directory=None):
         npoints = 0
         start_idx = 0
         npoints = 0
+        blade_length = 0
+        blade_elasto_json = None
         for ii, line in enumerate(lines):
             words = line.split()
             # Main
-            if len(words) > 1 and words[1] == "DT":
-                main_json["numerics"]["dt"] = float(words[0])
-            elif len(words) > 1 and words[1] == "TMax":
-                main_json["numerics"]["t_end"] = float(words[0])
-            elif len(words) > 1 and words[1] == "Gravity":
-                main_json["environment"]["gravity"][2] = -float(words[0])
-            elif len(words) > 1 and words[1] == "AirDens":
-                main_json["environment"]["air_density"] = float(words[0])
-            elif len(words) > 1 and words[1] == "WrVTK":
-                if float(words[0]) != 0.0:
-                    main_json["outputs"]["VTK"] = True
-            elif len(words) > 1 and words[1] == "VTK_fps":
-                main_json["outputs"]["dt"] = 1.0 / float(words[0])
-            # ElastoDyn
-            elif len(words) > 1 and words[1] == "EDFile":
-                path_ED = filedir / words[0].replace('"', "")
-                with open(path_ED, "r") as f2:
-                    lines2 = f2.readlines()
-                    for line2 in lines2:
-                        words2 = line2.split()
-                        # ElastoDyn tower
-                        if words2[1] == "TwrFile":
-                            path_ED_tower = path_ED.parents[0] / words2[0].replace(
-                                '"', ""
-                            )
-                            break
-                tower_elasto_json = convert_elastodyn_tower_file(
-                    filename_elastodyn=path_ED,
-                    filename_elastodyn_tower=path_ED_tower,
-                    save_directory=None,
-                )
-            # BeamDyn
-            elif len(words) > 1 and words[1] == "BDBldFile(1)":
-                path_BD = filedir / words[0].replace('"', "")
-                blade_elasto_json = convert_beamdyn_file(
-                    filename=path_BD, save_directory=None
-                )
-            # AeroDyn
-            elif len(words) > 1 and words[1] == "AeroFile":
-                path_AD = filedir / words[0].replace('"', "")
-                blade_aero_json = convert_aerodyn_files(
-                    filename=path_AD,
-                    save_directory=save_directory,
-                    save_polar=True,
-                    save_aerodyn=False,
-                )
-                tower_aero_json = convert_aerodyn_tower_file(
-                    filename=path_AD, save_directory=None
-                )
-            # ServoDyn
-            elif len(words) > 1 and words[1] == "ServoFile":
-                path_servo = filedir / words[0].replace('"', "")
+            if len(words) > 1:
+                if words[1] == "DT":
+                    main_json["numerics"]["dt"] = float(words[0])
+                elif words[1] == "TMax":
+                    main_json["numerics"]["t_end"] = float(words[0])
+                elif words[1] == "Gravity":
+                    main_json["environment"]["gravity"][2] = -float(words[0])
+                elif words[1] == "AirDens":
+                    main_json["environment"]["air_density"] = float(words[0])
+                elif words[1] == "WrVTK":
+                    if float(words[0]) != 0.0:
+                        main_json["outputs"]["VTK"] = True
+                elif words[1] == "VTK_fps":
+                    main_json["outputs"]["dt"] = 1.0 / float(words[0])
+                # ElastoDyn
+                elif words[1] == "EDFile":
+                    path_ED = filedir / words[0].replace('"', "")
+                    with open(path_ED, "r") as f2:
+                        lines2 = f2.readlines()
+                        for line2 in lines2:
+                            words2 = line2.split()
+                            # blade length
+                            if len(words2) > 1 and words2[1] == "TipRad":
+                                blade_length += float(words2[0])
+                            elif len(words2) > 1 and words2[1] == "HubRad":
+                                blade_length -= float(words2[0])
+                            # ElastoDyn tower
+                            elif len(words2) > 1 and words2[1] == "TwrFile":
+                                path_ED_tower = path_ED.parents[0] / words2[0].replace(
+                                    '"', ""
+                                )
+                            elif len(words2) > 1 and (
+                                words2[1] == "BldFile1" or words2[1] == "BldFile(1)"
+                            ):
+                                path_ED_blade = path_ED.parents[0] / words2[0].replace(
+                                    '"', ""
+                                )
+                    tower_elasto_json = convert_elastodyn_tower_file(
+                        filename_elastodyn=path_ED,
+                        filename_elastodyn_tower=path_ED_tower,
+                        save_directory=None,
+                    )
+                    if blade_elasto_json is None:
+                        blade_elasto_json = convert_elastodyn_blade_file(
+                            filename=path_ED_blade,
+                            save_directory=None,
+                            blade_length=blade_length,
+                        )
+                elif words[1] == "TwrFile":
+                    path_ED_tower = filedir / words[0].replace('"', "")
+                    tower_elasto_json = {}
+                    tower_aero_json = {}
+                elif words[1] == "BldFile1" or words[1] == "BldFile(1)":
+                    path_ED_blade = filedir / words[0].replace('"', "")
+                    blade_elasto_json = convert_elastodyn_blade_file(
+                        filename=path_ED_blade,
+                        save_directory=save_directory,
+                    )
+
+                # BeamDyn
+                elif words[1] == "BDBldFile(1)" and use_beamdyn is True:
+                    if (
+                        words[0] != '""'
+                        and words[0] != '"unused"'
+                        and words[0] != '"none"'
+                    ):
+                        path_BD = filedir / words[0].replace('"', "")
+                        blade_elasto_json = convert_beamdyn_file(
+                            filename=path_BD, save_directory=None
+                        )
+                # AeroDyn
+                elif words[1] == "AeroFile":
+                    path_AD = filedir / words[0].replace('"', "")
+                    blade_aero_json = convert_aerodyn_files(
+                        filename=path_AD,
+                        save_directory=save_directory,
+                        save_polar=True,
+                        save_aerodyn=False,
+                    )
+                    tower_aero_json = convert_aerodyn_tower_file(
+                        filename=path_AD, save_directory=None
+                    )
+                # ServoDyn
+                elif words[1] == "ServoFile":
+                    path_servo = filedir / words[0].replace('"', "")
 
         # tower
         tower_json = merge_elastodyn2aerodyn_tower(
@@ -765,16 +842,28 @@ def convert_openfast_fst(filename, save_directory=None):
         # get DISCON path
         filepath = Path(path_servo)
         path_DISCON_new = ""
+        controller_json = {
+            "type": "",
+        }
         with open(filepath, "r") as f:
             lines = f.readlines()
             for ii, line in enumerate(lines):
                 words = line.split()
-                if len(words) > 1 and words[1] == "DLL_InFile":
+                if (
+                    len(words) > 1
+                    and words[1] == "DLL_InFile"
+                    and words[0] != '"unused"'
+                ):
+                    controller_json["type"] = "DISCON"
                     path_DISCON = filepath.parent / words[0].replace('"', "")
                     path_DISCON_new = Path("controller") / path_DISCON.name
                     (Path(save_directory) / path_DISCON_new).parent.mkdir(
                         parents=True, exist_ok=True
                     )
+                    controller_json["options"] = {
+                        "infile": str(path_DISCON_new),
+                        "libfile": "./controller/libdiscon.so",
+                    }
                     # open DISCON file
                     with open(path_DISCON, "r") as f2:
                         lines2 = f2.readlines()
@@ -803,8 +892,6 @@ def convert_openfast_fst(filename, save_directory=None):
             "rotor": {
                 "fpm": False,
                 "type": "fea",
-                "inertia_total": 3.524605e8,
-                "mass_total": 1.017e6,
                 "discretization": {
                     "elasto": blade_elasto_json["discretization_elasto"],
                     "aero": blade_aero_json["discretization_aero"],
@@ -829,13 +916,7 @@ def convert_openfast_fst(filename, save_directory=None):
                 },
                 "file": str(Path("./tower.json")),
             },
-            "controller": {
-                "type": "DISCON",
-                "options": {
-                    "infile": str(path_DISCON_new),
-                    "libfile": "./controller/libdiscon.so",
-                },
-            },
+            "controller": controller_json,
         }
 
         # save turbine json
@@ -869,4 +950,6 @@ if __name__ == "__main__":
     save_directory = Path(args.save_directory)
 
     # convert files
-    convert_openfast_fst(filename=filename, save_directory=save_directory)
+    convert_openfast_fst(
+        filename=filename, save_directory=save_directory, use_beamdyn=True
+    )
