@@ -34,13 +34,22 @@ void Turbine::prestep(double time, double dt) {
 }
 
 void Turbine::poststep(double time, double dt) {
+    // hub loads
+    // reset external loads applied on rotor hub
+    rna.elasto.rotor->body_hub->reset_loads();
+    // apply aero torque losses from gearbox efficiency for next step
+    auto aero_torque = rna.elasto.get_axial_torque();
+    if (controller->has_torque_control) {
+        // remove previously applied electrical torque from total rotor torque
+        aero_torque += controller->get_torque_elec() * gearbox_ratio * gearbox_efficiency;
+    }
+    rna.elasto.accumulate_axial_torque(-aero_torque * (1.0 - gearbox_efficiency));
+
     // controller step
     controller->step(time, dt, *this);
-    // apply torque from comtroller
+    // apply torque from controller
     if (controller->has_torque_control) {
         auto torque_elec = controller->get_torque_elec() * gearbox_ratio * gearbox_efficiency;
-        // apply torque elec to hub rigid body
-        rna.elasto.rotor->body_hub->reset_loads();
         // torque elec is applied on hub body (locally)
         rna.elasto.accumulate_axial_torque(-torque_elec);
     }
@@ -83,9 +92,20 @@ void Turbine::rotate(double angle, Vector3d axis) {
     tower.elasto.rotate(angle, axis);
 }
 
+double Turbine::get_shaft_power() const {
+    // get generator rotation in rad/s scaled by gearbox ratio and efficiency
+    auto rot_rads = rna.elasto.get_rpm() * (2.0 * PI / 60.0) * gearbox_ratio;
+    // get torque elec from rotor
+    auto torque_elec = controller->get_torque_elec();
+
+    // calculate power
+    auto power = torque_elec * rot_rads;
+    return power;
+}
+
 double Turbine::get_generated_power() const {
     // get generator rotation in rad/s scaled by gearbox ratio and efficiency
-    auto rot_rads = rna.elasto.get_rpm() * (2.0 * PI / 60.0) * gearbox_ratio * gearbox_efficiency;
+    auto rot_rads = get_generator_rpm() * (2.0 * PI / 60.0);
     // get torque elec from rotor
     auto torque_elec = controller->get_torque_elec();
 
@@ -96,6 +116,6 @@ double Turbine::get_generated_power() const {
 
 double Turbine::get_generator_rpm() const {
     // get generator rotation in rad/s scaled by gearbox ratio and efficiency
-    auto rpm = rna.elasto.get_rpm() * gearbox_ratio * gearbox_efficiency;
+    auto rpm = rna.elasto.get_rpm() * gearbox_ratio;
     return rpm;
 }
