@@ -39,8 +39,8 @@ while t_sim < t_end:
             "time: {time}, step: {step}, rpm: {rpm}, pitch: {pitch}".format(
                 time=t_sim,
                 step=step,
-                rpm=turbine.rotor.elasto.get_rpm(),
-                pitch=turbine.rotor.elasto.pitch_collective,
+                rpm=turbine.rna.elasto.get_rpm(),
+                pitch=turbine.rna.elasto.rotor.pitch_collective,
             )
         )
         t_output_next += dt_output
