@@ -1,4 +1,5 @@
 #include "seahowl/io/read_json.h"
+#include "seahowl/io/read_rotor_perf.h"
 
 #include "seahowl/commons/utils.h"
 #include "seahowl/core/blade.h"
@@ -421,6 +422,19 @@ void populate_turbine_from_json(std::string filepath, seahowl::core::Turbine& tu
     auto rna_json = json_obj.at("rna");
     auto controller_json = json_obj.at("controller");
 
+    if (rotor_json.at("type").get<std::string>() == "disk") {
+        turbine.aero.use_disktheory = true;
+        std::cout << "Aerodynamic model : DISK THEORY" << std::endl;
+        // get rotor performance from table
+        if (!rotor_json.contains("performance_file")) {
+            throw std::runtime_error("The \"performance_file\" key must be given for actuator disk rotor.");
+        }
+        get_disk_perf_from_table((DATADIR / rotor_json.at("performance_file")).generic_string(), turbine.rna.aero);
+        if (turbine.aero.use_aerodyn == true)
+            throw std::runtime_error("When Disk Theory is activated, you can't ask for AeroDyn module.");
+    } else
+        std::cout << "Aerodynamic model : BEM THEORY" << std::endl;
+
     // blades
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades_elasto;
@@ -436,8 +450,10 @@ void populate_turbine_from_json(std::string filepath, seahowl::core::Turbine& tu
             rotor_json.at("fpm").get_to(blade_elasto_fea.fpm_mode);
         } else if (rotor_json.at("type").get<std::string>() == "rigid") {
             blade_elasto = std::make_shared<seahowl::elasto::BladeElastoRigid>();
+        } else if (rotor_json.at("type").get<std::string>() == "disk") {
+            blade_elasto = std::make_shared<seahowl::elasto::BladeElastoRigid>();
         } else {
-            throw std::invalid_argument("Wrong blade type: try \"fea\" or \"rigid\".");
+            throw std::invalid_argument("Wrong blade type: try \"fea\" or \"rigid\" or \"disk\".");
         }
         auto blade_aero = std::make_shared<seahowl::aero::BladeAero>();
         auto blade = std::make_shared<seahowl::core::Blade>(*blade_elasto, *blade_aero);
@@ -446,7 +462,7 @@ void populate_turbine_from_json(std::string filepath, seahowl::core::Turbine& tu
         blade_json.at("initial_pitch").get_to(blade->elasto.pitch);
         blade_elasto->precone = blade_json.at("precone").get<double>() * PI / 180.0;
         // no precone if blade is rigid (assumed that blade is on rotor disc)
-        if (rotor_json.at("type").get<std::string>() == "rigid") {
+        if (rotor_json.at("type").get<std::string>() == "rigid" || rotor_json.at("type").get<std::string>() == "disk") {
             blade_elasto->precone = 0.0;
         }
         blades_elasto.push_back(blade_elasto);
@@ -464,7 +480,7 @@ void populate_turbine_from_json(std::string filepath, seahowl::core::Turbine& tu
     rna_json.at("initial_pitch_collective").get_to(turbine.elasto.rna.rotor->pitch_collective);
 
     // update info if rotor is rigid
-    if (rotor_json.at("type").get<std::string>() == "rigid") {
+    if (rotor_json.at("type").get<std::string>() == "rigid" || rotor_json.at("type").get<std::string>() == "disk") {
         if (!rotor_json.contains("inertia_total")) {
             throw std::runtime_error("The \"inertia_total\" key must be given for rigid rotors.");
         }
@@ -599,7 +615,9 @@ void populate_system_from_json(std::string filepath, seahowl::core::System& syst
         system_core.turbines.push_back(
             seahowl::core::Turbine(system_core.system_elasto->turbines[ii], system_core.system_aero->turbines[ii]));
         auto& turbine = system_core.turbines.back();
+
         populate_turbine_from_json(filepath_turbine, turbine);
+
         // aerodyn option
 #ifdef HAVE_AERODYN
         turbine.aero.use_aerodyn = turbine_json.at("use_aerodyn").get<bool>();

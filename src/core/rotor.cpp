@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
@@ -42,6 +43,8 @@ void RotorNacelleAssembly::poststep(double time, double dt) {
 }
 
 void RotorNacelleAssembly::update_positions_aero() {
+    // pitch collective
+    aero.pitch_collective = elasto.rotor->pitch_collective;
     // azimuth
     aero.azimuth = elasto.get_azimuth();
     // body_hub

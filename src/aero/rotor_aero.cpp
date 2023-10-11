@@ -5,15 +5,30 @@
 #include "seahowl/aero/wind_models.h"
 #include "seahowl/aero/airfoil.h"
 #include "seahowl/aero/bemt.h"
+#include "seahowl/commons/utils.h"
 
 #include <cmath>
+#include <iostream>
 
 using seahowl::aero::BladeAero;
 using seahowl::aero::RotorNacelleAssemblyAero;
 using seahowl::aero::TowerAero;
+using seahowl::aero::DiskCoefficients;
 using seahowl::Vector3d;
 using seahowl::Vector2d;
 using seahowl::PI;
+
+seahowl::Vector2d DiskCoefficients::get_disk_coefficients_from_table(double TSR, double pitch) {
+    // interpolate rotor performance for the current TSR and pitch
+    double Cp = bilinear_interpolation(power_coeff, pitch_list, tsr_list, pitch, TSR);
+    double Ct = bilinear_interpolation(thrust_coeff, pitch_list, tsr_list, pitch, TSR);
+
+    seahowl::Vector2d results;
+    results[0] = Cp;
+    results[1] = Ct;
+
+    return results;
+}
 
 RotorNacelleAssemblyAero::RotorNacelleAssemblyAero() {}
 
@@ -175,6 +190,58 @@ void RotorNacelleAssemblyAero::compute_aero_loads(const WindModel& wind_model,
             blade->loads[ii] = blade->elements[ii].get_load();
         }
     }
+}
+
+void RotorNacelleAssemblyAero::compute_aero_loads_disk(const WindModel& wind_model, double time) {
+    double density = wind_model.get_density();
+
+    auto pos_hub = body_hub.get_position();
+    auto vel_hub = body_hub.get_velocity();
+    // get fluid relative velocity
+    auto wind_velocity = wind_model.get_wind_velocity(pos_hub, time);
+
+    auto global_velocity = Vector3d(wind_velocity - vel_hub);
+    // project in disc frame
+    auto local_velocity_disc = (body_hub.get_rotation().inverse() * global_velocity).x();
+
+    double RPM = (body_hub.get_rotation().inverse() * body_hub.get_rotational_velocity()).x();
+    double TSR = RPM * radius / local_velocity_disc;
+
+    auto coefficients = disk_coefficients.get_disk_coefficients_from_table(pitch_collective * 180.0 / seahowl::PI, TSR);
+    // get thrust and power coefficients
+    auto ct = coefficients[1];
+    auto cp = coefficients[0];
+
+    // calculate drag and lift force
+    auto vel = local_velocity_disc;
+    auto load_n = 0.5 * density * vel * vel * seahowl::PI * radius * radius * ct;
+    auto load_t = 0.0;
+
+    // std::cout << "RPM : " << RPM << "\n";
+    if (RPM < 0.05 && RPM >= 0.0)
+        load_t = 0.5 * density * vel * vel * vel * seahowl::PI * radius * radius * cp;
+    else if (RPM < 0.0)
+        load_t = 0.0;
+    else
+        load_t = 0.5 * density * vel * vel * vel * seahowl::PI * radius * radius * cp / RPM;
+
+    // get global/local directions
+    // pointing from hub towards nacelle
+    auto local_direction_normal = Vector3d(1.0, 0.0, 0.0);
+    auto global_direction_normal = body_hub.get_rotation() * local_direction_normal;
+
+    // pointing from hub to node position
+    auto local_direction_tangent = Vector3d(0.0, 1.0, 0.0);
+    auto global_direction_tangent = body_hub.get_rotation() * local_direction_tangent;
+
+    // transform from local to global load
+    auto load_n_global = global_direction_normal * load_n;
+    auto load_t_global = global_direction_tangent * load_t;
+
+    // auto load_global = load_n_global + load_t_global;
+
+    torque_aero = load_t;
+    thrust_aero = load_n;
 }
 
 #ifdef HAVE_AERODYN

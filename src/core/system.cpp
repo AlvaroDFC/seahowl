@@ -5,6 +5,7 @@
 #include "seahowl/elasto/turbine_elasto.h"
 #include "seahowl/aero/turbine_aero.h"
 #include "seahowl/aero/wind_models.h"
+#include <vector>
 
 using namespace seahowl::core;
 

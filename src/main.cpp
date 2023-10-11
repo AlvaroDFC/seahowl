@@ -16,6 +16,7 @@ using json = nlohmann::json;
 #include <cmath>
 
 #include <seahowl/io/read_json.h>
+#include "seahowl/io/read_rotor_perf.h"
 #include <seahowl/io/write_csv.h>
 #include <seahowl/elasto/chrono_adapters.h>
 
@@ -25,6 +26,8 @@ using json = nlohmann::json;
 #include <seahowl/elasto/blade_elasto.h>
 
 #include <filesystem>  // C++17
+
+#include <seahowl/servo/controller.h>
 
 using std::filesystem::path;
 using std::filesystem::create_directory;
@@ -42,6 +45,7 @@ void output_results(seahowl::core::System& system_core, int step) {
     } else {
         std::cout << ", pitch: " << turbine.rna.elasto.rotor->pitch_collective;
     }
+    std::cout << ", Power: " << turbine.get_generated_power();
     std::cout << std::endl;
     write_turbine_info_to_csv("./output/output", system_core, system_core.get_time());
 }
@@ -149,6 +153,7 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+
     double time_outputs = dt_outputs;
     while (system_elasto->get_time() < t_end) {
         // prestep
