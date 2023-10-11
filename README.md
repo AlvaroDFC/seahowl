@@ -144,7 +144,8 @@ It is a JSON dictionary containing:
 The turbine JSON file pilots the discretization options of the blades and tower, as well as other general options.
 For discretization of blades and tower, it is possible to either use an ordered array of floats between 0 and 1 (with 0 and 1 included in the array as bounds) corresponding to the normalized abscissa of the reference points or only one integer corresponding to the number of elements to use for discretization.
 It is a JSON dictionary containing:
-- blades: (dict)
+- rotor: (dict)
+  - **type**: (string) type of rotor ("fea", "rigid", "disk")
   - **fpm**: (bool) whether to consider Fully-Populated Matrix (FPM) elements (6x6 material properties) or not.
   - **discretization**: (dict)
     - **elasto**: (array of floats) discretization fractions (between 0 and 1) for elasto part of blade.
@@ -152,6 +153,7 @@ It is a JSON dictionary containing:
   - **blades**: (list)
     - **file**: file path of blade file (relative to this file path).
     - **initial_pitch**: initial pitch of blade [°].
+    - **precone**: (float) precone of blade [°].
 - rna: (dict)
   - **initial_pitch_collective**: initial collective pitch of blades [°].
   - **file**: file path of RNA file (relative to this file path).
@@ -219,7 +221,6 @@ For this controller, only variable torque is applied and a target RPM is set as 
   - **inertia**: (float) inertia of hub [kg.m2].
   - **mass**: (float) mass of hub [kg].
   - **CM**: (float) offset of center of mass of hub [m].
-- **precones**: (array of floats) precone of blades [°].
 
 
 #### Blade file (blade.json)
