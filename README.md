@@ -32,6 +32,7 @@ option(SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option(SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 option(SEAHOWL_ENABLE_AERODYN "Enable AeroDyn module" OFF)
 option(SEAHOWL_ENABLE_INFLOWWIND "Enable InflowWind module" OFF)
+option(SEAHOWL_ENABLE_HYDROCHRONO "Enable HydroChrono library" OFF)
 ```
 
 
@@ -46,6 +47,7 @@ option(SEAHOWL_ENABLE_INFLOWWIND "Enable InflowWind module" OFF)
 
 - AeroDyn: https://github.com/Total-RD/aerodyn4seahowl
 - InflowWind: https://github.com/Total-RD/aerodyn4seahowl
+- HydroChrono: https://github.com/NREL/HydroChrono
 
 #### Documentation
 
@@ -165,6 +167,9 @@ It is a JSON dictionary containing:
 - controller: (dict)
   - **type**: (string) type of controller.
   - **options**: (dict) options of controller.
+- floater: (optional dict) uses floater if defined
+  - **file**: file path of floater file
+
 
 #### Available controller models
 
@@ -255,3 +260,16 @@ It is a json dictionary containing:
   - **stiffness_sideside**: (float) side-side stiffness of tower at reference point [N/m].
   - **diameter**: (float) diameter of tower at reference point [m].
   - **drag_coefficient**: (float) drag coefficient of tower at reference point [/].
+
+
+#### Floater file (floater.json)
+
+The floater JSON file describes the floater of a FOWT and is only used if the "floater" key is in the turbine json file.
+It is a json dictionary containing:
+- **mass**: (float) total mass of floater [kg].
+- **cog**: (array of floats of length 3) center of gravity of floater [m].
+- **inertia**: (3x3 matrix of floats) inertia of floater [kg.m2].
+- **type**: (string) type of floater (only "HydroChrono" available).
+- **options**:
+  - **file**: (string) file path of hydro .h5 file for HydroChrono,
+  - **name**: (string) name of body/floater in .h5 file
