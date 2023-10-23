@@ -590,12 +590,12 @@ void populate_system_from_json(std::string filepath, seahowl::core::System& syst
         if (wind_options.contains("file_inflowwind")) {
             inflowwind_filepath = (DATADIR / wind_options.at("file_inflowwind")).generic_string();
         } else {
-            throw std::runtime_error(("InflowWind file not defined.");
+            throw std::runtime_error("InflowWind file not defined.");
         }
         if (wind_options.contains("file_windwnd")) {
             windwnd_filepath = (DATADIR / wind_options.at("file_windwnd")).generic_string();
         } else {
-            throw std::runtime_error(("InflowWind input file (.wnd) not defined.");
+            throw std::runtime_error("InflowWind input file (.wnd) not defined.");
         }
         system_core.wind_model =
             std::make_shared<seahowl::aero::InflowWindAdapter>(inflowwind_filepath, windwnd_filepath);
@@ -654,12 +654,12 @@ void populate_system_from_json(std::string filepath, seahowl::core::System& syst
             if (turbine_json.contains("file_aerodyn")) {
                 aerodyn_filepath = (DATADIR / turbine_json.at("file_aerodyn")).generic_string();
             } else {
-                throw std::runtime_error(("Turbine set to use aerodyn but AeroDyn file path not defined.");
+                throw std::runtime_error("Turbine set to use aerodyn but AeroDyn file path not defined.");
             }
             if (wind_json.at("options").contains("file_inflowwind")) {
                 inflowwind_filepath = (DATADIR / wind_json.at("options").at("file_inflowwind")).generic_string();
             } else {
-                throw std::runtime_error(("Turbine set to use aerodyn but InflowWind file not defined.");
+                throw std::runtime_error("Turbine set to use aerodyn but InflowWind file not defined.");
             }
             turbine.aero.aerodyn =
                 std::make_shared<seahowl::aero::AeroDynAdapter>(aerodyn_filepath, inflowwind_filepath);
