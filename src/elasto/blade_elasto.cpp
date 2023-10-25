@@ -30,7 +30,7 @@ void BladeElastoFEA::assemble(SystemElasto& system) {
 
 void BladeElastoFEA::build() {
     // check that enough reference points were defined to create elements (at least 2)
-    if (reference_points.size() <= 2) {
+    if (reference_points.size() < 2) {
         throw std::runtime_error("Not enough elasto reference points defined for blade (" +
                                  std::to_string(reference_points.size()) + ").");
     }
