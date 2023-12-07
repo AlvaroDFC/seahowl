@@ -94,10 +94,11 @@ void InflowWindLib::SetIFWINFILE(std::string name) {
 
 void InflowWindLib::SetWNDINFILE(std::string name) {
     spdlog::info("Set wind.wnd INFILE: {}.", name);
-    std::ifstream file(name);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open wind.wnd input file.");
+    if (!fs::exists(name)) {
+        spdlog::warn("File {} not found, ignoring it.", name);
+        return;
     }
+    std::ifstream file(name);
     std::string line;
     while (std::getline(file, line)) {
         InputUniformString += line + '\0';
