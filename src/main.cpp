@@ -52,7 +52,7 @@ void output_results(seahowl::core::System& system_core) {
     int nblades = turbine.rna.blades.size();
     if (nblades <= 3 && nblades > 0) {
         for (int ii = 0; ii < turbine.rna.blades.size(); ii++) {
-            output_sstring << ", pitch" << ii + 1 << ": " << turbine.rna.elasto.rotor->pitch_collective;
+            output_sstring << ", pitch" << ii + 1 << ": " << turbine.rna.elasto.rotor->blades[ii]->pitch;
         }
     } else {
         output_sstring << ", pitch: " << turbine.rna.elasto.rotor->pitch_collective;

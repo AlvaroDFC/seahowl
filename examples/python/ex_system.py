@@ -34,7 +34,7 @@ while t_sim < t_end:
     if t_sim >= t_output_next - 1e-6:
         turbine = system_core.turbines[0]
         print(
-            "time: {time:.3f}, step: {step:.3f}, rpm: {rpm:.3f}, pitch: {pitch:.3f}".format(
+            "time: {time:.3f}, step: {step}, rpm: {rpm:.3f}, pitch: {pitch:.3f}".format(
                 time=t_sim,
                 step=step,
                 rpm=turbine.rna.elasto.get_rpm(),
