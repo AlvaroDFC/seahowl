@@ -27,8 +27,6 @@ struct DisconController {
     typedef void (*DISCON_routine)(float* avrSWAP, int* aviFAIL, char* accINFILE, char* avcOUTNAME, char* avcMSG);
     DISCON_routine DISCON;
 
-    std::string output_folder = "./output";
-
     float& m_time = avrSWAP[1];     ///<@brief Time
     float& m_dt = avrSWAP[2];       ///<@brief Time step
     float& m_pitch = avrSWAP[41];   ///<@brief Pitch return controller states

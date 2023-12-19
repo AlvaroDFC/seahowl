@@ -588,7 +588,6 @@ void populate_turbine_from_json(const std::string& filepath,
         // instantiate controller
         auto controller = std::make_shared<seahowl::servo::ControllerDISCON>(
             (DATADIR / controller_json.at("options").at("infile")).generic_string(), copyfilepath);
-        controller->pImpl.output_folder = output_folder;
         turbine.controller = controller;
 
     } else if (controller_json.at("type").get<std::string>() == "RPM") {

@@ -1,15 +1,12 @@
 #include "seahowl/servo/controller_discon.h"
 
 #include "seahowl/core/turbine.h"
-#include "seahowl/io/utils_io.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
 
 #include <vector>
 #include <string>
 #include <spdlog/spdlog.h>
-#include <filesystem>
-namespace fs = std::filesystem;
 #ifdef __unix__
     #include <dlfcn.h>
 #endif
