@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <spdlog/spdlog.h>
+#include <filesystem>
 #ifdef __unix__
     #include <dlfcn.h>
 #endif
@@ -20,6 +21,8 @@ seahowl::servo::ControllerDISCON::ControllerDISCON(std::string infile, std::stri
 
     if (!std::filesystem::exists(std::filesystem::path(libfile_in))) {
         throw std::runtime_error("Dynamic library path for DISCON routine does not exist: " + libfile_in);
+    } else if (!std::filesystem::exists(std::filesystem::path(infile))) {
+        throw std::runtime_error("Input file path for DISCON routine does not exist: " + infile);
     }
 
     libfile = libfile_in;
