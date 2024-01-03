@@ -21,6 +21,7 @@ using json = nlohmann::json;
 #include <seahowl/elasto/blade_elasto.h>
 
 #include <filesystem>  // C++17
+#include <fstream>
 #include <sstream>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
@@ -99,8 +100,6 @@ void run_simulation(int argc, char* argv[]) {
 
     // system elasto
     auto system_elasto = seahowl::elasto::SystemElastoChrono();
-    auto system_chrono = system_elasto.chobj;
-    system_chrono->SetNumThreads(chrono::ChOMP::GetNumProcs(), 0, 1);
     // system aero
     auto system_aero = seahowl::aero::SystemAero();
     // system core
@@ -141,6 +140,7 @@ void run_simulation(int argc, char* argv[]) {
     application->Initialize();
     application->SetCameraVertical(chrono::CameraVerticalDir::Z);
     application->AddLogo(logoname);
+    auto system_chrono = system_elasto.chobj;
     draw_system_init(system_chrono, application);
 #endif
 
