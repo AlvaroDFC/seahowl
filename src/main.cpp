@@ -1,6 +1,3 @@
-#include <chrono/physics/ChSystemSMC.h>
-#include <chrono/fea/ChNodeFEAxyzrot.h>
-
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -16,25 +13,18 @@ using json = nlohmann::json;
 #include <cmath>
 
 #include <seahowl/io/read_json.h>
-#include "seahowl/io/read_rotor_perf.h"
 #include <seahowl/io/write_csv.h>
-#include <seahowl/elasto/chrono_adapters.h>
 
 #include <seahowl/core/system.h>
 #include <seahowl/aero/system_aero.h>
 #include <seahowl/core/blade.h>
 #include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/elasto/mooring_elasto.h>
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/elasto/turbine_floating_elasto.h>
 
 #include <filesystem>  // C++17
 #include <sstream>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
-#include "spdlog/pattern_formatter.h"
-
-#include <seahowl/servo/controller.h>
+#include <spdlog/pattern_formatter.h>
 
 namespace fs = std::filesystem;
 using std::filesystem::path;
@@ -60,7 +50,7 @@ void output_results(const seahowl::core::System& system_core, const std::string&
     spdlog::info(output_sstring.str());
 
     // output info in file
-    write_turbine_info_to_csv(output_folder + "./output", system_core);
+    write_turbine_info_to_csv(output_folder + "/output", system_core);
 }
 
 void run_simulation(int argc, char* argv[]) {
