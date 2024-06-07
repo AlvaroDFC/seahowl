@@ -485,7 +485,7 @@ void NodeElastoChronoD::set_acceleration(const Vector3d& acceleration) {
 }
 
 Vector3d NodeElastoChronoD::get_acceleration() const {
-    return ch2vec(chobj->GetPos_dt());
+    return ch2vec(chobj->GetPos_dtdt());
 }
 
 void NodeElastoChronoD::set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local) {
