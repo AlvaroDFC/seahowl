@@ -164,7 +164,6 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def_readonly("nodes", &seahowl::elasto::ComponentElastoFEA::nodes)
         .def_readonly("elements", &seahowl::elasto::ComponentElastoFEA::elements)
         .def_readwrite("discretization_fractions", &seahowl::elasto::ComponentElastoFEA::discretization_fractions)
-        .def("assemble", &seahowl::elasto::ComponentElastoFEA::assemble)
         .def("evaluate_position_rotation", &seahowl::elasto::ComponentElastoFEA::evaluate_position_rotation)
         .def("accumulate_element_load", &seahowl::elasto::ComponentElastoFEA::accumulate_element_load);
 

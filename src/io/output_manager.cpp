@@ -34,7 +34,7 @@ void OutputManager::initialize() {
         output_vtk = std::make_unique<OutputSystemVTK>(system_core, output_folder + "/vtk/");
         output_vtk->initialize();
 #else
-        spdlog::warn("Outputs: VTK is enabled but this feature was not compiled.")
+        spdlog::warn("Outputs: VTK is enabled but this feature was not compiled.");
 #endif
     }
     if (has_gui) {
@@ -42,7 +42,7 @@ void OutputManager::initialize() {
         output_insitu = std::make_unique<VisualizationInSituIrrlicht>();
 #else
         output_insitu = std::make_unique<VisualizationInSitu>();
-        spdlog::warn("Outputs: in situ visualization is enabled but this feature was not compiled.")
+        spdlog::warn("Outputs: in situ visualization is enabled but this feature was not compiled.");
 #endif
         output_insitu->initialize(system_core);
         output_insitu->draw();
