@@ -21,17 +21,17 @@ An `output` folder containing all the outputs will be automatically created.
 If you compiled the python bindings and added them to your `PYTHONPATH`, you can use SEAHOWL as follows:
 
 ```python
-import pyseahowl
+import seahowl
 
 # make system
-system_elasto = pyseahowl.elasto.SystemElastoChrono()
-system_aero = pyseahowl.aero.SystemAero()
-system_core = pyseahowl.core.System(system_elasto, system_aero)
+system_elasto = seahowl.elasto.SystemElastoChrono()
+system_aero = seahowl.aero.SystemAero()
+system_core = seahowl.core.System(system_elasto, system_aero)
 
 # populate and initialize system from json file
 filepath = "./data/IEA15MW/main.json"
-pyseahowl.io.populate_system_from_json(filepath, system_core)
-pyseahowl.io.initialize_system_from_json(filepath, system_core)
+seahowl.io.populate_system_from_json(filepath, system_core)
+seahowl.io.initialize_system_from_json(filepath, system_core)
 
 # run simulation loop
 dt = 0.05
