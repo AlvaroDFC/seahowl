@@ -1132,7 +1132,7 @@ void initialize_system_from_json(const std::string& filepath, seahowl::core::Sys
     auto json_obj = get_json_from_file(filepath);
 
     // assemble system if it was not already
-    if (system_core.elasto.is_assembled) {
+    if (!system_core.elasto.is_assembled) {
         system_core.elasto.assemble();
     }
 
