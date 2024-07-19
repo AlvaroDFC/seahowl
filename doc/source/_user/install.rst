@@ -76,9 +76,9 @@ Optional dependencies
 Physics
 ^^^^^^^
 
-- AeroDyn: https://github.com/Total-RD/aerodyn4seahowl
-- InflowWind: https://github.com/Total-RD/aerodyn4seahowl
-- HydroChrono: https://github.com/NREL/HydroChrono
+- AeroDyn: https://github.com/Total-RD/openfast4seahowl
+- InflowWind: https://github.com/Total-RD/openfast4seahowl
+- HydroChrono (v0.2.1): https://github.com/NREL/HydroChrono
 
 Documentation
 ^^^^^^^^^^^^^
@@ -131,8 +131,8 @@ Test your installation by opening a terminal (in the build directory):
 
 .. code-block:: python
 
-   import pyseahowl
-   system_core = pyseahowl.core.System()
+   import seahowl
+   system_core = seahowl.core.System()
 
 You can add the build directory to your `PYTHONPATH` in order to use pyseahowl anywhere.
 Adding the following line to your .bashrc (or equivalent file for your favorite terminal) will ensure that pyseahowl will be usable everytime you open a new terminal:
