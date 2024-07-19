@@ -1,7 +1,7 @@
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/NREL/HydroChrono.git
-    REF 3a191dc328f3ec6d8e3e295a2365f43b7ef2e6a8
+    REF 7ea31390117d9f1a0c38ec449e19ba17239699a9
 )
 
 vcpkg_cmake_configure(
