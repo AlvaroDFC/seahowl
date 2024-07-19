@@ -43,7 +43,7 @@ find_package(Doxygen
     REQUIRED dot
     OPTIONAL_COMPONENTS mscgen dia)
 
-set(DOXYGEN_PROJECT_BRIEF "Floating Offshore Wind Turbines")
+set(DOXYGEN_PROJECT_BRIEF "Servo-Elasto-Aero-Hydro Offshore Wind Lab")
 
 set(DOXYGEN_MATHJAX_EXTENSIONS YES)
 set(DOXYGEN_HIDE_UNDOC_MEMBERS YES)
