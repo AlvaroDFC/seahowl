@@ -661,7 +661,7 @@ void SpringLinearChrono::initialize_with_anchors(const BodyElasto& body1,
                                                  const Vector3d& anchor1,
                                                  const Vector3d& anchor2) {
     chobj->Initialize(dynamic_cast<const BodyElastoChrono&>(body1).chobj,
-                      dynamic_cast<const BodyElastoChrono&>(body2).chobj, true, vec2ch(anchor1), vec2ch(anchor2));
+                      dynamic_cast<const BodyElastoChrono&>(body2).chobj, local, vec2ch(anchor1), vec2ch(anchor2));
 }
 
 void SpringLinearChrono::set_rest_length(double rest_length) {
