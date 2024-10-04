@@ -64,6 +64,7 @@ void initialize_pyseahowl_core(py::module& m) {
     py::class_<seahowl::core::Turbine, std::shared_ptr<seahowl::core::Turbine>, seahowl::core::ComponentDynamic>(
         m_core, "Turbine")
         .def(py::init<seahowl::elasto::TurbineElasto&, seahowl::aero::TurbineAero&>())
+        .def("apply_control", &seahowl::core::Turbine::apply_control)
         .def("get_generated_power", &seahowl::core::Turbine::get_generated_power)
         .def("get_generator_rpm", &seahowl::core::Turbine::get_generator_rpm)
         .def_property_readonly("elasto", [](seahowl::core::Turbine& turbine) { return &turbine.elasto; })
