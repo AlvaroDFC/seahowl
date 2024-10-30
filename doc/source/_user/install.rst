@@ -25,11 +25,11 @@ Make a directory where the library will be built:
    mkdir build
    cd build
 
-Use cmake to configure with the `-DChrono_DIR` option pointing to your Project Chrono install:
+Use cmake to configure :
 
 .. code-block:: bash
 
-   cmake .. -DChrono_DIR=/path/to/your/chrono/build/cmake/directory
+   cmake .. --preset "full"
    make
 
 
@@ -44,17 +44,16 @@ The development versions of Eigen3, nlohmann-json and spdlog can be easily insta
 
 .. code-block:: bash
 
-   sudo apt install libeigen3-dev nlohmann-json-dev libspdlog-dev
+   sudo apt install libeigen3-dev nlohmann-json3-dev libspdlog-dev
 
-The supported version of Project Chrono for SEAHOWL is 8.0.0. To prepare for building the right version Project Chrono, clone the repository and checkout to the right tag as follows:
+The supported version of Project Chrono for SEAHOWL is 8.0.0. To install used the following commands:
 
 .. code-block:: bash
 
-   git clone https://github.com/projectchrono/chrono
-   cd chrono
-   git checkout 8.0.0
+   cd external
+   ./dep-install.sh -d chrono
 
-To build the Chrono library, follow instructions on their `repository https://github.com/projectchrono/chrono`.
+This script build the Chrono library.
 
 
 .. _dependencies:
@@ -132,7 +131,9 @@ Test your installation by opening a terminal (in the build directory):
 .. code-block:: python
 
    import seahowl
-   system_core = seahowl.core.System()
+   system_elasto = seahowl.elasto.SystemElastoChrono()
+   system_aero = seahowl.aero.SystemAero()
+   system_core = seahowl.core.System(system_elasto, system_aero)
 
 You can add the build directory to your `PYTHONPATH` in order to use pyseahowl anywhere.
 Adding the following line to your .bashrc (or equivalent file for your favorite terminal) will ensure that pyseahowl will be usable everytime you open a new terminal:
