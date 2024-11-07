@@ -69,8 +69,8 @@ void MacCamyFuchsTable::generateMacCamyFuchsTable() {
 
     // Loop through diameters and compute the associated added-mass coefficient
     for (const auto& D : DiamList) {
-        double kr = D / 2.0 * 2.0 * M_PI;  // Wave number
-        double aa = 4.0 / (M_PI * kr * kr);
+        double kr = D / 2.0 * 2.0 * seahowl::PI;  // Wave number
+        double aa = 4.0 / (seahowl::PI * kr * kr);
 
         // Compute Bessel functions
         double J1 = std::cyl_bessel_j(1, kr);
