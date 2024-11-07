@@ -109,8 +109,7 @@ double seahowl::bilinear_interpolation(const Eigen::MatrixXd& dataMatrix,
     return fP;
 }
 
-// With __attribute__((constructor)), this function will be called when the library is loaded
-__attribute__((constructor)) void printBanner() {
+void print_banner() {
     spdlog::set_pattern("[%^%l%$] %v");
 
     spdlog::info("+-----------------------------------------------+");
@@ -142,7 +141,20 @@ __attribute__((constructor)) void printBanner() {
     spdlog::info("  |- VTK: {}", (SEAHOWL_HAVE_VTK ? "yes" : "no"));
     //
     // current_time
+    std::ostringstream oss;
     std::time_t now = std::time(nullptr);
-    std::tm* localTime = std::localtime(&now);
-    spdlog::info("Loaded on {}.", std::put_time(localTime, "%Y-%m-%d %H:%M:%S"));
+    std::tm* time_local = std::localtime(&now);
+    oss << std::put_time(time_local, "%Y-%m-%d %H:%M:%S");
+    std::string time_formatted = oss.str();
+    spdlog::info("Loaded on {}.", time_formatted);
 }
+
+// calling print_banner at library load
+#ifdef _MSC_VER
+    // MSVC-specific initialization
+    #pragma section(".CRT$XCU", read)
+__declspec(allocate(".CRT$XCU")) void (*p)(void) = print_banner;
+#else
+// GCC/Clang-specific initialization
+__attribute__((constructor)) void print_banner();
+#endif
