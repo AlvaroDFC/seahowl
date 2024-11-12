@@ -70,7 +70,7 @@ Vector3d WindRamp::get_fluid_velocity_this(const Vector3d& position, double time
 
 Vector3d WindRamp::get_fluid_acceleration_this(const Vector3d& position, double time) const {
     auto acceleration = Vector3d(0.0, 0.0, 0.0);
-    if (time >= time_start) {
+    if (time > time_start && time < time_end) {
         acceleration = (wind_velocity_end - wind_velocity_start) / (time_end - time_start);
     }
     return acceleration;
