@@ -8,7 +8,6 @@
 /// <summary>
 /// Fortran Fonction definition of DISCO (ROSCO) controller
 /// </summary>
-/// @todo shoudl be private
 /// <param name="avrSWAP"></param>
 /// <param name="aviFAIL"></param>
 /// <param name="accINFILE"></param>
