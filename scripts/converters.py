@@ -10,16 +10,20 @@ import argparse
 import shutil
 import warnings
 
+# options
+TOL_FRACTION_DECIMALS = 8
+ONLY_AIRFOIL_POINTS = True
+
 # JSON dump options
 options = jsbeautifier.default_options
 options.indent_size = 2
 
-TOL_FRACTION_DECIMALS = 8
-ONLY_AIRFOIL_POINTS = True
 
 # format warning messages
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
     return "%s:%s: %s: %s\n" % (filename, lineno, category.__name__, message)
+
+
 warnings.formatwarning = warning_on_one_line
 
 
@@ -495,14 +499,16 @@ def merge_elasto_aero_blade(
     keep_only_points_with_airfoil=ONLY_AIRFOIL_POINTS,
 ):
     aero_fractions = [
-        round(point["fraction"], TOL_FRACTION_DECIMALS) for point in aero_json["reference_points"]
+        round(point["fraction"], TOL_FRACTION_DECIMALS)
+        for point in aero_json["reference_points"]
     ]
     elasto_fractions = [
-        round(point["fraction"], TOL_FRACTION_DECIMALS) for point in elasto_json["reference_points"]
+        round(point["fraction"], TOL_FRACTION_DECIMALS)
+        for point in elasto_json["reference_points"]
     ]
     merged_json = copy.deepcopy(elasto_json)
-    merged_json.pop("discretization_aero", None)
-    merged_json.pop("discretization_elasto", None)
+    merged_json["discretization_aero"] = aero_fractions
+    merged_json["discretization_elasto"] = elasto_fractions
     reference_points = merge_interpolate_points(
         json_points1=elasto_json["reference_points"],
         json_points2=aero_json["reference_points"],
@@ -518,7 +524,9 @@ def merge_elasto_aero_blade(
         for reference_point in reference_points:
             reference_point["coordinates"][0] = reference_point["coordinates_aero"][0]
             if reference_point["fraction"] in elasto_fractions:
-                elasto_json["reference_points"][idx_elasto_point]["coordinates"][0] = reference_point["coordinates_aero"][0]
+                elasto_json["reference_points"][idx_elasto_point]["coordinates"][0] = (
+                    reference_point["coordinates_aero"][0]
+                )
                 idx_elasto_point += 1
 
     idx_aero_point = 0
@@ -563,11 +571,20 @@ def merge_elasto_aero_blade(
                 del point
         for idx in points_to_remove[::-1]:
             del merged_json["reference_points"][idx]
+        # remove aero/elasto discretization (same for both)
+        merged_json["discretization_aero"] = list()
+        merged_json["discretization_elasto"] = list()
 
     # save to file
+    # save without discretization info
+    dxa = merged_json.pop("discretization_aero", None)
+    dxe = merged_json.pop("discretization_elasto", None)
     if save_directory is not None:
         fullpath = Path(save_directory) / "blade.json"
         save_json(merged_json, fullpath)
+    # re-attach discretization info for later use
+    merged_json["discretization_aero"] = dxa
+    merged_json["discretization_elasto"] = dxe
 
     return merged_json
 
@@ -1001,8 +1018,8 @@ def convert_openfast_fst(filename, save_directory=None, use_elastodyn_blade=Fals
                     "fpm": False,
                 },
                 "discretization": {
-                    "elasto": blade_elasto_json["discretization_elasto"],
-                    "aero": blade_aero_json["discretization_aero"],
+                    "elasto": blade_json["discretization_elasto"],
+                    "aero": blade_json["discretization_aero"],
                 },
                 "blades": [
                     {
