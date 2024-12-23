@@ -70,10 +70,8 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_inflowwind_rpm_initial_pitch.csv").generic_string(),
                                        (test_dir / "test_inflowwind_rpm_initial_pitch.test.csv").generic_string()});
-    test_dataset.test_csv.add_function(
-        "time (s)", [&system_elasto]() -> std::vector<double> { return {system_elasto.get_time()}; });
-    test_dataset.test_csv.add_function("rpm (-)",
-                                       [&turbine]() -> std::vector<double> { return {turbine.rna.elasto.get_rpm()}; });
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
 
     while (time < 50) {
         // prestep

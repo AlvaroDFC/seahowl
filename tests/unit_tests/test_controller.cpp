@@ -68,15 +68,12 @@ TEST_F(TestController, IEA15) {
     // instantiate test dataset class (custom CSV)
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_controller.csv").generic_string(),
                                        (test_dir / "test_controller.test.csv").generic_string()});
-    test_dataset.test_csv.add_function(
-        "time (s)", [&system_elasto]() -> std::vector<double> { return {system_elasto.get_time()}; });
-    test_dataset.test_csv.add_function("power (W)",
-                                       [&turbine]() -> std::vector<double> { return {turbine.get_generated_power()}; });
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
     for (size_t idx_blade = 0; idx_blade < turbine.rna.elasto.rotor->blades.size(); idx_blade++) {
-        test_dataset.test_csv.add_function("pitch blade" + std::to_string(idx_blade + 1) + " (rad)",
-                                           [&turbine, idx_blade]() -> std::vector<double> {
-                                               return {turbine.rna.elasto.rotor->blades[idx_blade]->get_pitch()};
-                                           });
+        test_dataset.test_csv.add_function(
+            "pitch blade" + std::to_string(idx_blade + 1) + " (rad)",
+            [&turbine, idx_blade]() { return turbine.rna.elasto.rotor->blades[idx_blade]->get_pitch(); });
     }
 
     // output values at time = 0
@@ -157,13 +154,10 @@ TEST_F(TestController, actuator_disk) {
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_controller_actuator_disk.csv").generic_string(),
                                        (test_dir / "test_controller_actuator_disk.test.csv").generic_string()});
 
-    test_dataset.test_csv.add_function(
-        "time (s)", [&system_elasto]() -> std::vector<double> { return {system_elasto.get_time()}; });
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
 
-    test_dataset.test_csv.add_function("rpm (-)",
-                                       [&turbine]() -> std::vector<double> { return {turbine.rna.elasto.get_rpm()}; });
-    test_dataset.test_csv.add_function("power (W)",
-                                       [&turbine]() -> std::vector<double> { return {turbine.get_generated_power()}; });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
 
     int count = 0;
     while (time < simul_time) {
