@@ -19,6 +19,7 @@ void initialize_pyseahowl_io(py::module& m);
 PYBIND11_MODULE(seahowl, m) {
     // utils.h
     m.def("set_log_level_global", &seahowl::set_log_level_global);
+    m.def("log", &seahowl::log);
 
     // entities.h
     py::class_<seahowl::Entity, std::shared_ptr<seahowl::Entity>>(m, "Entity")

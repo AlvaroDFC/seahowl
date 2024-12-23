@@ -17,6 +17,14 @@ extern bool LOG_LEVEL_SET;
 void set_log_level_global(const std::string& level);
 
 /**
+ * @brief Logs a message.
+ *
+ * @param[in] message Message to log.
+ * @param[in] level Log level of message ("critical", "error", "warning", "info", "debug", "trace").
+ */
+void log(const std::string& message, const std::string& level);
+
+/**
  * @brief Parametric discretization point.
  */
 struct DiscretizationPoint {

@@ -28,6 +28,24 @@ void seahowl::set_log_level_global(const std::string& level) {
     seahowl::LOG_LEVEL_SET = true;
 }
 
+void seahowl::log(const std::string& message, const std::string& level) {
+    if (level == "critical") {
+        spdlog::critical(message);
+    } else if (level == "error" || level == "err") {
+        spdlog::error(message);
+    } else if (level == "warning" || level == "warn") {
+        spdlog::warn(message);
+    } else if (level == "info") {
+        spdlog::info(message);
+    } else if (level == "debug") {
+        spdlog::debug(message);
+    } else if (level == "trace") {
+        spdlog::trace(message);
+    } else {
+        throw std::runtime_error("Log level unknown: '" + level + "' for message '" + message + "'.");
+    }
+}
+
 std::vector<seahowl::DiscretizationPoint> seahowl::get_indice_and_positions(
     const std::vector<double>& discretization_fractions,
     const std::vector<double>& reference_fractions) {

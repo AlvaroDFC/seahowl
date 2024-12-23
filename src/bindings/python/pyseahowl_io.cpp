@@ -2,7 +2,6 @@
 #include <pybind11/functional.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
-#include <spdlog/spdlog.h>
 
 #include <seahowl/io/read_json.h>
 #include <seahowl/core/blade.h>
@@ -71,11 +70,11 @@ void initialize_pyseahowl_io(py::module& m) {
                          custom_csv.add_function(name, cfunction);
                          added_function = true;
                      } catch (const std::runtime_error& e) {
-                         spdlog::error(e.what());
+                         seahowl::log(e.what(), "error");
                      }
                  }
                  if (!added_function) {
-                     spdlog::error("Could not add function with header \"{}\" to CustomCSV", name);
+                     seahowl::log("Could not add function with header \"" + name + "\" to CustomCSV", "error");
                  }
              })
         .def("write_row", &seahowl::io::CustomCSV::write_row);
