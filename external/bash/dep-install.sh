@@ -67,7 +67,7 @@ display_table() {
 
     for header in "${headers[@]}"; do
         col_width[$header]=$(( col_width[$header] + 5 ))
-    done    
+    done
 
     # Display Headers
     for header in "${headers[@]}"; do
@@ -129,7 +129,7 @@ options_parse() {
         -c|--force-src-clone) OPTION_FORCE_SRC_CLONE_FLAG=true ;;
         -s|--skip-build) OPTION_SKIP_BUILD_FLAG=true ;;
         -sc|--src-shallow-clone) OPTION_SRC_SHALLOW_CLONE_FLAG=true ;;
-        -j|--make-jobs-number) 
+        -j|--make-jobs-number)
         if [[ "$2" =~ ^[0-9]+$ ]]; then
             OPTION_MAKE_JOBS_NUMBER=$2
             shift
@@ -176,13 +176,13 @@ context_info() {
 get_dependencies() {
 
     log_start "Gathering dependency configurations"
-    
+
     local config_file_list=()
     if [ "$OPTION_DEPENDENCY" = "" ]; then
         echo "  No dependency option provided"
         log_sub "Search for dependency configuration files ..."
 
-        # search config files    
+        # search config files
         local pattern="dep-install-*.cfg"
         config_file_list=$(ls $SCRIPT_FOLDER/$pattern 2>/dev/null)
         # Check if the command was not successful or no files found
@@ -207,7 +207,7 @@ get_dependencies() {
         echo "  Processing file: $cfg_filepath"
         # load config file
         local NAME GIT_URL GIT_TAG OPTION
-        # local 
+        # local
         source "$cfg_filepath"
         DEPENDENCY_DATA["$NAME/NAME"]=$NAME
         DEPENDENCY_DATA["$NAME/ORDER"]=$ORDER
@@ -220,7 +220,7 @@ get_dependencies() {
 
     echo
     log_kv "  List ordered ($DEPENDENCY_COUNT) "
-    sorted_keys=($(for key in "${!DEPENDENCY_MAP[@]}"; do echo "$key"; done | sort))    
+    sorted_keys=($(for key in "${!DEPENDENCY_MAP[@]}"; do echo "$key"; done | sort))
     for key in "${sorted_keys[@]}"; do
         echo "  ${DEPENDENCY_MAP[$key]}"
     done
@@ -249,15 +249,15 @@ dependency_process() {
 
     local exec_endtime=$(date +%s)
     local exec_time=$((exec_endtime - exec_starttime))
-    
+
     echo
     log_sub "Info"
     log_kv "  process time=" "$exec_time seconds"
-    
+
     EXEC_DATA["$dependency/duration/label"]="$exec_time s"
 
 }
- 
+
 dependency_process_src() {
     local git_url=$1
     local git_tag=$2
@@ -284,7 +284,7 @@ dependency_process_src() {
 
         else
             log_sub "Check if folder exists ..."
-            
+
             if [ -d "$dir_name" ]; then
 
                 echo "  $dir_name folder exists ..."
@@ -299,12 +299,12 @@ dependency_process_src() {
         fi
     fi
 }
- 
+
 dependency_process_src_clone() {
     local git_url=$1
     local git_tag=$2
     local dependency=$3
-    
+
     local dir_name=$dependency
 
     log_sub "Cloning ..."
@@ -317,7 +317,7 @@ dependency_process_src_clone() {
         echo "  Shallow clone ..."
         if ( git clone --depth 1 --branch "$git_tag" "$git_url" "$dir_name") then
             exec_status=$STATUS_SUCCESS
-        fi        
+        fi
     else
         if ( git clone --branch "$git_tag" "$git_url" "$dir_name") then
             exec_status=$STATUS_SUCCESS
@@ -328,7 +328,7 @@ dependency_process_src_clone() {
     local exec_endtime=$(date +%s)
     local exec_time=$((exec_endtime - exec_starttime))
     log_kv "  cloning time=" "$exec_time seconds"
-    
+
     EXEC_DATA["$dependency/src/label"]="$exec_status (Clone) ($exec_time s)"
 }
 
@@ -348,8 +348,8 @@ dependency_process_src_checkout() {
     if (
         current_ref=$(git rev-parse --abbrev-ref HEAD | sed 's/^[ \t]*//;s/[ \t]*$//') &&
         log_kv "  Current ref: " "$current_ref" &&
-        log_kv "  Target  ref: " "$git_tag" 
-        
+        log_kv "  Target  ref: " "$git_tag"
+
     ) then
         if (
             # does not work with clone shallow
@@ -359,7 +359,7 @@ dependency_process_src_checkout() {
         ) then
             exec_status=$STATUS_SUCCESS
         fi
-    fi    
+    fi
     cd ..
 
     local exec_endtime=$(date +%s)
@@ -418,7 +418,7 @@ dependency_process_compile_install() {
 
             # Build
             cd "$build_dir" &&
-            echo "  cmake ..."  && 
+            echo "  cmake ..."  &&
             cmake  -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles"  $OPTION -DCMAKE_INSTALL_PREFIX=../../../../install .. &&
             echo "  make ..." &&
             make -j $OPTION_MAKE_JOBS_NUMBER &&
@@ -451,7 +451,7 @@ context_info
 get_dependencies
 # dependency_process
 summary_data=()
-sorted_keys=($(for key in "${!DEPENDENCY_MAP[@]}"; do echo "$key"; done | sort))    
+sorted_keys=($(for key in "${!DEPENDENCY_MAP[@]}"; do echo "$key"; done | sort))
 for key in "${sorted_keys[@]}"; do
     dependency="${DEPENDENCY_MAP[$key]}"
     dependency_process $dependency
@@ -465,11 +465,3 @@ headers=("Dependency;Duration;Get Src;Override;Build/Install")
 display_table "$headers" "${summary_data[@]}" "  "
 
 echo
-
-
-
-
-
-
-
-

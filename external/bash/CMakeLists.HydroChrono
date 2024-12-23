@@ -29,10 +29,10 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 #--------------------------------------------------------------
-# Modify the project name if you want: 
+# Modify the project name if you want:
 #--------------------------------------------------------------
 
-project(HydroChrono 
+project(HydroChrono
 	VERSION 0.1
 	DESCRIPTION "A hydrodynamic library for use with Project Chrono."
 	LANGUAGES CXX
@@ -82,7 +82,7 @@ endif()
 if(MSVC)
 	# avoids deprecation warnings
     add_definitions(
-		-D_CRT_SECURE_NO_DEPRECATE  
+		-D_CRT_SECURE_NO_DEPRECATE
 		-D_SCL_SECURE_NO_DEPRECATE
 		-DNOMINMAX
 	)
@@ -94,7 +94,7 @@ endif()
 # HydroChrono Library
 # =======================
 set(HYDROCHRONO_SOURCES
-  
+
 	src/h5fileinfo.cpp
 	src/chloadaddedmass.cpp
 	src/hydro_forces.cpp
@@ -113,7 +113,7 @@ target_include_directories(
 	PUBLIC
 	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
-	${CHRONO_INCLUDE_DIRS} 	
+	${CHRONO_INCLUDE_DIRS}
 
 	PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/
@@ -124,16 +124,16 @@ target_compile_definitions(HydroChrono
 
 	PUBLIC
 
-	PRIVATE 
+	PRIVATE
 		CHRONO_DATA_DIR=\"${CHRONO_DATA_DIR}\"
 )
 
-target_compile_options(HydroChrono BEFORE 
+target_compile_options(HydroChrono BEFORE
 	PUBLIC
 		${CHRONO_CXX_FLAGS}
 )
 
-target_link_options(HydroChrono BEFORE 
+target_link_options(HydroChrono BEFORE
 	PUBLIC
 		${CHRONO_LINKER_FLAGS}
 )
@@ -150,9 +150,9 @@ if(NOT TARGET hdf5::hdf5_cpp-static)
 	add_library(hdf5::hdf5_cpp-static ALIAS hdf5_cpp-static)
 endif()
 
-target_link_libraries(HydroChrono 
+target_link_libraries(HydroChrono
 	PUBLIC
-		${CHRONO_LIBRARIES}		
+		${CHRONO_LIBRARIES}
 	PRIVATE
 		hdf5::hdf5_cpp-static
 

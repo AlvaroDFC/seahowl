@@ -57,7 +57,10 @@
     },
     {
       "name": "full/debug",
-      "inherits": ["debug", "full"],
+      "inherits": [
+        "debug",
+        "full"
+      ],
       "displayName": "Full SEAHOWL installation (Debug)"
     },
     {
@@ -70,7 +73,10 @@
     },
     {
       "name": "full_viz/debug",
-      "inherits": ["debug", "full_viz"],
+      "inherits": [
+        "debug",
+        "full_viz"
+      ],
       "displayName": "Full SEAHOWL installation with in situ visualization (Debug)"
     },
     {
@@ -84,7 +90,10 @@
     },
     {
       "name": "full_vtk/debug",
-      "inherits": ["debug", "full_vtk"],
+      "inherits": [
+        "debug",
+        "full_vtk"
+      ],
       "displayName": "Full SEAHOWL installation with VTK and in situ visualization (Debug)"
     },
     {
@@ -105,7 +114,10 @@
     },
     {
       "name": "minimal/debug",
-      "inherits": ["debug", "minimal"],
+      "inherits": [
+        "debug",
+        "minimal"
+      ],
       "displayName": "Minimal SEAHOWL installation (Debug)"
     }
   ]

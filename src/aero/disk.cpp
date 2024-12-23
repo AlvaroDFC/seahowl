@@ -10,7 +10,6 @@ using seahowl::Vector2d;
 using seahowl::Vector3d;
 using seahowl::PI;
 
-
 // TSR = Omega*(HAWT["RotorDia"]*0.5) / numpy.mean(VN)
 // CT = RotorChar['CT']
 // CP = RotorChar['CP']
@@ -21,5 +20,5 @@ using seahowl::PI;
 
 // FaxT   += (1/HAWT['Nbla']) *  ct * 0.5 * HAWT['AirDens'] * numpy.pi * (HAWT['RotorDia']*0.5)**2 * numpy.mean(VN)**2
 // PaeroT = (1/HAWT['Nbla']) * cp * 0.5 * HAWT['AirDens']  * numpy.pi * (HAWT['RotorDia']*0.5)**2 * numpy.mean(VN)**3
-// MaeroT += PaeroT / Omega 
+// MaeroT += PaeroT / Omega
 // FaxTb = FaxT / HAWT['Nbla']
