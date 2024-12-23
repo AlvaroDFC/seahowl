@@ -78,7 +78,7 @@ Additionally, VTK was purposely omitted in the automated vcpkg installation proc
 It therefore has to be installed manually if the VTK dependency is activated in SEAHOWL. On Ubuntu, it can simply be added with:
 
 ```bash
-sudo apt install vtk9  # if VTK is enabled as a dependency
+sudo apt install libvtk9-dev  # if VTK is enabled as a dependency
 ```
 
 
