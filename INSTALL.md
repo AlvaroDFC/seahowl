@@ -98,7 +98,7 @@ Other optional system dependencies for a more complete install can be easily ins
 sudo apt install pybind11-dev  # for Python bindings
 sudo apt libirrlicht-dev  # for in situ visualization capabilities
 sudo apt gfortran libblas-dev liblapack-dev  # for OpenFAST modules (AeroDyn, InflowWind, etc)
-sudo apt vtk9  # for VTK output feature
+sudo apt libvtk9-dev  # for VTK output feature
 ```
 
 Dependencies that cannot be typically handled through the package manager of the system (e.g. Chrono, HydroChrono, etc.) are automatically installed into an ``install`` folder using the following command:
