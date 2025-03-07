@@ -1,0 +1,53 @@
+﻿{
+  "aero": {
+    "solver": "aerodyn",
+    "options": {
+      "file_aerodyn": "../base/aerodyn/IEA-15-240-RWT_AeroDyn15.dat",
+      "file_inflowwind": "../env/InflowWind.dat"
+    }
+  },
+  "rotor": {
+    "type": "fea",
+    "discretization": {
+      "elasto": [49],
+      "aero": [49]
+    },
+    "pitch_actuator_dynamics": true,
+    "blades": [
+      {
+        "file": "../base/blade.json",
+        "initial_pitch": 0.0,
+        "precone": -4.0
+      },
+      {
+        "file": "../base/blade.json",
+        "initial_pitch": 0.0,
+        "precone": -4.0
+      },
+      {
+        "file": "../base/blade.json",
+        "initial_pitch": 0.0,
+        "precone": -4.0
+      }
+    ]
+  },
+  "rna": {
+    "file": "../base/rna.json",
+    "initial_yaw": 0.0,
+    "yaw_actuator_dynamics": true
+  },
+  "tower": {
+    "discretization": {
+      "elasto": [],
+      "aero": []
+    },
+    "file": "./tower.csv"
+  },
+  "controller": {
+    "type": "DISCON",
+    "options": {
+      "infile": "../base/controller/DISCON.IN",
+      "libfile": "../base/controller/libdiscon.so"
+    }
+  }
+}

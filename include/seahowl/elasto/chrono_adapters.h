@@ -31,9 +31,13 @@ class ChLinkBase;
 class ChLinkPointPoint;
 class ChLinkPointFrame;
 class ChLinkMateGeneric;
+class ChLinkMotorRotationAngle;
 class ChLinkTSDA;
 class ChLoadBodyBodyBushingGeneric;
 class ChSystem;
+class ChLoadLocal66;
+class ChLoadContainer;
+class ChFunction;
 namespace fea {
 class ChNodeFEAbase;
 class ChNodeFEAxyzrot;
@@ -50,11 +54,6 @@ class ChMesh;
 
 namespace seahowl {
 namespace elasto {
-
-chrono::ChVector<double> vec2ch(const Vector3d& vector_in);
-Vector3d ch2vec(const chrono::ChVector<double>& vector_in);
-chrono::ChQuaternion<double> quat2ch(const Quaternion& quaternion_in);
-Quaternion ch2quat(const chrono::ChQuaternion<double>& quaternion_in);
 
 //
 class EntityDynamicChrono : public virtual EntityDynamic {
@@ -82,6 +81,8 @@ class BodyElastoChrono : public BodyElasto, public EntityDynamicChrono {
   public:
     /** @brief Pointer to underlying Chrono object. */
     std::shared_ptr<chrono::ChBody> chobj;
+    std::shared_ptr<chrono::ChLoadLocal66> chload66;
+    std::shared_ptr<chrono::ChLoadContainer> chloadcontainer;
 
     BodyElastoChrono();
     virtual void set_mass(double mass) override;
@@ -98,12 +99,22 @@ class BodyElastoChrono : public BodyElasto, public EntityDynamicChrono {
     virtual void set_fixed(bool is_fixed) override;
     virtual bool is_fixed() const override;
     virtual double get_mass() override;
+    virtual void set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_added_mass_matrix() const override;
+    virtual void set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_damping_matrix() const override;
 };
 
 class NodeElastoChronoBase {
   public:
     /** @brief Pointer to underlying Chrono object. */
     std::shared_ptr<chrono::fea::ChNodeFEAbase> chobj;
+    std::shared_ptr<chrono::ChLoadLocal66> chload66;
+    std::shared_ptr<chrono::ChLoadContainer> chloadcontainer;
+
+    NodeElastoChronoBase();
 };
 
 /**
@@ -128,6 +139,14 @@ class NodeElastoChrono : public NodeElasto, public EntityDynamicChrono, public N
     virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void set_fixed(bool is_fixed) override;
     virtual bool is_fixed() const override;
+    virtual void set_mass(double mass) override;
+    virtual double get_mass() override;
+    virtual void set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_added_mass_matrix() const override;
+    virtual void set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_damping_matrix() const override;
     void set_properties(const BladeReferencePointElasto& ref, bool fpm = false);
     void set_properties(const TowerReferencePointElasto& ref);
 };
@@ -150,6 +169,14 @@ class NodeElastoChronoD : public NodeElasto, public NodeElastoChronoBase {
     virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void set_fixed(bool is_fixed) override;
     virtual bool is_fixed() const override;
+    virtual void set_mass(double mass) override;
+    virtual double get_mass() override;
+    virtual void set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_added_mass_matrix() const override;
+    virtual void set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual void accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) override;
+    virtual Eigen::Matrix<double, 6, 6> get_damping_matrix() const override;
 
     virtual void set_position(const Vector3d& position) override;
     virtual Vector3d get_position() const override;
@@ -170,8 +197,8 @@ class ElementElastoChrono : public virtual ElementElasto {
   public:
     std::shared_ptr<chrono::fea::ChElementBeam> chobj;
     virtual void set_nodes(std::shared_ptr<NodeElasto> node1, std::shared_ptr<NodeElasto> node2) override;
-    virtual void evaluate_position_rotation(double eta, Vector3d& position, Quaternion& rotation) override;
-    virtual void evaluate_force_torque(double eta, Vector3d& force, Vector3d& torque) override;
+    virtual void evaluate_position_rotation(double eta, Vector3d& position, Quaternion& rotation) const override;
+    virtual void evaluate_force_torque(double eta, Vector3d& force, Vector3d& torque) const override;
     virtual double get_mass() override;
     virtual void update_properties();
 };
@@ -293,6 +320,28 @@ class LinkMatrixStiffnessDampingChrono : public LinkMatrixStiffnessDamping {
     void set_damping_matrix(const Eigen::Matrix<double, 6, 6>& damping_matrix) override;
 };
 
+class ActuatorRotationChrono : public ActuatorRotation, public LinkChronoBase {
+  public:
+    /** @brief Pointer to underlying Chrono object. */
+    std::shared_ptr<chrono::ChLinkMotorRotationAngle> chobj;
+
+    ActuatorRotationChrono();
+    void set_control_timeseries(const std::vector<double>& time_array,
+                                const std::vector<double>& values_array) override;
+    double get_control_value(double time) const override;
+    void impose_value_constant(double value) override;
+    void increment_value_constant(double value) override;
+    double get_angle() const override;
+    void set_fixed_actuator(bool is_fixed) override;
+    bool is_fixed_actuator() const override;
+
+  private:
+    /** @brief Function piloting the actuator. */
+    std::shared_ptr<chrono::ChFunction> chfunc;
+
+    void initialize_links() override;
+};
+
 /**
  * @brief Chrono elasto mesh class.
  */
@@ -300,6 +349,7 @@ class MeshElastoChrono : public MeshElasto {
   public:
     /** @brief Pointer to underlying Chrono object. */
     std::shared_ptr<chrono::fea::ChMesh> chobj;
+    std::vector<std::shared_ptr<chrono::ChLoadContainer>> chloadcontainers;
 
     MeshElastoChrono();
     virtual void add(NodeElasto& node) override;
@@ -313,6 +363,7 @@ class SystemElastoChrono : public SystemElasto {
   public:
     /** @brief Pointer to underlying Chrono object. */
     std::shared_ptr<chrono::ChSystem> chobj;
+    std::shared_ptr<chrono::ChLoadContainer> chloadcontainer;
 
     SystemElastoChrono();
     virtual void assemble() override;
@@ -328,6 +379,7 @@ class SystemElastoChrono : public SystemElasto {
     virtual void add(Link& link) override;
     virtual void add(LinkMatrixStiffnessDamping& link) override;
     virtual void add(SpringLinear& spring) override;
+    virtual void add(ActuatorRotation& actuator) override;
 };
 
 }  // namespace elasto

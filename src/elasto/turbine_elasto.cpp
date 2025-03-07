@@ -2,13 +2,14 @@
 
 #include "seahowl/elasto/system_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
-#include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/foundation_elasto.h"
 
 using namespace seahowl::elasto;
 
 TurbineElasto::TurbineElasto() {
     rna = RotorNacelleAssemblyElasto();
     tower = TowerElasto();
+    foundation = std::make_shared<FoundationElastoBody>();
 }
 
 void TurbineElasto::assemble_this(SystemElasto& system) {
@@ -30,8 +31,8 @@ void TurbineElasto::build() {
 
     // link tower to rotor
     auto& towertop_node = *tower.nodes.back();
-    // translate RNA center of origin to towertop
-    rna.translate(towertop_node.get_position() - rna.body_mount->get_position());
+    // translate RNA center of origin (yaw bearing body) to towertop
+    rna.translate(towertop_node.get_position() - rna.actuator_yaw->body_controller->get_position());
     rna.attach_rna_to_node(towertop_node);
 
     // build foundation
@@ -73,7 +74,7 @@ double TurbineElasto::get_mass() const {
     total_mass += tower.get_mass();
     // foundation
     if (foundation) {
-        foundation->get_mass();
+        total_mass += foundation->get_mass();
     }
     return total_mass;
 }

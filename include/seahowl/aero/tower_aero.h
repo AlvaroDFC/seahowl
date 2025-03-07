@@ -23,7 +23,7 @@ namespace aero {
 /**
  * @brief Tower of wind turbine as an aerodynamic component.
  */
-class TowerAero : public ComponentFluid {
+class TowerAero : public virtual ComponentFluid {
   public:
     /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the aero component. */
     std::vector<double> discretization_fractions;
@@ -37,6 +37,10 @@ class TowerAero : public ComponentFluid {
     std::vector<hydro::MorisonElement> elements;
     /** @brief Loads at center of tower elements. */
     std::vector<Vector3d> loads;
+    /** @brief Loads without component from structural acceleration at center of tower elements. */
+    std::vector<Vector3d> loads_noacc;
+    /** @brief Added mass matrices at center of tower elements. */
+    std::vector<Eigen::Matrix<double, 6, 6>> added_mass_matrices;
     /** @brief MacCamy and Fuchs Correction for large cylinders, Flag. */
     bool use_MacCamyFuchs_correction = false;
     /** @brief Cd Correction for large cylinders, Flag. */

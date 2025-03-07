@@ -17,16 +17,18 @@
 #include <chrono/fea/ChMesh.h>
 #include <chrono/physics/ChSystemSMC.h>
 #include <chrono/solver/ChDirectSolverLS.h>
+#include <chrono/physics/ChLinkMotorRotationAngle.h>
 
 #include <vector>
 #include <memory>
 #include <spdlog/spdlog.h>
+#include <typeinfo>
 
 // default mass value for checking if ChBody mass was set.
 const double MASS_NOTSET_VALUE = -1.2345e-12;
 
-namespace seahowl {
-namespace elasto {
+using namespace seahowl;
+using namespace seahowl::elasto;
 
 chrono::ChVector<double> vec2ch(const Vector3d& vector_in) {
     return chrono::ChVector<double>(vector_in[0], vector_in[1], vector_in[2]);
@@ -101,6 +103,153 @@ Vector3d vec_iec2ch(const Vector3d& vector_in) {
     return Vector3d(vector_in[2], vector_in[1], -vector_in[0]);
 }
 
+// convenience matrix for rotation from IEC to Chrono convention for nodes
+Eigen::Matrix<double, 6, 6> get_iec2ch_rotation_matrix() {
+    // IEC standard:
+    // x-axis: flapwise pointing towards nacelle,
+    // y-axis : edgewise pointing towards trailing edge,
+    // z-axis : longitudinal pointing towards blade tip.
+    // Chrono convention:
+    // x-axis: longitudinal pointing towards blade tip,
+    // y-axis : edgewise pointing towards trailing edge,
+    // z-axis : flapwise pointing away from nacelle.
+
+    Eigen::Matrix<double, 3, 3> rot33_iec2ch = AngleAxisd(PI / 2, Vector3d(0.0, 1.0, 0.0)).toRotationMatrix();
+    Eigen::Matrix<double, 6, 6> rot66_iec2ch = Eigen::Matrix<double, 6, 6>::Zero();
+    for (int ii = 0; ii < 3; ii++) {
+        for (int jj = 0; jj < 3; jj++) {
+            rot66_iec2ch(ii, jj) = rot33_iec2ch(ii, jj);
+            rot66_iec2ch(ii + 3, jj + 3) = rot33_iec2ch(ii, jj);
+        }
+    }
+    return rot66_iec2ch;
+}
+Eigen::Matrix<double, 6, 6> rot66_iec2ch = get_iec2ch_rotation_matrix();
+
+namespace chrono {
+
+/**
+ * @brief Derived Chrono load class for using local 6x6 added mass and damping matrices.
+ */
+class ChLoadLocal66 : public ChLoadCustom {
+  public:
+    ChLoadLocal66(std::shared_ptr<ChBody> mloadable) : ChLoadCustom(mloadable) { body_frame = mloadable; }
+
+    ChLoadLocal66(std::shared_ptr<fea::ChNodeFEAxyzrot> mloadable) : ChLoadCustom(mloadable) { body_frame = mloadable; }
+
+    /**
+     * @brief "Virtual" copy constructor (covariant return type). Required from chrono inheritance.
+     */
+    virtual ChLoadLocal66* Clone() const override { return new ChLoadLocal66(*this); }
+
+    void SetAddedMassMatrix(const ChMatrixDynamic<double>& matrix) { added_mass_matrix = matrix; }
+    void SetDampingMatrix(const ChMatrixDynamic<double>& matrix) { damping_matrix = matrix; }
+    void AccumulateAddedMassMatrix(const ChMatrixDynamic<double>& matrix) { added_mass_matrix += matrix; }
+    void AccumulateDampingMatrix(const ChMatrixDynamic<double>& matrix) { damping_matrix += matrix; }
+    ChMatrixDynamic<double> GetAddedMassMatrix() const { return added_mass_matrix; }
+    ChMatrixDynamic<double> GetDampingMatrix() const { return damping_matrix; }
+
+    // compute external forces manually
+    virtual void ComputeQ(ChState* state_x, ChStateDelta* state_w) override {
+        // sanity check
+        if (this->LoadGet_ndof_w() != 6) {
+            throw std::runtime_error("6x6 added mass matrix only works with entities with 6 DOFs.");
+        }
+
+        // matrices expressed in local system --> transformation needed
+        // Chrono sends:
+        // - translation components in global system
+        // - rotation components in global system
+        Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
+        ChMatrix33<> rot33(body_frame->GetRot());
+        Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
+        rot66.block<3, 3>(0, 0) = rot33.block(0, 0, 3, 3);
+        rot66.block<3, 3>(3, 3) = rotI.block(0, 0, 3, 3);
+
+        // reset load_Q
+        load_Q = ChVectorDynamic<>(this->LoadGet_ndof_w()).setZero();
+
+        // damping force
+        auto vv = body_frame->GetPos_dt();
+        auto rv = body_frame->GetWvel_loc();
+        ChVectorDynamic<> vvv(this->LoadGet_ndof_w());
+        for (int ii = 0; ii < 3; ii++) {
+            vvv[ii] = vv[ii];
+            vvv[ii + 3] = rv[ii];
+        }
+        load_Q += -rot66 * (damping_matrix * (rot66.inverse() * vvv));
+    };
+
+    // compute jacobians manually
+    virtual void ComputeJacobian(ChState* state_x,
+                                 ChStateDelta* state_w,
+                                 ChMatrixRef mK,
+                                 ChMatrixRef mR,
+                                 ChMatrixRef mM) override {
+        // matrices expressed in local system --> transformation needed
+        // Chrono sends:
+        // - translation components in global system
+        // - rotation components in global system
+        Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
+        ChMatrix33<> rot33(body_frame->GetRot());
+        Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
+        rot66.block<3, 3>(0, 0) = rot33.block(0, 0, 3, 3);
+        rot66.block<3, 3>(3, 3) = rotI.block(0, 0, 3, 3);
+
+        // mass matrix(6x6)
+        jacobians->M = rot66 * (added_mass_matrix * rot66.inverse());
+
+        // damping matrix terms (6x6)
+        jacobians->R = rot66 * (damping_matrix * rot66.inverse());
+
+        // stiffness matrix terms (6x6) - keeping it to zero here
+        jacobians->K = Eigen::Matrix<double, 6, 6>::Zero();
+    };
+
+    virtual void LoadIntLoadResidual_Mv(ChVectorDynamic<>& R, const ChVectorDynamic<>& w, const double c) override {
+        if (!this->jacobians)
+            return;
+        // fetch w as a contiguous vector
+        ChVectorDynamic<> grouped_w(this->LoadGet_ndof_w());
+        ChVectorDynamic<> grouped_cMv(this->LoadGet_ndof_w());
+        unsigned int rowQ = 0;
+        for (int i = 0; i < loadable->GetSubBlocks(); ++i) {
+            if (loadable->IsSubBlockActive(i)) {
+                unsigned int moffset = loadable->GetSubBlockOffset(i);
+
+                for (unsigned int row = 0; row < loadable->GetSubBlockSize(i); ++row) {
+                    grouped_w(rowQ) = w(row + moffset);
+                    ++rowQ;
+                }
+            }
+        }
+
+        // do computation R=c*M*v
+        grouped_cMv = c * this->jacobians->M * grouped_w;
+
+        rowQ = 0;
+        for (int i = 0; i < loadable->GetSubBlocks(); ++i) {
+            if (loadable->IsSubBlockActive(i)) {
+                unsigned int moffset = loadable->GetSubBlockOffset(i);
+                for (unsigned int row = 0; row < loadable->GetSubBlockSize(i); ++row) {
+                    R(row + moffset) += grouped_cMv(rowQ);
+                    ++rowQ;
+                }
+            }
+        }
+    }
+
+    virtual bool IsStiff() override { return true; }  // this to force the use of the inertial M, R and K matrices
+
+  private:
+    ChMatrixDynamic<double> added_mass_matrix = Eigen::Matrix<double, 6, 6>::Zero();
+    ChMatrixDynamic<double> damping_matrix = Eigen::Matrix<double, 6, 6>::Zero();
+
+    std::shared_ptr<ChBodyFrame> body_frame;
+};
+
+}  // namespace chrono
+
 void EntityDynamicChrono::set_position(const Vector3d& position) {
     chobj->SetPos(vec2ch(position));
 }
@@ -167,6 +316,7 @@ Vector3d EntityDynamicChrono::get_rotational_acceleration(bool is_local) const {
 
 BodyElastoChrono::BodyElastoChrono() {
     chobj = chrono_types::make_shared<chrono::ChBody>();
+    chloadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
     EntityDynamicChrono::chobj = chobj;
     set_mass(MASS_NOTSET_VALUE);
     set_inertia_diagonal(Vector3d(MASS_NOTSET_VALUE, MASS_NOTSET_VALUE, MASS_NOTSET_VALUE));
@@ -246,6 +396,58 @@ double BodyElastoChrono::get_mass() {
     return chobj->GetMass();
 }
 
+void BodyElastoChrono::set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    chload66->SetAddedMassMatrix(matrix);
+}
+
+Eigen::Matrix<double, 6, 6> BodyElastoChrono::get_added_mass_matrix() const {
+    if (!chload66) {
+        throw std::runtime_error("Cannot get added mass matrix for " + std::string(typeid(*this).name()) +
+                                 ", it was not set.");
+    }
+    return chload66->GetAddedMassMatrix();
+}
+
+void BodyElastoChrono::accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    chload66->AccumulateAddedMassMatrix(matrix);
+}
+
+void BodyElastoChrono::set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    chload66->SetDampingMatrix(matrix);
+}
+
+void BodyElastoChrono::accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    chload66->AccumulateDampingMatrix(matrix);
+}
+
+Eigen::Matrix<double, 6, 6> BodyElastoChrono::get_damping_matrix() const {
+    if (!chload66) {
+        throw std::runtime_error("Cannot get damping matrix for " + std::string(typeid(*this).name()) +
+                                 ", it was not set.");
+    }
+    return chload66->GetDampingMatrix();
+}
+
+NodeElastoChronoBase::NodeElastoChronoBase() {
+    chloadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
+}
+
 NodeElastoChrono::NodeElastoChrono(const Vector3d& position, const Quaternion& rotation) {
     chobj = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzrot>(
         chrono::ChFrame<>(vec2ch(position), node_iec2ch(rotation)));
@@ -311,6 +513,68 @@ void NodeElastoChrono::accumulate_torque(const Vector3d& torque, bool is_local) 
     set_torque(get_torque(is_local) + torque, is_local);
 }
 
+void NodeElastoChrono::set_mass(double mass) {
+    chobj->SetMass(mass);
+}
+
+double NodeElastoChrono::get_mass() {
+    return chobj->GetMass();
+}
+
+void NodeElastoChrono::set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    // Convert from IEC convention to Chrono convention.
+    auto mm = rot66_iec2ch * (matrix * rot66_iec2ch.transpose());
+    chload66->SetAddedMassMatrix(mm);
+}
+
+void NodeElastoChrono::accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    // Convert from IEC convention to Chrono convention.
+    auto mm = rot66_iec2ch * (matrix * rot66_iec2ch.transpose());
+    chload66->AccumulateAddedMassMatrix(mm);
+}
+
+Eigen::Matrix<double, 6, 6> NodeElastoChrono::get_added_mass_matrix() const {
+    if (!chload66) {
+        throw std::runtime_error("Cannot get added mass matrix for " + std::string(typeid(*this).name()) +
+                                 ", it was not set.");
+    }
+    return rot66_iec2ch.inverse() * chload66->GetAddedMassMatrix() * rot66_iec2ch;
+}
+
+void NodeElastoChrono::set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    auto mm = rot66_iec2ch * matrix * rot66_iec2ch.inverse();
+    chload66->SetDampingMatrix(mm);
+}
+
+void NodeElastoChrono::accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    if (!chload66) {
+        chload66 = std::make_shared<chrono::ChLoadLocal66>(chobj);
+        chloadcontainer->Add(chload66);
+    }
+    auto mm = rot66_iec2ch * matrix * rot66_iec2ch.inverse();
+    chload66->AccumulateDampingMatrix(mm);
+}
+
+Eigen::Matrix<double, 6, 6> NodeElastoChrono::get_damping_matrix() const {
+    if (!chload66) {
+        throw std::runtime_error("Cannot get damping matrix for " + std::string(typeid(*this).name()) +
+                                 ", it was not set.");
+    }
+    return rot66_iec2ch.inverse() * chload66->GetDampingMatrix() * rot66_iec2ch;
+}
+
 void NodeElastoChrono::set_fixed(bool is_fixed) {
     chobj->SetFixed(is_fixed);
 }
@@ -321,29 +585,19 @@ bool NodeElastoChrono::is_fixed() const {
 
 void NodeElastoChrono::set_properties(const BladeReferencePointElasto& ref, bool fpm) {
     // Convert from IEC convention to Chrono convention.
-    // IEC standard:
-    // x-axis: flapwise pointing towards nacelle,
-    // y-axis : edgewise pointing towards trailing edge,
-    // z-axis : longitudinal pointing towards blade tip.
-    // Chrono convention:
-    // x-axis: longitudinal pointing towards blade tip,
-    // y-axis : edgewise pointing towards trailing edge,
-    // z-axis : flapwise pointing away from nacelle.
-    Eigen::Matrix<double, 3, 3> rot33 = AngleAxisd(PI / 2, Vector3d(0.0, 1.0, 0.0)).toRotationMatrix();
-    Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
-    for (int ii = 0; ii < 3; ii++) {
-        for (int jj = 0; jj < 3; jj++) {
-            rot66(ii, jj) = rot33(ii, jj);
-            rot66(ii + 3, jj + 3) = rot33(ii, jj);
-        }
-    }
-    auto mm = rot66 * ref.mass_matrix * rot66.transpose();
-    auto sm = rot66 * ref.stiffness_matrix * rot66.transpose();
+    auto mm = rot66_iec2ch * (ref.mass_matrix * rot66_iec2ch.transpose());
+    auto sm = rot66_iec2ch * (ref.stiffness_matrix * rot66_iec2ch.transpose());
 
-    if (ref.damping_coefficients.size() != 5) {
-        throw std::runtime_error("Damping coefficients for blade must be a vector of length 5 (got " +
-                                 std::to_string(ref.damping_coefficients.size()) + ").");
-    }
+    // damping
+    chrono::fea::DampingCoefficients damping_coefficients;
+    // damping coefficients: IEC -> Chrono convention
+    // Timoshenko beams in Chrono use Rayleigh cofficients squared
+    damping_coefficients.bx = sqrt(ref.damping_axial);
+    damping_coefficients.by = sqrt(ref.damping_edgewise);
+    damping_coefficients.bz = sqrt(ref.damping_flapwise);
+    damping_coefficients.bt = sqrt(ref.damping_torsion);
+    // mass-proportional coefficient
+    damping_coefficients.alpha = ref.damping_mass;
 
     if (fpm == true) {
         auto sectionFPM = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGenericFPM>();
@@ -356,13 +610,6 @@ void NodeElastoChrono::set_properties(const BladeReferencePointElasto& ref, bool
         sectionFPM->SetMassMatrixFPM(mm);
         sectionFPM->SetStiffnessMatrixFPM(sm);
         // damping
-        chrono::fea::DampingCoefficients damping_coefficients;
-        // damping coefficients: IEC -> Chrono convention
-        damping_coefficients.bx = ref.damping_coefficients[2];
-        damping_coefficients.by = ref.damping_coefficients[1];
-        damping_coefficients.bz = ref.damping_coefficients[0];
-        damping_coefficients.bt = ref.damping_coefficients[3];
-        damping_coefficients.alpha = ref.damping_coefficients[4];
         sectionFPM->SetBeamRaleyghDamping(damping_coefficients);
     } else {
         section = chrono_types::make_shared<chrono::fea::ChBeamSectionTimoshenkoAdvancedGeneric>();
@@ -385,13 +632,6 @@ void NodeElastoChrono::set_properties(const BladeReferencePointElasto& ref, bool
         section->SetZbendingRigidity(sm(5, 5));
         section->SetZshearRigidity(sm(2, 2));
         // damping
-        chrono::fea::DampingCoefficients damping_coefficients;
-        // damping coefficients: IEC -> Chrono convention
-        damping_coefficients.bx = ref.damping_coefficients[2];
-        damping_coefficients.by = ref.damping_coefficients[1];
-        damping_coefficients.bz = ref.damping_coefficients[0];
-        damping_coefficients.bt = ref.damping_coefficients[3];
-        damping_coefficients.alpha = ref.damping_coefficients[4];
         section->SetBeamRaleyghDamping(damping_coefficients);
     }
 }
@@ -407,21 +647,19 @@ void NodeElastoChrono::set_properties(const TowerReferencePointElasto& ref) {
     section->SetXtorsionRigidity(ref.stiffness_torsion);
     // foreaft
     section->SetYbendingRigidity(ref.stiffness_foreaft);
-    section->SetYshearRigidity(ref.stiffness_foreaft_shear);
+    section->SetZshearRigidity(ref.stiffness_foreaft_shear);
     // sideside
     section->SetZbendingRigidity(ref.stiffness_sideside);
-    section->SetZshearRigidity(ref.stiffness_sideside_shear);
-    // damping
-    if (ref.damping_coefficients.size() != 5) {
-        throw std::runtime_error("Damping coefficients for tower must be a vector of length 5 (got " +
-                                 std::to_string(ref.damping_coefficients.size()) + ").");
-    }
+    section->SetYshearRigidity(ref.stiffness_sideside_shear);
     chrono::fea::DampingCoefficients damping_coefficients;
-    damping_coefficients.bx = ref.damping_coefficients[0];
-    damping_coefficients.by = ref.damping_coefficients[1];
-    damping_coefficients.bz = ref.damping_coefficients[2];
-    damping_coefficients.bt = ref.damping_coefficients[3];
-    damping_coefficients.alpha = ref.damping_coefficients[4];
+    // damping coefficients: IEC -> Chrono convention
+    // Timoshenko beams in Chrono use Rayleigh cofficients squared
+    damping_coefficients.bx = sqrt(ref.damping_axial);
+    damping_coefficients.by = sqrt(ref.damping_sideside);
+    damping_coefficients.bz = sqrt(ref.damping_foreaft);
+    damping_coefficients.bt = sqrt(ref.damping_torsion);
+    // mass-proportional coefficient
+    damping_coefficients.alpha = ref.damping_mass;
     section->SetBeamRaleyghDamping(damping_coefficients);
 }
 
@@ -483,6 +721,44 @@ void NodeElastoChronoD::accumulate_torque(const Vector3d& torque, bool is_local)
     set_torque(get_torque(is_local) + torque, is_local);
 }
 
+void NodeElastoChronoD::set_mass(double mass) {
+    chobj->SetMass(mass);
+}
+
+double NodeElastoChronoD::get_mass() {
+    return chobj->GetMass();
+}
+
+void NodeElastoChronoD::set_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    throw std::runtime_error("Cannot set added mass matrix for " + std::string(typeid(*this).name()) +
+                             ", not implemented for cable nodes.");
+}
+
+void NodeElastoChronoD::accumulate_added_mass_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    throw std::runtime_error("Cannot set added mass matrix for " + std::string(typeid(*this).name()) +
+                             ", not implemented for cable nodes.");
+}
+
+Eigen::Matrix<double, 6, 6> NodeElastoChronoD::get_added_mass_matrix() const {
+    throw std::runtime_error("Cannot get added mass matrix for " + std::string(typeid(*this).name()) +
+                             ", it was not set.");
+}
+
+void NodeElastoChronoD::set_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    throw std::runtime_error("Cannot set damping matrix for " + std::string(typeid(*this).name()) +
+                             ", not implemented for cable nodes.");
+}
+
+void NodeElastoChronoD::accumulate_damping_matrix(const Eigen::Matrix<double, 6, 6>& matrix) {
+    throw std::runtime_error("Cannot set damping matrix for " + std::string(typeid(*this).name()) +
+                             ", not implemented for cable nodes.");
+}
+
+Eigen::Matrix<double, 6, 6> NodeElastoChronoD::get_damping_matrix() const {
+    throw std::runtime_error("Cannot get damping matrix for " + std::string(typeid(*this).name()) +
+                             ", it was not set.");
+}
+
 void NodeElastoChronoD::set_fixed(bool is_fixed) {
     chobj->SetFixed(is_fixed);
 }
@@ -539,7 +815,7 @@ void ElementElastoChrono::set_nodes(std::shared_ptr<NodeElasto> node1, std::shar
     nodes.push_back(node2);
 }
 
-void ElementElastoChrono::evaluate_position_rotation(double eta, Vector3d& position, Quaternion& rotation) {
+void ElementElastoChrono::evaluate_position_rotation(double eta, Vector3d& position, Quaternion& rotation) const {
     auto chvec = vec2ch(position);
     auto chquat = quat2ch(rotation);
     chobj->EvaluateSectionFrame(eta, chvec, chquat);
@@ -549,7 +825,7 @@ void ElementElastoChrono::evaluate_position_rotation(double eta, Vector3d& posit
     rotation = node_ch2iec(chquat);
 }
 
-void ElementElastoChrono::evaluate_force_torque(double eta, Vector3d& force, Vector3d& torque) {
+void ElementElastoChrono::evaluate_force_torque(double eta, Vector3d& force, Vector3d& torque) const {
     auto chforce = vec2ch(force);
     auto chtorque = vec2ch(torque);
     chobj->EvaluateSectionForceTorque(eta, chforce, chtorque);
@@ -781,6 +1057,112 @@ Vector3d LinkChronoCable::get_reaction_torque() const {
     return ch2vec(chobj->Get_react_torque());
 }
 
+class ChFunctionArray : public chrono::ChFunction {
+  public:
+    std::vector<double> time_array{0.0, 0.0};
+    std::vector<double> values_array{0.0, 0.0};
+
+    virtual ChFunctionArray* Clone() const override { return new ChFunctionArray(*this); }
+
+    virtual double Get_y(double x) const override {
+        if (x >= time_array.back()) {
+            return values_array.back();
+        } else if (x <= time_array.front()) {
+            return values_array.front();
+        } else {
+            for (int ii = 0; ii < time_array.size() - 1; ii++) {
+                if (time_array[ii] <= x && time_array[ii + 1] >= x) {
+                    auto t1 = time_array[ii];
+                    auto v1 = values_array[ii];
+                    auto t2 = time_array[ii + 1];
+                    auto v2 = values_array[ii + 1];
+                    return (v1 + (v2 - v1) * (x - t1) / (t2 - t1));
+                }
+            }
+            // throw error if value not found
+            throw std::runtime_error("Cannot find value from time array in ChFunctionArray.");
+        }
+    }
+};
+
+ActuatorRotationChrono::ActuatorRotationChrono() {
+    // make actuator bodies (massless)
+    body_worker = std::make_unique<BodyElastoChrono>();
+    auto body1ref = dynamic_cast<BodyElastoChrono&>(*body_worker);
+    body1ref.set_position(Vector3d(0.0, 0.0, 0.0));
+    body1ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body1ref.set_mass(0.0);
+    body1ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
+    body_controller = std::make_unique<BodyElastoChrono>();
+    auto body2ref = dynamic_cast<BodyElastoChrono&>(*body_controller);
+    body2ref.set_position(Vector3d(0.0, 0.0, 0.0));
+    body2ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body2ref.set_mass(0.0);
+    body2ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
+
+    // make actuator abject
+    chobj = std::make_shared<chrono::ChLinkMotorRotationAngle>();
+    LinkChronoBase::chobj = chobj;
+    chfunc = std::make_shared<ChFunctionArray>();
+    chobj->SetMotorFunction(chfunc);
+
+    // make link
+    link = std::make_unique<LinkChrono>();
+    set_fixed_actuator(false);
+
+    // initialize with angle zero
+    set_control_timeseries(std::vector<double>{0.0, 0.0}, std::vector<double>{0.0, 0.0});
+
+    // initialize links
+    initialize_links();
+}
+
+void ActuatorRotationChrono::set_control_timeseries(const std::vector<double>& time_array,
+                                                    const std::vector<double>& values_array) {
+    std::dynamic_pointer_cast<ChFunctionArray>(chfunc)->time_array = time_array;
+    std::dynamic_pointer_cast<ChFunctionArray>(chfunc)->values_array = values_array;
+}
+
+double ActuatorRotationChrono::get_control_value(double time) const {
+    return std::dynamic_pointer_cast<ChFunctionArray>(chfunc)->Get_y(time);
+}
+
+double ActuatorRotationChrono::get_angle() const {
+    return chobj->GetMotorRot();
+}
+
+void ActuatorRotationChrono::impose_value_constant(double value) {
+    auto current_angle = get_angle();
+    increment_value_constant(value - current_angle);
+}
+
+void ActuatorRotationChrono::increment_value_constant(double value) {
+    auto new_angle = get_angle() + value;
+    body_worker->set_rotation(AngleAxisd(value, get_rotation_axis()) * body_worker->get_rotation());
+    set_control_timeseries(std::vector<double>{0.0, 0.0}, std::vector<double>{new_angle, new_angle});
+    initialize_links();
+}
+
+void ActuatorRotationChrono::set_fixed_actuator(bool is_fixed) {
+    dynamic_cast<LinkChrono&>(*link).chobj->SetDisabled(!is_fixed);
+    chobj->SetDisabled(is_fixed);
+}
+
+bool ActuatorRotationChrono::is_fixed_actuator() const {
+    return chobj->IsDisabled();
+}
+
+void ActuatorRotationChrono::initialize_links() {
+    // link
+    link->initialize(*body_worker, *body_controller);
+
+    // actuator link
+    auto body1ref = dynamic_cast<BodyElastoChrono&>(*body_worker);
+    auto body2ref = dynamic_cast<BodyElastoChrono&>(*body_controller);
+    auto chframe0 = chrono::ChFrame<double>(chrono::Vector(0.0, 0.0, 0.0), quat2ch(reference_rotation));
+    chobj->Initialize(body1ref.chobj, body2ref.chobj, true, chframe0, chframe0);
+}
+
 LinkMatrixStiffnessDampingChrono::LinkMatrixStiffnessDampingChrono() {
     // empty stiffness and damping matrices
     stiffness_matrix = Eigen::Matrix<double, 6, 6>::Zero();
@@ -818,10 +1200,18 @@ void LinkMatrixStiffnessDampingChrono::set_damping_matrix(const Eigen::Matrix<do
 
 MeshElastoChrono::MeshElastoChrono() {
     chobj = chrono_types::make_shared<chrono::fea::ChMesh>();
+    chloadcontainers.clear();
 }
 
 void MeshElastoChrono::add(NodeElasto& node) {
-    chobj->AddNode(dynamic_cast<NodeElastoChronoBase&>(node).chobj);
+    auto& ref = dynamic_cast<NodeElastoChronoBase&>(node);
+    chobj->AddNode(ref.chobj);
+    chloadcontainers.push_back(ref.chloadcontainer);
+
+    // if mesh was already added to system, add container to system directly
+    if (chobj->GetSystem() != nullptr) {
+        chobj->GetSystem()->Add(ref.chloadcontainer);
+    }
 }
 
 void MeshElastoChrono::add(ElementElasto& element) {
@@ -831,6 +1221,8 @@ void MeshElastoChrono::add(ElementElasto& element) {
 SystemElastoChrono::SystemElastoChrono() {
     chobj = chrono_types::make_shared<chrono::ChSystemSMC>();
     set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    chloadcontainer = chrono_types::make_shared<chrono::ChLoadContainer>();
+    chobj->Add(chloadcontainer);
 
     // solver
     auto solver = chrono_types::make_shared<chrono::ChSolverSparseLU>();
@@ -913,14 +1305,9 @@ void SystemElastoChrono::do_statics(bool linear, int nonlinear_steps) {
         assemble();
     }
 
-    // constrain rotor and tower
-    std::vector<bool> tower_fixed;
+    // constrain rotor
     for (auto& turbine : turbines) {
-        // rotor
         turbine->rna.link_shaft_hub->set_constraints(true, true, true, true, true, true);
-        // tower
-        tower_fixed.push_back(turbine->tower.nodes.front()->is_fixed());
-        turbine->tower.nodes.front()->set_fixed(true);
     }
 
     // linear statics
@@ -932,13 +1319,10 @@ void SystemElastoChrono::do_statics(bool linear, int nonlinear_steps) {
         chobj->DoStaticNonlinear(nonlinear_steps, true);
     }
 
-    // unconstrain rotor (and tower if it was free)
-    int idx_turbine = 0;
+    // unconstrain rotor
     for (auto& turbine : turbines) {
         // rotor
         turbine->rna.link_shaft_hub->set_constraints(true, true, true, false, true, true);
-        // tower
-        turbine->tower.nodes.front()->set_fixed(tower_fixed[idx_turbine]);
     }
 
     spdlog::debug("Performed statics prestep with linear step as {} and {} nonlinear steps.", linear, nonlinear_steps);
@@ -953,11 +1337,19 @@ void SystemElastoChrono::set_gravitational_acceleration(const Vector3d& gravitat
 }
 
 void SystemElastoChrono::add(BodyElasto& body) {
-    chobj->Add(dynamic_cast<BodyElastoChrono&>(body).chobj);
+    auto& ref = dynamic_cast<BodyElastoChrono&>(body);
+    chobj->Add(ref.chobj);
+    chobj->Add(ref.chloadcontainer);
 }
 
 void SystemElastoChrono::add(MeshElasto& mesh) {
-    chobj->Add(dynamic_cast<MeshElastoChrono&>(mesh).chobj);
+    auto& mesh_chrono = dynamic_cast<MeshElastoChrono&>(mesh);
+    chobj->Add(mesh_chrono.chobj);
+
+    // add all existing load containers to system
+    for (auto& container : mesh_chrono.chloadcontainers) {
+        chobj->Add(container);
+    }
 }
 
 void SystemElastoChrono::add(Link& link) {
@@ -974,5 +1366,9 @@ void SystemElastoChrono::add(SpringLinear& spring) {
     chobj->Add(dynamic_cast<SpringLinearChrono&>(spring).chobj);
 }
 
-}  // namespace elasto
-}  // namespace seahowl
+void SystemElastoChrono::add(ActuatorRotation& actuator) {
+    chobj->Add(dynamic_cast<ActuatorRotationChrono&>(actuator).chobj);
+    add(*actuator.body_worker);
+    add(*actuator.body_controller);
+    add(*actuator.link);
+}

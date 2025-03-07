@@ -41,23 +41,23 @@ In this file, the following is set: global numerical options, output options, en
 * **outputs**: (dict)
 
    * **dt**: (float) the time stepping value for outputs of the simulation [s].
-   * **folder**: (str) Path to the folder for outputs.
+   * **folder**: (string) Path to the folder for outputs.
    * **VTK**: (bool) output VTK (true/false).
    * **log_level**: (string) global log level ("critical", "error", "warning", "info", "debug", "trace").
    * **gui**: (bool) in situ visualization (true/false).
 
 * **environment**: (dict)
 
-   * **file**: file path of environment file (relative to this file path).
+   * **file**: (string) file path of environment file (relative to this file path).
 
 * **turbines**: (list of dict)
 
-   * **file**: file path of turbine file (relative to this file path).
+   * **file**: (string) file path of turbine file (relative to this file path).
    * **translation**: (float array of length 3) translation of turbine in space [m].
-   * **rotation**: rotation of turbine (yaw) [deg].
+   * **rotation**: (float) rotation of turbine about Z-axis [deg].
 
 
-.. literalinclude:: ../../../data/IEA15MW/main.json
+.. literalinclude:: ../../../data/IEA15MW/onshore/main.json
    :language: json
    :linenos:
    :caption: Main input file example
@@ -68,7 +68,7 @@ Environment input file
 
 The environment input file contains information for the wind, wave, and current conditions.
 
-.. literalinclude:: ../../../data/IEA15MW/environment.json
+.. literalinclude:: ../../../data/IEA15MW/env/env.json
    :language: json
    :linenos:
    :caption: Environment input file example
@@ -104,10 +104,11 @@ Wind InflowWind
       "type": "inflowwind",
       "options": {
          "file_inflowwind": "./aerodyn/IEA-15-240-RWT_InflowWind.dat",
-         "file_windwnd": "./aerodyn/long_step_wind.wnd"
+         "zmin": 5.0
       }
    }
 
+Note that the zmin option allows for returning a wind velocity of zero for any position z < zmin. This can be useful when using TurbSim for example, where z < 0 cannot be part of the fluid domain.
 
 ******************
 Turbine input file
@@ -116,14 +117,14 @@ Turbine input file
 The turbine input file contains information for the rotor, the RNA, the tower, and the controller.
 Some of the options of each component are set in this file (e.g. blade pitch and precone, elasto and aero discretization of blades and towers), while more detailed options of each components are described in other files that are referred here (such as for blades and tower material properties).
 
-Rotor "type" can be "fea", "rigid", or "disk". **fpm**: (bool) if true, use Fully-Populated Matrix (FPM) elements (6x6 material properties).
+Rotor "type" can be "fea", "fpm", "rigid", or "disk". The "fpm" rotor type uses Fully-Populated Matrix (FPM) for describing blade cross-sectional properties (6x6 matrix for mass and stiffness) while the "fea" type uses only diagonal terms.
 Controller "type" can be "DISCON" or "RPM".
 
 For discretization of blades and tower, it is possible to either use an ordered array of floats between 0 and 1 (with 0 and 1 included in the array as bounds) corresponding to the normalized abscissa of the reference points or only one integer corresponding to the number of elements to use for discretization.
 
 * **rotor**: (dict)
 
-   * **type**: (string) type of rotor ("fea", "rigid", "disk").
+   * **type**: (string) type of rotor ("fea", "fpm", "rigid", "disk").
    * **options**: (dict) options specific to type of rotor.
 
    * **discretization**: (dict)
@@ -131,16 +132,19 @@ For discretization of blades and tower, it is possible to either use an ordered 
       * **elasto**: (array of floats) discretization fractions (between 0 and 1) for elasto part of blade.
       * **aero**: (array of floats) discretization fractions (between 0 and 1) for aero part of blade.
 
+   * **pitch_actuator_dynamics**: (bool) whether blade pitch actuator dynamics are included.
+
    * **blades**: (list)
 
-      * **file**: file path of blade file (relative to this file path).
-      * **initial_pitch**: initial pitch of blade [deg].
+      * **file**: (string) file path of blade file (relative to this file path).
+      * **initial_pitch**: (float) initial pitch of blade [deg].
       * **precone**: (float) precone of blade [deg].
 
 * **rna**: (dict)
 
-   * **initial_yaw**: initial yaw of the RNA [deg].
-   * **file**: file path of RNA file (relative to this file path).
+   * **initial_yaw**: (float) initial yaw of the RNA [deg].
+   * **file**: (string) file path of RNA file (relative to this file path).
+   * **yaw_actuator_dynamics**: (bool) whether nacelle yaw actuator dynamics are included.
 
 * **tower**: (dict)
 
@@ -149,19 +153,20 @@ For discretization of blades and tower, it is possible to either use an ordered 
       * **elasto**: (array of floats) discretization fractions (between 0 and 1) for elasto part of blade.
       * **aero**: (array of floats) discretization fractions (between 0 and 1) for aero part of blade.
 
-   * **file**: file path of tower file (relative to this file path).
+   * **file**: (string) file path of tower file (relative to this file path).
 
 * **controller**: (dict)
 
    * **type**: (string) type of controller.
    * **options**: (dict) options specific to type of controller.
 
-* **floater**: (optional dict) uses floater if defined
+* **foundation**: (optional dict) uses floater if defined
 
-   * **file**: file path of floater file
+   * **type**: (string) "floater" or "monopile" type (monopile type has the same options as "tower" section)
+   * **file**: (string) file path of floater file
 
 
-.. literalinclude:: ../../../data/IEA15MW/turbine.json
+.. literalinclude:: ../../../data/IEA15MW/onshore/turbine.json
    :language: json
    :linenos:
    :caption: Turbine input file example
@@ -221,14 +226,14 @@ The RNA input file contains properties of the hub, the shaft, the nacelle, and t
 * **shaft**: (dict)
 
    * **tilt**: (float) tilt of shaft [deg].
-   * **distance_from_towertop**: distance of shaft frol towertop [m].
+   * **distance_from_towertop**: (float) distance of shaft from towertop [m].
 
 * **nacelle**: (dict)
 
    * **inertia**: (3x3 matrix of floats) inertia of nacelle [kg-m2].
    * **mass**: (float) mass of nacelle [kg]
    * **position_from_towertop**: (array of floats of length 3) center of mass offset from towertop [m].
-   * **yaw_bearing_mass**: mass of yaw bearing [kg].
+   * **yaw_bearing_mass**: (float) mass of yaw bearing [kg].
 
 * **drivetrain**: (dict)
 
@@ -246,7 +251,7 @@ The RNA input file contains properties of the hub, the shaft, the nacelle, and t
    * **position_from_apex**: (array of floats of length 3) offset of center of mass of hub [m].
 
 
-.. literalinclude:: ../../../data/IEA15MW/rna.json
+.. literalinclude:: ../../../data/IEA15MW/base/rna.json
    :language: json
    :linenos:
    :caption: Rotor-Nacelle Assembly input file example
@@ -291,7 +296,7 @@ The floater input file contains information for the floater and its mooring syst
       * **hydro**: (array of floats) discretization fractions (between 0 and 1) for hydro part of mooring [-].
 
 
-.. literalinclude:: ../../../data/IEA15MW/floater.json
+.. literalinclude:: ../../../data/IEA15MW/floating/floater.json
    :language: json
    :linenos:
    :caption: Floater input file example
@@ -305,15 +310,24 @@ The tower input file is a CSV or JSON reference file that should be defined only
 All the options such as discretization of the tower during runtime are defined in the turbine input file.
 Only *reference* points are defined in this file, and interpolation between them wil be used if it does not match the chosen numerical discretization during the simulation.
 
-* **position_x**, **position_y**, **position_z**: (float) position of reference point [m]
-* **diameter**: (float) diameter of tower at reference point [m]
-* **thickness**: (float) thickness of tower at reference point [m]
-* **density**: (float) linear density of tower at reference point [kg/m]
-* **young_modulus**: (float) Young's modulus of tower material at reference point [Pa]
-* **poisson_ratio**: (float) Poisson's ratio of tower material at reference point [-]
-* **damping_x**, **damping_y**, **damping_z**, **damping_t**: (float) Damping coefficients at reference point [-]
+* **position_x**, **position_y**, **position_z**: (float) position of reference point [m].
+* **diameter**: (float) diameter of tower at reference point [m].
+* **thickness**: (float) thickness of tower at reference point [m].
+* **density**: (float) linear density of tower at reference point [kg/m].
+* **young_modulus**: (float) Young's modulus of tower material at reference point [Pa].
+* **poisson_ratio**: (float) Poisson's ratio of tower material at reference point [-].
+* **drag_coefficient_axial**: (float) Axial Morison drag coefficient [-].
+* **drag_coefficient_normal**: (float) Normal Morison drag coefficient [-].
+* **added_mass_coefficient_axial**: (float) Axial Morison added mass coefficient (Ca) [-].
+* **added_mass_coefficient_normal**: (float) Normal Morison added mass coefficient (Ca) [-].
+* **buoyancy_factor**: (float) Buoyancy factor (0.0 for no buoyancy, 1.0 for fully buoyant) [-].
+* **damping_foreaft**: (float) fore-aft (bending and shear) stiffness-proportional Rayleigh damping coefficient [-].
+* **damping_sideside**: (float) side-side (bending and shear) stiffness-proportional Rayleigh damping coefficient [-].
+* **damping_axial**: (float) axial stiffness-proportional Rayleigh damping coefficient [-].
+* **damping_torsion**: (float) torsion stiffness-proportional Rayleigh damping coefficient [-].
+* **damping_mass**: (float) mass-proportional Rayleigh damping coefficient [-].
 
-.. literalinclude:: ../../../data/IEA15MW/tower.csv
+.. literalinclude:: ../../../data/IEA15MW/onshore/tower.csv
    :language: json
    :linenos:
    :lines: -3
@@ -321,7 +335,7 @@ Only *reference* points are defined in this file, and interpolation between them
 
 Alternatively, the tower can also be defined in a JSON format as input as follows:
 
-.. literalinclude:: ../../../data/IEA15MW/tower.json
+.. literalinclude:: ../../../data/IEA15MW/onshore/tower.json
    :language: json
    :linenos:
    :lines: -20
@@ -344,9 +358,13 @@ The airfoil filepath is only used built-in BEMT is used for aerodynamics.
 
 * **global_variables**: (dict) values to apply to all reference points (unless defined in reference point).
 
-   * **damping_coefficients**: (array of floats of length 4) damping coefficients of blade.
    * **offset_gravity**: (array of floats of length 2) Gravity offset [m].
    * **offset_elastic**: (array of floats of length 2) Elastic offset [m].
+   * **damping_flapwise**: (float) flapwise (bending and shear) stiffness-proportional Rayleigh damping coefficient.
+   * **damping_edgewise**: (float) edgewise (bending and shear) stiffness-proportional Rayleigh damping coefficient.
+   * **damping_axial**: (float) axial stiffness-proportional Rayleigh damping coefficient.
+   * **damping_torsion**: (float) torsion stiffness-proportional Rayleigh damping coefficient.
+   * **damping_mass**: (float) mass-proportional Rayleigh damping coefficient.
 
 * **reference_points**: (list of dict) list of reference points.
 
@@ -358,7 +376,7 @@ The airfoil filepath is only used built-in BEMT is used for aerodynamics.
    * **airfoil_file**: (string) file path of airfoil file (relative to this file path).
 
 
-.. literalinclude:: ../../../data/IEA15MW/blade.json
+.. literalinclude:: ../../../data/IEA15MW/base/blade.json
    :language: json
    :linenos:
    :lines: -51
@@ -369,7 +387,7 @@ The airfoil filepath is only used built-in BEMT is used for aerodynamics.
 Airfoil input file
 ******************
 
-.. literalinclude:: ../../../data/IEA15MW/airfoils/IEA-15-240-RWT_AeroDyn15_Polar_37.json
+.. literalinclude:: ../../../data/IEA15MW/base/airfoils/IEA-15-240-RWT_AeroDyn15_Polar_37.json
    :language: json
    :linenos:
    :lines: -15

@@ -9,7 +9,9 @@
 #include <seahowl/elasto/rotor_elasto.h>
 #include <seahowl/elasto/tower_elasto.h>
 #include <seahowl/elasto/mooring_elasto.h>
+#include <seahowl/elasto/foundation_elasto.h>
 #include <seahowl/elasto/floater_elasto.h>
+#include <seahowl/elasto/monopile_elasto.h>
 #include <seahowl/elasto/turbine_elasto.h>
 #include <seahowl/elasto/system_elasto.h>
 #include <seahowl/elasto/chrono_adapters.h>
@@ -30,7 +32,11 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def("set_torque", &seahowl::elasto::EntityLoadable::set_torque)
         .def("get_torque", &seahowl::elasto::EntityLoadable::get_torque)
         .def("accumulate_force", &seahowl::elasto::EntityLoadable::accumulate_force)
-        .def("accumulate_torque", &seahowl::elasto::EntityLoadable::accumulate_torque);
+        .def("accumulate_torque", &seahowl::elasto::EntityLoadable::accumulate_torque)
+        .def("set_added_mass_matrix", &seahowl::elasto::EntityLoadable::set_added_mass_matrix)
+        .def("get_added_mass_matrix", &seahowl::elasto::EntityLoadable::get_added_mass_matrix)
+        .def("set_damping_matrix", &seahowl::elasto::EntityLoadable::set_damping_matrix)
+        .def("get_damping_matrix", &seahowl::elasto::EntityLoadable::get_damping_matrix);
     py::class_<seahowl::elasto::BodyElasto, std::shared_ptr<seahowl::elasto::BodyElasto>,
                seahowl::elasto::EntityLoadable>(m_elasto, "BodyElasto", pybind11::multiple_inheritance())
         .def("set_mass", &seahowl::elasto::BodyElasto::set_mass)
@@ -78,6 +84,19 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def("initialize", &seahowl::elasto::LinkMatrixStiffnessDamping::initialize)
         .def("set_stiffness_matrix", &seahowl::elasto::LinkMatrixStiffnessDamping::set_stiffness_matrix)
         .def("set_damping_matrix", &seahowl::elasto::LinkMatrixStiffnessDamping::set_damping_matrix);
+    py::class_<seahowl::elasto::ActuatorRotation, std::shared_ptr<seahowl::elasto::ActuatorRotation>>(
+        m_elasto, "ActuatorRotation")
+        .def_property_readonly(
+            "body_controller",
+            [](seahowl::elasto::ActuatorRotation& actuator) { return actuator.body_controller.get(); })
+        .def_property_readonly("body_worker",
+                               [](seahowl::elasto::ActuatorRotation& actuator) { return actuator.body_worker.get(); })
+        .def("set_control_timeseries", &seahowl::elasto::ActuatorRotation::set_control_timeseries)
+        .def("get_control_value", &seahowl::elasto::ActuatorRotation::get_control_value)
+        .def("impose_value_constant", &seahowl::elasto::ActuatorRotation::impose_value_constant)
+        .def("increment_value_constant", &seahowl::elasto::ActuatorRotation::increment_value_constant)
+        .def("set_fixed_actuator", &seahowl::elasto::ActuatorRotation::set_fixed_actuator)
+        .def("is_fixed_actuator", &seahowl::elasto::ActuatorRotation::is_fixed_actuator);
     py::class_<seahowl::elasto::MeshElasto, std::shared_ptr<seahowl::elasto::MeshElasto>>(m_elasto, "MeshElasto");
     py::class_<seahowl::elasto::SystemElasto, std::shared_ptr<seahowl::elasto::SystemElasto>>(m_elasto, "SystemElasto")
         .def("step", &seahowl::elasto::SystemElasto::step)
@@ -96,6 +115,8 @@ void initialize_pyseahowl_elasto(py::module& m) {
              static_cast<void (seahowl::elasto::SystemElasto::*)(seahowl::elasto::LinkMatrixStiffnessDamping & link)>(
                  &seahowl::elasto::SystemElasto::add))
         .def("add", static_cast<void (seahowl::elasto::SystemElasto::*)(seahowl::elasto::SpringLinear & spring)>(
+                        &seahowl::elasto::SystemElasto::add))
+        .def("add", static_cast<void (seahowl::elasto::SystemElasto::*)(seahowl::elasto::ActuatorRotation & spring)>(
                         &seahowl::elasto::SystemElasto::add))
         .def("add", static_cast<void (seahowl::elasto::SystemElasto::*)(
                         std::shared_ptr<seahowl::elasto::TurbineElasto> turbine)>(&seahowl::elasto::SystemElasto::add))
@@ -132,9 +153,11 @@ void initialize_pyseahowl_elasto(py::module& m) {
     py::class_<seahowl::elasto::LinkChrono, std::shared_ptr<seahowl::elasto::LinkChrono>, seahowl::elasto::Link>(
         m_elasto, "LinkChrono")
         .def(py::init<>());
-
     py::class_<seahowl::elasto::SpringLinearChrono, std::shared_ptr<seahowl::elasto::SpringLinearChrono>,
                seahowl::elasto::SpringLinear>(m_elasto, "SpringLinearChrono")
+        .def(py::init<>());
+    py::class_<seahowl::elasto::ActuatorRotationChrono, std::shared_ptr<seahowl::elasto::ActuatorRotationChrono>,
+               seahowl::elasto::ActuatorRotation>(m_elasto, "ActuatorRotationChrono")
         .def(py::init<>());
     py::class_<seahowl::elasto::LinkMatrixStiffnessDampingChrono,
                std::shared_ptr<seahowl::elasto::LinkMatrixStiffnessDampingChrono>,
@@ -163,7 +186,11 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def_readwrite("stiffness_matrix", &seahowl::elasto::BladeReferencePointElasto::stiffness_matrix)
         .def_readwrite("mass_matrix", &seahowl::elasto::BladeReferencePointElasto::mass_matrix)
         .def_readwrite("structural_twist", &seahowl::elasto::BladeReferencePointElasto::structural_twist)
-        .def_readwrite("damping_coefficients", &seahowl::elasto::BladeReferencePointElasto::damping_coefficients)
+        .def_readwrite("damping_flapwise", &seahowl::elasto::BladeReferencePointElasto::damping_flapwise)
+        .def_readwrite("damping_edgewise", &seahowl::elasto::BladeReferencePointElasto::damping_edgewise)
+        .def_readwrite("damping_axial", &seahowl::elasto::BladeReferencePointElasto::damping_axial)
+        .def_readwrite("damping_torsion", &seahowl::elasto::BladeReferencePointElasto::damping_torsion)
+        .def_readwrite("damping_mass", &seahowl::elasto::BladeReferencePointElasto::damping_mass)
         .def(py::init<>());
     py::class_<seahowl::elasto::TowerReferencePointElasto, std::shared_ptr<seahowl::elasto::TowerReferencePointElasto>,
                seahowl::elasto::ReferencePointElasto>(m_elasto, "TowerReferencePointElasto")
@@ -177,7 +204,11 @@ void initialize_pyseahowl_elasto(py::module& m) {
                        &seahowl::elasto::TowerReferencePointElasto::stiffness_sideside_shear)
         .def_readwrite("inertia_foreaft", &seahowl::elasto::TowerReferencePointElasto::inertia_foreaft)
         .def_readwrite("inertia_sideside", &seahowl::elasto::TowerReferencePointElasto::inertia_sideside)
-        .def_readwrite("damping_coefficients", &seahowl::elasto::TowerReferencePointElasto::damping_coefficients)
+        .def_readwrite("damping_foreaft", &seahowl::elasto::TowerReferencePointElasto::damping_foreaft)
+        .def_readwrite("damping_sideside", &seahowl::elasto::TowerReferencePointElasto::damping_sideside)
+        .def_readwrite("damping_axial", &seahowl::elasto::TowerReferencePointElasto::damping_axial)
+        .def_readwrite("damping_torsion", &seahowl::elasto::TowerReferencePointElasto::damping_torsion)
+        .def_readwrite("damping_mass", &seahowl::elasto::TowerReferencePointElasto::damping_mass)
         .def(py::init<>())
         .def("set_properties_cylinder", &seahowl::elasto::TowerReferencePointElasto::set_properties_cylinder);
 
@@ -208,6 +239,8 @@ void initialize_pyseahowl_elasto(py::module& m) {
                seahowl::elasto::ComponentElasto>(m_elasto, "BladeElasto")
         .def_readonly("azimuth0", &seahowl::elasto::BladeElasto::azimuth0)
         .def_readonly("precone", &seahowl::elasto::BladeElasto::precone)
+        .def_property_readonly("actuator_pitch",
+                               [](seahowl::elasto::BladeElasto& blade) { return blade.actuator_pitch.get(); })
         .def_readwrite("reference_points", &seahowl::elasto::BladeElasto::reference_points)
         .def_readwrite("discretization_fractions", &seahowl::elasto::BladeElasto::discretization_fractions)
         .def("apply_pitch_increment", &seahowl::elasto::BladeElasto::apply_pitch_increment)
@@ -244,7 +277,6 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def("get_azimuth", &seahowl::elasto::RotorNacelleAssemblyElasto::get_azimuth)
         .def("apply_yaw_increment", &seahowl::elasto::RotorNacelleAssemblyElasto::apply_yaw_increment)
         .def("get_yaw", &seahowl::elasto::RotorNacelleAssemblyElasto::get_yaw)
-        .def("set_fixed_yaw", &seahowl::elasto::RotorNacelleAssemblyElasto::set_fixed_yaw)
         .def("attach_rna_to_body", &seahowl::elasto::RotorNacelleAssemblyElasto::attach_rna_to_body)
         .def("attach_rna_to_node", &seahowl::elasto::RotorNacelleAssemblyElasto::attach_rna_to_node)
         .def_property_readonly(
@@ -257,11 +289,7 @@ void initialize_pyseahowl_elasto(py::module& m) {
             "body_nacelle", [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.body_nacelle.get(); },
             py::return_value_policy::reference_internal)
         .def_property_readonly(
-            "body_yaw_bearing",
-            [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.body_yaw_bearing.get(); },
-            py::return_value_policy::reference_internal)
-        .def_property_readonly(
-            "body_mount", [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.body_mount.get(); },
+            "actuator_yaw", [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.actuator_yaw.get(); },
             py::return_value_policy::reference_internal)
         .def_property_readonly(
             "link_shaft_hub", [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.link_shaft_hub.get(); },
@@ -275,12 +303,7 @@ void initialize_pyseahowl_elasto(py::module& m) {
             [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.link_shaft_yaw_bearing.get(); },
             py::return_value_policy::reference_internal)
         .def_property_readonly(
-            "link_towertop_mount",
-            [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.link_towertop_mount.get(); },
-            py::return_value_policy::reference_internal)
-        .def_property_readonly(
-            "link_yaw_bearing_mount",
-            [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.link_yaw_bearing_mount.get(); },
+            "link_rna", [](seahowl::elasto::RotorNacelleAssemblyElasto& rna) { return rna.link_rna.get(); },
             py::return_value_policy::reference_internal);
 
     // elasto/tower_elasto.h
@@ -299,20 +322,34 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def_readonly("foundation", &seahowl::elasto::TurbineElasto::foundation)
         .def(py::init<>());
 
-    // elasto/floater_elasto.h
+    // elasto/foundation_elasto.h
     py::class_<seahowl::elasto::FoundationElasto, std::shared_ptr<seahowl::elasto::FoundationElasto>,
                seahowl::elasto::ComponentElasto>(m_elasto, "FoundationElasto")
-        .def("link_to_entity", &seahowl::elasto::FoundationElasto::link_to_entity);
+        .def("link_to_entity", &seahowl::elasto::FoundationElasto::link_to_entity)
+        .def("set_fixed", &seahowl::elasto::FoundationElasto::set_fixed)
+        .def("is_fixed", &seahowl::elasto::FoundationElasto::is_fixed);
+    py::class_<seahowl::elasto::FoundationElastoBody, std::shared_ptr<seahowl::elasto::FoundationElastoBody>,
+               seahowl::elasto::FoundationElasto>(m_elasto, "FoundationElastoBody")
+        .def(py::init<>())
+        .def_property_readonly(
+            "body_foundation",
+            [](seahowl::elasto::FoundationElastoBody& foundation) { return foundation.body_foundation.get(); },
+            py::return_value_policy::reference_internal)
+        .def_property_readonly(
+            "link_foundation_entity",
+            [](seahowl::elasto::FoundationElastoBody& foundation) { return foundation.link_foundation_entity.get(); },
+            py::return_value_policy::reference_internal);
 
+    // elasto/floater_elasto.h
     py::class_<seahowl::elasto::FloaterElasto, std::shared_ptr<seahowl::elasto::FloaterElasto>,
                seahowl::elasto::FoundationElasto>(m_elasto, "FloaterElasto")
+        .def(py::init<>())
         .def_property_readonly(
             "mooring_system", [](seahowl::elasto::FloaterElasto& floater) { return floater.mooring_system.get(); },
             py::return_value_policy::reference_internal)
         .def_property_readonly(
             "body_main", [](seahowl::elasto::FloaterElasto& floater) { return floater.body_main.get(); },
             py::return_value_policy::reference_internal)
-        .def_readwrite("damping_matrix", &seahowl::elasto::FloaterElasto::damping_matrix)
         .def("add_body", &seahowl::elasto::FloaterElasto::add_body)
         .def("get_body", &seahowl::elasto::FloaterElasto::get_body, py::return_value_policy::reference_internal)
         .def("add_fairlead", &seahowl::elasto::FloaterElasto::add_fairlead)
@@ -320,6 +357,22 @@ void initialize_pyseahowl_elasto(py::module& m) {
              py::return_value_policy::reference_internal)
         .def("get_fairlead_body", &seahowl::elasto::FloaterElasto::get_fairlead_body,
              py::return_value_policy::reference_internal);
+
+    // elasto/monopile_elasto.h
+    py::class_<seahowl::elasto::MonopileElasto, std::shared_ptr<seahowl::elasto::MonopileElasto>,
+               seahowl::elasto::TowerElasto, seahowl::elasto::FoundationElasto>(m_elasto, "MonopileElasto",
+                                                                                pybind11::multiple_inheritance())
+        .def(py::init<>())
+        .def_property_readonly(
+            "body_tp", [](seahowl::elasto::MonopileElasto& monopile) { return monopile.body_tp.get(); },
+            py::return_value_policy::reference_internal)
+        .def_property_readonly(
+            "link_tp_entity", [](seahowl::elasto::MonopileElasto& monopile) { return monopile.link_tp_entity.get(); },
+            py::return_value_policy::reference_internal)
+        .def_property_readonly(
+            "link_tp_monopile",
+            [](seahowl::elasto::MonopileElasto& monopile) { return monopile.link_tp_monopile.get(); },
+            py::return_value_policy::reference_internal);
 
     // elasto/mooring_elasto.h
     py::class_<seahowl::elasto::MooringSystemElasto, std::shared_ptr<seahowl::elasto::MooringSystemElasto>,

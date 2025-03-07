@@ -1,0 +1,62 @@
+{
+  "global_variables": {
+    "density": 7850.0,
+    "young_modulus": 210000000000.0,
+    "poisson_ratio": 0.3,
+    "drag_coefficient_normal": 0.5,
+    "drag_coefficient_axial": 0.0,
+    "added_mass_coefficient_normal": 0.0,
+    "added_mass_coefficient_axial": 0.0,
+    "buoyancy_factor": 0.0,
+    "damping_foreaft": 0.005,
+    "damping_sideside": 0.005,
+    "damping_axial": 0.005,
+    "damping_torsion": 0.005,
+    "damping_mass": 0.0
+  },
+  "reference_points": [{
+    "position": [0.0, 0.0, 15.0],
+    "diameter": 9.471528,
+    "thickness": 0.044367
+  }, {
+    "position": [0.0, 0.0, 28.0],
+    "diameter": 9.471528,
+    "thickness": 0.0426595
+  }, {
+    "position": [0.0, 0.0, 41.0],
+    "diameter": 9.400957,
+    "thickness": 0.0394485
+  }, {
+    "position": [0.0, 0.0, 54.0],
+    "diameter": 8.943347,
+    "thickness": 0.0370535
+  }, {
+    "position": [0.0, 0.0, 67.0],
+    "diameter": 8.365728,
+    "thickness": 0.0353285
+  }, {
+    "position": [0.0, 0.0, 80.0],
+    "diameter": 7.719982,
+    "thickness": 0.0335925
+  }, {
+    "position": [0.0, 0.0, 93.0],
+    "diameter": 6.999444,
+    "thickness": 0.0316295
+  }, {
+    "position": [0.0, 0.0, 106.0],
+    "diameter": 6.543865,
+    "thickness": 0.0287695
+  }, {
+    "position": [0.0, 0.0, 119.0],
+    "diameter": 6.390923,
+    "thickness": 0.0251825
+  }, {
+    "position": [0.0, 0.0, 132.0],
+    "diameter": 6.223788,
+    "thickness": 0.0251765
+  }, {
+    "position": [0.0, 0.0, 144.386],
+    "diameter": 6.156199,
+    "thickness": 0.026958
+  }]
+}

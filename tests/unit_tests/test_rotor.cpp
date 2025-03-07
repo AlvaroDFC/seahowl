@@ -28,7 +28,8 @@ TEST_F(TestRotor, mass) {
     std::vector<std::shared_ptr<seahowl::elasto::BladeElasto>> blades;
     for (int ii = 0; ii < 3; ii++) {
         auto blade = std::make_shared<seahowl::elasto::BladeElastoFEA>();
-        seahowl::io::populate_blade_elasto_from_json((DATADIR / "IEA15MW/blade.json").generic_string(), *blade.get());
+        seahowl::io::populate_blade_elasto_from_json((DATADIR / "IEA15MW/base/blade.json").generic_string(),
+                                                     *blade.get());
         // make 50 elements
         blade->discretization_fractions.clear();
         for (int ii = 0; ii < 51; ii++) {
@@ -38,11 +39,11 @@ TEST_F(TestRotor, mass) {
     }
 
     auto rna = seahowl::elasto::RotorNacelleAssemblyElasto();
-    seahowl::io::populate_rna_elasto_from_json((DATADIR / "IEA15MW/rna.json").generic_string(), rna);
+    seahowl::io::populate_rna_elasto_from_json((DATADIR / "IEA15MW/base/rna.json").generic_string(), rna);
     rna.rotor->blades = blades;
     rna.build();
     rna.assemble(system_elasto);
-    rna.body_yaw_bearing->set_fixed(true);
+    rna.actuator_yaw->body_controller->set_fixed(true);
 
     system_elasto.do_statics(true, 0);
 

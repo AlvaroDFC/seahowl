@@ -33,8 +33,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     // timestepping
     double dt = 0.1;
     // wind
-    auto wind_model =
-        seahowl::env::InflowWindAdapter((DATADIR / "IEA15MW/aerodyn/IEA-15-240-RWT_InflowWind.dat").generic_string());
+    auto wind_model = seahowl::env::InflowWindAdapter((DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
     // turbine
     double initial_pitch = seahowl::PI / 8.0;
 
@@ -46,15 +45,19 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     auto turbine_elasto = seahowl::elasto::TurbineElasto();
     auto turbine_aero = seahowl::aero::TurbineAero();
     auto turbine = seahowl::core::Turbine(turbine_elasto, turbine_aero);
-    seahowl::io::populate_turbine_from_json((DATADIR / "IEA15MW/turbine_nocontrol.json").generic_string(), turbine);
+    seahowl::io::populate_turbine_from_json((DATADIR / "IEA15MW/onshore/turbine.json").generic_string(), turbine);
     // remove controller
     turbine.controller = std::make_shared<seahowl::servo::Controller>();
 
     // remove controller
     turbine.controller = std::make_shared<seahowl::servo::Controller>();
     turbine.build();
+    double time = 0.0;
     turbine.elasto.assemble(system_elasto);
-    turbine.tower.elasto.nodes.front()->set_fixed(true);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
 
     // statics
     if (statics_prestep) {
@@ -62,10 +65,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
         system_elasto.do_statics(true, 10);
         turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
     }
-
-    double time = 0.0;
-    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
-    turbine.initialize(time, dt);
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
 
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_inflowwind_rpm_initial_pitch.csv").generic_string(),
@@ -73,7 +73,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
     test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
 
-    while (time < 50) {
+    while (time < 50.0) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);

@@ -1,0 +1,35 @@
+﻿{
+  "aero": {
+    "solver": "disk",
+    "options": {
+      "performance_file": "../base/controller/Cp_Ct_Cq.IEA15MW_modified.txt"
+    }
+},
+  "rotor": {
+    "type": "disk",
+    "options": {
+      "inertia_blades": 3.5148698e8,
+      "mass_blades": 195e3,
+      "radius": 117
+    }
+  },
+  "rna": {
+    "file": "../base/rna.json",
+    "initial_yaw": 0.0,
+    "yaw_actuator_dynamics": true
+  },
+  "tower": {
+    "discretization": {
+      "elasto": [],
+      "aero": []
+    },
+    "file": "./tower.csv"
+  },
+  "controller": {
+    "type": "DISCON",
+    "options": {
+      "infile": "../base/controller/DISCON.IN",
+      "libfile": "../base/controller/libdiscon.so"
+    }
+  }
+}

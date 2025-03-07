@@ -62,11 +62,13 @@ option(SEAHOWL_ENABLE_TESTS "Enable tests" OFF)
 option(SEAHOWL_ENABLE_DOC "Generate html documentation" OFF)
 option(SEAHOWL_ENABLE_BUILD "Build library and drivers" ON)
 option(SEAHOWL_ENABLE_PYTHON "Enable python binding" OFF)
+option(SEAHOWL_ENABLE_VIRTUALENV "Enable Python virtual env" OFF)
 option(SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option(SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 option(SEAHOWL_ENABLE_AERODYN "Enable AeroDyn module" OFF)
 option(SEAHOWL_ENABLE_INFLOWWIND "Enable InflowWind module" OFF)
 option(SEAHOWL_ENABLE_HYDROCHRONO "Enable HydroChrono library" OFF)
+
 
 # =======================
 # External libraries
@@ -211,7 +213,9 @@ set(SEAHOWL_CORE_HEADERS
     include/seahowl/core/rotor.h
     include/seahowl/core/tower.h
     include/seahowl/core/mooring.h
+    include/seahowl/core/foundation.h
     include/seahowl/core/floater.h
+    include/seahowl/core/monopile.h
     include/seahowl/core/turbine.h
     include/seahowl/core/system.h
     include/seahowl/core/simulation.h
@@ -220,13 +224,16 @@ source_group(core FILES ${SEAHOWL_CORE_SOURCES} ${SEAHOWL_CORE_HEADERS})
 
 # elasto
 set(SEAHOWL_ELASTO_SOURCES
+    src/elasto/entities_elasto.cpp
     src/elasto/component_elasto.cpp
     src/elasto/blade_elasto.cpp
     src/elasto/reference_point_elasto.cpp
     src/elasto/rotor_elasto.cpp
     src/elasto/tower_elasto.cpp
+    src/elasto/foundation_elasto.cpp
     src/elasto/floater_elasto.cpp
     src/elasto/mooring_elasto.cpp
+    src/elasto/monopile_elasto.cpp
     src/elasto/turbine_elasto.cpp
     src/elasto/chrono_adapters.cpp
 )
@@ -238,8 +245,10 @@ set(SEAHOWL_ELASTO_HEADERS
     include/seahowl/elasto/reference_point_elasto.h
     include/seahowl/elasto/rotor_elasto.h
     include/seahowl/elasto/tower_elasto.h
+    include/seahowl/elasto/foundation_elasto.h
     include/seahowl/elasto/floater_elasto.h
     include/seahowl/elasto/mooring_elasto.h
+    include/seahowl/elasto/monopile_elasto.h
     include/seahowl/elasto/turbine_elasto.h
     include/seahowl/elasto/chrono_adapters.h
 )
@@ -293,7 +302,9 @@ set(SEAHOWL_HYDRO_SOURCES
 set(SEAHOWL_HYDRO_HEADERS
     include/seahowl/hydro/morison.h
     include/seahowl/hydro/mooring_hydro.h
+    include/seahowl/hydro/foundation_fluid.h
     include/seahowl/hydro/floater_hydro.h
+    include/seahowl/hydro/monopile_hydro.h
 )
 if(SEAHOWL_ENABLE_HYDROCHRONO)
     list(APPEND SEAHOWL_HYDRO_SOURCES src/hydro/hydrochrono_adapter.cpp)
@@ -510,12 +521,6 @@ if(SEAHOWL_ENABLE_TESTS)
 
 endif(SEAHOWL_ENABLE_TESTS)
 
-# ====================
-# DOCUMENTATION
-# ====================
-if(SEAHOWL_ENABLE_DOC)
-    add_subdirectory(doc)
-endif(SEAHOWL_ENABLE_DOC)
 
 # ====================
 # PYTHON
@@ -534,7 +539,177 @@ if (SEAHOWL_ENABLE_PYTHON)
         ${PYSEAHOWL_DIR}/pyseahowl_io.cpp
     )
 	target_compile_features(pyseahowl PRIVATE cxx_std_17)
-    target_link_libraries(pyseahowl PRIVATE seahowl_core)
+    target_link_libraries(pyseahowl PRIVATE seahowl_core pybind11::embed)
     target_compile_options(pyseahowl PRIVATE ${CHRONO_CXX_FLAGS})
     set_target_properties(pyseahowl PROPERTIES OUTPUT_NAME seahowl)
+
+
+    IF(SEAHOWL_ENABLE_VIRTUALENV)
+        execute_process(
+                COMMAND ${Python_EXECUTABLE} -m ensurepip
+                RESULT_VARIABLE result
+        )
+
+        if(result)
+            message(FATAL_ERROR "Failed to install pip")
+        endif()
+
+        execute_process(
+                COMMAND ${Python_EXECUTABLE} -m pip install virtualenv
+                RESULT_VARIABLE result
+        )
+
+        if(result)
+            message(FATAL_ERROR "Failed to install virtualenv")
+        endif()
+
+        if(NOT EXISTS ${CMAKE_BINARY_DIR}/.venv/pyvenv.cfg)
+            execute_process(
+                    COMMAND ${Python_EXECUTABLE} -m virtualenv ${CMAKE_BINARY_DIR}/.venv
+                    RESULT_VARIABLE result
+            )
+        endif()
+
+        if(result)
+            message(FATAL_ERROR "Failed to create virtual environment")
+        endif()
+
+        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit")
+        set(CMD_PRECOMMIT "pre-commit install")
+
+        if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+            set(ACTIVATE_PY "source ${CMAKE_BINARY_DIR}/.venv/bin/activate")
+            set(LAUNCH_PIP bash -c)
+        else()
+            set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/Scripts/activate")
+            set(LAUNCH_PIP cmd.exe /c)
+        endif()
+
+        execute_process(
+                COMMAND ${LAUNCH_PIP} "${ACTIVATE_PY} && ${CMD_PIP} && ${CMD_PRECOMMIT}"
+            )
+    endif(SEAHOWL_ENABLE_VIRTUALENV)
+
 endif (SEAHOWL_ENABLE_PYTHON)
+
+
+# ====================
+# DOCUMENTATION
+# ====================
+if(SEAHOWL_ENABLE_DOC)
+    add_subdirectory(doc)
+endif(SEAHOWL_ENABLE_DOC)
+
+# ===========================
+# Copy the DISCON library
+# ===========================
+if (VCPKG_APPLOCAL_DEPS)
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(LIB_FILE_NAME "libdiscon.so")
+    else()
+        set(LIB_FILE_NAME "libdiscon.dll")
+    endif()
+
+    set(LIBRARY_PATH "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/${LIB_FILE_NAME}")
+    set(DESTINATION_PATH "${SEAHOWL_DATADIR}/base/controller")
+
+    if(EXISTS ${LIBRARY_PATH})
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH})
+        file(RENAME "${DESTINATION_PATH}/${LIB_FILE_NAME}" "${DESTINATION_PATH}/libdiscon.so")
+    else()
+        message(WARNING "Library ${LIBRARY_PATH} does not exist.")
+    endif()
+endif()
+
+# ===========================
+# INSTALL
+# ===========================
+install(TARGETS seahowl_driver
+        RUNTIME DESTINATION bin)
+
+set_target_properties(seahowl_driver PROPERTIES
+                      INSTALL_RPATH "$ORIGIN"
+                      BUILD_RPATH "$ORIGIN")
+
+if(SEAHOWL_ENABLE_PYTHON)
+
+    install(TARGETS pyseahowl
+            LIBRARY DESTINATION bin)
+
+    set_target_properties(pyseahowl PROPERTIES
+                        INSTALL_RPATH "$ORIGIN"
+                        BUILD_RPATH "$ORIGIN")
+
+    install(DIRECTORY ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/python3
+                        DESTINATION bin
+                        USE_SOURCE_PERMISSIONS)
+
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(FILE_INITPY ${CMAKE_BINARY_DIR}/init_pyseahowl.sh)
+        file(WRITE ${FILE_INITPY}
+            "#!/bin/bash\n"
+            "SCRIPT_DIR=$(cd \"$(dirname \"\${BASH_SOURCE}\")\" && pwd)\n"
+            "$SCRIPT_DIR/python3/python3 -m virtualenv .venv \n"
+            "CALL_DIR=$(pwd)\n"
+            "source $CALL_DIR/.venv/bin/activate\n"
+            "export PYTHONPATH=$SCRIPT_DIR:$PYTHONPATH\n")
+    else()
+        set(FILE_INITPY ${CMAKE_BINARY_DIR}/init_pyseahowl.bat)
+        file(WRITE ${FILE_INITPY}
+            "set SCRIPT_DIR=%~dp0\n"
+            "%SCRIPT_DIR%python3/python.exe -m virtualenv %SCRIPT_DIR%.venv\n"
+            "call %SCRIPT_DIR%.venv/Scripts/activate\n"
+            "set PYTHONPATH=%SCRIPT_DIR%;%PYTHONPATH%\n"
+            "cmd /K\n")
+        set(FILE_INITPYPS ${CMAKE_BINARY_DIR}/init_pyseahowl.ps1)
+            file(WRITE ${FILE_INITPYPS}
+                "$SCRIPT_DIR = Split-Path -Parent $MyInvocation.MyCommand.Definition\n"
+                "& \"$SCRIPT_DIR\\python3\\python.exe\" -m virtualenv \"$SCRIPT_DIR\\.venv\"\n"
+                "& \"$SCRIPT_DIR\\.venv\\Scripts\\Activate.ps1\"\n"
+                "$env:PYTHONPATH = \"$SCRIPT_DIR;$env:PYTHONPATH\"\n")
+
+        file(CHMOD ${FILE_INITPYPS} FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+        install(FILES ${FILE_INITPYPS}
+            DESTINATION bin
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+    endif()
+
+    file(CHMOD ${FILE_INITPY} FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+    install(FILES ${FILE_INITPY}
+        DESTINATION bin
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
+
+endif(SEAHOWL_ENABLE_PYTHON)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    INSTALL(CODE "
+            include(BundleUtilities)
+            fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/seahowl_driver\" \"\" \"${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib\")
+            " DESTINATION bin COMPONENT Runtime)
+else()
+
+    if (${CMAKE_GENERATOR} MATCHES "Ninja")
+        set(FILTER_FILE ${CMAKE_BINARY_DIR}/*.dll)
+        file(GLOB LIST_DLL ${FILTER_FILE})
+    else()
+        set(FILTER_FILE1 ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE})
+        set(FILTER_FILE ${FILTER_FILE1}/*.dll)
+        file(GLOB LIST_DLL ${FILTER_FILE})
+    endif()
+
+    install(FILES ${LIST_DLL}
+            DESTINATION bin)
+endif()
+
+install(DIRECTORY ${SEAHOWL_DATADIR}
+        DESTINATION data)
+
+#copy the README.md file to the install directory
+install(FILES ${PROJECT_SOURCE_DIR}/doc/source/_user/using_package.md
+        DESTINATION .)
+#rename the using_package.md file to README.md
+install(CODE "
+        file(RENAME \"${CMAKE_INSTALL_PREFIX}/using_package.md\" \"${CMAKE_INSTALL_PREFIX}/README.md\")
+    ")

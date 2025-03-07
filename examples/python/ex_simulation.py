@@ -1,7 +1,9 @@
 import seahowl
 
 # options
-turbine_filepath = "../../data/IEA15MW/turbine.json"  # change to actual filepath
+turbine_filepath = (
+    "../../data/IEA15MW/onshore/turbine.json"  # change to actual filepath
+)
 output_folder = "./output"
 seahowl.set_log_level_global("info")  # log levels: critical, info, debug, warn, trace
 
@@ -17,12 +19,11 @@ simulation.outputs.set_output_folder(output_folder)
 
 # add turbine to system
 system_core = simulation.system_core
-seahowl.io.add_turbine_to_system_from_json(turbine_filepath, system_core, output_folder)
+seahowl.io.add_turbine_to_system_from_json(turbine_filepath, system_core)
 turbine = system_core.turbines[0]
 
 # fix tower bottom nodes and statics step
 system_elasto = system_core.elasto
-turbine.elasto.tower.nodes[0].set_fixed(True)
 system_elasto.do_statics(True, 10)
 
 # add fluid model

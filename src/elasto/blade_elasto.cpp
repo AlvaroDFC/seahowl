@@ -10,15 +10,11 @@
 using namespace seahowl::elasto;
 
 BladeElasto::BladeElasto() {
-    // body mount
-    body_mount = std::make_unique<BodyElastoChrono>();
-    // body root
-    body_root = std::make_unique<BodyElastoChrono>();
     // links
     link_root = std::make_unique<LinkChrono>();
     link_root->set_constraints(true, true, true, true, true, true);
-    link_root_mount = std::make_unique<LinkChrono>();
-    link_root_mount->set_constraints(true, true, true, true, true, true);
+    actuator_pitch = std::make_unique<ActuatorRotationChrono>();
+    actuator_pitch->reference_rotation = Quaternion(AngleAxisd(PI, Vector3d(1.0, 0.0, 0.0)));
     link_blade = std::make_unique<LinkChrono>();
     link_blade->set_constraints(true, true, true, true, true, true);
     //
@@ -27,77 +23,62 @@ BladeElasto::BladeElasto() {
 }
 
 void BladeElasto::apply_pitch_increment(double pitch_increment) {
-    // apply pitch from root node direction and position
-    auto root_dir = body_root->get_rotation() * Vector3d(0.0, 0.0, 1.0);
-    auto root_pos = body_root->get_position();
-    translate(-root_pos);
-    rotate(-pitch_increment, root_dir);
-    body_mount->rotate(pitch_increment, root_dir);  // rotate mounting point back
-    link_root_mount->initialize(*body_root, *body_mount);
-    translate(root_pos);
+    if (pitch_increment != 0.0) {
+        // apply pitch from root node direction and position
+        auto root_dir = actuator_pitch->get_rotation_axis();
+        auto root_pos = actuator_pitch->body_controller->get_position();
+        translate(-root_pos);
+        rotate(pitch_increment, root_dir);
+        actuator_pitch->rotate(-pitch_increment, root_dir);  // rotate actuator back
+        translate(root_pos);
+        // increment actuator
+        actuator_pitch->increment_value_constant(pitch_increment);
+    }
 }
 
 double BladeElasto::get_pitch() const {
-    // get angle between quaternions
-    auto qq = (body_root->get_rotation().conjugate() * body_mount->get_rotation()).normalized();
-    double angle0 = 2 * std::atan2(qq.vec().z(), qq.w());
-    // get angle between 0 and 2pi
-    double angle1 = fmod(angle0, 2 * PI);
-    return angle1;
+    return actuator_pitch->get_angle();
 }
 
 void BladeElasto::attach_blade_to_body(const BodyElasto& body) {
     is_mounted = true;
-    link_blade->initialize(*body_mount, body);
+    link_blade->initialize(*actuator_pitch->body_controller, body);
 }
 
 void BladeElasto::assemble_this(SystemElasto& system) {
-    system.add(*(body_root.get()));
-    system.add(*(link_root.get()));
-    system.add(*(body_mount.get()));
-    system.add(*(link_root_mount.get()));
+    system.add(*link_root);
+    system.add(*actuator_pitch);
     if (is_mounted) {
-        system.add(*(link_blade.get()));
+        system.add(*link_blade);
     }
 }
 
 void BladeElasto::rotate(double angle, const Vector3d& axis) const {
     // blade root
-    body_root->rotate(angle, axis);
-    body_mount->rotate(angle, axis);
+    actuator_pitch->rotate(angle, axis);
 }
 
 void BladeElasto::translate(const Vector3d& translation_vector) const {
     // blade root
-    body_root->translate(translation_vector);
-    body_mount->translate(translation_vector);
+    actuator_pitch->translate(translation_vector);
 }
 
 double BladeElasto::get_mass() const {
-    // adding body_root for consistency even if mass is supposed to be zero.
-    return body_root->get_mass() + body_mount->get_mass();
+    // adding actuator mass for consistency even if mass is supposed to be zero.
+    return actuator_pitch->body_worker->get_mass() + actuator_pitch->body_worker->get_mass();
 }
 
-void BladeElasto::reset_bodies() {
-    // body mount
-    body_mount->set_position(Vector3d(0.0, 0.0, 0.0));
-    body_mount->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body_mount->set_mass(0.0);
-    body_mount->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
-    // body root
-    body_root->set_position(Vector3d(0.0, 0.0, 0.0));
-    body_root->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body_root->set_mass(0.0);
-    body_root->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
-}
+void BladeElasto::reset_bodies() {}
 
 seahowl::Vector3d BladeElasto::get_blade_root_moment() const {
-    return link_root->get_reaction_torque() + body_root->get_torque(true);
+    return link_root->get_reaction_torque() + actuator_pitch->body_worker->get_torque(true);
 }
 
 seahowl::Vector3d BladeElasto::get_blade_root_force() const {
-    return link_root->get_reaction_force() + body_root->get_force(true);
+    return link_root->get_reaction_force() + actuator_pitch->body_worker->get_force(true);
 }
+
+void BladeElasto::update_root_constraint() {}
 
 BladeElastoFEA::BladeElastoFEA() {}
 
@@ -125,19 +106,16 @@ double BladeElastoFEA::get_mass() const {
     return ComponentElastoFEA::get_mass() + BladeElasto::get_mass();
 }
 
-void BladeElastoFEA::update_root_constraint() {
-    // attach node to root body
-    link_root->initialize(*nodes[0], *body_root);
-    // attach root body to mounting point
-    link_root_mount->initialize(*body_root, *body_mount);
-}
-
 void BladeElastoFEA::presetup(double fraction) {
     for (int ii = 0; ii < nodes.size(); ii++) {
         BladeReferencePointElasto ref = discretized_points[ii];
-        for (int jj = 0; jj < ref.damping_coefficients.size(); jj++) {
-            ref.damping_coefficients[jj] = (1.0 - fraction) + ref.damping_coefficients[jj] * fraction;
-        }
+        // apply damping gradually
+        ref.damping_flapwise = (1.0 - fraction) + ref.damping_flapwise * fraction;
+        ref.damping_edgewise = (1.0 - fraction) + ref.damping_edgewise * fraction;
+        ref.damping_axial = (1.0 - fraction) + ref.damping_axial * fraction;
+        ref.damping_torsion = (1.0 - fraction) + ref.damping_torsion * fraction;
+        ref.damping_mass = (1.0 - fraction) + ref.damping_mass * fraction;
+
         auto node = std::dynamic_pointer_cast<NodeElastoChrono>(nodes[ii]);
         node->set_properties(ref);
     }
@@ -202,10 +180,15 @@ void BladeElastoFEA::build() {
         build_elements_tapered_timoshenko();
     }
 
+    // attach node to root body
+    link_root->initialize(*nodes[0], *actuator_pitch->body_worker);
+
     // apply initial pitch
     apply_pitch_increment(pitch0);
-
     update_root_constraint();
+
+    // initialize actuator links
+    actuator_pitch->initialize_links();
 };
 
 void BladeElastoFEA::build_elements_tapered_timoshenko() {
@@ -301,18 +284,22 @@ void BladeElastoRigid::build() {
     body_cog->set_position(Vector3d(0., 0., z_pos));
     body_cog->set_mass(mass_total);
     body_cog->set_inertia_diagonal(Vector3d(0., 0., 0.));
-    body_root->set_inertia_diagonal(Vector3d(inertia_total, inertia_total, 0.0));
+    actuator_pitch->body_worker->set_inertia_diagonal(Vector3d(inertia_total, inertia_total, 0.0));
+
+    // attach COG body to root body
+    link_root->initialize(*body_cog, *actuator_pitch->body_worker);
 
     // apply initial pitch
     apply_pitch_increment(pitch0);
-
-    // link root and cog
     update_root_constraint();
+
+    // initialize actuator links
+    actuator_pitch->initialize_links();
 }
 
 void BladeElastoRigid::assemble_this(SystemElasto& system) {
     BladeElasto::assemble_this(system);
-    system.add(*(body_cog.get()));
+    system.add(*body_cog);
 }
 
 void BladeElastoRigid::rotate(double angle, const Vector3d& axis) const {
@@ -333,21 +320,16 @@ double BladeElastoRigid::get_mass() const {
     return BladeElasto::get_mass() + body_cog->get_mass();
 }
 
-void BladeElastoRigid::update_root_constraint() {
-    // attach COG body to root body
-    link_root->initialize(*body_cog, *body_root);
-    // attach root body to mounting point
-    link_root_mount->initialize(*body_root, *body_mount);
-}
-
 seahowl::EntityDynamicEigen BladeElastoRigid::get_entity_along_blade(double eta, int element_index) const {
     auto entity = seahowl::EntityDynamicEigen();
 
     // relative position along z axis of blade
     auto z_position = (0.5 * fabs(eta + 1.0)) * length;
 
+    auto& body_root = *actuator_pitch->body_worker;
+
     // position
-    Vector3d position = body_root->get_position() + body_root->get_rotation() * Vector3d(0.0, 0.0, z_position);
+    Vector3d position = body_root.get_position() + body_root.get_rotation() * Vector3d(0.0, 0.0, z_position);
     entity.set_position(position);
 
     // get structural twist
@@ -355,30 +337,31 @@ seahowl::EntityDynamicEigen BladeElastoRigid::get_entity_along_blade(double eta,
     auto twist = seahowl::get_discretized_points(eta_vector, reference_points)[0].structural_twist;
 
     // rotation
-    auto twist_matrix = AngleAxisd(-twist, body_root->get_rotation() * Vector3d(0.0, 0.0, 1.0));
-    auto rotation_matrix = twist_matrix * body_root->get_rotation().toRotationMatrix();
+    auto twist_matrix = AngleAxisd(-twist, body_root.get_rotation() * Vector3d(0.0, 0.0, 1.0));
+    auto rotation_matrix = twist_matrix * body_root.get_rotation().toRotationMatrix();
     entity.set_rotation(Quaternion(rotation_matrix));
 
     // below has to be explicitly declared as Vector3d or there is an issue;
     Vector3d pos1 = entity.get_position();
-    Vector3d radius_vector = (pos1 - body_root->get_position());
+    Vector3d radius_vector = (pos1 - body_root.get_position());
 
     // velocity
-    Vector3d velocity = body_root->get_velocity() + (body_root->get_rotational_velocity(false)).cross(radius_vector);
+    Vector3d velocity = body_root.get_velocity() + (body_root.get_rotational_velocity(false)).cross(radius_vector);
     entity.set_velocity(velocity);
-    entity.set_rotational_velocity(body_root->get_rotational_velocity());
+    entity.set_rotational_velocity(body_root.get_rotational_velocity());
 
     // acceleration
     Vector3d acceleration =
-        body_root->get_acceleration() + (body_root->get_rotational_acceleration(false)).cross(radius_vector);
+        body_root.get_acceleration() + (body_root.get_rotational_acceleration(false)).cross(radius_vector);
     entity.set_acceleration(acceleration);
-    entity.set_rotational_acceleration(body_root->get_rotational_acceleration());
+    entity.set_rotational_acceleration(body_root.get_rotational_acceleration());
 
     return entity;
 }
 
 void BladeElastoRigid::reset_loads() {
-    body_root->reset_loads();
+    auto& body_root = *actuator_pitch->body_worker;
+    body_root.reset_loads();
     body_cog->reset_loads();
 }
 
@@ -388,10 +371,11 @@ void BladeElastoRigid::accumulate_load_along_blade(const seahowl::Vector3d& load
                                                    double eta,
                                                    const seahowl::Vector3d& offset) {
     // apply force on root
-    body_root->accumulate_force(load, false);
+    auto& body_root = *actuator_pitch->body_worker;
+    body_root.accumulate_force(load, false);
 
     // apply moment on root
     auto entity = get_entity_along_blade(eta, element_index);
-    auto distance = (entity.get_position() + offset - body_root->get_position());
-    body_root->accumulate_torque(moment + distance.cross(load), false);
+    auto distance = (entity.get_position() + offset - body_root.get_position());
+    body_root.accumulate_torque(moment + distance.cross(load), false);
 }

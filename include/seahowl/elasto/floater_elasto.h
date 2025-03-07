@@ -2,6 +2,7 @@
 
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/entities_elasto.h"
+#include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/mooring_elasto.h"
 
 #include <deque>
@@ -17,20 +18,12 @@ class SystemElasto;
 namespace seahowl {
 namespace elasto {
 
-class FoundationElasto : public ComponentElasto {
-  public:
-    virtual void link_to_entity(const Entity& entity) = 0;
-    virtual void prestep(double time, double dt) = 0;
-};
-
 class FloaterElasto : public FoundationElasto {
   public:
     /** @brief Link between foundation and entity (e.g. towerbase of turbine). */
     std::unique_ptr<seahowl::elasto::Link> link_floater_entity;
     /** @brief Mooring system of the floater. */
     std::unique_ptr<seahowl::elasto::MooringSystemElasto> mooring_system;
-    /** @brief Damping matrix of floater.*/
-    Eigen::Matrix<double, 6, 6> damping_matrix;
     /** @brief Main body of floater.*/
     std::unique_ptr<seahowl::elasto::BodyElasto> body_main;
 
@@ -40,12 +33,13 @@ class FloaterElasto : public FoundationElasto {
     FloaterElasto();
 
     virtual void link_to_entity(const Entity& entity) override;
-
+    virtual void set_fixed(bool is_fixed) override;
+    virtual bool is_fixed() const override;
     virtual void presetup(double fraction) override;
-
     virtual void build() override;
-
-    virtual void prestep(double time, double dt) override;
+    virtual void translate(const Vector3d& translation_vector) const override;
+    virtual void rotate(double angle, const Vector3d& axis) const override;
+    virtual double get_mass() const override;
 
     /**
      * @brief Creates and adds body to floater.
@@ -92,26 +86,6 @@ class FloaterElasto : public FoundationElasto {
      */
     virtual seahowl::elasto::Link& get_fairlead_link(const std::string& body_name, int index);
 
-    /**
-     * @brief Translates the floater.
-     *
-     * @param[in] translation_vector The 3D translation vector.
-     */
-    virtual void translate(const Vector3d& translation_vector) const override;
-
-    /**
-     * @brief Rotates the floater.
-     *
-     * @param[in] translation_vector The angle of rotation (in radians).
-     * @param[in] axis The axis of rotation (3D vector).
-     */
-    virtual void rotate(double angle, const Vector3d& axis) const override;
-
-    /**
-     * @brief Returns the mass of the floater.
-     */
-    virtual double get_mass() const override;
-
   protected:
     /** @brief List of bodies and their names. */
     std::map<std::string, std::unique_ptr<seahowl::elasto::BodyElasto>> floater_bodies;
@@ -121,8 +95,6 @@ class FloaterElasto : public FoundationElasto {
     std::map<std::string, std::deque<std::unique_ptr<seahowl::elasto::BodyElasto>>> fairlead_bodies;
     /** @brief Name of body for tower connection */
     std::string tower_connection_name = "";
-    /** @brief Whether floater is linked to entity or not. */
-    bool is_linked = false;
 
     virtual void assemble_this(seahowl::elasto::SystemElasto& system) override;
 };

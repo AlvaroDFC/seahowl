@@ -3,6 +3,7 @@
 #include "seahowl/core/turbine.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
+#include "seahowl/io/utils_io.h"
 
 #include <vector>
 #include <string>
@@ -118,7 +119,9 @@ void seahowl::servo::ControllerDISCON::initialize(double time, double dt, const 
     // yaw rate control
     pImpl.SetAvrSWAP(29, 0.0);
 
-    pImpl.Init(libfile);
+    seahowl::io::utils::check_file_exists(libfile);
+
+    pImpl.Init(libfile, output_folder + "/tmp_discon");
 
     spdlog::debug("Finished initialization of DISCON controller.");
 }
@@ -358,29 +361,65 @@ static std::vector<discon::ParamDef> ArrayInfo{
     {164, "in", 'R', "Yaw bearing angular acceleration", "rad/s2"}};
 }  // namespace discon
 
-void seahowl::servo::DisconInterface::Init(const std::string& libfile) {
+seahowl::servo::DisconInterface::~DisconInterface() {
+    if (has_dll) {
+#ifdef __unix__
+        dlclose(handler);
+#elif _WIN32
+        FreeLibrary((HMODULE)handler);
+#endif
+    }
+    if (copied_dll && path_dll != "") {
+        // remove copied discon library, if it exists.
+        std::filesystem::remove(path_dll);
+    }
+}
+
+void seahowl::servo::DisconInterface::Init(const std::string& libfile, const std::string& tmp_folder) {
     if (libfile != "") {
         if (!std::filesystem::exists(std::filesystem::path(libfile)) && libfile != "") {
             throw std::runtime_error("DISCON: dynamic library path for DISCON routine does not exist: " + libfile +
                                      ".");
         }
-        has_dll = true;
         // Load dynamic library and point to DISCON routine
+        spdlog::debug("DISCON: loading library {}.", libfile);
 #ifdef __unix__
-    #ifdef __gnu_linux__
-        void* handler = dlmopen(LM_ID_NEWLM, libfile.c_str(), RTLD_LAZY);
-    #else
-        void* handler = dlopen(libfile.c_str(), RTLD_LAZY);
-    #endif
+        handler = dlopen(libfile.c_str(), RTLD_NOLOAD | RTLD_LAZY);
+        if (handler) {
+            // library already loaded, first copy the library and load it with the new path.
+            auto newlibfile = seahowl::io::utils::copy_file_and_increment(libfile, tmp_folder);
+            spdlog::debug("DISCON: copied {} to {}.", libfile, newlibfile);
+            copied_dll = true;
+            path_dll = newlibfile;
+            handler = dlopen(newlibfile.c_str(), RTLD_LAZY);
+        } else {
+            // load library
+            copied_dll = false;
+            path_dll = libfile;
+            handler = dlopen(libfile.c_str(), RTLD_LAZY);
+        }
         DISCON = (DISCON_routine)dlsym(handler, "DISCON");
+#elif _WIN32
+        handler = (void*)GetModuleHandle(libfile.c_str());
+        if (handler) {
+            // library already loaded, first copy the library and load it with the new path.
+            auto newlibfile = seahowl::io::utils::copy_file_and_increment(libfile, tmp_folder);
+            spdlog::debug("DISCON: copied {} to {}.", libfile, newlibfile);
+            copied_dll = true;
+            path_dll = newlibfile;
+            handler = LoadLibrary(newlibfile.c_str());
+        } else {
+            copied_dll = false;
+            path_dll = libfile;
+            handler = (void*)LoadLibrary(libfile.c_str());
+        }
+        DISCON = (DISCON_routine)GetProcAddress((HMODULE)handler, "DISCON");
 #endif
-#ifdef _WIN32
-        HMODULE handler = LoadLibrary(libfile.c_str());
-        DISCON = (DISCON_routine)GetProcAddress(handler, "DISCON");
-#endif
+        spdlog::debug("DISCON: loaded {}.", path_dll);
     } else {
         spdlog::warn("DISCON: no dynamic library transmitted to DISCON interface.");
     }
+    has_dll = true;
 
     avrSWAP[58] = 500;  // Buffer chaar size
     avrSWAP[50] = 500;  // self.char_buffer
@@ -600,5 +639,14 @@ float seahowl::servo::DisconInterface::GetForcedAvrSWAP(size_t index) const {
 void seahowl::servo::DisconInterface::Call() {
     if (has_dll) {
         DISCON(avrSWAP, &aviFAIL, accINFILE, avcOUTNAME, avcMSG);
+    }
+
+    // handle error, if any.
+    if (aviFAIL == 0) {
+        return;
+    } else if (aviFAIL > 0) {
+        spdlog::warn("DISCON WARNING: \"{}\".", avcMSG);
+    } else if (aviFAIL < 0) {
+        throw std::runtime_error("DISCON ERROR: \"" + std::string(avcMSG) + "\".");
     }
 }
