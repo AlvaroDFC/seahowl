@@ -362,7 +362,7 @@ static std::vector<discon::ParamDef> ArrayInfo{
 }  // namespace discon
 
 seahowl::servo::DisconInterface::~DisconInterface() {
-    if (handler) {
+    if (has_dll) {
 #ifdef __unix__
         dlclose(handler);
 #elif _WIN32
@@ -381,7 +381,6 @@ void seahowl::servo::DisconInterface::Init(const std::string& libfile, const std
             throw std::runtime_error("DISCON: dynamic library path for DISCON routine does not exist: " + libfile +
                                      ".");
         }
-        has_dll = true;
         // Load dynamic library and point to DISCON routine
         spdlog::debug("DISCON: loading library {}.", libfile);
 #ifdef __unix__
@@ -420,6 +419,7 @@ void seahowl::servo::DisconInterface::Init(const std::string& libfile, const std
     } else {
         spdlog::warn("DISCON: no dynamic library transmitted to DISCON interface.");
     }
+    has_dll = true;
 
     avrSWAP[58] = 500;  // Buffer chaar size
     avrSWAP[50] = 500;  // self.char_buffer
