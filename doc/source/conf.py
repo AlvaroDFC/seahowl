@@ -22,11 +22,11 @@ import sys
 
 
 project = "SEAHOWL"
-copyright = "2022, TotalEnergies-SE"
+copyright = "2022-2025, TotalEnergies-SE"
 author = "Power R&D Team"
 
 # The full version, including alpha/beta/rc tags
-release = "0.8.1"
+release = "0.9.0"
 
 
 # -- General configuration ---------------------------------------------------
