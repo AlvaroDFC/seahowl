@@ -67,6 +67,7 @@ option(SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option(SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 option(SEAHOWL_ENABLE_AERODYN "Enable AeroDyn module" OFF)
 option(SEAHOWL_ENABLE_INFLOWWIND "Enable InflowWind module" OFF)
+option(SEAHOWL_ENABLE_HYDRODYN "Enable HydroDyn module" OFF)
 option(SEAHOWL_ENABLE_HYDROCHRONO "Enable HydroChrono library" OFF)
 
 
@@ -118,6 +119,17 @@ if(SEAHOWL_ENABLE_INFLOWWIND)
     add_compile_definitions(SEAHOWL_HAVE_INFLOWWIND=1)
     add_definitions("-DHAVE_INFLOWWIND=1")
 endif(SEAHOWL_ENABLE_INFLOWWIND)
+
+# HydroDyn module
+if(SEAHOWL_ENABLE_HYDRODYN)
+    if(WIN32)
+        find_library(HYDRODYN_LIBRARY libHYDRODYN_inflow_c_binding)
+    else()
+        find_library(HYDRODYN_LIBRARY HYDRODYN_inflow_c_binding)
+    endif()
+    add_compile_definitions(SEAHOWL_HAVE_HYDRODYN=1)
+    add_definitions("-DHAVE_HYDRODYN=1")
+endif(SEAHOWL_ENABLE_HYDRODYN)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
@@ -312,6 +324,10 @@ if(SEAHOWL_ENABLE_HYDROCHRONO)
     list(APPEND SEAHOWL_HYDRO_SOURCES src/fluid/hydro/hydrochrono_adapter.cpp)
     list(APPEND SEAHOWL_HYDRO_HEADERS include/seahowl/fluid/hydro/hydrochrono_adapter.h)
 endif(SEAHOWL_ENABLE_HYDROCHRONO)
+if (SEAHOWL_ENABLE_HYDRODYN)
+    list(APPEND SEAHOWL_AERO_SOURCES src/hydro/hydrodyn_adapter.cpp)
+    list(APPEND SEAHOWL_AERO_HEADERS include/seahowl/hydro/hydrodyn_adapter.h)
+endif(SEAHOWL_ENABLE_HYDRODYN)
 source_group(hydro FILES ${SEAHOWL_HYDRO_SOURCES} ${SEAHOWL_HYDRO_HEADERS})
 
 # env
@@ -429,6 +445,7 @@ target_compile_definitions(
     SEAHOWL_HAVE_VTK=$<BOOL:${SEAHOWL_ENABLE_VTK}>
     SEAHOWL_HAVE_AERODYN=$<BOOL:${SEAHOWL_ENABLE_AERODYN}>
     SEAHOWL_HAVE_INFLOWWIND=$<BOOL:${SEAHOWL_ENABLE_INFLOWWIND}>
+    SEAHOWL_HAVE_HYDRODYN=$<BOOL:${SEAHOWL_ENABLE_HYDRODYN}>
     SEAHOWL_HAVE_IRRLICHT=$<BOOL:${SEAHOWL_ENABLE_IRRLICHT}>
     SEAHOWL_CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
     SEAHOWL_NAME="${PROJECT_NAME}"
@@ -470,6 +487,10 @@ endif (SEAHOWL_ENABLE_AERODYN)
 if (SEAHOWL_ENABLE_INFLOWWIND)
     target_link_libraries(seahowl_core PRIVATE ${INFLOWWIND_LIBRARY})
 endif (SEAHOWL_ENABLE_INFLOWWIND)
+
+if (SEAHOWL_ENABLE_HYDRODYN)
+    target_link_libraries(seahowl_core PRIVATE ${HYDRODYN_LIBRARY})
+endif (SEAHOWL_ENABLE_HYDRODYN)
 
 if(SEAHOWL_ENABLE_IRRLICHT)
     # the following is needed when building with vcpkg (link stage)
