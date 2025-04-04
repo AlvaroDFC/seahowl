@@ -8,8 +8,10 @@ using namespace seahowl::hydro;
 extern "C" {
 
 void HydroDyn_C_Init(char* OutRootName,
+                     int& SeaSt_InputFilePassed,
                      const char** SeaSt_InputFileString,
                      int& SeaSt_InputFileStringLength,
+                     int& HD_InputFilePassed,
                      const char** HD_InputFileString,
                      int& HD_InputFileStringLength,
                      float& Gravity,
@@ -136,6 +138,10 @@ struct seahowl::hydro::HydroDynLib {
      */
     char OutRootName[1024];
 
+    // Input file handling
+    int SeaSt_InputFilePassed = 0;  // 1: pass the input file content; 0: pass the input file name
+    int HD_InputFilePassed = 0;     // 1: pass the input file content; 0: pass the input file name
+
     // Input file string
     std::string HDinputFileString;
     std::string SSinputFileString;
@@ -239,9 +245,10 @@ void HydroDynLib::Init() {
     const char* HDinputFile = HDinputFileString.c_str();
     const char* SSinputFile = SSinputFileString.c_str();
 
-    HydroDyn_C_Init(OutRootName, &SSinputFile, SSinputFileStringLength, &HDinputFile, HDinputFileStringLength, gravity,
-                    defWtrDens, defWtrDpth, defMSL2SWL, PtfmRefPtPositionX, PtfmRefPtPositionY, NumNodePts, NodePos,
-                    InterpOrder, Time, DT, TMax, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
+    HydroDyn_C_Init(OutRootName, SeaSt_InputFilePassed, &SSinputFile, SSinputFileStringLength, HD_InputFilePassed,
+                    &HDinputFile, HDinputFileStringLength, gravity, defWtrDens, defWtrDpth, defMSL2SWL,
+                    PtfmRefPtPositionX, PtfmRefPtPositionY, NumNodePts, NodePos, InterpOrder, Time, DT, TMax,
+                    NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
     CheckError();
 }
 
@@ -266,6 +273,8 @@ void HydroDynLib::End() {
 HydroDynAdapter::HydroDynAdapter() {
     spdlog::debug("Initialising HydroDyn Adapter");
     interface_hydrodyn = std::make_unique<HydroDynLib>();
+    interface_hydrodyn->SeaSt_InputFilePassed = 0;
+    interface_hydrodyn->HD_InputFilePassed = 0;
     interface_hydrodyn->set_outfile_name("Floater");
 }
 
@@ -277,6 +286,8 @@ void HydroDynAdapter::set_infiles(const std::string& HydroDynInfile, const std::
 }
 
 void HydroDynAdapter::initialize(double time, double dt, seahowl::elasto::FloaterElasto& floater) {
+    spdlog::info("Initialising HydroDyn from SEAHOWL");
+
     interface_hydrodyn->DT = dt;
     interface_hydrodyn->set_time(time);
 
