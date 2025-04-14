@@ -8,6 +8,14 @@
 #include <map>
 #include <iostream>
 
+// wyu
+#include <seahowl/fluid/hydro/hydrodyn_adapter.h>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+using std::filesystem::path;
+using std::filesystem::absolute;
+
 namespace fs = std::filesystem;
 
 void run_simulation(int argc, char* argv[]) {
@@ -45,6 +53,21 @@ void run_simulation(int argc, char* argv[]) {
     simulation.populate_from_config();
 
     simulation.initialize_from_config();
+
+    // // dirty test on hydrodyn initialize in seahowl
+    // auto hydrodyn = seahowl::hydro::HydroDynAdapter();
+    // auto hydrodyn_filename = (fs::absolute(filepath_main).parent_path() /
+    // std::filesystem::path("hydrodyn/IEA-15-240-RWT-UMaineSemi_HydroDyn.dat")).generic_string(); auto
+    // seastate_filename = (fs::absolute(filepath_main).parent_path() /
+    // std::filesystem::path("hydrodyn/IEA-15-240-RWT-UMaineSemi_SeaState.dat")).generic_string();
+    // hydrodyn.set_infiles(hydrodyn_filename, seastate_filename);
+
+    // auto& system_core = simulation.system_core;
+    // auto& turbine = system_core->turbines[0]->elasto;
+    // auto& foundation = turbine.foundation;
+    // auto& floater = dynamic_cast<seahowl::elasto::FloaterElasto&>(*foundation);
+    // // auto& floater = *system_core->floater_body;
+    // hydrodyn.initialize(0.0, simulation.dt, floater);
 
     simulation.run_all();
 }

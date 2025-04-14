@@ -5,6 +5,8 @@
 #include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/mooring_elasto.h"
 
+#include <seahowl/fluid/hydro/hydrodyn_adapter.h>
+
 #include <deque>
 #include <map>
 
@@ -13,6 +15,9 @@ namespace seahowl {
 namespace elasto {
 class SystemElasto;
 }  // namespace elasto
+namespace hydro {
+class HydroDynAdapter;
+}  // namespace hydro
 }  // namespace seahowl
 
 namespace seahowl {
@@ -26,6 +31,10 @@ class FloaterElasto : public FoundationElasto {
     std::shared_ptr<seahowl::elasto::MooringSystemElasto> mooring_system;
     /** @brief Main body of floater.*/
     std::unique_ptr<seahowl::elasto::BodyElasto> body_main;
+    /** @brief HydroDyn adapter. */
+    // Temporally put hydrodyn in floater elasto
+    // TODO: put hydrodyn back to floater hydro
+    std::shared_ptr<seahowl::hydro::HydroDynAdapter> hydrodyn;
 
     /**
      * @brief Constructor.

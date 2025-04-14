@@ -7,6 +7,10 @@
 
 namespace seahowl {
 
+namespace elasto {
+class FloaterElasto;
+}
+
 namespace hydro {
 
 // forward declare (defined in .cpp file)

@@ -25,11 +25,23 @@ void Floater::initialize_this(double time, double dt) {
 
     elasto.initialize();
 
+    // Temporally put hydrodyn in floater elasto
+    // TODO: put hydrodyn back to floater hydro
+    elasto.hydrodyn->initialize(time, dt, elasto);
+
     spdlog::info("Initialized floater of total mass {:.4}kg (with moorings).", elasto.get_mass());
 }
 
 void Floater::prestep(double time, double dt) {
     mooring_system->prestep(time, dt);
+
+    auto& floater_body = *elasto.body_main;
+    floater_body.reset_loads_internals();
+
+    elasto.hydrodyn->compute_loads(time, elasto);
+
+    floater_body.accumulate_force_internals(elasto.hydrodyn->forces_hydrodyn[0], false);
+    floater_body.accumulate_torque_internals(elasto.hydrodyn->moments_hydrodyn[0], false);
 }
 
 void Floater::poststep(double time, double dt) {
