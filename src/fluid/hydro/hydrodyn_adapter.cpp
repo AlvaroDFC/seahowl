@@ -285,15 +285,14 @@ void HydroDynAdapter::set_infiles(const std::string& HydroDynInfile, const std::
     interface_hydrodyn->set_seastate_infile(SeaStateInfile);
 }
 
-void HydroDynAdapter::initialize(double time, double dt, seahowl::elasto::FloaterElasto& floater) {
+void HydroDynAdapter::initialize(double time, double dt, const std::vector<EntityDynamic*>& nodes) {
     spdlog::info("Initialising HydroDyn from SEAHOWL");
 
     interface_hydrodyn->DT = dt;
     interface_hydrodyn->set_time(time);
 
     // get the number of body
-    auto& floater_bodies = *floater.body_main;
-    int NumNodePts = 1;
+    int NumNodePts = nodes.size();
 
     interface_hydrodyn->initialize_arrays(NumNodePts);
 
@@ -302,41 +301,38 @@ void HydroDynAdapter::initialize(double time, double dt, seahowl::elasto::Floate
     moments_hydrodyn.resize(NumNodePts);
 
     // update turbine variables
-    update_floater_body_motion(floater);
+    update_nodes_motion(nodes);
 
     interface_hydrodyn->Init();
 }
 
-void HydroDynAdapter::update_floater_body_motion(seahowl::elasto::FloaterElasto& floater) {
-    // Get the information about floater body
-    auto& floater_bodies = *floater.body_main;
-    int NumNodePts = 1;
+void HydroDynAdapter::update_nodes_motion(const std::vector<EntityDynamic*>& nodes) {
+    int NumNodePts = nodes.size();
 
     for (int i = 0; i < NumNodePts; i++) {
-        // auto& floater_body = floater_bodies[i]; //TODO: to adapt the multiple body case
-        auto& floater_body = floater_bodies;
-        auto floater_body_pos = floater_body.get_position();
-        auto floater_body_rot = floater_body.get_rpy_angles();
-        auto floater_body_vel = floater_body.get_velocity();
-        auto floater_body_rotvel = floater_body.get_rotational_velocity();
-        auto floater_body_acc = floater_body.get_acceleration();
-        auto floater_body_rotacc = floater_body.get_rotational_acceleration();
+        auto& node = *nodes[i];
+        auto node_pos = node.get_position();
+        auto node_rot = node.get_rpy_angles();
+        auto node_vel = node.get_velocity();
+        auto node_rotvel = node.get_rotational_velocity();
+        auto node_acc = node.get_acceleration();
+        auto node_rotacc = node.get_rotational_acceleration();
 
         for (int j = 0; j < 3; j++) {
             int ii = i * 6 + j;
-            interface_hydrodyn->NodePos[ii] = floater_body_pos[j];
-            interface_hydrodyn->NodePos[ii + 3] = floater_body_rot[j];
-            interface_hydrodyn->NodeVel[ii] = floater_body_vel[j];
-            interface_hydrodyn->NodeVel[ii + 3] = floater_body_rotvel[j];
-            interface_hydrodyn->NodeAcc[ii] = floater_body_acc[j];
-            interface_hydrodyn->NodeAcc[ii + 3] = floater_body_rotacc[j];
+            interface_hydrodyn->NodePos[ii] = node_pos[j];
+            interface_hydrodyn->NodePos[ii + 3] = node_rot[j];
+            interface_hydrodyn->NodeVel[ii] = node_vel[j];
+            interface_hydrodyn->NodeVel[ii + 3] = node_rotvel[j];
+            interface_hydrodyn->NodeAcc[ii] = node_acc[j];
+            interface_hydrodyn->NodeAcc[ii + 3] = node_rotacc[j];
         }
     }
 }
 
-void HydroDynAdapter::compute_loads(double time, seahowl::elasto::FloaterElasto& floater) {
+void HydroDynAdapter::compute_loads(double time, const std::vector<EntityDynamic*>& nodes) {
     interface_hydrodyn->set_time(time);
-    update_floater_body_motion(floater);
+    update_nodes_motion(nodes);
     interface_hydrodyn->Update();
     interface_hydrodyn->Calcul();
 
@@ -353,4 +349,29 @@ void HydroDynAdapter::compute_loads(double time, seahowl::elasto::FloaterElasto&
 
 void HydroDynAdapter::end() {
     interface_hydrodyn->End();
+}
+
+FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath,
+                                 const std::string& seastate_filepath,
+                                 elasto::FloaterElasto& floater_elasto)
+    : floater_elasto(floater_elasto) {
+    hydrodyn = std::make_unique<HydroDynAdapter>();
+    hydrodyn->set_infiles(hydrodyn_filepath, seastate_filepath);
+}
+
+void FloaterHydroDyn::initialize(double time, double dt) {
+    std::vector<EntityDynamic*> bodies;
+    bodies.push_back(floater_elasto.body_main.get());
+    hydrodyn->initialize(time, dt, bodies);
+}
+
+void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double time) {
+    FloaterHydro::compute_env_loads(env_model, time);
+
+    std::vector<EntityDynamic*> bodies;
+    bodies.push_back(floater_elasto.body_main.get());
+    hydrodyn->compute_loads(time, bodies);
+
+    force_hydro = hydrodyn->forces_hydrodyn[0];
+    torque_hydro = hydrodyn->moments_hydrodyn[0];
 }

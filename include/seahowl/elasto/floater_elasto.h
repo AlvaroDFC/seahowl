@@ -31,10 +31,6 @@ class FloaterElasto : public FoundationElasto {
     std::shared_ptr<seahowl::elasto::MooringSystemElasto> mooring_system;
     /** @brief Main body of floater.*/
     std::unique_ptr<seahowl::elasto::BodyElasto> body_main;
-    /** @brief HydroDyn adapter. */
-    // Temporally put hydrodyn in floater elasto
-    // TODO: put hydrodyn back to floater hydro
-    std::shared_ptr<seahowl::hydro::HydroDynAdapter> hydrodyn;
 
     /**
      * @brief Constructor.

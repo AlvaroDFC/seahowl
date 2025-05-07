@@ -1,5 +1,6 @@
 #pragma once
 
+#include "seahowl/commons/component_fluid.h"
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 
 #include <memory>
@@ -35,6 +36,17 @@ class FloaterHydro : public FoundationFluid {
     void build() override;
 
     void compute_env_loads(const env::EnvModel& fluid_model, double time) override;
+
+    Vector3d get_force_hydro();
+
+    Vector3d get_torque_hydro();
+
+  protected:
+    /** @brief External force acting on floater. */
+    Vector3d force_hydro = {0.0, 0.0, 0.0};
+
+    /** @brief External torque acting on floater. */
+    Vector3d torque_hydro = {0.0, 0.0, 0.0};
 };
 
 }  // namespace hydro

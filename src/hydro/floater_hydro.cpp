@@ -1,6 +1,7 @@
-#include "seahowl/fluid/hydro/floater_hydro.h"
-#include "seahowl/fluid/hydro/mooring_hydro.h"
-#include "seahowl/env/env_model.h"
+#include "seahowl/hydro/floater_hydro.h"
+
+#include "seahowl/hydro/mooring_hydro.h"
+#include "seahowl/env/fluid_models.h"
 
 using namespace seahowl;
 using namespace seahowl::hydro;
@@ -14,8 +15,8 @@ void FloaterHydro::build() {
     mooring_system->build();
 }
 
-void FloaterHydro::compute_env_loads(const EnvModel& env_model, double time) {
-    mooring_system->compute_env_loads(env_model, time);
+void FloaterHydro::compute_fluid_loads(const FluidModel& fluid_model, double time) {
+    mooring_system->compute_fluid_loads(fluid_model, time);
 }
 
 Vector3d FloaterHydro::get_force_hydro() {
