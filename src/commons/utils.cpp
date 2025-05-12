@@ -173,6 +173,9 @@ void print_banner() {
 #ifdef SEAHOWL_HAVE_AERODYN
     spdlog::info("  |- AeroDyn: {}", (SEAHOWL_HAVE_AERODYN ? "yes" : "no"));
 #endif
+#ifdef SEAHOWL_HAVE_HYDRODYN
+    spdlog::info("  |- HydroDyn: {}", (SEAHOWL_HAVE_HYDRODYN ? "yes" : "no"));
+#endif
 #ifdef SEAHOWL_HAVE_IRRLICHT
     spdlog::info("  |- Irrlicht: {}", (SEAHOWL_HAVE_IRRLICHT ? "yes" : "no"));
 #endif
