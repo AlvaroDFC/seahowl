@@ -120,10 +120,6 @@ class BladeAero : public ComponentFluid {
     std::vector<BladeNodeAero> nodes;
     /** @brief Aero elements. */
     std::vector<BladeElementAero> elements;
-    /** @brief Loads at center of blade elements. */
-    std::vector<Vector3d> loads;
-    /** @brief Loads at center of blade elements. */
-    std::vector<Vector3d> moments;
     /** @brief Initial azimuth of the blade relative to rotor azimuth (in radians). */
     double azimuth0 = 0.0;
     /** @brief Pitch of the blade (in radians). */

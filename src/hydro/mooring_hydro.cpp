@@ -52,11 +52,9 @@ void MooringHydro::build() {
     }
     // elements
     elements.clear();
-    loads.clear();
     for (int ii = 0; ii < discretization_fractions.size() - 1; ii++) {
         elements.push_back(MorisonElement(nodes[ii], nodes[ii + 1]));
         elements.back().length = length * abs(discretization_fractions[ii + 1] - discretization_fractions[ii]);
-        loads.push_back(Vector3d(0.0, 0.0, 0.0));
     }
 }
 
@@ -64,11 +62,6 @@ void MooringHydro::compute_fluid_loads(const FluidModel& fluid_model, double tim
     // compute loads at nodes
     for (auto& node : nodes) {
         node.compute_fluid_loads(fluid_model, time);
-    }
-
-    // integrate loads over elements and store them
-    for (int ii = 0; ii < elements.size(); ii++) {
-        loads[ii] = elements[ii].get_load();
     }
 }
 
