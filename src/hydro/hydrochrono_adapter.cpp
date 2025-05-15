@@ -54,6 +54,10 @@ WaveModelHydroChrono::WaveModelHydroChrono() {
 
 seahowl::Vector3d WaveModelHydroChrono::get_fluid_velocity_this(const Vector3d& position, double time) const {
     if (is_in_water(position, time)) {
+        if (position.dot(surface_normal) < -water_depth) {
+            // return 0.0 if below soil level
+            return Vector3d(0.0, 0.0, 0.0);
+        }
         return waves->GetVelocity(position, time);
     } else {
         throw std::runtime_error("Cannot retrieve water velocity above mean water level.");
@@ -62,6 +66,10 @@ seahowl::Vector3d WaveModelHydroChrono::get_fluid_velocity_this(const Vector3d& 
 
 seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector3d& position, double time) const {
     if (is_in_water(position, time)) {
+        if (position.dot(surface_normal) < -water_depth) {
+            // return 0.0 if below soil level
+            return Vector3d(0.0, 0.0, 0.0);
+        }
         return waves->GetAcceleration(position, time);
     } else {
         throw std::runtime_error("Cannot retrieve water acceleration above mean water level.");
@@ -69,6 +77,10 @@ seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector
 }
 
 double WaveModelHydroChrono::get_fluid_density(const Vector3d& position, double time) const {
+    if (position.dot(surface_normal) < -water_depth) {
+        // return 0.0 if below soil level
+        return 0.0;
+    }
     return density;
 }
 
