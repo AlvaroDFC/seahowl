@@ -54,7 +54,7 @@ WaveModelHydroChrono::WaveModelHydroChrono() {
 
 seahowl::Vector3d WaveModelHydroChrono::get_fluid_velocity_this(const Vector3d& position, double time) const {
     if (is_in_water(position, time)) {
-        if (position.dot(surface_normal) < -water_depth) {
+        if (position.dot(surface_normal) < -waves->water_depth_) {
             // return 0.0 if below soil level
             return Vector3d(0.0, 0.0, 0.0);
         }
@@ -66,7 +66,7 @@ seahowl::Vector3d WaveModelHydroChrono::get_fluid_velocity_this(const Vector3d& 
 
 seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector3d& position, double time) const {
     if (is_in_water(position, time)) {
-        if (position.dot(surface_normal) < -water_depth) {
+        if (position.dot(surface_normal) < -waves->water_depth_) {
             // return 0.0 if below soil level
             return Vector3d(0.0, 0.0, 0.0);
         }
@@ -77,7 +77,7 @@ seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector
 }
 
 double WaveModelHydroChrono::get_fluid_density(const Vector3d& position, double time) const {
-    if (position.dot(surface_normal) < -water_depth) {
+    if (position.dot(surface_normal) < -waves->water_depth_) {
         // return 0.0 if below soil level
         return 0.0;
     }
