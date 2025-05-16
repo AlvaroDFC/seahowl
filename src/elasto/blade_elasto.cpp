@@ -361,8 +361,8 @@ seahowl::EntityDynamicEigen BladeElastoRigid::get_entity_along_blade(double eta,
 
 void BladeElastoRigid::reset_loads() {
     auto& body_root = *actuator_pitch->body_worker;
-    body_root.reset_loads();
-    body_cog->reset_loads();
+    body_root.reset_loads_internals();
+    body_cog->reset_loads_internals();
 }
 
 void BladeElastoRigid::accumulate_load_along_blade(const seahowl::Vector3d& load,
@@ -372,10 +372,10 @@ void BladeElastoRigid::accumulate_load_along_blade(const seahowl::Vector3d& load
                                                    const seahowl::Vector3d& offset) {
     // apply force on root
     auto& body_root = *actuator_pitch->body_worker;
-    body_root.accumulate_force(load, false);
+    body_root.accumulate_force_internals(load, false);
 
     // apply moment on root
     auto entity = get_entity_along_blade(eta, element_index);
     auto distance = (entity.get_position() + offset - body_root.get_position());
-    body_root.accumulate_torque(moment + distance.cross(load), false);
+    body_root.accumulate_torque_internals(moment + distance.cross(load), false);
 }
