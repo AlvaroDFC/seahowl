@@ -159,7 +159,7 @@ class ChLoadLocal66 : public ChLoadCustom {
         // matrices expressed in local system --> transformation needed
         // Chrono sends:
         // - translation components in global system
-        // - rotation components in global system
+        // - rotation components in local system
         Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
         ChMatrix33<> rot33(body_frame->GetRot());
         Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
@@ -189,7 +189,7 @@ class ChLoadLocal66 : public ChLoadCustom {
         // matrices expressed in local system --> transformation needed
         // Chrono sends:
         // - translation components in global system
-        // - rotation components in global system
+        // - rotation components in local system
         Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
         ChMatrix33<> rot33(body_frame->GetRot());
         Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
@@ -246,6 +246,48 @@ class ChLoadLocal66 : public ChLoadCustom {
     ChMatrixDynamic<double> damping_matrix = Eigen::Matrix<double, 6, 6>::Zero();
 
     std::shared_ptr<ChBodyFrame> body_frame;
+};
+
+/**
+ * @brief Derived Chrono load class for force (global frame) and torque (local frame).
+ */
+class ChLoadForceTorque : public ChLoadCustom {
+  public:
+    ChLoadForceTorque(std::shared_ptr<ChLoadable> mloadable) : ChLoadCustom(mloadable) {
+        chload_force = ChVector<double>(0.0, 0.0, 0.0);
+        chload_torque = ChVector<double>(0.0, 0.0, 0.0);
+    }
+
+    /**
+     * @brief "Virtual" copy constructor (covariant return type). Required from chrono inheritance.
+     */
+    virtual ChLoadForceTorque* Clone() const override { return new ChLoadForceTorque(*this); }
+
+    void SetForce(const ChVector<double>& force) { chload_force = force; }
+    void SetTorque(const ChVector<double>& torque) { chload_torque = torque; }
+    ChVector<double> GetForce() { return chload_force; }
+    ChVector<double> GetTorque() { return chload_torque; }
+
+    // compute external forces manually
+    virtual void ComputeQ(ChState* state_x, ChStateDelta* state_w) override {
+        // reset load_Q
+        int ndof = this->LoadGet_ndof_w();
+        load_Q = ChVectorDynamic<>(ndof).setZero();
+        load_Q[0] = chload_force[0];
+        load_Q[1] = chload_force[1];
+        load_Q[2] = chload_force[2];
+        if (ndof > 3) {
+            load_Q[3] = chload_torque[0];
+            load_Q[4] = chload_torque[1];
+            load_Q[5] = chload_torque[2];
+        }
+    };
+
+    virtual bool IsStiff() override { return false; }
+
+  private:
+    ChVector<double> chload_force;
+    ChVector<double> chload_torque;
 };
 
 }  // namespace chrono
@@ -320,6 +362,8 @@ BodyElastoChrono::BodyElastoChrono() {
     EntityDynamicChrono::chobj = chobj;
     set_mass(MASS_NOTSET_VALUE);
     set_inertia_diagonal(Vector3d(MASS_NOTSET_VALUE, MASS_NOTSET_VALUE, MASS_NOTSET_VALUE));
+    chloads_internals = chrono_types::make_shared<chrono::ChLoadForceTorque>(chobj);
+    chloadcontainer->Add(chloads_internals);
 }
 
 void BodyElastoChrono::set_mass(double mass) {
@@ -340,6 +384,11 @@ Eigen::Matrix<double, 3, 3> BodyElastoChrono::get_inertia_matrix() const {
 
 void BodyElastoChrono::reset_loads() {
     chobj->Empty_forces_accumulators();
+}
+
+void BodyElastoChrono::reset_loads_internals() {
+    chloads_internals->SetForce(chrono::Vector(0.0, 0.0, 0.0));
+    chloads_internals->SetTorque(chrono::Vector(0.0, 0.0, 0.0));
 }
 
 Vector3d BodyElastoChrono::get_force(bool is_local) const {
@@ -380,8 +429,26 @@ void BodyElastoChrono::accumulate_force(const Vector3d& force, bool is_local) {
     }
 }
 
+void BodyElastoChrono::accumulate_force_internals(const Vector3d& force, bool is_local) {
+    // send internal force in absolute frame
+    if (is_local) {
+        chloads_internals->SetForce(chloads_internals->GetForce() + get_rotation() * force);
+    } else {
+        chloads_internals->SetForce(chloads_internals->GetForce() + force);
+    }
+}
+
 void BodyElastoChrono::accumulate_torque(const Vector3d& torque, bool is_local) {
     chobj->Accumulate_torque(torque, is_local);
+}
+
+void BodyElastoChrono::accumulate_torque_internals(const Vector3d& torque, bool is_local) {
+    // send internal torque in relative frame
+    if (is_local) {
+        chloads_internals->SetTorque(chloads_internals->GetTorque() + torque);
+    } else {
+        chloads_internals->SetTorque(chloads_internals->GetTorque() + get_rotation().inverse() * torque);
+    }
 }
 
 void BodyElastoChrono::set_fixed(bool is_fixed) {
@@ -453,6 +520,9 @@ NodeElastoChrono::NodeElastoChrono(const Vector3d& position, const Quaternion& r
         chrono::ChFrame<>(vec2ch(position), node_iec2ch(rotation)));
     EntityDynamicChrono::chobj = chobj;
     NodeElastoChronoBase::chobj = chobj;
+
+    chloads_internals = chrono_types::make_shared<chrono::ChLoadForceTorque>(chobj);
+    chloadcontainer->Add(chloads_internals);
 }
 
 void NodeElastoChrono::set_rotation(const Quaternion& rotation) {
@@ -470,6 +540,11 @@ Vector3d NodeElastoChrono::get_direction() const {
 void NodeElastoChrono::reset_loads() {
     set_force(Vector3d(0.0, 0.0, 0.0), false);
     set_torque(Vector3d(0.0, 0.0, 0.0), true);
+}
+
+void NodeElastoChrono::reset_loads_internals() {
+    chloads_internals->SetForce(chrono::Vector(0.0, 0.0, 0.0));
+    chloads_internals->SetTorque(chrono::Vector(0.0, 0.0, 0.0));
 }
 
 Vector3d NodeElastoChrono::get_force(bool is_local) const {
@@ -500,7 +575,6 @@ void NodeElastoChrono::set_torque(const Vector3d& torque, bool is_local) {
     if (is_local) {
         chobj->SetTorque(vec_iec2ch(torque));
     } else {
-        // chobj->SetTorque(chobj->TransformDirectionParentToLocal(vec2ch(torque)));
         chobj->SetTorque(vec_iec2ch(get_rotation().inverse() * torque));
     }
 }
@@ -509,8 +583,26 @@ void NodeElastoChrono::accumulate_force(const Vector3d& force, bool is_local) {
     set_force(get_force(is_local) + force, is_local);
 }
 
+void NodeElastoChrono::accumulate_force_internals(const Vector3d& force, bool is_local) {
+    // send internal force in absolute frame
+    if (is_local) {
+        chloads_internals->SetForce(chloads_internals->GetForce() + get_rotation() * force);
+    } else {
+        chloads_internals->SetForce(chloads_internals->GetForce() + force);
+    }
+}
+
 void NodeElastoChrono::accumulate_torque(const Vector3d& torque, bool is_local) {
     set_torque(get_torque(is_local) + torque, is_local);
+}
+
+void NodeElastoChrono::accumulate_torque_internals(const Vector3d& torque, bool is_local) {
+    // send internal torque in relative frame, Chrono convention
+    if (is_local) {
+        chloads_internals->SetTorque(chloads_internals->GetTorque() + vec_iec2ch(torque));
+    } else {
+        chloads_internals->SetTorque(chloads_internals->GetTorque() + vec_iec2ch(get_rotation().inverse() * torque));
+    }
 }
 
 void NodeElastoChrono::set_mass(double mass) {
@@ -666,6 +758,9 @@ void NodeElastoChrono::set_properties(const TowerReferencePointElasto& ref) {
 NodeElastoChronoD::NodeElastoChronoD(const Vector3d& position, const Vector3d& direction) {
     chobj = chrono_types::make_shared<chrono::fea::ChNodeFEAxyzD>(vec2ch(position), vec2ch(direction));
     NodeElastoChronoBase::chobj = chobj;
+
+    chloads_internals = chrono_types::make_shared<chrono::ChLoadForceTorque>(chobj);
+    chloadcontainer->Add(chloads_internals);
 }
 
 void NodeElastoChronoD::set_rotation(const Quaternion& rotation) {
@@ -686,6 +781,11 @@ Vector3d NodeElastoChronoD::get_direction() const {
 void NodeElastoChronoD::reset_loads() {
     set_force(Vector3d(0.0, 0.0, 0.0), false);
     set_torque(Vector3d(0.0, 0.0, 0.0), true);
+}
+
+void NodeElastoChronoD::reset_loads_internals() {
+    chloads_internals->SetForce(chrono::Vector(0.0, 0.0, 0.0));
+    chloads_internals->SetTorque(chrono::Vector(0.0, 0.0, 0.0));
 }
 
 Vector3d NodeElastoChronoD::get_force(bool is_local) const {
@@ -717,8 +817,21 @@ void NodeElastoChronoD::accumulate_force(const Vector3d& force, bool is_local) {
     set_force(get_force(is_local) + force, is_local);
 }
 
+void NodeElastoChronoD::accumulate_force_internals(const Vector3d& force, bool is_local) {
+    // send internal loads in absolute frame
+    if (is_local) {
+        chloads_internals->SetForce(chloads_internals->GetForce() + get_rotation() * force);
+    } else {
+        chloads_internals->SetForce(chloads_internals->GetForce() + force);
+    }
+}
+
 void NodeElastoChronoD::accumulate_torque(const Vector3d& torque, bool is_local) {
-    set_torque(get_torque(is_local) + torque, is_local);
+    // no torque on ChNodeFEAxyzD
+}
+
+void NodeElastoChronoD::accumulate_torque_internals(const Vector3d& torque, bool is_local) {
+    // no torque on ChNodeFEAxyzD
 }
 
 void NodeElastoChronoD::set_mass(double mass) {
