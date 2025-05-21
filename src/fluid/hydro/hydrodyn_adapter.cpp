@@ -50,7 +50,7 @@ void HydroDyn_C_CalcOutput_and_AddedMass(double& Time,
                                          float* NodeVel,
                                          float* NodeAcc,
                                          float* NodeFrc,
-                                         float* NodeAdm,
+                                         float** NodeAdm,
                                          float* OutputChannelValues,
                                          int& ErrStat,
                                          char* ErrMsg);
@@ -176,7 +176,7 @@ struct seahowl::hydro::HydroDynLib {
     float* NodeVel;
     float* NodeAcc;
     float* NodeFrc;
-    float* NodeAdm;
+    float** NodeAdm;
 
     int InterpOrder = 1;   // default of linear interpolation
     double Time = 0.;      // current time
@@ -203,7 +203,11 @@ void HydroDynLib::initialize_arrays(int NumNodePts) {
     NodeVel = new float[6 * NumNodePts]{0.0};
     NodeAcc = new float[6 * NumNodePts]{0.0};
     NodeFrc = new float[6 * NumNodePts]{0.0};
-    NodeAdm = new float[6 * NumNodePts]{0.0};
+
+    NodeAdm = new float*[6 * NumNodePts];
+    for (int ii = 0; ii < 6; ii++) {
+        NodeAdm[ii] = new float[6 * NumNodePts]{0.0};
+    }
 }
 
 void HydroDynLib::set_hydrodyn_infile(const std::string& name) {
@@ -253,9 +257,10 @@ void HydroDynLib::Init() {
 }
 
 void HydroDynLib::Calcul() {
-    HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat, ErrMsg);
-    // HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm
-    //                       OutputChannelValues, ErrStat, ErrMsg);
+    // HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat,
+    // ErrMsg);
+    HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm,
+                                        OutputChannelValues, ErrStat, ErrMsg);
     CheckError();
 }
 
