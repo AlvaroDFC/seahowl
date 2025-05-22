@@ -7,13 +7,13 @@ using namespace seahowl::hydro;
 
 extern "C" {
 
-void HydroDyn_C_Init(char* OutRootName,
-                     int& SeaSt_InputFilePassed,
+void HydroDyn_C_Init(int& SeaSt_InputFilePassed,
                      const char** SeaSt_InputFileString,
                      int& SeaSt_InputFileStringLength,
                      int& HD_InputFilePassed,
                      const char** HD_InputFileString,
                      int& HD_InputFileStringLength,
+                     char* OutRootName,
                      float& Gravity,
                      float& defWtrDens,
                      float& defWtrDpth,
@@ -50,7 +50,7 @@ void HydroDyn_C_CalcOutput_and_AddedMass(double& Time,
                                          float* NodeVel,
                                          float* NodeAcc,
                                          float* NodeFrc,
-                                         float** NodeAdm,
+                                         float* NodeAdm,
                                          float* OutputChannelValues,
                                          int& ErrStat,
                                          char* ErrMsg);
@@ -176,7 +176,7 @@ struct seahowl::hydro::HydroDynLib {
     float* NodeVel;
     float* NodeAcc;
     float* NodeFrc;
-    float** NodeAdm;
+    float* NodeAdm;
 
     int InterpOrder = 1;   // default of linear interpolation
     double Time = 0.;      // current time
@@ -204,10 +204,7 @@ void HydroDynLib::initialize_arrays(int NumNodePts) {
     NodeAcc = new float[6 * NumNodePts]{0.0};
     NodeFrc = new float[6 * NumNodePts]{0.0};
 
-    NodeAdm = new float*[6 * NumNodePts];
-    for (int ii = 0; ii < 6; ii++) {
-        NodeAdm[ii] = new float[6 * NumNodePts]{0.0};
-    }
+    NodeAdm = new float[6 * NumNodePts * 6 * NumNodePts]{0.0};
 }
 
 void HydroDynLib::set_hydrodyn_infile(const std::string& name) {
@@ -249,18 +246,17 @@ void HydroDynLib::Init() {
     const char* HDinputFile = HDinputFileString.c_str();
     const char* SSinputFile = SSinputFileString.c_str();
 
-    HydroDyn_C_Init(OutRootName, SeaSt_InputFilePassed, &SSinputFile, SSinputFileStringLength, HD_InputFilePassed,
-                    &HDinputFile, HDinputFileStringLength, gravity, defWtrDens, defWtrDpth, defMSL2SWL,
+    HydroDyn_C_Init(SeaSt_InputFilePassed, &SSinputFile, SSinputFileStringLength, HD_InputFilePassed, &HDinputFile,
+                    HDinputFileStringLength, OutRootName, gravity, defWtrDens, defWtrDpth, defMSL2SWL,
                     PtfmRefPtPositionX, PtfmRefPtPositionY, NumNodePts, NodePos, InterpOrder, Time, DT, TMax,
                     NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
     CheckError();
 }
 
 void HydroDynLib::Calcul() {
-    // HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat,
-    // ErrMsg);
-    HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm,
-                                        OutputChannelValues, ErrStat, ErrMsg);
+    HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat, ErrMsg);
+    // HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm,
+    //                                     OutputChannelValues, ErrStat, ErrMsg);
     CheckError();
 }
 
