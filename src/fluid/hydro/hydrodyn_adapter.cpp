@@ -48,7 +48,6 @@ void HydroDyn_C_CalcOutput_and_AddedMass(double& Time,
                                          int& NumNodePts,
                                          float* NodePos,
                                          float* NodeVel,
-                                         float* NodeAcc,
                                          float* NodeFrc,
                                          float* NodeAdm,
                                          float* OutputChannelValues,
@@ -254,9 +253,10 @@ void HydroDynLib::Init() {
 }
 
 void HydroDynLib::Calcul() {
-    HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat, ErrMsg);
-    // HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm,
-    //                                     OutputChannelValues, ErrStat, ErrMsg);
+    // HydroDyn_C_CalcOutput(Time, NumNodePts, NodePos, NodeVel, NodeAcc, NodeFrc, OutputChannelValues, ErrStat,
+    // ErrMsg);
+    HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeFrc, NodeAdm, OutputChannelValues,
+                                        ErrStat, ErrMsg);
     CheckError();
 }
 
