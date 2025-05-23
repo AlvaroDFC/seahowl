@@ -1142,6 +1142,7 @@ std::shared_ptr<seahowl::env::FluidSoilModel> get_environmental_model_from_json(
             throw std::runtime_error("InflowWind file not defined.");
         }
         auto ifw_model = std::make_shared<seahowl::env::InflowWindAdapter>(inflowwind_filepath);
+        ifw_model->density = wind_json.at("air_density").get<double>();
         wind_model_ptr = ifw_model;
         if (wind_options.contains("zmin")) {
             wind_options.at("zmin").get_to(ifw_model->zmin);

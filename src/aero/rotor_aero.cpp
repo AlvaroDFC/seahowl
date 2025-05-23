@@ -247,11 +247,6 @@ void RotorAeroBEMT::compute_fluid_loads(const FluidModel& wind_model, double tim
                     global_normal * local_velocity.y() + global_tangent * local_velocity.x();
             }
         }
-        // update loads of blade
-        for (int ii = 0; ii < blade->elements.size(); ii++) {
-            blade->loads[ii] = blade->elements[ii].get_load();
-            blade->moments[ii] = blade->elements[ii].get_moment();
-        }
     }
 }
 
