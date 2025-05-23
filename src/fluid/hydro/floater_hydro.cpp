@@ -25,3 +25,7 @@ Vector3d FloaterHydro::get_force_hydro() {
 Vector3d FloaterHydro::get_torque_hydro() {
     return torque_hydro;
 }
+
+Eigen::Matrix<double, 6, 6> FloaterHydro::get_added_mass_matrix() {
+    return added_mass_matrix;
+}

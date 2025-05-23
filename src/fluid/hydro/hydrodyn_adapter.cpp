@@ -257,6 +257,7 @@ void HydroDynLib::Calcul() {
     // ErrMsg);
     HydroDyn_C_CalcOutput_and_AddedMass(Time, NumNodePts, NodePos, NodeVel, NodeFrc, NodeAdm, OutputChannelValues,
                                         ErrStat, ErrMsg);
+
     CheckError();
 }
 
@@ -300,6 +301,7 @@ void HydroDynAdapter::initialize(double time, double dt, const std::vector<Entit
     // resize vector of hydrodyn loads and moments
     forces_hydrodyn.resize(NumNodePts);
     moments_hydrodyn.resize(NumNodePts);
+    added_mass_matrix.resize(6 * NumNodePts, 6 * NumNodePts);
 
     // update turbine variables
     update_nodes_motion(nodes);
@@ -337,14 +339,21 @@ void HydroDynAdapter::compute_loads(double time, const std::vector<EntityDynamic
     interface_hydrodyn->Update();
     interface_hydrodyn->Calcul();
 
+    int nb_nodes = interface_hydrodyn->NumNodePts;
+
     // get loads from HydroDyn
-    for (int ii = 0; ii < interface_hydrodyn->NumNodePts; ii++) {
+    for (int ii = 0; ii < nb_nodes; ii++) {
         forces_hydrodyn[ii][0] = interface_hydrodyn->NodeFrc[ii * 6 + 0];
         forces_hydrodyn[ii][1] = interface_hydrodyn->NodeFrc[ii * 6 + 1];
         forces_hydrodyn[ii][2] = interface_hydrodyn->NodeFrc[ii * 6 + 2];
         moments_hydrodyn[ii][0] = interface_hydrodyn->NodeFrc[ii * 6 + 3];
         moments_hydrodyn[ii][1] = interface_hydrodyn->NodeFrc[ii * 6 + 4];
         moments_hydrodyn[ii][2] = interface_hydrodyn->NodeFrc[ii * 6 + 5];
+    }
+
+    // get added mass matrix from HydroDyn
+    for (int jj = 0; jj < 6 * nb_nodes * 6 * nb_nodes; jj++) {
+        added_mass_matrix(jj / (6 * nb_nodes), jj % (6 * nb_nodes)) = interface_hydrodyn->NodeAdm[jj];
     }
 }
 
@@ -373,6 +382,8 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
     bodies.push_back(floater_elasto.body_main.get());
     hydrodyn->compute_loads(time, bodies);
 
+    // set floater forces and added mass (to be called from seahowl::core::Floater and passed to elasto)
     force_hydro = hydrodyn->forces_hydrodyn[0];
     torque_hydro = hydrodyn->moments_hydrodyn[0];
+    added_mass_matrix = hydrodyn->added_mass_matrix;
 }

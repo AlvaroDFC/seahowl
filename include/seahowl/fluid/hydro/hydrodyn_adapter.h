@@ -27,6 +27,7 @@ class HydroDynAdapter {
     std::unique_ptr<seahowl::hydro::HydroDynLib> interface_hydrodyn;
     std::vector<Vector3d> forces_hydrodyn;
     std::vector<Vector3d> moments_hydrodyn;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> added_mass_matrix;
 
     HydroDynAdapter();
     ~HydroDynAdapter();

@@ -35,8 +35,9 @@ void Floater::prestep(double time, double dt) {
     elasto.body_main->reset_loads_internals();
 
     // set hydro forces if any
-    elasto.body_main->accumulate_force_internals(hydro.get_force_hydro(), false);
-    elasto.body_main->accumulate_force_internals(hydro.get_torque_hydro(), false);
+    elasto.body_main->accumulate_force(hydro.get_force_hydro(), false);
+    elasto.body_main->accumulate_torque(hydro.get_torque_hydro(), false);
+    elasto.body_main->set_added_mass_matrix(hydro.get_added_mass_matrix());
 }
 
 void Floater::poststep(double time, double dt) {
