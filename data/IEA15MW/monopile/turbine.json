@@ -51,6 +51,8 @@
   "foundation": {
     "type": "monopile",
     "file": "./monopile.csv",
+    "file_hydrodyn": "IEA-15-240-RWT-Monopile_HydroDyn.dat",
+    "file_seastate": "IEA-15-240-RWT-Monopile_SeaState.dat",
     "discretization": {
       "elasto": [],
       "hydro": [45]

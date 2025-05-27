@@ -14,6 +14,8 @@ Tower::Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_p
     : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
 
 void Tower::initialize_this(double time, double dt) {
+    aero.initialize(time, dt);
+
     // mappings
     compute_mapping_aero2elasto();
     compute_mapping_elasto2aero();

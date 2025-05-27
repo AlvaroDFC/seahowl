@@ -394,23 +394,24 @@ MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath, const s
 }
 
 void MonopileHydroDyn::initialize(double time, double dt) {
-    std::vector<EntityDynamic*> nodes;
+    MonopileHydro::initialize(time, dt);
+
+    std::vector<EntityDynamic*> nodes_hd;
     for (auto& node : nodes) {
-        nodes.push_back(node);
+        nodes_hd.push_back(&node);
     }
-    hydrodyn->initialize(time, dt, nodes);
+    hydrodyn->initialize(time, dt, nodes_hd);
 }
 
 void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double time) {
-    std::vector<EntityDynamic*> nodes;
+    std::vector<EntityDynamic*> nodes_hd;
     for (auto& node : nodes) {
-        nodes.push_back(node);
+        nodes_hd.push_back(&node);
     }
-    hydrodyn->compute_loads(time, nodes);
+    hydrodyn->compute_loads(time, nodes_hd);
 
     for (int ii = 0; ii < nodes.size(); ii++) {
-        ii;
-        auto& node = dynamic_cast<seahowl::hydro::MorisonNode&>(*nodes[ii]);
+        auto& node = dynamic_cast<seahowl::hydro::MorisonNode&>(nodes[ii]);
 
         // loads
         node.load = hydrodyn->forces_hydrodyn[ii];
