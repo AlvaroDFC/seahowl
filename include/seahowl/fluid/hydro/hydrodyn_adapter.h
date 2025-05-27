@@ -3,7 +3,7 @@
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/floater_elasto.h"  // TODO: create main body for floater hydro
 #include "seahowl/fluid/hydro/floater_hydro.h"
-// #include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/hydro/monopile_hydro.h"
 
 namespace seahowl {
 
@@ -44,7 +44,7 @@ class HydroDynAdapter {
 /**
  * @brief Class for floater hydrodynamics with HydroDyn.
  *
- * Only works for floaters with a single body (or with ).
+ * Only works for floaters with a single hydro body.
  */
 class FloaterHydroDyn : public FloaterHydro {
   public:
@@ -52,7 +52,7 @@ class FloaterHydroDyn : public FloaterHydro {
                     const std::string& seastate_filepath,
                     elasto::FloaterElasto& floater_elasto);
 
-    void compute_env_loads(const env::EnvModel& env_model, double time);
+    void compute_env_loads(const env::EnvModel& env_model, double time) override;
 
     void initialize(double time, double dt) override;
 
@@ -62,6 +62,22 @@ class FloaterHydroDyn : public FloaterHydro {
 
     /** @brief reference to elasto floater where information is extracted */
     elasto::FloaterElasto& floater_elasto;
+};
+
+/**
+ * @brief Class for monopile hydrodynamics with HydroDyn.
+ */
+class MonopileHydroDyn : public MonopileHydro {
+  public:
+    MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath);
+
+    void compute_env_loads(const env::EnvModel& env_model, double time) override;
+
+    void initialize(double time, double dt) override;
+
+  private:
+    /** @brief HydroDyn adapter. */
+    std::unique_ptr<seahowl::hydro::HydroDynAdapter> hydrodyn;
 };
 
 }  // namespace hydro

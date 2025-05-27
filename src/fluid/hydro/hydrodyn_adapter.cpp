@@ -387,3 +387,40 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
     torque_hydro = hydrodyn->moments_hydrodyn[0];
     added_mass_matrix = hydrodyn->added_mass_matrix;
 }
+
+MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath) {
+    hydrodyn = std::make_unique<HydroDynAdapter>();
+    hydrodyn->set_infiles(hydrodyn_filepath, seastate_filepath);
+}
+
+void MonopileHydroDyn::initialize(double time, double dt) {
+    std::vector<EntityDynamic*> nodes;
+    for (auto& node : nodes) {
+        nodes.push_back(node);
+    }
+    hydrodyn->initialize(time, dt, nodes);
+}
+
+void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double time) {
+    std::vector<EntityDynamic*> nodes;
+    for (auto& node : nodes) {
+        nodes.push_back(node);
+    }
+    hydrodyn->compute_loads(time, nodes);
+
+    for (int ii = 0; ii < nodes.size(); ii++) {
+        ii;
+        auto& node = dynamic_cast<seahowl::hydro::MorisonNode&>(*nodes[ii]);
+
+        // loads
+        node.load = hydrodyn->forces_hydrodyn[ii];
+        node.load_noacc = hydrodyn->forces_hydrodyn[ii];
+
+        // added mass matrix
+        for (int jj = 0; jj < 6; jj++) {
+            for (int kk = 0; kk < 6; kk++) {
+                node.added_mass_matrix(jj, kk) = hydrodyn->added_mass_matrix(jj + ii * 6, kk + ii * 6);
+            }
+        }
+    }
+}
