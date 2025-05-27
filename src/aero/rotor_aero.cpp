@@ -5,13 +5,12 @@
 #include "seahowl/aero/airfoil.h"
 #include "seahowl/aero/bemt.h"
 #include "seahowl/commons/utils.h"
-#include "seahowl/env/wind_models.h"
 
 #include <cmath>
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::aero;
-using seahowl::env::FluidModel;
+using seahowl::env::EnvModel;
 using seahowl::Vector3d;
 using seahowl::Vector2d;
 using seahowl::PI;
@@ -51,13 +50,13 @@ seahowl::Vector2d DiskCoefficients::get_disk_coefficients_from_table(double TSR,
     return results;
 }
 
-void RotorAero::compute_disk_averaged_wind_velocity(const FluidModel& fluid_model, double time) {
-    disk_averaged_wind_velocity = fluid_model.get_fluid_velocity(body_hub.get_position(), time);
+void RotorAero::compute_disk_averaged_wind_velocity(const EnvModel& env_model, double time) {
+    disk_averaged_wind_velocity = env_model.fluid_models.get_velocity(body_hub.get_position(), time);
     size_t npoints = 1;
     for (auto& blade : blades) {
         for (auto& node : blade->nodes) {
             node.get_position();
-            disk_averaged_wind_velocity += fluid_model.get_fluid_velocity(node.get_position(), time);
+            disk_averaged_wind_velocity += env_model.fluid_models.get_velocity(node.get_position(), time);
             npoints += 1;
         }
     }
@@ -66,9 +65,9 @@ void RotorAero::compute_disk_averaged_wind_velocity(const FluidModel& fluid_mode
 
 RotorNacelleAssemblyAero::RotorNacelleAssemblyAero() {}
 
-void RotorNacelleAssemblyAero::compute_fluid_loads(const FluidModel& wind_model, double time) {
+void RotorNacelleAssemblyAero::compute_env_loads(const EnvModel& wind_model, double time) {
     rotor->compute_disk_averaged_wind_velocity(wind_model, time);
-    rotor->compute_fluid_loads(wind_model, time);
+    rotor->compute_env_loads(wind_model, time);
 }
 
 void RotorNacelleAssemblyAero::build() {
@@ -132,7 +131,7 @@ void RotorAeroBEMT::compute_radii_distances_solidity() {
     }
 }
 
-void RotorAeroBEMT::compute_fluid_loads(const FluidModel& wind_model, double time) {
+void RotorAeroBEMT::compute_env_loads(const EnvModel& env_model, double time) {
     compute_radii_distances_solidity();
 
     auto hub_position = body_hub.get_position();
@@ -167,9 +166,9 @@ void RotorAeroBEMT::compute_fluid_loads(const FluidModel& wind_model, double tim
             auto node_axis = node_rotation * Vector3d(0.0, 0.0, 1.0);
 
             // fluid density
-            double density = wind_model.get_fluid_density(node_position, time);
+            double density = env_model.fluid_models.get_density(node_position, time);
             // fluid velocity
-            auto wind_velocity = wind_model.get_fluid_velocity(node_position, time);
+            auto wind_velocity = env_model.fluid_models.get_velocity(node_position, time);
             // correct wind velocity with tower shadow (if activated)
             if (has_tower_shadow) {
                 if (blade_azimuth > PI / 2.0 || blade_azimuth < -PI / 2.0) {
@@ -261,10 +260,10 @@ void RotorAeroDisk::initialize() {
     }
 }
 
-void RotorAeroDisk::compute_fluid_loads(const FluidModel& wind_model, double time) {
+void RotorAeroDisk::compute_env_loads(const EnvModel& env_model, double time) {
     auto pos_hub = body_hub.get_position();
     auto vel_hub = body_hub.get_velocity();
-    double density = wind_model.get_fluid_density(pos_hub, time);
+    double density = env_model.fluid_models.get_density(pos_hub, time);
 
     auto global_velocity = Vector3d(disk_averaged_wind_velocity - vel_hub);
     // project in disc frame

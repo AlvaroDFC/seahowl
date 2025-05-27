@@ -314,18 +314,24 @@ source_group(hydro FILES ${SEAHOWL_HYDRO_SOURCES} ${SEAHOWL_HYDRO_HEADERS})
 
 # env
 set(SEAHOWL_ENV_SOURCES
+    src/env/env_model.cpp
+    src/env/fluid_list_model.cpp
+    src/env/soil_list_model.cpp
     src/env/fluid_models.cpp
     src/env/wind_models.cpp
     src/env/wave_models.cpp
     src/env/soil_models.cpp
-    src/env/combined_models.cpp
 )
 set(SEAHOWL_ENV_HEADERS
+    include/seahowl/env/model.h
+    include/seahowl/env/list_model.h
+    include/seahowl/env/fluid_list_model.h
+    include/seahowl/env/soil_list_model.h
+    include/seahowl/env/env_model.h
     include/seahowl/env/fluid_models.h
     include/seahowl/env/wind_models.h
     include/seahowl/env/wave_models.h
     include/seahowl/env/soil_models.h
-    include/seahowl/env/combined_models.h
 )
 if (SEAHOWL_ENABLE_INFLOWWIND)
     list(APPEND SEAHOWL_ENV_SOURCES src/env/inflowwind_adapter.cpp)
@@ -581,7 +587,7 @@ if (SEAHOWL_ENABLE_PYTHON)
             message(FATAL_ERROR "Failed to create virtual environment")
         endif()
 
-        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit")
+        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit numpy")
         set(CMD_PRECOMMIT "pre-commit install")
 
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

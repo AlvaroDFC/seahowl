@@ -52,23 +52,15 @@ WaveModelHydroChrono::WaveModelHydroChrono() {
     waves = std::make_shared<NoWave>();
 }
 
-seahowl::Vector3d WaveModelHydroChrono::get_fluid_velocity_this(const Vector3d& position, double time) const {
-    if (is_in_water(position, time)) {
-        return waves->GetVelocity(position, time);
-    } else {
-        throw std::runtime_error("Cannot retrieve water velocity above mean water level.");
-    }
+seahowl::Vector3d WaveModelHydroChrono::get_velocity_this(const Vector3d& position, double time) const {
+    return waves->GetVelocity(position, time);
 }
 
-seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector3d& position, double time) const {
-    if (is_in_water(position, time)) {
-        return waves->GetAcceleration(position, time);
-    } else {
-        throw std::runtime_error("Cannot retrieve water acceleration above mean water level.");
-    }
+seahowl::Vector3d WaveModelHydroChrono::get_acceleration_this(const Vector3d& position, double time) const {
+    return waves->GetAcceleration(position, time);
 }
 
-double WaveModelHydroChrono::get_fluid_density(const Vector3d& position, double time) const {
+double WaveModelHydroChrono::get_density_this(const Vector3d& position, double time) const {
     return density;
 }
 
