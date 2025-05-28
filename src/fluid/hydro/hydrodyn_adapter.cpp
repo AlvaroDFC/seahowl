@@ -299,9 +299,9 @@ void HydroDynAdapter::initialize(double time, double dt, const std::vector<Entit
     interface_hydrodyn->initialize_arrays(NumNodePts);
 
     // resize vector of hydrodyn loads and moments
-    forces_hydrodyn.resize(NumNodePts);
-    moments_hydrodyn.resize(NumNodePts);
-    added_mass_matrix.resize(6 * NumNodePts, 6 * NumNodePts);
+    forces_hydrodyn.resize(NumNodePts, Vector3d(0.0, 0.0, 0.0));
+    moments_hydrodyn.resize(NumNodePts, Vector3d(0.0, 0.0, 0.0));
+    added_mass_matrix.setZero(6 * NumNodePts, 6 * NumNodePts);
 
     // update turbine variables
     update_nodes_motion(nodes);
@@ -317,9 +317,9 @@ void HydroDynAdapter::update_nodes_motion(const std::vector<EntityDynamic*>& nod
         auto node_pos = node.get_position();
         auto node_rot = node.get_rpy_angles();
         auto node_vel = node.get_velocity();
-        auto node_rotvel = node.get_rotational_velocity();
+        auto node_rotvel = node.get_rotational_velocity(false);  // in global frame
         auto node_acc = node.get_acceleration();
-        auto node_rotacc = node.get_rotational_acceleration();
+        auto node_rotacc = node.get_rotational_acceleration(false);  // in global frame
 
         for (int j = 0; j < 3; j++) {
             int ii = i * 6 + j;
