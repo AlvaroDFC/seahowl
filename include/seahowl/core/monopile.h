@@ -24,8 +24,13 @@ class Monopile : public Tower, public virtual Foundation {
      * @param[in] elasto Elastodynamic tower model.
      * @param[in] aero Aerodynamic tower model.
      */
-    Monopile(seahowl::elasto::MonopileElasto& elasto, seahowl::hydro::MonopileHydro& hydro)
-        : Tower(elasto, hydro), elasto(elasto), hydro(hydro){};
+    Monopile(std::shared_ptr<seahowl::elasto::MonopileElasto> elasto,
+             std::shared_ptr<seahowl::hydro::MonopileHydro> hydro)
+        : Foundation(elasto, hydro),
+          ComponentDynamic(elasto, hydro),
+          Tower(elasto, hydro),
+          elasto(*elasto),
+          hydro(*hydro){};
 };
 
 }  // namespace core

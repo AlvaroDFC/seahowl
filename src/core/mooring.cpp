@@ -10,7 +10,8 @@ using namespace seahowl::core;
 using namespace seahowl::elasto;
 using namespace seahowl::hydro;
 
-Mooring::Mooring(MooringElastoFEA& elasto, MooringHydro& hydro) : elasto(elasto), hydro(hydro) {}
+Mooring::Mooring(std::shared_ptr<MooringElastoFEA> elasto, std::shared_ptr<MooringHydro> hydro)
+    : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {}
 
 void Mooring::set_length(double length) {
     elasto.set_length(length);
@@ -133,8 +134,9 @@ void Mooring::update_loads_elasto() {
     }
 }
 
-MooringSystem::MooringSystem(seahowl::elasto::MooringSystemElasto& elasto, seahowl::hydro::MooringSystemHydro& hydro)
-    : elasto(elasto), hydro(hydro) {}
+MooringSystem::MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
+                             std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro)
+    : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {}
 
 void MooringSystem::add_mooring(std::shared_ptr<Mooring> mooring) {
     moorings.push_back(mooring);
