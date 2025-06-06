@@ -77,10 +77,6 @@ seahowl::Vector3d WaveModelHydroChrono::get_fluid_acceleration_this(const Vector
 }
 
 double WaveModelHydroChrono::get_fluid_density(const Vector3d& position, double time) const {
-    if (position.dot(surface_normal) < -waves->water_depth_ + 1e-6) {
-        // return 0.0 if below soil level
-        return 0.0;
-    }
     return density;
 }
 
