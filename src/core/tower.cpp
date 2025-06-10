@@ -96,17 +96,36 @@ void Tower::update_positions_aero() {
 
 void Tower::update_loads_elasto() {
     elasto.reset_loads();
-    if (aero.elements.size() != mapping_aero2elasto_elements.size()) {
-        throw std::runtime_error("Tower: length of vector of elements (" + std::to_string(aero.elements.size()) +
-                                 " and length of aero to elasto mapping(" +
-                                 std::to_string(mapping_aero2elasto_elements.size()) + ") do not match.");
-    }
-    auto offset = Vector3d(0.0, 0.0, 0.0);
-    for (int ii = 0; ii < aero.elements.size(); ii++) {
-        elasto.accumulate_element_load(aero.elements[ii].get_load_noacc(), Vector3d(0.0, 0.0, 0.0),
-                                       mapping_aero2elasto_elements[ii].index, mapping_aero2elasto_elements[ii].eta,
-                                       offset);
-        elasto.accumulate_mass_matrix(aero.elements[ii].get_added_mass_matrix(), mapping_aero2elasto_elements[ii].index,
-                                      mapping_aero2elasto_elements[ii].eta);
+    if (aero.has_nodal_distributed_loads) {
+        // loads at nodes are distributed loads
+        // get integrated loads at center of element
+        if (aero.elements.size() != mapping_aero2elasto_elements.size()) {
+            throw std::runtime_error("Tower: length of vector of elements (" + std::to_string(aero.elements.size()) +
+                                     " and length of aero to elasto mapping(" +
+                                     std::to_string(mapping_aero2elasto_elements.size()) + ") do not match.");
+        }
+        auto offset = Vector3d(0.0, 0.0, 0.0);
+        for (int ii = 0; ii < aero.elements.size(); ii++) {
+            elasto.accumulate_element_load(aero.elements[ii].get_load_noacc(), Vector3d(0.0, 0.0, 0.0),
+                                           mapping_aero2elasto_elements[ii].index, mapping_aero2elasto_elements[ii].eta,
+                                           offset);
+            elasto.accumulate_mass_matrix(aero.elements[ii].get_added_mass_matrix(),
+                                          mapping_aero2elasto_elements[ii].index, mapping_aero2elasto_elements[ii].eta);
+        }
+    } else {
+        // loads at nodes are point loads
+        if (aero.nodes.size() != mapping_aero2elasto_nodes.size()) {
+            throw std::runtime_error("Tower: length of vector of nodes (" + std::to_string(aero.nodes.size()) +
+                                     " and length of aero to elasto mapping(" +
+                                     std::to_string(mapping_aero2elasto_nodes.size()) + ") do not match.");
+        }
+        auto offset = Vector3d(0.0, 0.0, 0.0);
+        for (int ii = 0; ii < aero.nodes.size(); ii++) {
+            elasto.accumulate_element_load(aero.nodes[ii].load_noacc, Vector3d(0.0, 0.0, 0.0),
+                                           mapping_aero2elasto_nodes[ii].index, mapping_aero2elasto_nodes[ii].eta,
+                                           offset);
+            elasto.accumulate_mass_matrix(aero.nodes[ii].added_mass_matrix, mapping_aero2elasto_nodes[ii].index,
+                                          mapping_aero2elasto_nodes[ii].eta);
+        }
     }
 }

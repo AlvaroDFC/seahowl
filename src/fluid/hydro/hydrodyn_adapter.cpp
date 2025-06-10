@@ -391,6 +391,7 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
 MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath) {
     hydrodyn = std::make_unique<HydroDynAdapter>();
     hydrodyn->set_infiles(hydrodyn_filepath, seastate_filepath);
+    has_nodal_distributed_loads = false;
 }
 
 void MonopileHydroDyn::initialize(double time, double dt) {
@@ -404,6 +405,7 @@ void MonopileHydroDyn::initialize(double time, double dt) {
 }
 
 void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double time) {
+    // call HydroDyn
     std::vector<EntityDynamic*> nodes_hd;
     for (auto& node : nodes) {
         nodes_hd.push_back(&node);
@@ -418,9 +420,9 @@ void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double 
         node.load_noacc = hydrodyn->forces_hydrodyn[ii];
 
         // added mass matrix
-        for (int jj = 0; jj < 6; jj++) {
-            for (int kk = 0; kk < 6; kk++) {
-                node.added_mass_matrix(jj, kk) = hydrodyn->added_mass_matrix(jj + ii * 6, kk + ii * 6);
+        for (int row = 0; row < 6; row++) {
+            for (int col = 0; col < 6; col++) {
+                node.added_mass_matrix(row, col) = hydrodyn->added_mass_matrix(row + ii * 6, col + ii * 6);
             }
         }
     }

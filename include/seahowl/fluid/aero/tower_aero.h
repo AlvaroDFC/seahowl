@@ -35,6 +35,8 @@ class TowerAero : public virtual ComponentFluid {
     std::vector<hydro::MorisonNode> nodes;
     /** @brief Aero elements. */
     std::vector<hydro::MorisonElement> elements;
+    /** @brief Whether nodal loads are distributed or point loads. */
+    bool has_nodal_distributed_loads = true;
     /** @brief MacCamy and Fuchs Correction for large cylinders, Flag. */
     bool use_MacCamyFuchs_correction = false;
     /** @brief Cd Correction for large cylinders, Flag. */
