@@ -386,6 +386,16 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
     force_hydro = hydrodyn->forces_hydrodyn[0];
     torque_hydro = hydrodyn->moments_hydrodyn[0];
     added_mass_matrix = hydrodyn->added_mass_matrix;
+
+    auto& body = bodies[0];
+
+    // express added mass matrix from global to local
+    Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
+    Eigen::Matrix<double, 3, 3> rot33(body->get_rotation_matrix());
+    Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
+    rot66.block<3, 3>(0, 0) = rot33.block(0, 0, 3, 3);
+    rot66.block<3, 3>(3, 3) = rot33.block(0, 0, 3, 3);
+    added_mass_matrix = rot66.inverse() * added_mass_matrix;
 }
 
 MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath) {
@@ -425,5 +435,14 @@ void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double 
                 node.added_mass_matrix(row, col) = hydrodyn->added_mass_matrix(row + ii * 6, col + ii * 6);
             }
         }
+
+        // express added mass matrix from global to local
+        Eigen::Matrix<double, 6, 6> rot66 = Eigen::Matrix<double, 6, 6>::Zero();
+        Eigen::Matrix<double, 3, 3> rot33(node.get_rotation_matrix());
+        Eigen::Matrix<double, 3, 3> rotI = Eigen::Matrix<double, 3, 3>::Identity();
+        rot66.block<3, 3>(0, 0) = rot33.block(0, 0, 3, 3);
+        rot66.block<3, 3>(3, 3) = rot33.block(0, 0, 3, 3);
+
+        node.added_mass_matrix = rot66.inverse() * node.added_mass_matrix;
     }
 }
