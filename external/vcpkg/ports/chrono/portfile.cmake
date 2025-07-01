@@ -12,6 +12,7 @@ else()
     set(IRRLICHT_INSTALL_DIR "${_VCPKG_INSTALLED_DIR}/${TARGET_TRIPLET}")
 endif()
 
+vcpkg_check_linkage(ONLY_STATIC_LIBRARY)
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
@@ -41,3 +42,8 @@ vcpkg_cmake_install()
 file(MAKE_DIRECTORY "${CURRENT_PACKAGES_DIR}/debug/share/chrono")
 
 vcpkg_cmake_config_fixup()
+
+if(VCPKG_TARGET_IS_WINDOWS)
+    file(APPEND "${CURRENT_PACKAGES_DIR}/share/${PORT}/usage"
+    "Link with system library: Ws2_32.lib\n")
+endif()
