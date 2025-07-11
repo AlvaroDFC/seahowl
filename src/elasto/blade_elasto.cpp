@@ -68,7 +68,9 @@ double BladeElasto::get_mass() const {
     return actuator_pitch->body_worker->get_mass() + actuator_pitch->body_worker->get_mass();
 }
 
-void BladeElasto::reset_bodies() {}
+void BladeElasto::reset_bodies() {
+    actuator_pitch->reset();
+}
 
 seahowl::Vector3d BladeElasto::get_blade_root_moment() const {
     return link_root->get_reaction_torque() + actuator_pitch->body_worker->get_torque(true);

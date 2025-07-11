@@ -1201,17 +1201,7 @@ class ChFunctionArray : public chrono::ChFunction {
 ActuatorRotationChrono::ActuatorRotationChrono() {
     // make actuator bodies (massless)
     body_worker = std::make_unique<BodyElastoChrono>();
-    auto body1ref = dynamic_cast<BodyElastoChrono&>(*body_worker);
-    body1ref.set_position(Vector3d(0.0, 0.0, 0.0));
-    body1ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body1ref.set_mass(0.0);
-    body1ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
     body_controller = std::make_unique<BodyElastoChrono>();
-    auto body2ref = dynamic_cast<BodyElastoChrono&>(*body_controller);
-    body2ref.set_position(Vector3d(0.0, 0.0, 0.0));
-    body2ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body2ref.set_mass(0.0);
-    body2ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
 
     // make actuator abject
     chobj = std::make_shared<chrono::ChLinkMotorRotationAngle>();
@@ -1221,7 +1211,26 @@ ActuatorRotationChrono::ActuatorRotationChrono() {
 
     // make link
     link = std::make_unique<LinkChrono>();
+
+    // set defaults
+    reset();
+
+    // unfix actuator at initialization
     set_fixed_actuator(false);
+}
+
+void ActuatorRotationChrono::reset() {
+    // body worker
+    body_worker->set_position(Vector3d(0.0, 0.0, 0.0));
+    body_worker->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body_worker->set_mass(0.0);
+    body_worker->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
+
+    // body controller
+    body_controller->set_position(Vector3d(0.0, 0.0, 0.0));
+    body_controller->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body_controller->set_mass(0.0);
+    body_controller->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
 
     // initialize with angle zero
     set_control_timeseries(std::vector<double>{0.0, 0.0}, std::vector<double>{0.0, 0.0});

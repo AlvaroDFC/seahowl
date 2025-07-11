@@ -451,6 +451,11 @@ class ActuatorRotation : public virtual Entity {
     std::unique_ptr<Link> link;
 
     /**
+     * @brief Resets actuator (bodies back to origin and control timeseries to zero).
+     */
+    virtual void reset() = 0;
+
+    /**
      * @brief Sets timeseries for actuator.
      *
      * @param[in] time_array Time array.

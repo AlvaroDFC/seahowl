@@ -338,6 +338,7 @@ class ActuatorRotationChrono : public ActuatorRotation, public LinkChronoBase {
     std::shared_ptr<chrono::ChLinkMotorRotationAngle> chobj;
 
     ActuatorRotationChrono();
+    void reset() override;
     void set_control_timeseries(const std::vector<double>& time_array,
                                 const std::vector<double>& values_array) override;
     double get_control_value(double time) const override;
