@@ -399,11 +399,27 @@ Vector3d BodyElastoChrono::get_force(bool is_local) const {
     }
 }
 
+Vector3d BodyElastoChrono::get_force_internals(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chloads_internals->GetForce());
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d BodyElastoChrono::get_torque(bool is_local) const {
     if (is_local) {
         return ch2vec(chobj->Get_accumulated_torque());
     } else {
         return get_rotation() * ch2vec(chobj->Get_accumulated_torque());
+    }
+}
+
+Vector3d BodyElastoChrono::get_torque_internals(bool is_local) const {
+    if (is_local) {
+        return ch2vec(chloads_internals->GetTorque());
+    } else {
+        return get_rotation() * ch2vec(chloads_internals->GetTorque());
     }
 }
 
@@ -555,11 +571,27 @@ Vector3d NodeElastoChrono::get_force(bool is_local) const {
     }
 }
 
+Vector3d NodeElastoChrono::get_force_internals(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chloads_internals->GetForce());
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d NodeElastoChrono::get_torque(bool is_local) const {
     if (is_local) {
         return vec_ch2iec(chobj->GetTorque());
     } else {
         return get_rotation() * vec_ch2iec(chobj->GetTorque());
+    }
+}
+
+Vector3d NodeElastoChrono::get_torque_internals(bool is_local) const {
+    if (is_local) {
+        return vec_ch2iec(chloads_internals->GetTorque());
+    } else {
+        return get_rotation() * vec_ch2iec(chloads_internals->GetTorque());
     }
 }
 
@@ -796,7 +828,20 @@ Vector3d NodeElastoChronoD::get_force(bool is_local) const {
     }
 }
 
+Vector3d NodeElastoChronoD::get_force_internals(bool is_local) const {
+    if (is_local) {
+        throw std::runtime_error("Cannot get force locally from ChNodeFEAxyzD.");
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d NodeElastoChronoD::get_torque(bool is_local) const {
+    // no torque on ChNodeFEAxyzD
+    return Vector3d(0.0, 0.0, 0.0);
+}
+
+Vector3d NodeElastoChronoD::get_torque_internals(bool is_local) const {
     // no torque on ChNodeFEAxyzD
     return Vector3d(0.0, 0.0, 0.0);
 }

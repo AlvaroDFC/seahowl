@@ -94,7 +94,9 @@ class BodyElastoChrono : public BodyElasto, public EntityDynamicChrono {
     virtual void reset_loads() override;
     virtual void reset_loads_internals() override;
     virtual Vector3d get_force(bool is_local = false) const override;
+    virtual Vector3d get_force_internals(bool is_local = false) const override;
     virtual Vector3d get_torque(bool is_local = true) const override;
+    virtual Vector3d get_torque_internals(bool is_local = false) const override;
     virtual void set_force(const Vector3d& force, bool is_local = false) override;
     virtual void set_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void accumulate_force(const Vector3d& force, bool is_local = false) override;
@@ -139,7 +141,9 @@ class NodeElastoChrono : public NodeElasto, public EntityDynamicChrono, public N
     virtual void reset_loads() override;
     virtual void reset_loads_internals() override;
     virtual Vector3d get_force(bool is_local = false) const override;
+    virtual Vector3d get_force_internals(bool is_local = false) const override;
     virtual Vector3d get_torque(bool is_local = true) const override;
+    virtual Vector3d get_torque_internals(bool is_local = false) const override;
     virtual void set_force(const Vector3d& force, bool is_local = false) override;
     virtual void set_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void accumulate_force(const Vector3d& force, bool is_local = false) override;
@@ -172,7 +176,9 @@ class NodeElastoChronoD : public NodeElasto, public NodeElastoChronoBase {
     virtual void reset_loads() override;
     virtual void reset_loads_internals() override;
     virtual Vector3d get_force(bool is_local = false) const override;
+    virtual Vector3d get_force_internals(bool is_local = false) const override;
     virtual Vector3d get_torque(bool is_local = true) const override;
+    virtual Vector3d get_torque_internals(bool is_local = false) const override;
     virtual void set_force(const Vector3d& force, bool is_local = false) override;
     virtual void set_torque(const Vector3d& torque, bool is_local = true) override;
     virtual void accumulate_force(const Vector3d& force, bool is_local = false) override;
