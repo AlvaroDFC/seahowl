@@ -399,11 +399,27 @@ Vector3d BodyElastoChrono::get_force(bool is_local) const {
     }
 }
 
+Vector3d BodyElastoChrono::get_force_internals(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chloads_internals->GetForce());
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d BodyElastoChrono::get_torque(bool is_local) const {
     if (is_local) {
         return ch2vec(chobj->Get_accumulated_torque());
     } else {
         return get_rotation() * ch2vec(chobj->Get_accumulated_torque());
+    }
+}
+
+Vector3d BodyElastoChrono::get_torque_internals(bool is_local) const {
+    if (is_local) {
+        return ch2vec(chloads_internals->GetTorque());
+    } else {
+        return get_rotation() * ch2vec(chloads_internals->GetTorque());
     }
 }
 
@@ -555,11 +571,27 @@ Vector3d NodeElastoChrono::get_force(bool is_local) const {
     }
 }
 
+Vector3d NodeElastoChrono::get_force_internals(bool is_local) const {
+    if (is_local) {
+        return get_rotation().inverse() * ch2vec(chloads_internals->GetForce());
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d NodeElastoChrono::get_torque(bool is_local) const {
     if (is_local) {
         return vec_ch2iec(chobj->GetTorque());
     } else {
         return get_rotation() * vec_ch2iec(chobj->GetTorque());
+    }
+}
+
+Vector3d NodeElastoChrono::get_torque_internals(bool is_local) const {
+    if (is_local) {
+        return vec_ch2iec(chloads_internals->GetTorque());
+    } else {
+        return get_rotation() * vec_ch2iec(chloads_internals->GetTorque());
     }
 }
 
@@ -796,7 +828,20 @@ Vector3d NodeElastoChronoD::get_force(bool is_local) const {
     }
 }
 
+Vector3d NodeElastoChronoD::get_force_internals(bool is_local) const {
+    if (is_local) {
+        throw std::runtime_error("Cannot get force locally from ChNodeFEAxyzD.");
+    } else {
+        return ch2vec(chloads_internals->GetForce());
+    }
+}
+
 Vector3d NodeElastoChronoD::get_torque(bool is_local) const {
+    // no torque on ChNodeFEAxyzD
+    return Vector3d(0.0, 0.0, 0.0);
+}
+
+Vector3d NodeElastoChronoD::get_torque_internals(bool is_local) const {
     // no torque on ChNodeFEAxyzD
     return Vector3d(0.0, 0.0, 0.0);
 }
@@ -1201,17 +1246,7 @@ class ChFunctionArray : public chrono::ChFunction {
 ActuatorRotationChrono::ActuatorRotationChrono() {
     // make actuator bodies (massless)
     body_worker = std::make_unique<BodyElastoChrono>();
-    auto body1ref = dynamic_cast<BodyElastoChrono&>(*body_worker);
-    body1ref.set_position(Vector3d(0.0, 0.0, 0.0));
-    body1ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body1ref.set_mass(0.0);
-    body1ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
     body_controller = std::make_unique<BodyElastoChrono>();
-    auto body2ref = dynamic_cast<BodyElastoChrono&>(*body_controller);
-    body2ref.set_position(Vector3d(0.0, 0.0, 0.0));
-    body2ref.set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
-    body2ref.set_mass(0.0);
-    body2ref.set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
 
     // make actuator abject
     chobj = std::make_shared<chrono::ChLinkMotorRotationAngle>();
@@ -1221,7 +1256,26 @@ ActuatorRotationChrono::ActuatorRotationChrono() {
 
     // make link
     link = std::make_unique<LinkChrono>();
+
+    // set defaults
+    reset();
+
+    // unfix actuator at initialization
     set_fixed_actuator(false);
+}
+
+void ActuatorRotationChrono::reset() {
+    // body worker
+    body_worker->set_position(Vector3d(0.0, 0.0, 0.0));
+    body_worker->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body_worker->set_mass(0.0);
+    body_worker->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
+
+    // body controller
+    body_controller->set_position(Vector3d(0.0, 0.0, 0.0));
+    body_controller->set_rotation(Quaternion(1.0, 0.0, 0.0, 0.0));
+    body_controller->set_mass(0.0);
+    body_controller->set_inertia_diagonal(Vector3d(0.0, 0.0, 0.0));
 
     // initialize with angle zero
     set_control_timeseries(std::vector<double>{0.0, 0.0}, std::vector<double>{0.0, 0.0});

@@ -65,17 +65,19 @@ void BladeElasto::translate(const Vector3d& translation_vector) const {
 
 double BladeElasto::get_mass() const {
     // adding actuator mass for consistency even if mass is supposed to be zero.
-    return actuator_pitch->body_worker->get_mass() + actuator_pitch->body_worker->get_mass();
+    return actuator_pitch->body_worker->get_mass() + actuator_pitch->body_controller->get_mass();
 }
 
-void BladeElasto::reset_bodies() {}
+void BladeElasto::reset_bodies() {
+    actuator_pitch->reset();
+}
 
 seahowl::Vector3d BladeElasto::get_blade_root_moment() const {
-    return link_root->get_reaction_torque() + actuator_pitch->body_worker->get_torque(true);
+    return link_root->get_reaction_torque() + actuator_pitch->body_worker->get_torque_total(true);
 }
 
 seahowl::Vector3d BladeElasto::get_blade_root_force() const {
-    return link_root->get_reaction_force() + actuator_pitch->body_worker->get_force(true);
+    return link_root->get_reaction_force() + actuator_pitch->body_worker->get_force_total(true);
 }
 
 void BladeElasto::update_root_constraint() {}

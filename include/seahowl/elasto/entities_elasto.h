@@ -32,11 +32,39 @@ class EntityLoadable : public virtual EntityDynamic {
     virtual Vector3d get_force(bool is_local = false) const = 0;
 
     /**
+     * @brief Returns applied internal force on entity. For internal workflow.
+     *
+     * @param[in] is_local Whether the force is returned from local or global reference frame.
+     */
+    virtual Vector3d get_force_internals(bool is_local = false) const = 0;
+
+    /**
+     * @brief Returns total applied force (internal and external) on entity.
+     *
+     * @param[in] is_local Whether the force is returned from local or global reference frame.
+     */
+    virtual Vector3d get_force_total(bool is_local = false) const;
+
+    /**
      * @brief Returns applied torque on entity.
      *
      * @param[in] is_local Whether the torque is returned from local or global reference frame.
      */
     virtual Vector3d get_torque(bool is_local = true) const = 0;
+
+    /**
+     * @brief Returns applied internal torque on entity. For internal workflow.
+     *
+     * @param[in] is_local Whether the torque is returned from local or global reference frame.
+     */
+    virtual Vector3d get_torque_internals(bool is_local = true) const = 0;
+
+    /**
+     * @brief Returns total applied torque (internal and external) on entity.
+     *
+     * @param[in] is_local Whether the torque is returned from local or global reference frame.
+     */
+    virtual Vector3d get_torque_total(bool is_local = true) const;
 
     /**
      * @brief Sets force on entity.
@@ -449,6 +477,11 @@ class ActuatorRotation : public virtual Entity {
     Quaternion reference_rotation;
     /** @brief Link for fixing the actuator in space. */
     std::unique_ptr<Link> link;
+
+    /**
+     * @brief Resets actuator (bodies back to origin and control timeseries to zero).
+     */
+    virtual void reset() = 0;
 
     /**
      * @brief Sets timeseries for actuator.
