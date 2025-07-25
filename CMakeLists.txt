@@ -461,7 +461,8 @@ if(SEAHOWL_ENABLE_IRRLICHT)
     find_package(PNG CONFIG REQUIRED)
     find_package(JPEG REQUIRED)
     find_package(BZip2 REQUIRED)
-    target_link_libraries(seahowl_core PRIVATE PNG::PNG JPEG::JPEG BZip2::BZip2)
+    find_package(Irrlicht CONFIG REQUIRED)
+    target_link_libraries(seahowl_core PRIVATE PNG::PNG JPEG::JPEG BZip2::BZip2 Irrlicht)
 endif(SEAHOWL_ENABLE_IRRLICHT)
 
 

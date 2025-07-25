@@ -203,7 +203,7 @@ make
 
 ### Core dependencies
 
-- Chrono (8.0.0): https://github.com/projectchrono/chrono
+- Chrono (9.0.1): https://github.com/projectchrono/chrono
 - nlohmann-json (v3.10.5): https://github.com/nlohmann/json
 - spdlog (v1.12.0): https://github.com/gabime/spdlog
 
@@ -214,7 +214,7 @@ make
 
 - AeroDyn (v4.0.2): https://github.com/OpenFAST/openfast
 - InflowWind (v4.0.2): https://github.com/OpenFAST/openfast
-- HydroChrono (v0.2.5): https://github.com/NREL/HydroChrono
+- HydroChrono (v0.2.6): https://github.com/NREL/HydroChrono
 
 #### Documentation
 
