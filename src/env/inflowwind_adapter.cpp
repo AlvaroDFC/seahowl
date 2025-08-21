@@ -126,10 +126,10 @@ void InflowWindLib::End() {
     CheckError();
 }
 
-InflowWindAdapter::InflowWindAdapter(std::string InflowInfile) {
+InflowWindAdapter::InflowWindAdapter(std::string inflowwind_infile_) : inflowwind_infile(inflowwind_infile_) {
     spdlog::info("Using InflowWind.");
     pImpl.reset(new InflowWindLib);
-    pImpl->SetIFWINFILE(InflowInfile);
+    pImpl->SetIFWINFILE(inflowwind_infile);
     pImpl->SetTimeStep(0.01);  // time step should not matter (not used in InflowWind)
     pImpl->Init();
 }
