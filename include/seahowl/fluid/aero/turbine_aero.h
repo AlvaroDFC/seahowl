@@ -43,6 +43,8 @@ class TurbineAero : public ComponentFluid {
      */
     TurbineAero();
 
+    void setup_environment(const env::EnvModel& env_model) override;
+
     /**
      * @brief Builds turbine.
      */

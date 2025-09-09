@@ -58,7 +58,7 @@
     "options": {
       "solver_hydro": "HydroDyn",
       "file_hydrodyn": "IEA-15-240-RWT-Monopile_HydroDyn.dat",
-      "file_seastate": "../env/env_waves_200m_seastate.dat",
+      "file_seastate": "../env/SeaState.dat",
       "use_MacCamyFuchs_correction": false,
       "use_Cd_correction": false
     }

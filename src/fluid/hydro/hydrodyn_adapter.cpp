@@ -1,4 +1,5 @@
 #include "seahowl/fluid/hydro/hydrodyn_adapter.h"
+#include "seahowl/env/seastate_adapter.h"
 #include "seahowl/elasto/floater_elasto.h"  // TODO: create main body for floater hydro
 
 #include <spdlog/spdlog.h>
@@ -282,9 +283,12 @@ HydroDynAdapter::HydroDynAdapter() {
 
 HydroDynAdapter::~HydroDynAdapter() {}
 
-void HydroDynAdapter::set_infiles(const std::string& HydroDynInfile, const std::string& SeaStateInfile) {
-    interface_hydrodyn->set_hydrodyn_infile(HydroDynInfile);
-    interface_hydrodyn->set_seastate_infile(SeaStateInfile);
+void HydroDynAdapter::set_hydrodyn_infile(const std::string& hydrodyn_infile) {
+    interface_hydrodyn->set_hydrodyn_infile(hydrodyn_infile);
+}
+
+void HydroDynAdapter::set_seastate_infile(const std::string& seastate_infile) {
+    interface_hydrodyn->set_seastate_infile(seastate_infile);
 }
 
 void HydroDynAdapter::initialize(double time, double dt, const std::vector<EntityDynamic*>& nodes) {
@@ -333,6 +337,27 @@ void HydroDynAdapter::update_nodes_motion(const std::vector<EntityDynamic*>& nod
     }
 }
 
+void HydroDynAdapter::setup_environment(const env::EnvModel& env_model) {
+    std::shared_ptr<env::SeaStateAdapter> seastate_adapter;
+    bool found_seastate_wave_model = false;
+    for (auto fluid_model : env_model.fluid_models.get_models()) {
+        if (std::shared_ptr<env::SeaStateAdapter> model =
+                std::dynamic_pointer_cast<env::SeaStateAdapter>(fluid_model)) {
+            if (!found_seastate_wave_model) {
+                found_seastate_wave_model = true;
+                seastate_adapter = model;
+            } else {
+                throw std::runtime_error("HydroDyn adapter can only handle one SeaState model at a time.");
+            }
+        }
+    }
+    if (!found_seastate_wave_model) {
+        throw std::runtime_error("HydroDyn adapter requires an SeaState model to be set up in the environment.");
+    }
+    std::string seastate_infile = seastate_adapter->get_seastate_infile();
+    set_seastate_infile(seastate_infile);
+}
+
 void HydroDynAdapter::compute_loads(double time, const std::vector<EntityDynamic*>& nodes) {
     interface_hydrodyn->set_time(time);
     update_nodes_motion(nodes);
@@ -361,12 +386,14 @@ void HydroDynAdapter::end() {
     interface_hydrodyn->End();
 }
 
-FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath,
-                                 const std::string& seastate_filepath,
-                                 elasto::FloaterElasto& floater_elasto)
+FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath, elasto::FloaterElasto& floater_elasto)
     : floater_elasto(floater_elasto) {
     hydrodyn = std::make_unique<HydroDynAdapter>();
-    hydrodyn->set_infiles(hydrodyn_filepath, seastate_filepath);
+    hydrodyn->set_hydrodyn_infile(hydrodyn_filepath);
+}
+
+void FloaterHydroDyn::setup_environment(const env::EnvModel& env_model) {
+    hydrodyn->setup_environment(env_model);
 }
 
 void FloaterHydroDyn::initialize(double time, double dt) {
@@ -398,10 +425,14 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
     added_mass_matrix = rot66.inverse() * added_mass_matrix;
 }
 
-MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath) {
+MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath) {
     hydrodyn = std::make_unique<HydroDynAdapter>();
-    hydrodyn->set_infiles(hydrodyn_filepath, seastate_filepath);
+    hydrodyn->set_hydrodyn_infile(hydrodyn_filepath);
     has_nodal_distributed_loads = false;
+}
+
+void MonopileHydroDyn::setup_environment(const env::EnvModel& env_model) {
+    hydrodyn->setup_environment(env_model);
 }
 
 void MonopileHydroDyn::initialize(double time, double dt) {

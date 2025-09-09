@@ -21,11 +21,11 @@
     "gui": true
   },
   "environment": {
-    "file": "../env/env_waves_30m.json"
+    "file": "../env/env_waves_200m_seastate.json"
   },
   "turbines": [
     {
-      "file": "./turbine.json",
+      "file": "./turbine_hydrodyn.json",
       "translation": [0, 0, 0],
       "rotation": 0
     }

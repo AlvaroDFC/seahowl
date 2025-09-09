@@ -27,6 +27,9 @@
 #ifdef HAVE_INFLOWWIND
     #include "seahowl/env/inflowwind_adapter.h"
 #endif
+#ifdef HAVE_SEASTATE
+    #include "seahowl/env/seastate_adapter.h"
+#endif
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
@@ -454,12 +457,13 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
         // create monopile
         auto monopile_hydro = std::make_shared<seahowl::hydro::MonopileHydro>();
 
-        // aero
-        monopile_hydro->reference_points = get_tower_aero_reference_points_db(foundation_db.data_tower);
-        monopile_hydro->discretization_fractions = foundation_db.discretization.hydro;
-
         if (foundation_db.options.has_value()) {
             auto& options = foundation_db.options.value();
+            if (options.solver_hydro.has_value() && options.solver_hydro.value() == "hydrodyn") {
+                // replace monopile hydro with HydroDyn type
+                monopile_hydro =
+                    std::make_shared<seahowl::hydro::MonopileHydroDyn>(options.file_hydrodyn_path.generic_string());
+            }
             if (options.use_MacCamyFuchs_correction.has_value()) {
                 monopile_hydro->use_MacCamyFuchs_correction = options.use_MacCamyFuchs_correction.value();
             }
@@ -467,6 +471,11 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
                 monopile_hydro->use_Cd_correction = options.use_Cd_correction.value();
             }
         }
+
+        // hydro
+        monopile_hydro->reference_points = get_tower_aero_reference_points_db(foundation_db.data_tower);
+        monopile_hydro->discretization_fractions = foundation_db.discretization.hydro;
+
         foundation_fluid = monopile_hydro;
 
     } else if (foundation_db.type == "floater") {
@@ -909,6 +918,19 @@ std::shared_ptr<seahowl::env::EnvModel> get_environmental_model_from_db(const En
             wave_Current_ptr->velocity_surface = sea_db.options.velocity_surface;
             wave_Current_ptr->velocity_seabed = sea_db.options.velocity_seabed;
             wave_model_ptr = std::move(wave_Current_ptr);
+        } else if (sea_db.type == "seastate") {
+            spdlog::info("Wave conditions: SeaState.");
+#ifdef HAVE_SEASTATE
+            std::string seastate_filepath;
+
+            seastate_filepath = (sea_db.options.file_seastate_path).generic_string();
+
+            auto seastate_model = std::make_unique<seahowl::env::SeaStateAdapter>(seastate_filepath);
+            wave_model_ptr = std::move(seastate_model);
+#else
+            throw std::runtime_error(
+                "SeaState module in CMAKE options should be enabled if sea type 'seastate' selected.");
+#endif
         } else {
             throw std::runtime_error(
                 "The input sea type is unknown. Please use the existing current types: still, current, HydroChrono.");

@@ -580,6 +580,8 @@ TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile) : TurbineAero(
 }
 
 void TurbineAeroDyn::setup_environment(const env::EnvModel& env_model) {
+    TurbineAero::setup_environment(env_model);
+
     std::shared_ptr<InflowWindAdapter> inflow_wind_adapter;
     bool found_inflow_wind_model = false;
     for (auto fluid_model : env_model.fluid_models.get_models()) {

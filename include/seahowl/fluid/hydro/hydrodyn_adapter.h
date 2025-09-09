@@ -32,7 +32,9 @@ class HydroDynAdapter {
     HydroDynAdapter();
     ~HydroDynAdapter();
 
-    void set_infiles(const std::string& HydroDynInfile, const std::string& SeaStateInfile);
+    void set_hydrodyn_infile(const std::string& hydrodyn_infile);
+    void set_seastate_infile(const std::string& seastate_infile);
+    void setup_environment(const env::EnvModel& env_model);
     void initialize(double time, double dt, const std::vector<EntityDynamic*>& nodes);
     void compute_loads(double time, const std::vector<EntityDynamic*>& nodes);
     void end();
@@ -48,10 +50,9 @@ class HydroDynAdapter {
  */
 class FloaterHydroDyn : public FloaterHydro {
   public:
-    FloaterHydroDyn(const std::string& hydrodyn_filepath,
-                    const std::string& seastate_filepath,
-                    elasto::FloaterElasto& floater_elasto);
+    FloaterHydroDyn(const std::string& hydrodyn_filepath, elasto::FloaterElasto& floater_elasto);
 
+    void setup_environment(const env::EnvModel& env_model) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
 
     void initialize(double time, double dt) override;
@@ -69,8 +70,9 @@ class FloaterHydroDyn : public FloaterHydro {
  */
 class MonopileHydroDyn : public MonopileHydro {
   public:
-    MonopileHydroDyn(const std::string& hydrodyn_filepath, const std::string& seastate_filepath);
+    MonopileHydroDyn(const std::string& hydrodyn_filepath);
 
+    void setup_environment(const env::EnvModel& env_model) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
 
     void initialize(double time, double dt) override;

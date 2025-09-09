@@ -180,6 +180,10 @@ struct SeaOptionDb {
     Eigen::Vector3d direction;
     double velocity_surface;
     double velocity_seabed;
+
+    // SeaState options
+    std::string file_seastate;    // relative path from input file
+    fs::path file_seastate_path;  // relative path from driver execution folder
 };
 
 /**
@@ -312,6 +316,13 @@ struct RNATurbineDb {
 struct TowerOptionsTurbineDb {
     std::optional<bool> use_MacCamyFuchs_correction;
     std::optional<bool> use_Cd_correction;
+    std::optional<std::string> solver_hydro;
+
+    // HydroDyn options
+    std::string file_hydrodyn;
+    fs::path file_hydrodyn_path;  // relative path from driver execution folder
+    std::string file_seastate;
+    fs::path file_seastate_path;  // relative path from driver execution folder
 };
 
 /**
