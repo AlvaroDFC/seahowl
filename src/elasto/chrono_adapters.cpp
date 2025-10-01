@@ -1504,6 +1504,24 @@ void SystemElastoChrono::set_gravitational_acceleration(const Vector3d& gravitat
     chobj->SetGravitationalAcceleration(gravitational_acceleration);
 }
 
+Eigen::SparseMatrix<double> SystemElastoChrono::get_mass_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetMassMatrix(mat);
+    return mat;
+}
+
+Eigen::SparseMatrix<double> SystemElastoChrono::get_stiffness_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetStiffnessMatrix(mat);
+    return mat;
+}
+
+Eigen::SparseMatrix<double> SystemElastoChrono::get_damping_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetDampingMatrix(mat);
+    return mat;
+}
+
 void SystemElastoChrono::add(BodyElasto& body) {
     auto& ref = dynamic_cast<BodyElastoChrono&>(body);
     chobj->Add(ref.chobj);
