@@ -29,7 +29,10 @@ class ComponentDynamic {
     ComponentDynamic(const std::shared_ptr<seahowl::elasto::ComponentElasto> elasto_,
                      const std::shared_ptr<seahowl::ComponentFluid> fluid_)
         : elasto_ptr(elasto_), fluid_ptr(fluid_) {}
-
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~ComponentDynamic() = default;
     /**
      * @brief Builds the component, called before initializing the simulation.
      */
@@ -74,6 +77,16 @@ class ComponentDynamic {
      * @param[in] time Time of simulation.
      */
     virtual void apply_soil_model(seahowl::env::EnvModel& env_model, double time){};
+
+    /**
+     * @brief Get elasto shared_ptr component.
+     */
+    std::shared_ptr<seahowl::elasto::ComponentElasto> get_shared_elasto() const { return elasto_ptr; }
+
+    /**
+     * @brief Get fluid shared_ptr component.
+     */
+    std::shared_ptr<seahowl::ComponentFluid> get_shared_fluid() const { return fluid_ptr; }
 
   protected:
     bool is_initialized = false;

@@ -1,7 +1,7 @@
-#include <seahowl/aero/aerodyn_adapter.h>
+#include <seahowl/fluid/aero/aerodyn_adapter.h>
 
-#include <seahowl/aero/turbine_aero.h>
-#include <seahowl/aero/blade_aero.h>
+#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/aero/blade_aero.h>
 #include <seahowl/env/fluid_models.h>
 #include <seahowl/env/inflowwind_adapter.h>
 
@@ -254,10 +254,23 @@ struct seahowl::aero::AeroDynInflowLib {
 };
 
 AeroDynInflowLib::~AeroDynInflowLib() {
-    delete[] HubPos, HubOri, HubVel, HubAcc;                        // hub
-    delete[] NacPos, NacOri, NacVel, NacAcc;                        // nacelle
-    delete[] BldRootPos, BldRootOri, BldRootVel, BldRootAcc;        // blade roots
-    delete[] MeshPos, MeshOri, MeshVel, MeshAcc, MeshPtToBladeNum;  // blades mesh
+    delete[] HubPos;
+    delete[] HubOri;
+    delete[] HubVel;
+    delete[] HubAcc;  // hub
+    delete[] NacPos;
+    delete[] NacOri;
+    delete[] NacVel;
+    delete[] NacAcc;  // nacelle
+    delete[] BldRootPos;
+    delete[] BldRootOri;
+    delete[] BldRootVel;
+    delete[] BldRootAcc;  // blade roots
+    delete[] MeshPos;
+    delete[] MeshOri;
+    delete[] MeshVel;
+    delete[] MeshAcc;
+    delete[] MeshPtToBladeNum;  // blades mesh
     delete[] OutputChannelValues;
     delete[] VTKNacDim;
     delete[] TurbOrigin;
@@ -561,8 +574,9 @@ void AeroDynAdapter::update_mesh_motion(TurbineAero& turbine) {
     }
 }
 
-TurbineAeroDyn::TurbineAeroDyn() : TurbineAero() {
+TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile) : TurbineAero() {
     rna->rotor = std::make_shared<RotorAeroDyn>(*tower);
+    aerodyn.set_aerodyn_infile(aerodyn_Infile);
 }
 
 void TurbineAeroDyn::setup_environment(const env::EnvModel& env_model) {

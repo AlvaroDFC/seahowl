@@ -1,10 +1,10 @@
 #include "fixture_components.h"
 
-#include <seahowl/hydro/morison.h>
+#include <seahowl/fluid/hydro/morison.h>
 #include <seahowl/env/wave_models.h>
 #include <seahowl/core/simulation.h>
 #ifdef HAVE_HYDROCHRONO
-    #include <seahowl/hydro/hydrochrono_adapter.h>
+    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
     #include <hydroc/hydro_forces.h>
 #endif
 
@@ -163,9 +163,7 @@ TEST_F(TestMorison, tower_morison) {
     waves_hydrochrono->Initialize();
     wave_model->waves = waves_hydrochrono;
     // env_model
-    auto env_model = std::make_shared<seahowl::env::EnvModel>();
-    env_model->add_model(wave_model);
-    simulation.system_core->env_model = env_model;
+    simulation.system_core->env_model->add_model(wave_model);
 
     // tower
     auto tower_elasto = std::make_shared<seahowl::elasto::TowerElasto>();

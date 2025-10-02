@@ -12,9 +12,9 @@
 #include <seahowl/elasto/blade_elasto.h>
 #include <seahowl/elasto/tower_elasto.h>
 #include <seahowl/elasto/rotor_elasto.h>
-#include <seahowl/aero/blade_aero.h>
-#include <seahowl/aero/tower_aero.h>
-#include <seahowl/aero/rotor_aero.h>
+#include <seahowl/fluid/aero/blade_aero.h>
+#include <seahowl/fluid/aero/tower_aero.h>
+#include <seahowl/fluid/aero/rotor_aero.h>
 #include <seahowl/io/write_csv.h>
 #include <seahowl/io/output_manager.h>
 
@@ -32,7 +32,7 @@ void initialize_pyseahowl_io(py::module& m) {
     m_io.def("populate_tower_elasto_from_file", &seahowl::io::populate_tower_elasto_from_file);
     m_io.def("populate_tower_aero_from_file", &seahowl::io::populate_tower_aero_from_file);
     m_io.def("populate_rna_from_file", &seahowl::io::populate_rna_from_file);
-    m_io.def("populate_turbine_from_file", &seahowl::io::populate_turbine_from_file);
+    m_io.def("get_turbine_from_file", &seahowl::io::get_turbine_from_file);
     m_io.def("add_turbine_to_system_from_file", &seahowl::io::add_turbine_to_system_from_file);
     m_io.def("populate_environmental_conditions_from_file", &seahowl::io::populate_environmental_conditions_from_file);
     m_io.def("get_environmental_model_from_file", &seahowl::io::get_environmental_model_from_file);

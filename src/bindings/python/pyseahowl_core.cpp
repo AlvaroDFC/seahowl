@@ -6,24 +6,24 @@
 #include <seahowl/core/simulation.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/elasto/turbine_elasto.h>
-#include <seahowl/aero/turbine_aero.h>
+#include <seahowl/fluid/aero/turbine_aero.h>
 #include <seahowl/core/rotor.h>
 #include <seahowl/core/blade.h>
 #include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/aero/blade_aero.h>
+#include <seahowl/fluid/aero/blade_aero.h>
 #include <seahowl/core/tower.h>
 #include <seahowl/elasto/tower_elasto.h>
 #include <seahowl/core/mooring.h>
 #include <seahowl/elasto/mooring_elasto.h>
-#include <seahowl/hydro/mooring_hydro.h>
+#include <seahowl/fluid/hydro/mooring_hydro.h>
 #include <seahowl/core/foundation.h>
 #include <seahowl/core/floater.h>
 #include <seahowl/core/monopile.h>
 #include <seahowl/elasto/floater_elasto.h>
-#include <seahowl/hydro/floater_hydro.h>
+#include <seahowl/fluid/hydro/floater_hydro.h>
 #include <seahowl/core/system.h>
 #include <seahowl/elasto/system_elasto.h>
-#include <seahowl/aero/system_aero.h>
+#include <seahowl/fluid/aero/system_aero.h>
 #include <seahowl/env/wind_models.h>
 #include <seahowl/env/env_model.h>
 #include <seahowl/servo/controller.h>
@@ -125,9 +125,16 @@ void initialize_pyseahowl_core(py::module& m) {
                seahowl::core::ComponentDynamic>(m_core, "RotorNacelleAssembly")
         .def(py::init<std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto>,
                       std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero>>())
-        .def_readonly("blades", &seahowl::core::RotorNacelleAssembly::blades)
+        .def_readonly("rotor", &seahowl::core::RotorNacelleAssembly::rotor)
         .def_property_readonly("elasto", [](seahowl::core::RotorNacelleAssembly& rna) { return &rna.elasto; })
         .def_property_readonly("aero", [](seahowl::core::RotorNacelleAssembly& rna) { return &rna.aero; });
+
+    py::class_<seahowl::core::Rotor, std::shared_ptr<seahowl::core::Rotor>, seahowl::core::ComponentDynamic>(m_core,
+                                                                                                             "Rotor")
+        .def(py::init<std::shared_ptr<seahowl::elasto::RotorElasto>, std::shared_ptr<seahowl::aero::RotorAero>>())
+        .def_readonly("blades", &seahowl::core::Rotor::blades)
+        .def_property_readonly("elasto", [](seahowl::core::Rotor& rotor) { return &rotor.elasto; })
+        .def_property_readonly("aero", [](seahowl::core::Rotor& rotor) { return &rotor.aero; });
 
     // core/blade.h
     py::class_<seahowl::core::Blade, std::shared_ptr<seahowl::core::Blade>, seahowl::core::ComponentDynamic>(m_core,

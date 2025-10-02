@@ -3,8 +3,8 @@
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/rotor_elasto.h"
-#include "seahowl/aero/blade_aero.h"
-#include "seahowl/aero/rotor_aero.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/fluid/aero/rotor_aero.h"
 
 #include <memory>
 #include <vector>
@@ -15,16 +15,51 @@ using namespace seahowl::core;
 using namespace seahowl::elasto;
 using namespace seahowl::aero;
 
-RotorNacelleAssembly::RotorNacelleAssembly(std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> elasto,
-                                           std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> aero)
-    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
+Rotor::Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::aero::RotorAero> aero)
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {
+    // initialize blades
+    auto it_aero = aero->blades.begin();
+    auto it_elasto = elasto->blades.begin();
+    for (; it_aero != aero->blades.end() && it_elasto != elasto->blades.end(); ++it_aero, ++it_elasto) {
+        blades.push_back(std::make_shared<Blade>(*it_elasto, *it_aero));
+    }
+}
 
-void RotorNacelleAssembly::initialize_this(double time, double dt) {
+void Rotor::initialize_this(double time, double dt) {
     for (auto& blade : blades) {
         blade->initialize(time, dt);
         // update initial azimuth of aero blade
         blade->aero.azimuth0 = blade->elasto.azimuth0;
     }
+}
+
+void Rotor::prestep(double time, double dt) {
+    // blades
+    for (auto& blade : blades) {
+        blade->prestep(time, dt);
+    }
+}
+
+void Rotor::poststep(double time, double dt) {
+    for (auto& blade : blades) {
+        blade->poststep(time, dt);
+    }
+}
+
+void Rotor::build() {
+    // build elasto
+    elasto.build();
+    // build aero
+    aero.build();
+}
+
+RotorNacelleAssembly::RotorNacelleAssembly(std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> elasto,
+                                           std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> aero)
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero), rotor(elasto->rotor, aero->rotor) {}
+
+void RotorNacelleAssembly::initialize_this(double time, double dt) {
+    rotor.initialize(time, dt);
+
     update_positions_aero();
     // initialize aero variables after updating positions
     aero.initialize();
@@ -33,10 +68,8 @@ void RotorNacelleAssembly::initialize_this(double time, double dt) {
 }
 
 void RotorNacelleAssembly::prestep(double time, double dt) {
-    // blades
-    for (auto& blade : blades) {
-        blade->prestep(time, dt);
-    }
+    // rotor
+    rotor.prestep(time, dt);
 
     // apply extra torque and thrust (if any) to hub
     elasto.rotor->body_hub->accumulate_torque_internals(Vector3d(aero.rotor->hub_torque_aero, 0, 0), true);
@@ -44,9 +77,9 @@ void RotorNacelleAssembly::prestep(double time, double dt) {
 }
 
 void RotorNacelleAssembly::poststep(double time, double dt) {
-    for (auto& blade : blades) {
-        blade->poststep(time, dt);
-    }
+    // rotor
+    rotor.poststep(time, dt);
+
     update_positions_aero();
 }
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "seahowl/commons/numerics.h"
-#include "seahowl/aero/turbine_aero.h"
-#include "seahowl/aero/rotor_aero.h"
+#include "seahowl/fluid/aero/turbine_aero.h"
+#include "seahowl/fluid/aero/rotor_aero.h"
 #include "seahowl/commons/component_fluid.h"
 
 #include <iostream>
@@ -66,7 +66,7 @@ class TurbineAeroDyn : public TurbineAero {
     /** @brief VTK save time step. */
     double WrVTK_dt;
 
-    TurbineAeroDyn();
+    TurbineAeroDyn(const std::string& aerodyn_Infile);
     void setup_environment(const env::EnvModel& env_model) override;
     void initialize(double time, double dt) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;

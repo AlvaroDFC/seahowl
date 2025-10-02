@@ -1,10 +1,10 @@
 #include "seahowl/core/system.h"
 
 #include "seahowl/elasto/system_elasto.h"
-#include "seahowl/aero/system_aero.h"
+#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/mooring_elasto.h"
 #include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/aero/turbine_aero.h"
+#include "seahowl/fluid/aero/turbine_aero.h"
 #include "seahowl/env/wind_models.h"
 #include "seahowl/env/wave_models.h"
 #include "seahowl/env/soil_models.h"
@@ -13,7 +13,7 @@
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
 #ifdef HAVE_HYDROCHRONO
-    #include "seahowl/hydro/hydrochrono_adapter.h"
+    #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 #endif
 
 #include <vector>
@@ -26,7 +26,9 @@ using namespace seahowl::core;
 using namespace seahowl::env;
 
 System::System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::aero::SystemAero> aero)
-    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero){};
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {
+    env_model = std::make_shared<seahowl::env::EnvModel>();
+};
 
 void System::build() {
     // build all turbines
@@ -238,9 +240,21 @@ void System::run_presimulation(double duration, double dt, bool fix_foundations,
 }
 
 void System::add(std::shared_ptr<Turbine> turbine) {
-    turbines.push_back(turbine);
+    if (std::find(turbines.begin(), turbines.end(), turbine) == turbines.end()) {
+        turbines.push_back(turbine);
+        aero.add(turbine->get_shared_fluid());
+        elasto.add(turbine->get_shared_elasto());
+    } else {
+        spdlog::warn("Turbine already exists in the system, not adding again.");
+    }
 }
 
 void System::add(std::shared_ptr<ComponentDynamic> component) {
-    components.push_back(component);
+    if (std::find(components.begin(), components.end(), component) == components.end()) {
+        components.push_back(component);
+        aero.add(component->get_shared_fluid());
+        elasto.add(component->get_shared_elasto());
+    } else {
+        spdlog::warn("Components already exists in the system, not adding again.");
+    }
 }

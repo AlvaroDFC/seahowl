@@ -2,8 +2,8 @@
 
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
-#include "seahowl/aero/reference_point_aero.h"
-#include "seahowl/hydro/morison.h"
+#include "seahowl/fluid/aero/reference_point_aero.h"
+#include "seahowl/fluid/hydro/morison.h"
 #include "seahowl/commons/component_fluid.h"
 
 #include <vector>
@@ -53,7 +53,7 @@ class TowerAero : public virtual ComponentFluid {
     /**
      * @brief Compute wind loads on tower using Morison's approach on cylindrical elements.
      */
-    void compute_env_loads(const env::EnvModel& env_model, double time);
+    void compute_env_loads(const env::EnvModel& env_model, double time) override;
 };
 
 }  // namespace aero
