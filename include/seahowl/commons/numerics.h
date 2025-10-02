@@ -1,6 +1,8 @@
 #pragma once
 
 #include <Eigen/Dense>
+#define EIGEN_MATRIXBASE_PLUGIN <chrono/core/ChMatrixEigenExtensions.h>
+#define EIGEN_SPARSEMATRIX_PLUGIN <chrono/core/ChSparseMatrixEigenExtensions.h>
 #include <Eigen/Sparse>
 
 namespace seahowl {
