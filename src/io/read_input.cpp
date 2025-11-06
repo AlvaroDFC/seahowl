@@ -340,7 +340,9 @@ std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> get_rna_elasto_from
     return rna_elasto;
 }
 
-std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_reference_points_db(const TowerDb& tower_db) {
+std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_reference_points_db(
+    const TowerDb& tower_db,
+    bool has_external_fill_density = false) {
     // EXTRACT INFO
     std::vector<seahowl::elasto::TowerReferencePointElasto> reference_points;
 
@@ -357,8 +359,16 @@ std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_referen
         // general properties
         // shear set to false as it leads to issues when tower is not finely discretized (wrong nat. freq.)
         // its effect is usually small enough to be neglected here
+        auto fill_density = point_db.fill_density;
+        if (has_external_fill_density && fill_density != 0.0) {
+            fill_density = 0.0;
+            spdlog::warn(
+                "Tower/monopile point at ({}, {}, {}): setting fill density to 0.0 (handled externally with e.g. "
+                "HydroDyn).",
+                reference_point.coordinates[0], reference_point.coordinates[1], reference_point.coordinates[2]);
+        }
         reference_point.set_properties_cylinder(point_db.density, point_db.young_modulus, point_db.poisson_ratio,
-                                                point_db.diameter, point_db.thickness, false, point_db.fill_density);
+                                                point_db.diameter, point_db.thickness, false, fill_density);
 
         reference_point.damping_foreaft = point_db.damping_foreaft;
         reference_point.damping_sideside = point_db.damping_sideside;
@@ -509,7 +519,16 @@ std::shared_ptr<seahowl::elasto::FoundationElasto> get_foundation_elasto_from_db
         // create monopile
         auto monopile_elasto = std::make_shared<seahowl::elasto::MonopileElasto>();
 
-        monopile_elasto->reference_points = get_tower_elasto_reference_points_db(foundation_db.data_tower);
+        bool has_external_fill_density = false;
+        if (foundation_db.options.has_value()) {
+            auto& options = foundation_db.options.value();
+            if (options.solver_hydro.has_value() && options.solver_hydro.value() == "hydrodyn") {
+                has_external_fill_density = true;
+            }
+        }
+
+        monopile_elasto->reference_points =
+            get_tower_elasto_reference_points_db(foundation_db.data_tower, has_external_fill_density);
         monopile_elasto->height = monopile_elasto->reference_points.back().coordinates.z();
         monopile_elasto->base_height = monopile_elasto->reference_points.front().coordinates.z();
         monopile_elasto->discretization_fractions = foundation_db.discretization.elasto;
