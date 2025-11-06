@@ -88,17 +88,17 @@ class SystemElasto : public ComponentElasto {
     /**
      * @brief Returns system mass matrix.
      */
-    virtual Eigen::SparseMatrix<double> get_mass_matrix() const = 0;
+    virtual Eigen::MatrixXd get_mass_matrix() const = 0;
 
     /**
      * @brief Returns system stiffness matrix.
      */
-    virtual Eigen::SparseMatrix<double> get_stiffness_matrix() const = 0;
+    virtual Eigen::MatrixXd get_stiffness_matrix() const = 0;
 
     /**
      * @brief Returns system damping matrix.
      */
-    virtual Eigen::SparseMatrix<double> get_damping_matrix() const = 0;
+    virtual Eigen::MatrixXd get_damping_matrix() const = 0;
 
     /**
      * @brief Adds body to system.
