@@ -88,7 +88,9 @@ void populate_blade_from_file(const std::string& filepath, seahowl::core::Blade&
  * @param[in] filepath Path of the file describing the tower.
  * @param[out] tower Tower to populate.
  */
-void populate_tower_elasto_from_file(const std::string& filepath, seahowl::elasto::TowerElasto& tower);
+void populate_tower_elasto_from_file(const std::string& filepath,
+                                     seahowl::elasto::TowerElasto& tower,
+                                     bool has_external_fill_density = false);
 
 /**
  * @brief Populates tower aero given a file.

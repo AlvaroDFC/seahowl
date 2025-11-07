@@ -25,7 +25,7 @@
   },
   "turbines": [
     {
-      "file": "./turbine_hydrodyn.json",
+      "file": "./turbine.json",
       "translation": [0, 0, 0],
       "rotation": 0
     }

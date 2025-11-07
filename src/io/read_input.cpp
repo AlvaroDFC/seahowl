@@ -700,7 +700,9 @@ std::shared_ptr<seahowl::core::Turbine> get_turbine_from_db(const TurbineDb& tur
     return turbine;
 }
 
-void populate_tower_elasto_from_file(const std::string& filepath, seahowl::elasto::TowerElasto& tower) {
+void populate_tower_elasto_from_file(const std::string& filepath,
+                                     seahowl::elasto::TowerElasto& tower,
+                                     bool has_external_fill_density) {
     TowerDb tower_db;
     InputHandler input_handler;
     try {
@@ -709,7 +711,7 @@ void populate_tower_elasto_from_file(const std::string& filepath, seahowl::elast
         throw std::runtime_error("Error reading in Tower file \"" + filepath + "\" -> " + std::string(e.what()));
     }
     tower_db = input_handler.reader->read_tower();
-    tower.reference_points = get_tower_elasto_reference_points_db(tower_db);
+    tower.reference_points = get_tower_elasto_reference_points_db(tower_db, has_external_fill_density);
     tower.height = tower.reference_points.back().coordinates.z();
     tower.base_height = tower.reference_points.front().coordinates.z();
 }

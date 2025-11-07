@@ -148,7 +148,7 @@ struct seahowl::hydro::HydroDynLib {
 
     // Input file string length
     int HDinputFileStringLength;
-    int SSinputFileStringLength;
+    int SSinputFileStringLength = 0;
 
     // Initial environmental conditions
     float gravity = 9.80665;   // Gravitational acceleration (m/s^2)
@@ -338,6 +338,11 @@ void HydroDynAdapter::update_nodes_motion(const std::vector<EntityDynamic*>& nod
 }
 
 void HydroDynAdapter::setup_environment(const env::EnvModel& env_model) {
+    if (interface_hydrodyn->SSinputFileStringLength > 0) {
+        spdlog::info("HydroDynAdapter: SeaState file was already passed ({}), ignoring setup from environment.",
+                     interface_hydrodyn->SSinputFileString);
+        return;
+    }
     std::shared_ptr<env::SeaStateAdapter> seastate_adapter;
     bool found_seastate_wave_model = false;
     for (auto fluid_model : env_model.fluid_models.get_models()) {
@@ -429,6 +434,10 @@ MonopileHydroDyn::MonopileHydroDyn(const std::string& hydrodyn_filepath) {
     hydrodyn = std::make_unique<HydroDynAdapter>();
     hydrodyn->set_hydrodyn_infile(hydrodyn_filepath);
     has_nodal_distributed_loads = false;
+}
+
+void MonopileHydroDyn::set_seastate_infile(const std::string& seastate_infile) {
+    hydrodyn->set_seastate_infile(seastate_infile);
 }
 
 void MonopileHydroDyn::setup_environment(const env::EnvModel& env_model) {
