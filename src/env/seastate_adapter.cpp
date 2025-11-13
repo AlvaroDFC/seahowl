@@ -31,7 +31,7 @@ void SeaSt_C_PreInit(
     int& WrVTK_in,                           // in  - Write VTK outputs [0: none, 1: init only, 2: animation]
     double& WrVTK_inDT,                      // in  - Timestep between VTK writes
     int& ErrStat_C,                          // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-    char ErrMsg_C[ERROR_MSG_LEN]);           // out - Message returned about error (empty if none)
+    char* ErrMsg_C);                         // out - Message returned about error (empty if none)
 
 void SeaSt_C_Init(char InputFile_C[PASSED_STRING_LENGTH],    // in  - SeaState input file (absolute or relative path)
                   char OutRootName_C[PASSED_STRING_LENGTH],  // in  - rootname for output summary, output, or echo files
@@ -42,25 +42,26 @@ void SeaSt_C_Init(char InputFile_C[PASSED_STRING_LENGTH],    // in  - SeaState i
                   char* OutputChannelNames_C,  // out - channel names - each channel name is CHANNEL_NAME_SIZE in length
                   char* OutputChannelUnits_C,  // out - channel units - each channel unit is CHANNEL_NAME_SIZE in length
                   int& ErrStat_C,              // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                  char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+                  char* ErrMsg_C);             // out - Message returned about error (empty if none)
 
+// NOTE: The only reason to call CalcOutput is for visualization of the sea surface
 void SeaSt_C_CalcOutput(double* Time_C,                // in  - current time (s)
                         float* OutputChannelValues_C,  // out - output channel values
-                        int* ErrStat_C,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                        char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+                        int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                        char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
-void SeaSt_C_End(int& ErrStat_C,                 // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                 char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+void SeaSt_C_End(int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                 char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
-void SeaSt_C_GetWaveFieldPointer(int* WaveFieldPointer_C,  // out - pointer to wavefield data (fotran pointer converted
-                                                           // to C pointer.  Store as int* locally)
-                                 int* ErrStat_C,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                                 char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+void SeaSt_C_GetWaveFieldPointer(void** WaveFieldPtr,  // out - pointer to wavefield data (fotran pointer converted to C
+                                                       // pointer.  Store as int* locally)
+                                 int& ErrStat_C,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                                 char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
-void SeaSt_C_SetWaveFieldPointer(int* WaveFieldPointer_C,  // in  - pointer to wavefield data - retrieved from a
-                                                           // GetWaveFieldPointer call. Stored as int* locally.
-                                 int* ErrStat_C,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                                 char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+void SeaSt_C_SetWaveFieldPointer(void* WaveFieldPtr,  // in  - pointer to wavefield data - retrieved from a
+                                                      // GetWaveFieldPointer call. Stored as int* locally.
+                                 int& ErrStat_C,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                                 char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
 // Get the fluid velocity, acceleration, and node-in-water status at time+position coordinate
 // NOTE: if wave stretching is turned off, the SWL is used as the cutoff for the nodeInWater and for Vel / Acc values
@@ -69,20 +70,27 @@ void SeaSt_C_GetFluidVelAcc(double* Time_C,      // in  - current time (s)
                             float* Vel_c[3],     // out - velocity at requested point.  (m/s)
                             float* Acc_c[3],     // out - acceleration at requested point.  (m/s^2)
                             int* NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
-                            int* ErrStat_C,      // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                            char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+                            int& ErrStat_C,      // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                            char* ErrMsg_C);     // out - Message returned about error (empty if none)
 
 void SeaSt_C_GetSurfElev(double* Time_C,   // in  - current time (s)
                          float* Pos_c[2],  // in  - position in 2D (m).
                          float* Elev_C,    // out - wave elevation relative to SWL (m)
-                         int* ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                         char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+                         int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                         char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
 void SeaSt_C_GetSurfNorm(double* Time_C,       // in  - current time (s)
                          float* Pos_c[2],      // in  - position in 2D (m)
                          float* NormVec_C[3],  // out - unit vector normal to surface (-)
-                         int* ErrStat_C,       // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                         char ErrMsg_C[ERROR_MSG_LEN]);  // out - Message returned about error (empty if none)
+                         int& ErrStat_C,       // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                         char* ErrMsg_C);      // out - Message returned about error (empty if none)
+
+// NOTE: this routine overestimates the range when 2nd order is used
+void SeaSt_C_GetElevMinMaxEstimate(
+    float& min,       // out - minimum wave elevation across entire wavefield (m)
+    float& max,       // out - maximum wave elevation across entire wavefield (m)
+    int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+    char* ErrMsg_C);  // out - Message returned about error (empty if none)
 }
 
 /**
@@ -97,33 +105,33 @@ struct seahowl::env::SeaStateLib {
     void SetTimeStep(double dt);
     void SetNumSteps(int NumSteps);
 
+    void* GetWaveFieldPointer();
+    void SetWaveFieldPointer(void* WaveFieldPtr);
+
     void Init();
-    // void Calcul(double time, float* position, float* velocity);
     void End();
 
   private:
-    // Input file string
-    std::string SSinputFileString;
-
     // Time step
-    double DT;
-
+    double DT = 0.25;  // (s) -- I don't think this is used
     // Number of time steps
-    int NumSteps;
+    int NumSteps = 2400;  // may not be used (FIXME)
 
-    // Debug level
-    int DebugLevel = 4;
-
-    // Env vars
-    // FIXME: need some way to set these
+    // Env vars (check if seastate checks these values)
     float Gravity = 9.80665;  // (m/s^2)
     float WtrDens = 1025;     // (kg/m^3)
     float WtrDpth = 200;      // (m)
     float MSL2SWL = 0;        // Offset between still-water level and mean sea level (m) [positive upward]
 
+    // Debug level
+    int DebugLevel = 4;  // FIXME: change to 0
+
     // VTK
     int WrVTK = 0;
     double WrVTK_DT = 0.25;
+
+    // Input file string
+    std::string SSinputFileString;
 
     // number of output channels
     int NumChannels = 0;
@@ -132,6 +140,10 @@ struct seahowl::env::SeaStateLib {
     float* OutputChannelValues = new float[100];
     int ErrStat = 0;
     char ErrMsg[ERROR_MSG_LEN - 1];
+
+    // Water level
+    float min_water_level = 0;  // Set during init
+    float max_water_level = 0;  // Set during init
 };
 
 SeaStateLib::~SeaStateLib() {}
@@ -162,7 +174,8 @@ void SeaStateLib::SetNumSteps(int numsteps) {
 }
 
 void SeaStateLib::Init() {
-    const char* SSinputFile = SSinputFileString.c_str();
+    char SSinputFile[PASSED_STRING_LENGTH - 1];
+    strcpy(SSinputFile, SSinputFileString.c_str());
     char OutRootName[PASSED_STRING_LENGTH - 1];
     strcpy(OutRootName, "SS");
     char OutVTKDir[PASSED_STRING_LENGTH - 1];
@@ -171,9 +184,13 @@ void SeaStateLib::Init() {
     SeaSt_C_PreInit(Gravity, WtrDens, WtrDpth, MSL2SWL, DebugLevel, OutVTKDir, WrVTK, WrVTK_DT, ErrStat, ErrMsg);
     CheckError();
 
-    // SeaSt_C_Init(&SSinputFile,OutRootName, DT, DebugLevel,
-    //            NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
-    // CheckError();
+    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat,
+                 ErrMsg);
+    CheckError();
+
+    // Simple to call here
+    SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
+    CheckError();
 }
 
 // void SeaStateLib::Calcul(double time, float* position, float* velocity) {
@@ -186,6 +203,18 @@ void SeaStateLib::End() {
     CheckError();
 }
 
+void* SeaStateLib::GetWaveFieldPointer() {
+    void* WaveFieldPtr;
+    SeaSt_C_GetWaveFieldPointer(&WaveFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+    return WaveFieldPtr;
+}
+
+void SeaStateLib::SetWaveFieldPointer(void* WaveFieldPtr) {
+    SeaSt_C_SetWaveFieldPointer(&WaveFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+}
+
 // FIXME: add way to set size and number of timesteps
 SeaStateAdapter::SeaStateAdapter(std::string SeaStateInfile) {
     spdlog::info("Using SeaState.");
@@ -193,7 +222,6 @@ SeaStateAdapter::SeaStateAdapter(std::string SeaStateInfile) {
     pImpl->SetSSINFILE(SeaStateInfile);
     pImpl->SetTimeStep(0.25);  // With number of timesteps, sets the total wave simlulation time. 0.25 typical
     pImpl->SetNumSteps(2400);  // for 600 second simulation.
-    // pImpl->Init();
 }
 
 SeaStateAdapter::~SeaStateAdapter() {}
@@ -217,3 +245,7 @@ seahowl::Vector3d SeaStateAdapter::get_velocity_this(const seahowl::Vector3d& po
 seahowl::Vector3d SeaStateAdapter::get_acceleration_this(const seahowl::Vector3d& position, double time) const {
     return seahowl::Vector3d(0.0, 0.0, 0.0);
 }
+
+// double SeaStateAdapter::get_max_water_level() const {
+//     return max_water_level;
+// }
