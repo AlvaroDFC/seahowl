@@ -24,6 +24,10 @@
 #include <spdlog/spdlog.h>
 #include <typeinfo>
 
+#define EIGEN_MATRIXBASE_PLUGIN <chrono/core/ChMatrixEigenExtensions.h>
+#define EIGEN_SPARSEMATRIX_PLUGIN <chrono/core/ChSparseMatrixEigenExtensions.h>
+#include <Eigen/Sparse>
+
 // default mass value for checking if ChBody mass was set.
 const double MASS_NOTSET_VALUE = -1.2345e-12;
 
@@ -1502,6 +1506,24 @@ Vector3d SystemElastoChrono::get_gravitational_acceleration() const {
 
 void SystemElastoChrono::set_gravitational_acceleration(const Vector3d& gravitational_acceleration) {
     chobj->SetGravitationalAcceleration(gravitational_acceleration);
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_mass_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetMassMatrix(mat);
+    return mat;
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_stiffness_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetStiffnessMatrix(mat);
+    return mat;
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_damping_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetDampingMatrix(mat);
+    return mat;
 }
 
 void SystemElastoChrono::add(BodyElasto& body) {

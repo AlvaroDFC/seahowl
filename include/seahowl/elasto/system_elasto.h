@@ -86,6 +86,21 @@ class SystemElasto : public ComponentElasto {
     virtual void set_gravitational_acceleration(const Vector3d& gravitational_acceleration) = 0;
 
     /**
+     * @brief Returns system mass matrix.
+     */
+    virtual Eigen::MatrixXd get_mass_matrix() const = 0;
+
+    /**
+     * @brief Returns system stiffness matrix.
+     */
+    virtual Eigen::MatrixXd get_stiffness_matrix() const = 0;
+
+    /**
+     * @brief Returns system damping matrix.
+     */
+    virtual Eigen::MatrixXd get_damping_matrix() const = 0;
+
+    /**
      * @brief Adds body to system.
      *
      * @param[in] body Body to add to system.

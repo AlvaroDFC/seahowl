@@ -394,6 +394,9 @@ class SystemElastoChrono : public SystemElasto {
     virtual void do_statics(bool linear, int nonlinear_steps) override;
     virtual Vector3d get_gravitational_acceleration() const override;
     virtual void set_gravitational_acceleration(const Vector3d& gravitational_acceleration) override;
+    Eigen::MatrixXd get_mass_matrix() const override;
+    Eigen::MatrixXd get_stiffness_matrix() const override;
+    Eigen::MatrixXd get_damping_matrix() const override;
     virtual void add(BodyElasto& body) override;
     virtual void add(MeshElasto& mesh) override;
     virtual void add(Link& link) override;
