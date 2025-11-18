@@ -20,9 +20,26 @@ extern "C" {
 void ADI_C_PreInit(int& NumTurbines_C,
                    int& TransposeDCM_in,
                    int& PointLoadOutput_in,
+                   float& gravity_C,
+                   float& defFldDens_C,
+                   float& defKinVisc_C,
+                   float& defSpdSound_C,
+                   float& defPatm_C,
+                   float& defPvap_C,
+                   float& WtrDpth_C,
+                   float& MSL2SWL_C,
+                   int& MHK,
+                   int& externFlowField_in,
+                   char* OutVTKDir_C,
+                   int& WrVTK_in,
+                   int& WrVTK_inType,
+                   double& WrVTK_dt,
+                   float* VTKNacDim_in,
+                   float& VTKHubRad_in,
                    int& DebugLevel_in,
                    int& ErrStat_C,
                    char* ErrMsg_C);
+
 
 void ADI_C_SetupRotor(int& iWT_c,
                       int& TurbineIsHAWT_c,
@@ -78,24 +95,10 @@ void ADI_C_Init(int& ADinputFilePassed,
                 const char** IfWinputFileString_C,
                 int& IfWinputFileStringLength_C,
                 char* OutRootName_C,
-                char* OutVTKDir_C,
-                float& gravity_C,
-                float& defFldDens_C,
-                float& defKinVisc_C,
-                float& defSpdSound_C,
-                float& defPatm_C,
-                float& defPvap_C,
-                float& WtrDpth_C,
-                float& MSL2SWL_C,
                 int& InterpOrder_C,
                 double& DT_C,
                 double& TMax_C,
                 int& storeHHVel,
-                int& WrVTK_in,
-                int& WrVTK_inType,
-                double& WrVTK_dt,
-                float* VTKNacDim_in,
-                float& VTKHubRad_in,
                 int& wrOuts_C,
                 double& DT_Outs_C,
                 int& NumChannels_C,
@@ -109,6 +112,14 @@ void ADI_C_CalcOutput(double& Time_C, float* OutputChannelValues_C, int& ErrStat
 void ADI_C_UpdateStates(double& Time_C, double& TimeNext_C, int& ErrStat_C, char* ErrMsg_C);
 
 void ADI_C_End(int& ErrStat_C, char* ErrMsg_C);
+
+void ADI_C_GetFlowFieldPointer(void** FlowFieldPtr,          // out - pointer to wavefield data (fotran pointer converted to C pointer.  Store as int* locally)
+                               int& ErrStat_C,               // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                               char* ErrMsg_C);              // out - Message returned about error (empty if none)
+
+void ADI_C_SetFlowFieldPointer(void* FlowFieldPtr,           // in  - pointer to wavefield data - retrieved from a GetFlowFieldPointer call. Stored as int* locally.
+                               int& ErrStat_C,               // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                               char* ErrMsg_C);              // out - Message returned about error (empty if none)
 }
 
 /**
@@ -135,6 +146,9 @@ struct seahowl::aero::AeroDynInflowLib {
     void Update();
     void End();
 
+    void* GetFlowFieldPointer();
+    void SetFlowFieldPointer(void* FlowFieldPtr);
+
   public:
     // aerodynamic load computed on mesh point
     float* MeshFrc;
@@ -146,6 +160,7 @@ struct seahowl::aero::AeroDynInflowLib {
     // Input file string length
     int ADinputFileStringLength;
     int IfWinputFileStringLength;
+    int externFlowField = 0;     // 0 for using IfW inside ADI c-bind, 1 to pass pointer to external IfW instance
 
     int TurbineIsHAWT = 1;
     int NumTurbines = 1;
@@ -167,7 +182,6 @@ struct seahowl::aero::AeroDynInflowLib {
     char OutVTKDir[1024];
 
     // Initial environmental conditions
-    // bool MHK = false; //MHK turbine type switch -- disabled for now
     float gravity = 9.80665;       // Gravitational acceleration (m/s^2)
     float defFldDens = 1.225;      // Air density (kg/m^3)
     float defKinVisc = 1.464E-05;  // Kinematic viscosity of working fluid (m^2/s)
@@ -197,6 +211,7 @@ struct seahowl::aero::AeroDynInflowLib {
     int storeHHVel = 0;
     float* HHVel = new float[3]{0.0};
     int TransposeDCM = 0;
+    int MHK = 0;         // marine hydro-kinetic turbine (underwater turbine)
 
     // disk averaged velocity
     float* DiskAvgVel = new float[3]{0.0};
@@ -342,17 +357,28 @@ void AeroDynInflowLib::Init() {
     const char* ADinputFile = ADinputFileString.c_str();
     const char* IfWinputFile = IfWinputFileString.c_str();
 
-    ADI_C_PreInit(NumTurbines, TransposeDCM, PointLoadOutput_in, DebugLevel_in, ErrStat, ErrMsg);
+    ADI_C_PreInit(NumTurbines, TransposeDCM, PointLoadOutput_in,
+                  gravity, defFldDens, defKinVisc, defSpdSound, defPatm, defPvap,
+                  WtrDpth, MSL2SWL, MHK, externFlowField,
+                  OutVTKDir, WrVTK, WrVTK_Type, WrVTK_dt,
+                  VTKNacDim, VTKHubRad, DebugLevel_in, ErrStat, ErrMsg);
     CheckError();
+
+    //FIXME: if using external flow field, set it here
+    //if (externFlowField == 1) {
+    //    SetFlowFieldPointer(FlowFieldPtr)
+    //    CheckError();
+    //}
 
     ADI_C_SetupRotor(iWT, TurbineIsHAWT, TurbOrigin, HubPos, HubOri, NacPos, NacOri, NumBlades, BldRootPos, BldRootOri,
                      NumMeshPts, MeshPos, MeshOri, MeshPtToBladeNum, ErrStat, ErrMsg);
     CheckError();
 
-    ADI_C_Init(ADinputFilePassed, &ADinputFile, ADinputFileStringLength, IfWinputFilePassed, &IfWinputFile,
-               IfWinputFileStringLength, OutRootName, OutVTKDir, gravity, defFldDens, defKinVisc, defSpdSound, defPatm,
-               defPvap, WtrDpth, MSL2SWL, InterpOrder, DT, TMax, storeHHVel, WrVTK, WrVTK_Type, WrVTK_dt, VTKNacDim,
-               VTKHubRad, wrOuts, DT_Outs, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
+    ADI_C_Init(ADinputFilePassed, &ADinputFile, ADinputFileStringLength,
+               IfWinputFilePassed, &IfWinputFile, IfWinputFileStringLength,
+               OutRootName, InterpOrder, DT, TMax, storeHHVel,
+               wrOuts, DT_Outs, NumChannels, OutputChannelNames, OutputChannelUnits,
+               ErrStat, ErrMsg);
     CheckError();
 }
 
@@ -380,6 +406,19 @@ void AeroDynInflowLib::End() {
     ADI_C_End(ErrStat, ErrMsg);
     CheckError();
 }
+
+void* AeroDynInflowLib::GetFlowFieldPointer() {
+    void* FlowFieldPtr;
+    ADI_C_GetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+    return FlowFieldPtr;
+}
+
+void AeroDynInflowLib::SetFlowFieldPointer(void* FlowFieldPtr) {
+    ADI_C_SetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+}
+
 
 AeroDynAdapter::AeroDynAdapter() {
     spdlog::debug("Initialising Aerodyn15 adapter");
