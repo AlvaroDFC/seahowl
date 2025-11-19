@@ -38,6 +38,7 @@ void SeaSt_C_Init(char InputFile_C[PASSED_STRING_LENGTH],    // in  - SeaState i
                                                              // (absolute or relative path)
                   int& NSteps_C,                             // in  - total number of timesteps to simulate (-)
                   double& TimeInterval_C,                    // in  - timestep (s)
+                  double& WaveTimeShift_C,                   // timeshift (s)
                   int& NumChannels_C,                        // out - number of output channels
                   char* OutputChannelNames_C,  // out - channel names - each channel name is CHANNEL_NAME_SIZE in length
                   char* OutputChannelUnits_C,  // out - channel units - each channel unit is CHANNEL_NAME_SIZE in length
@@ -73,15 +74,15 @@ void SeaSt_C_GetFluidVelAcc(double* Time_C,      // in  - current time (s)
                             int& ErrStat_C,      // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                             char* ErrMsg_C);     // out - Message returned about error (empty if none)
 
-void SeaSt_C_GetSurfElev(double* Time_C,   // in  - current time (s)
-                         float* Pos_c[2],  // in  - position in 2D (m).
+void SeaSt_C_GetSurfElev(double& Time_C,   // in  - current time (s)
+                         float* Pos_c,     // in  - position in 2D (m).
                          float* Elev_C,    // out - wave elevation relative to SWL (m)
                          int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                          char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
 void SeaSt_C_GetSurfNorm(double* Time_C,       // in  - current time (s)
-                         float* Pos_c[2],      // in  - position in 2D (m)
-                         float* NormVec_C[3],  // out - unit vector normal to surface (-)
+                         float* Pos_c,         // in  - position in 2D (m)
+                         float* NormVec_C,     // out - unit vector normal to surface (-)
                          int& ErrStat_C,       // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                          char* ErrMsg_C);      // out - Message returned about error (empty if none)
 
@@ -118,6 +119,7 @@ struct seahowl::env::SeaStateLib {
   private:
     // Time step
     double DT = 0.25;  // (s) -- I don't think this is used
+    double TShift = 0.0;   // (s) -- for phase shifting
     // Number of time steps
     int NumSteps = 2400;  // may not be used (FIXME)
 
@@ -190,7 +192,7 @@ void SeaStateLib::Init() {
     CheckError();
 
     spdlog::debug("SeaState Init");
-    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat,
+    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, TShift, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat,
                  ErrMsg);
     CheckError();
 
@@ -206,20 +208,20 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
     for (int i = 0; i < 2; i++) {
         Pos_C[i] = position[i];
     }
-    float Elev_C;
+    float* Elev_C;
     int ErrStat = 0;
     char ErrMsg[ERROR_MSG_LEN - 1];
-    SeaSt_C_GetSurfElev(&time,    // in  - current time (s)
-                        &Pos_C,   // in  - position in 2D (m).
-                        &Elev_C,  // out - wave elevation relative to SWL (m)
+    SeaSt_C_GetSurfElev(time,     // in  - current time (s)
+                        Pos_C,    // in  - position in 2D (m).
+                        Elev_C,   // out - wave elevation relative to SWL (m)
                         ErrStat,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                         ErrMsg);  // out - Message returned about error (empty if none)
     CheckError();
 
     delete[] Pos_C;
 
-    spdlog::warn("Elevation: {}", Elev_C);
-    return Elev_C;
+    spdlog::warn("Elevation: {}", *Elev_C);
+    return *Elev_C;
 };
 
 double SeaStateLib::GetFluidDensity(const seahowl::Vector3d& position, double time) {
