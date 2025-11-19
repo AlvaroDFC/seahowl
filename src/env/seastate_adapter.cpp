@@ -109,6 +109,10 @@ struct seahowl::env::SeaStateLib {
     void SetWaveFieldPointer(void* WaveFieldPtr);
 
     void Init();
+    double GetWaterLevel(const seahowl::Vector3d& position, double time);
+    double GetFluidDensity(const seahowl::Vector3d& position, double time);
+    seahowl::Vector3d GetFluidVelocity(const seahowl::Vector3d& position, double time);
+    seahowl::Vector3d GetFluidAcceleration(const seahowl::Vector3d& position, double time);
     void End();
 
   private:
@@ -181,16 +185,107 @@ void SeaStateLib::Init() {
     char OutVTKDir[PASSED_STRING_LENGTH - 1];
     strcpy(OutVTKDir, "./vtk/");  // FIXME: need some way to set this
 
+    spdlog::debug("SeaState PreInit");
     SeaSt_C_PreInit(Gravity, WtrDens, WtrDpth, MSL2SWL, DebugLevel, OutVTKDir, WrVTK, WrVTK_DT, ErrStat, ErrMsg);
     CheckError();
 
+    spdlog::debug("SeaState Init");
     SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat,
                  ErrMsg);
     CheckError();
 
     // Simple to call here
+    spdlog::debug("SeaState MinMaxEstimate");
     SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
     CheckError();
+}
+
+double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
+    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
+    float* Pos_C = new float[2];
+    for (int i = 0; i < 2; i++) {
+        Pos_C[i] = position[i];
+    }
+    float Elev_C;
+    int ErrStat = 0;
+    char ErrMsg[ERROR_MSG_LEN - 1];
+    SeaSt_C_GetSurfElev(&time,    // in  - current time (s)
+                        &Pos_C,   // in  - position in 2D (m).
+                        &Elev_C,  // out - wave elevation relative to SWL (m)
+                        ErrStat,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                        ErrMsg);  // out - Message returned about error (empty if none)
+    CheckError();
+
+    delete[] Pos_C;
+
+    spdlog::warn("Elevation: {}", Elev_C);
+    return Elev_C;
+};
+
+double SeaStateLib::GetFluidDensity(const seahowl::Vector3d& position, double time) {
+    spdlog::warn("Node position ({}, {}, {})", position.x(), position.y(), position.z());
+    spdlog::warn("  -> returning 1025.0 fluid density from SeaStateAdapter (to implement).");
+    return 1025.0;
+}
+
+seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& position, double time) {
+    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
+
+    float* Pos_C = new float[3];
+    for (int i = 0; i < 3; i++) {
+        Pos_C[i] = position[i];
+    }
+    float* Vel_C = new float[3];
+    float* Acc_C = new float[3];
+    int NodeInWater_C = 1;
+
+    SeaSt_C_GetFluidVelAcc(&time,           // in  - current time (s)
+                           &Pos_C,          // in  - position in 3D (m). Relative to SWL
+                           &Vel_C,          // out - velocity at requested point.  (m/s)
+                           &Acc_C,          // out - acceleration at requested point.  (m/s^2)
+                           &NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
+                           ErrStat,         // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                           ErrMsg);         // out - Message returned about error (empty if none)
+    CheckError();
+
+    auto velocity = seahowl::Vector3d(Vel_C[0], Vel_C[1], Vel_C[2]);
+    spdlog::debug("velocity ({}, {}, {})", velocity.x(), velocity.y(), velocity.z());
+
+    delete[] Pos_C;
+    delete[] Vel_C;
+    delete[] Acc_C;
+
+    return velocity;
+}
+
+seahowl::Vector3d SeaStateLib::GetFluidAcceleration(const seahowl::Vector3d& position, double time) {
+    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
+    float* Pos_C = new float[3];
+    for (int i = 0; i < 3; i++) {
+        Pos_C[i] = position[i];
+    }
+    float* Vel_C = new float[3];
+    float* Acc_C = new float[3];
+    int NodeInWater_C = 1;
+    int ErrStat = 0;
+    char ErrMsg[ERROR_MSG_LEN - 1];
+    SeaSt_C_GetFluidVelAcc(&time,           // in  - current time (s)
+                           &Pos_C,          // in  - position in 3D (m). Relative to SWL
+                           &Vel_C,          // out - velocity at requested point.  (m/s)
+                           &Acc_C,          // out - acceleration at requested point.  (m/s^2)
+                           &NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
+                           ErrStat,         // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                           ErrMsg);         // out - Message returned about error (empty if none)
+    CheckError();
+
+    auto acceleration = seahowl::Vector3d(Acc_C[0], Acc_C[1], Acc_C[2]);
+    spdlog::debug("acceleration ({}, {}, {})", acceleration.x(), acceleration.y(), acceleration.z());
+
+    delete[] Pos_C;
+    delete[] Vel_C;
+    delete[] Acc_C;
+
+    return acceleration;
 }
 
 // void SeaStateLib::Calcul(double time, float* position, float* velocity) {
@@ -222,28 +317,25 @@ SeaStateAdapter::SeaStateAdapter(std::string SeaStateInfile) {
     pImpl->SetSSINFILE(SeaStateInfile);
     pImpl->SetTimeStep(0.25);  // With number of timesteps, sets the total wave simlulation time. 0.25 typical
     pImpl->SetNumSteps(2400);  // for 600 second simulation.
+    pImpl->Init();
 }
 
 SeaStateAdapter::~SeaStateAdapter() {}
 
 double SeaStateAdapter::get_water_level(const Vector3d& position, double time) const {
-    spdlog::warn("Node position ({}, {}, {})", position.x(), position.y(), position.z());
-    spdlog::warn("  -> returning zero water level from SeaStateAdapter (to implement).");
-    return 0.0;
+    return pImpl->GetWaterLevel(position, time);
 };
 
 double SeaStateAdapter::get_density_this(const seahowl::Vector3d& position, double time) const {
-    spdlog::warn("Node position ({}, {}, {})", position.x(), position.y(), position.z());
-    spdlog::warn("  -> returning zero fluid density from SeaStateAdapter (to implement).");
-    return 0.0;
+    return pImpl->GetFluidDensity(position, time);
 }
 
 seahowl::Vector3d SeaStateAdapter::get_velocity_this(const seahowl::Vector3d& position, double time) const {
-    return seahowl::Vector3d(0.0, 0.0, 0.0);
+    return pImpl->GetFluidVelocity(position, time);
 }
 
 seahowl::Vector3d SeaStateAdapter::get_acceleration_this(const seahowl::Vector3d& position, double time) const {
-    return seahowl::Vector3d(0.0, 0.0, 0.0);
+    return pImpl->GetFluidAcceleration(position, time);
 }
 
 // double SeaStateAdapter::get_max_water_level() const {
