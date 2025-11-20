@@ -46,7 +46,7 @@ void SeaSt_C_Init(char InputFile_C[PASSED_STRING_LENGTH],    // in  - SeaState i
                   char* ErrMsg_C);             // out - Message returned about error (empty if none)
 
 // NOTE: The only reason to call CalcOutput is for visualization of the sea surface
-void SeaSt_C_CalcOutput(double* Time_C,                // in  - current time (s)
+void SeaSt_C_CalcOutput(double& Time_C,                // in  - current time (s)
                         float* OutputChannelValues_C,  // out - output channel values
                         int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                         char* ErrMsg_C);  // out - Message returned about error (empty if none)
@@ -66,11 +66,12 @@ void SeaSt_C_SetWaveFieldPointer(void* WaveFieldPtr,  // in  - pointer to wavefi
 
 // Get the fluid velocity, acceleration, and node-in-water status at time+position coordinate
 // NOTE: if wave stretching is turned off, the SWL is used as the cutoff for the nodeInWater and for Vel / Acc values
-void SeaSt_C_GetFluidVelAcc(double* Time_C,      // in  - current time (s)
-                            float* Pos_c[3],     // in  - position in 3D (m). Relative to SWL
-                            float* Vel_c[3],     // out - velocity at requested point.  (m/s)
-                            float* Acc_c[3],     // out - acceleration at requested point.  (m/s^2)
-                            int* NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
+// NOTE: Velocity and Accel could be split, but use same routine on Fortran backend
+void SeaSt_C_GetFluidVelAcc(double& Time_C,      // in  - current time (s)
+                            float* Pos_c,        // in  - position in 3D (m). Relative to SWL
+                            float* Vel_c,        // out - velocity at requested point.  (m/s)
+                            float* Acc_c,        // out - acceleration at requested point.  (m/s^2)
+                            int& NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
                             int& ErrStat_C,      // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                             char* ErrMsg_C);     // out - Message returned about error (empty if none)
 
@@ -80,18 +81,30 @@ void SeaSt_C_GetSurfElev(double& Time_C,   // in  - current time (s)
                          int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                          char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
-void SeaSt_C_GetSurfNorm(double* Time_C,       // in  - current time (s)
-                         float* Pos_c,         // in  - position in 2D (m)
-                         float* NormVec_C,     // out - unit vector normal to surface (-)
-                         int& ErrStat_C,       // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                         char* ErrMsg_C);      // out - Message returned about error (empty if none)
+// the following exists in the fortran library, but is not implemented in the adapter yet
+void SeaSt_C_GetSurfNorm(double& Time_C,    // in  - current time (s)
+                         float* Pos_c,      // in  - position in 2D (m)
+                         float& NormVec_C,  // out - unit vector normal to surface (-)
+                         int& ErrStat_C,    // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                         char* ErrMsg_C);   // out - Message returned about error (empty if none)
 
 // NOTE: this routine overestimates the range when 2nd order is used
-void SeaSt_C_GetElevMinMaxEstimate(
-    float& min,       // out - minimum wave elevation across entire wavefield (m)
-    float& max,       // out - maximum wave elevation across entire wavefield (m)
-    int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-    char* ErrMsg_C);  // out - Message returned about error (empty if none)
+void SeaSt_C_GetElevMinMaxEstimate(float& min,       // out - minimum wave elevation across entire wavefield (m)
+                                   float& max,       // out - maximum wave elevation across entire wavefield (m)
+                                   int& ErrStat_C,   // out
+                                   char* ErrMsg_C);  // out
+
+double SeaSt_C_GetDens(float& Density,   // out - density (kg/m^3) - constant throughout simulation
+                       int& ErrStat_C,   // out
+                       char* ErrMsg_C);  // out
+
+double SeaSt_C_GetDpth(float& Depth,     // out - water depth (m) - constant throughout simulation
+                       int& ErrStat_C,   // out
+                       char* ErrMsg_C);  // out
+
+double SeaSt_C_GetMSL2SWL(float& Density,   // out - Distance MSL to SWL (m) - constant throughout simulation
+                          int& ErrStat_C,   // out
+                          char* ErrMsg_C);  // out
 }
 
 /**
@@ -110,16 +123,19 @@ struct seahowl::env::SeaStateLib {
     void SetWaveFieldPointer(void* WaveFieldPtr);
 
     void Init();
+    void Calcul(double time);
     double GetWaterLevel(const seahowl::Vector3d& position, double time);
-    double GetFluidDensity(const seahowl::Vector3d& position, double time);
+    double GetFluidDensity();
+    double GetWaterDepth();
+    double GetWaterMSL2SWL();
     seahowl::Vector3d GetFluidVelocity(const seahowl::Vector3d& position, double time);
     seahowl::Vector3d GetFluidAcceleration(const seahowl::Vector3d& position, double time);
     void End();
 
   private:
     // Time step
-    double DT = 0.25;  // (s) -- I don't think this is used
-    double TShift = 0.0;   // (s) -- for phase shifting
+    double DT = 0.25;     // (s) -- I don't think this is used
+    double TShift = 0.0;  // (s) -- for phase shifting
     // Number of time steps
     int NumSteps = 2400;  // may not be used (FIXME)
 
@@ -192,14 +208,29 @@ void SeaStateLib::Init() {
     CheckError();
 
     spdlog::debug("SeaState Init");
-    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, TShift, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat,
-                 ErrMsg);
+    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, TShift, NumChannels, OutputChannelNames, OutputChannelUnits,
+                 ErrStat, ErrMsg);
     CheckError();
 
-    // Simple to call here
+    // get min and max wave elevations to streamline node in water checks where possible
     spdlog::debug("SeaState MinMaxEstimate");
     SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
+    spdlog::debug("Min wave elev: {}   Max wave elev: {}", min_water_level, max_water_level);
     CheckError();
+
+    /* The following was a quick and dirty check on pointer getting/setting.  It appears to work as expected.
+        // Testing pointer retrieve and setting
+        void* TmpPtr = GetWaveFieldPointer();
+        CheckError();
+        spdlog::debug("GetWaveFieldPointer pointer {}", TmpPtr);
+        // try setting pointer
+        SetWaveFieldPointer(TmpPtr);
+        CheckError();
+    */
+
+    spdlog::debug("SeaState water density: {}", GetFluidDensity());
+    spdlog::debug("SeaState water depth: {}", GetWaterDepth());
+    spdlog::debug("SeaState MSL2SWL: {}", GetWaterMSL2SWL());
 }
 
 double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
@@ -220,14 +251,29 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
 
     delete[] Pos_C;
 
-    spdlog::warn("Elevation: {}", Elev_C);
+    spdlog::debug("Elevation: {}", Elev_C);
     return Elev_C;
 };
 
-double SeaStateLib::GetFluidDensity(const seahowl::Vector3d& position, double time) {
-    spdlog::warn("Node position ({}, {}, {})", position.x(), position.y(), position.z());
-    spdlog::warn("  -> returning 1025.0 fluid density from SeaStateAdapter (to implement).");
-    return 1025.0;
+double SeaStateLib::GetFluidDensity() {
+    float Density = 0;
+    SeaSt_C_GetDens(Density, ErrStat, ErrMsg);
+    CheckError();
+    return Density;
+}
+
+double SeaStateLib::GetWaterDepth() {
+    float Depth = 0;
+    SeaSt_C_GetDpth(Depth, ErrStat, ErrMsg);
+    CheckError();
+    return Depth;
+}
+
+double SeaStateLib::GetWaterMSL2SWL() {
+    float MSL2SWL = 0;
+    SeaSt_C_GetMSL2SWL(MSL2SWL, ErrStat, ErrMsg);
+    CheckError();
+    return MSL2SWL;
 }
 
 seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& position, double time) {
@@ -241,13 +287,13 @@ seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& positio
     float* Acc_C = new float[3];
     int NodeInWater_C = 1;
 
-    SeaSt_C_GetFluidVelAcc(&time,           // in  - current time (s)
-                           &Pos_C,          // in  - position in 3D (m). Relative to SWL
-                           &Vel_C,          // out - velocity at requested point.  (m/s)
-                           &Acc_C,          // out - acceleration at requested point.  (m/s^2)
-                           &NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
-                           ErrStat,         // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                           ErrMsg);         // out - Message returned about error (empty if none)
+    SeaSt_C_GetFluidVelAcc(time,           // in  - current time (s)
+                           Pos_C,          // in  - position in 3D (m). Relative to SWL
+                           Vel_C,          // out - velocity at requested point.  (m/s)
+                           Acc_C,          // out - acceleration at requested point.  (m/s^2)
+                           NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
+                           ErrStat,        // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                           ErrMsg);        // out - Message returned about error (empty if none)
     CheckError();
 
     auto velocity = seahowl::Vector3d(Vel_C[0], Vel_C[1], Vel_C[2]);
@@ -271,13 +317,13 @@ seahowl::Vector3d SeaStateLib::GetFluidAcceleration(const seahowl::Vector3d& pos
     int NodeInWater_C = 1;
     int ErrStat = 0;
     char ErrMsg[ERROR_MSG_LEN - 1];
-    SeaSt_C_GetFluidVelAcc(&time,           // in  - current time (s)
-                           &Pos_C,          // in  - position in 3D (m). Relative to SWL
-                           &Vel_C,          // out - velocity at requested point.  (m/s)
-                           &Acc_C,          // out - acceleration at requested point.  (m/s^2)
-                           &NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
-                           ErrStat,         // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
-                           ErrMsg);         // out - Message returned about error (empty if none)
+    SeaSt_C_GetFluidVelAcc(time,           // in  - current time (s)
+                           Pos_C,          // in  - position in 3D (m). Relative to SWL
+                           Vel_C,          // out - velocity at requested point.  (m/s)
+                           Acc_C,          // out - acceleration at requested point.  (m/s^2)
+                           NodeInWater_C,  // out - node is in or out of water (0: out of water, 1: in water)
+                           ErrStat,        // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                           ErrMsg);        // out - Message returned about error (empty if none)
     CheckError();
 
     auto acceleration = seahowl::Vector3d(Acc_C[0], Acc_C[1], Acc_C[2]);
@@ -290,10 +336,11 @@ seahowl::Vector3d SeaStateLib::GetFluidAcceleration(const seahowl::Vector3d& pos
     return acceleration;
 }
 
-// void SeaStateLib::Calcul(double time, float* position, float* velocity) {
-//     SeaSt_C_CalcOutput(time, OutputChannelValues, ErrStat, ErrMsg);
-//     CheckError();
-// }
+// NOTE: this only needs to be used if VTK outputs are requested.
+void SeaStateLib::Calcul(double time) {
+    SeaSt_C_CalcOutput(time, OutputChannelValues, ErrStat, ErrMsg);
+    CheckError();
+}
 
 void SeaStateLib::End() {
     SeaSt_C_End(ErrStat, ErrMsg);
@@ -310,6 +357,10 @@ void* SeaStateLib::GetWaveFieldPointer() {
 void SeaStateLib::SetWaveFieldPointer(void* WaveFieldPtr) {
     SeaSt_C_SetWaveFieldPointer(&WaveFieldPtr, ErrStat, ErrMsg);
     CheckError();
+
+    SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
+    CheckError();
+    spdlog::debug("Min wave elev: {}   Max wave elev: {}", min_water_level, max_water_level);
 }
 
 // FIXME: add way to set size and number of timesteps
@@ -329,7 +380,7 @@ double SeaStateAdapter::get_water_level(const Vector3d& position, double time) c
 };
 
 double SeaStateAdapter::get_density_this(const seahowl::Vector3d& position, double time) const {
-    return pImpl->GetFluidDensity(position, time);
+    return pImpl->GetFluidDensity();
 }
 
 seahowl::Vector3d SeaStateAdapter::get_velocity_this(const seahowl::Vector3d& position, double time) const {
