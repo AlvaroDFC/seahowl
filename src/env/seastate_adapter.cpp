@@ -76,7 +76,7 @@ void SeaSt_C_GetFluidVelAcc(double* Time_C,      // in  - current time (s)
 
 void SeaSt_C_GetSurfElev(double& Time_C,   // in  - current time (s)
                          float* Pos_c,     // in  - position in 2D (m).
-                         float* Elev_C,    // out - wave elevation relative to SWL (m)
+                         float& Elev_C,    // out - wave elevation relative to SWL (m)
                          int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                          char* ErrMsg_C);  // out - Message returned about error (empty if none)
 
@@ -208,8 +208,8 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
     for (int i = 0; i < 2; i++) {
         Pos_C[i] = position[i];
     }
-    float* Elev_C;
     int ErrStat = 0;
+    float Elev_C = 0;
     char ErrMsg[ERROR_MSG_LEN - 1];
     SeaSt_C_GetSurfElev(time,     // in  - current time (s)
                         Pos_C,    // in  - position in 2D (m).
@@ -220,8 +220,8 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
 
     delete[] Pos_C;
 
-    spdlog::warn("Elevation: {}", *Elev_C);
-    return *Elev_C;
+    spdlog::warn("Elevation: {}", Elev_C);
+    return Elev_C;
 };
 
 double SeaStateLib::GetFluidDensity(const seahowl::Vector3d& position, double time) {
