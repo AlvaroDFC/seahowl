@@ -1,14 +1,14 @@
 ﻿{
   "numerics": {
-    "dt": 0.05,
+    "dt": 0.025,
     "duration": 2000.0,
     "statics": {
       "linear_step": false,
       "nonlinear_steps": 0
     },
     "presimulation": {
-      "dt": 0.001,
-      "duration": 0.1,
+      "dt": 0.025,
+      "duration": 2.5,
       "presetup": true,
       "fix_towers": true
     }
