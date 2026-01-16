@@ -187,7 +187,7 @@ void MorisonNode::compute_env_loads(const env::EnvModel& env_model, double time)
     auto load_inertia_fluid = Vector3d(0.0, 0.0, 0.0);
     // if Ca_n=0, assume no normal added mass at all (=> Cm_n=0)
     // usually, Ca_n>0, and Cm_a=1+Ca_n
-    if (coefficients.added_mass_normal != 0.0) {
+    if (coeff_added_mass_normal != 0.0) {
         // normal component due to fluid acceleration
         load_inertia_fluid += fluid_density * area * acceleration_fluid_normal * (1 + coeff_added_mass_normal);
     }
