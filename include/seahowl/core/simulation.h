@@ -2,7 +2,7 @@
 
 #include "seahowl/io/output_manager.h"
 #include "seahowl/core/system.h"
-#include "seahowl/aero/system_aero.h"
+#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/system_elasto.h"
 #include <seahowl/io/config_manager.h>
 
@@ -32,8 +32,8 @@ class Simulation {
     seahowl::io::app::ConfigManager& getConfigManager();
 
   private:
-    std::unique_ptr<seahowl::elasto::SystemElasto> system_elasto;
-    std::unique_ptr<seahowl::aero::SystemAero> system_aero;
+    std::shared_ptr<seahowl::elasto::SystemElasto> system_elasto;
+    std::shared_ptr<seahowl::aero::SystemAero> system_aero;
     int nstep = 0;
     double t_output_next = 0.0;
     std::string main_filepath;

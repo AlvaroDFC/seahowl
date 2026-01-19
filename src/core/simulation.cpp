@@ -3,9 +3,9 @@
 #include "seahowl/core/system.h"
 #include "seahowl/elasto/system_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/aero/system_aero.h"
+#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/chrono_adapters.h"
-#include "seahowl/io/read_json.h"
+#include "seahowl/io/read_input.h"
 #include "seahowl/io/write_csv.h"
 #include "seahowl/io/output_manager.h"
 #include "seahowl/commons/utils.h"
@@ -57,7 +57,7 @@ Simulation::Simulation()
                      {},
                      "Set log level (critical|error|warn|info|debug|trace)",
                      "string",
-                     "default",
+                     "info",
                      true,
                      true,
                      true},
@@ -71,9 +71,9 @@ Simulation::Simulation()
                 ""},
            }},
       }) {
-    system_elasto = std::make_unique<seahowl::elasto::SystemElastoChrono>();
-    system_aero = std::make_unique<seahowl::aero::SystemAero>();
-    system_core = std::make_unique<System>(*system_elasto, *system_aero);
+    system_elasto = std::make_shared<seahowl::elasto::SystemElastoChrono>();
+    system_aero = std::make_shared<seahowl::aero::SystemAero>();
+    system_core = std::make_unique<System>(system_elasto, system_aero);
     outputs = std::make_unique<seahowl::io::OutputManager>(*system_core);
 }
 

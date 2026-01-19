@@ -1,12 +1,13 @@
 #include "fixture_components.h"
 
 #include <seahowl/env/wind_models.h>
+#include <seahowl/env/env_model.h>
 #include <seahowl/commons/numerics.h>
 #include <seahowl/elasto/chrono_adapters.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/servo/controller.h>
-#include <seahowl/io/read_json.h>
-#include <seahowl/aero/aerodyn_adapter.h>
+#include <seahowl/io/read_input.h>
+#include <seahowl/fluid/aero/aerodyn_adapter.h>
 using namespace seahowl;
 using namespace seahowl::elasto;
 
@@ -33,9 +34,13 @@ TEST_F(TestAeroDyn, rpm_initial_pitch) {
     // timestepping
     double dt = 0.1;
     // wind (this is essentially ignored for the rotor as AeroDyn uses InflowWind input)
-    auto wind_model = seahowl::env::ConstantWind();
-    wind_model.set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
-    wind_model.shear_coefficient = 0.12;
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
     // turbine
     double initial_pitch = seahowl::PI / 8.0;
 
@@ -44,16 +49,15 @@ TEST_F(TestAeroDyn, rpm_initial_pitch) {
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
     // turbine
-    auto turbine_elasto = seahowl::elasto::TurbineElasto();
-    auto turbine_aero = seahowl::aero::TurbineAeroDyn();
-    auto turbine = seahowl::core::Turbine(turbine_elasto, turbine_aero);
-    seahowl::io::populate_turbine_from_json((DATADIR / "IEA15MW/onshore/turbine_aerodyn.json").generic_string(),
-                                            turbine);
+    auto turbine =
+        seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_aerodyn.json").generic_string());
     // remove controller
     turbine.controller = std::make_shared<seahowl::servo::Controller>();
 
-    turbine_aero.aerodyn.set_infiles((DATADIR / "IEA15MW/base/aerodyn/IEA-15-240-RWT_AeroDyn15.dat").generic_string(),
-                                     (DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
+    auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.aero);
+    turbine_aero.aerodyn.set_aerodyn_infile(
+        (DATADIR / "IEA15MW/base/aerodyn/IEA-15-240-RWT_AeroDyn15.dat").generic_string());
+    turbine_aero.aerodyn.set_inflowwind_infile((DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
 
     turbine.build();
     turbine.elasto.assemble(system_elasto);
@@ -83,7 +87,7 @@ TEST_F(TestAeroDyn, rpm_initial_pitch) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_fluid_loads(wind_model, time);
+        turbine.aero.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

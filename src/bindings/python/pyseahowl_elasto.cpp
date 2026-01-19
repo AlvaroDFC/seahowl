@@ -105,6 +105,9 @@ void initialize_pyseahowl_elasto(py::module& m) {
         .def("step", &seahowl::elasto::SystemElasto::step)
         .def("assemble", &seahowl::elasto::SystemElasto::assemble)
         .def("get_time", &seahowl::elasto::SystemElasto::get_time)
+        .def("get_mass_matrix", &seahowl::elasto::SystemElasto::get_mass_matrix)
+        .def("get_stiffness_matrix", &seahowl::elasto::SystemElasto::get_stiffness_matrix)
+        .def("get_damping_matrix", &seahowl::elasto::SystemElasto::get_damping_matrix)
         .def("set_gravitational_acceleration", &seahowl::elasto::SystemElasto::set_gravitational_acceleration)
         .def("get_gravitational_acceleration", &seahowl::elasto::SystemElasto::get_gravitational_acceleration)
         .def("do_statics", &seahowl::elasto::SystemElasto::do_statics)
@@ -271,7 +274,7 @@ void initialize_pyseahowl_elasto(py::module& m) {
     py::class_<seahowl::elasto::RotorNacelleAssemblyElasto,
                std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto>, seahowl::elasto::ComponentElasto>(
         m_elasto, "RotorNacelleAssemblyElasto")
-        .def(py::init<>())
+        .def(py::init<std::shared_ptr<seahowl::elasto::RotorElasto>>())
         .def("get_rpm", &seahowl::elasto::RotorNacelleAssemblyElasto::get_rpm)
         .def("accumulate_electrical_torque", &seahowl::elasto::RotorNacelleAssemblyElasto::accumulate_electrical_torque)
         .def("get_axial_thrust", &seahowl::elasto::RotorNacelleAssemblyElasto::get_axial_thrust)

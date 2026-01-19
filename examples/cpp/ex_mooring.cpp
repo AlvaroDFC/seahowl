@@ -1,5 +1,5 @@
 #include <seahowl/elasto/mooring_elasto.h>
-#include <seahowl/hydro/mooring_hydro.h>
+#include <seahowl/fluid/hydro/mooring_hydro.h>
 #include <seahowl/core/mooring.h>
 #include <seahowl/core/simulation.h>
 #include <seahowl/core/system.h>
@@ -7,6 +7,7 @@
 #include <seahowl/commons/numerics.h>
 #include <seahowl/env/soil_models.h>
 #include <seahowl/env/wave_models.h>
+#include <seahowl/env/env_model.h>
 
 #include <filesystem>  // C++17
 #include <spdlog/spdlog.h>
@@ -40,14 +41,14 @@ void run_simulation() {
 
     // fluid model
     auto fluid_model = std::make_shared<seahowl::env::StillWater>();
-    system_core->fluid_model = fluid_model;
+    system_core->env_model->add_model(fluid_model);
     fluid_model->density = 1025.0;
     fluid_model->mean_water_level = mean_water_level;
     fluid_model->water_depth = water_depth;
 
     // soil model
     auto soil_model = std::make_shared<seahowl::env::LinearSoilModel>();
-    system_core->soil_model = soil_model;
+    system_core->env_model->add_model(soil_model);
     soil_model->soil_position = mean_water_level - water_depth;
     soil_model->soil_normal = seahowl::Vector3d(0.0, 0.0, 1.0);
     soil_model->stiffness_normal = 1e6;
@@ -76,7 +77,7 @@ void run_simulation() {
     auto mooring_hydro = std::make_shared<seahowl::hydro::MooringHydro>();
     system_core->aero.add(mooring_hydro);
     // core
-    auto mooring = std::make_shared<seahowl::core::Mooring>(*mooring_elasto, *mooring_hydro);
+    auto mooring = std::make_shared<seahowl::core::Mooring>(mooring_elasto, mooring_hydro);
     system_core->add(mooring);
 
     // set mooring properties

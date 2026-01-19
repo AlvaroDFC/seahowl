@@ -49,7 +49,7 @@ class Tower : public virtual ComponentDynamic {
      * @param[in] elasto Elastodynamic tower model.
      * @param[in] aero Aerodynamic tower model.
      */
-    Tower(seahowl::elasto::TowerElasto& elasto, seahowl::aero::TowerAero& aero);
+    Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero);
 
     /**
      * @brief Prestep for tower, called before elastodynamic stepping.
@@ -71,7 +71,12 @@ class Tower : public virtual ComponentDynamic {
      */
     void poststep(double time, double dt) override;
 
-    void apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) override;
+    /**
+     * @brief Applies env model to tower.
+     * @param[in] env_model Environmental model affecting tower.
+     * @param[in] time Time of simulation.
+     */
+    void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
 
     /**
      * @brief Builds the tower (aero and elasto part).

@@ -12,7 +12,11 @@ using namespace seahowl::elasto;
 MooringSystemElasto::MooringSystemElasto() {}
 
 void MooringSystemElasto::add_mooring(std::shared_ptr<MooringElasto> mooring) {
-    moorings.push_back(mooring);
+    if (std::find(moorings.begin(), moorings.end(), mooring) == moorings.end()) {
+        moorings.push_back(mooring);
+    } else {
+        spdlog::warn("Mooring Elasto already exists in the system, not adding again.");
+    }
 }
 
 void MooringSystemElasto::presetup(double fraction) {
@@ -205,13 +209,13 @@ void MooringElastoFEA::assemble_this(SystemElasto& system) {
     gravitational_acceleration = system.get_gravitational_acceleration();
 }
 
-void MooringElastoFEA::compute_seabed_loads(const seahowl::env::SoilModel& seabed) {
+void MooringElastoFEA::compute_seabed_loads(const seahowl::env::EnvModel& env_model) {
     for (auto& element : elements) {
         auto element_length = dynamic_cast<seahowl::elasto::ElementMooringElasto&>(*element).get_rest_length();
         auto element_mass = dynamic_cast<seahowl::elasto::ElementMooringElasto&>(*element).get_mass();
         for (auto& node : element->nodes) {
             auto contact_area = diameter * (0.5 * element_length);
-            auto penetration_load = seabed.get_penetration_load(*node, contact_area, element_mass);
+            auto penetration_load = env_model.soil_models.get_penetration_load(*node, contact_area, element_mass);
             node->accumulate_force_internals(penetration_load);
         }
     }

@@ -1,7 +1,7 @@
 #include "seahowl/core/turbine.h"
 
 #include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/aero/turbine_aero.h"
+#include "seahowl/fluid/aero/turbine_aero.h"
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
@@ -12,11 +12,14 @@
 using namespace seahowl::core;
 using namespace seahowl::servo;
 using namespace seahowl::elasto;
+using namespace seahowl::aero;
 
-Turbine::Turbine(seahowl::elasto::TurbineElasto& elasto, seahowl::aero::TurbineAero& aero)
-    : elasto(elasto), aero(aero), rna(elasto.rna, aero.rna), tower(elasto.tower, aero.tower) {
-    controller = std::make_shared<Controller>();
-}
+Turbine::Turbine(std::shared_ptr<TurbineElasto> elasto, std::shared_ptr<TurbineAero> aero)
+    : ComponentDynamic(elasto, aero),
+      elasto(*elasto),
+      aero(*aero),
+      rna(elasto->rna, aero->rna),
+      tower(elasto->tower, aero->tower) {}
 
 void Turbine::initialize_this(double time, double dt) {
     rna.initialize(time, dt);
@@ -45,10 +48,10 @@ void Turbine::apply_control(double time, double dt) {
 
     // apply pitch from controller
     if (controller->has_pitch_control) {
-        if (rna.blades.size() >= 1 && rna.blades.size() <= 3) {
+        if (rna.rotor.blades.size() >= 1 && rna.rotor.blades.size() <= 3) {
             // individual pitch only works with rotors from 1 to 3 blades
-            for (int idx_blade = 0; idx_blade < rna.blades.size(); idx_blade++) {
-                auto& blade = *rna.blades[idx_blade];
+            for (int idx_blade = 0; idx_blade < rna.rotor.blades.size(); idx_blade++) {
+                auto& blade = *rna.rotor.blades[idx_blade];
                 if (blade.elasto.actuator_pitch->is_fixed_actuator()) {
                     auto blade_pitch_increment = controller->get_pitch_blade(idx_blade) - blade.elasto.get_pitch();
                     blade.apply_pitch_increment(blade_pitch_increment);
@@ -60,7 +63,7 @@ void Turbine::apply_control(double time, double dt) {
             }
         } else {
             // collective pitch for more than 3 blades or 0 blade (e.g. actuator disk)
-            for (auto& blade : rna.blades) {
+            for (auto& blade : rna.rotor.blades) {
                 if (blade->elasto.actuator_pitch->is_fixed_actuator()) {
                     auto collective_pitch_increment =
                         controller->get_collective_pitch() - rna.elasto.rotor->pitch_collective;
@@ -159,12 +162,12 @@ double Turbine::get_generator_rpm() const {
     return rpm;
 }
 
-void Turbine::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
-    aero.compute_fluid_loads(fluid_model, time);
+void Turbine::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
+    aero.compute_env_loads(env_model, time);
 }
 
-void Turbine::apply_soil_model(seahowl::env::SoilModel& soil_model, double time) {
+void Turbine::apply_soil_model(seahowl::env::EnvModel& env_model, double time) {
     if (foundation) {
-        foundation->apply_soil_model(soil_model, time);
+        foundation->apply_soil_model(env_model, time);
     }
 }

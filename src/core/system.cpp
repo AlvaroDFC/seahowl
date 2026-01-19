@@ -1,18 +1,19 @@
 #include "seahowl/core/system.h"
 
 #include "seahowl/elasto/system_elasto.h"
-#include "seahowl/aero/system_aero.h"
+#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/mooring_elasto.h"
 #include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/aero/turbine_aero.h"
+#include "seahowl/fluid/aero/turbine_aero.h"
 #include "seahowl/env/wind_models.h"
 #include "seahowl/env/wave_models.h"
-#include "seahowl/env/combined_models.h"
+#include "seahowl/env/soil_models.h"
+#include "seahowl/env/fluid_models.h"
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
 #ifdef HAVE_HYDROCHRONO
-    #include "seahowl/hydro/hydrochrono_adapter.h"
+    #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 #endif
 
 #include <vector>
@@ -22,8 +23,12 @@
 #include <iostream>
 
 using namespace seahowl::core;
+using namespace seahowl::env;
 
-System::System(seahowl::elasto::SystemElasto& elasto, seahowl::aero::SystemAero& aero) : elasto(elasto), aero(aero) {}
+System::System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::aero::SystemAero> aero)
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {
+    env_model = std::make_shared<seahowl::env::EnvModel>();
+};
 
 void System::build() {
     // build all turbines
@@ -48,16 +53,16 @@ void System::initialize_this(double time, double dt) {
     /// @todo replace this check with better handling (e.g. at initialization of floater by passing fluid model)
     // Specific HydroChrono handling: need to pass waves from environment to HydroChrono floater.
     // Needs to happen before initializing turbines
+
     for (auto& turbine : turbines) {
         if (turbine->elasto.foundation) {
             try {
                 auto& floater = dynamic_cast<seahowl::hydro::FloaterHydroChrono&>(*turbine->elasto.foundation);
-                try {
+                auto wave_models = env_model->fluid_models.get_models_of_type<WaveModelHydroChrono>();
+                if (wave_models.size() > 0) {
                     spdlog::debug("Passing waves to HydroChrono floater model.");
-                    auto& wavewind_model = dynamic_cast<seahowl::env::WaveWindModel&>(*fluid_model);
-                    auto& waves_model = dynamic_cast<seahowl::env::WaveModelHydroChrono&>(*wavewind_model.wave_model);
-                    floater.set_waves_hydrochrono(waves_model.waves);
-                } catch (const std::bad_cast& e) {
+                    floater.set_waves_hydrochrono(wave_models[0]->waves);
+                } else {
                     throw std::runtime_error("Must use HydroChrono wave model when using HydroChrono floater.");
                 }
             } catch (const std::bad_cast& e) {
@@ -70,12 +75,11 @@ void System::initialize_this(double time, double dt) {
         try {
             auto& floater_core = dynamic_cast<seahowl::core::Floater&>(*component);
             auto& floater = dynamic_cast<seahowl::hydro::FloaterHydroChrono&>(floater_core.elasto);
-            try {
+            auto wave_models = env_model->fluid_models.get_models_of_type<WaveModelHydroChrono>();
+            if (wave_models.size() > 0) {
                 spdlog::debug("Passing waves to HydroChrono floater model.");
-                auto& wavewind_model = dynamic_cast<seahowl::env::WaveWindModel&>(*fluid_model);
-                auto& waves_model = dynamic_cast<seahowl::env::WaveModelHydroChrono&>(*wavewind_model.wave_model);
-                floater.set_waves_hydrochrono(waves_model.waves);
-            } catch (const std::bad_cast& e) {
+                floater.set_waves_hydrochrono(wave_models[0]->waves);
+            } else {
                 throw std::runtime_error("Must use HydroChrono wave model when using HydroChrono floater.");
             }
         } catch (const std::bad_cast& e) {
@@ -86,6 +90,7 @@ void System::initialize_this(double time, double dt) {
 
     // initialize all turbines
     for (auto& turbine : turbines) {
+        turbine->aero.setup_environment(*env_model);
         turbine->initialize(time, dt);
     }
     // initialize all extra components
@@ -94,12 +99,12 @@ void System::initialize_this(double time, double dt) {
     }
 
     // check if fluid model exists
-    if (!fluid_model) {
+    if (!env_model->fluid_models.has_model()) {
         spdlog::warn("No fluid model was attached to the system.");
     }
 
     // check if soil model exists
-    if (!soil_model) {
+    if (!env_model->soil_models.has_model()) {
         spdlog::warn("No soil model was attached to the system.");
     }
 
@@ -112,9 +117,9 @@ void System::prestep(double time, double dt) {
         turbine->apply_control(time, dt);
     }
 
-    // compute forces from fluid model
-    if (fluid_model) {
-        apply_fluid_model(*fluid_model, time + dt);
+    // compute forces from env model
+    if (env_model->fluid_models.has_model()) {
+        apply_env_model(*env_model, time + dt);
     }
 
     // prestep (accumulates loads from aero to elasto)
@@ -129,8 +134,8 @@ void System::prestep(double time, double dt) {
 
     // compute forces from soil model
     // happens after prestep because soil loads directly applied to elasto component (e.g. moorings)
-    if (soil_model) {
-        apply_soil_model(*soil_model, time);
+    if (env_model->soil_models.has_model()) {
+        apply_soil_model(*env_model, time);
     }
 }
 
@@ -149,25 +154,25 @@ void System::poststep(double time, double dt) {
     }
 }
 
-void System::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
+void System::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
     for (auto& turbine : turbines) {
         // compute forces from fluid model
-        turbine->apply_fluid_model(fluid_model, time);
+        turbine->apply_env_model(env_model, time);
     }
     for (auto& component : components) {
         // compute forces from fluid model
-        component->apply_fluid_model(fluid_model, time);
+        component->apply_env_model(env_model, time);
     }
 }
 
-void System::apply_soil_model(seahowl::env::SoilModel& soil_model, double time) {
+void System::apply_soil_model(seahowl::env::EnvModel& env_model, double time) {
     for (auto& turbine : turbines) {
         // compute forces from fluid model
-        turbine->apply_soil_model(soil_model, time);
+        turbine->apply_soil_model(env_model, time);
     }
     for (auto& component : components) {
         // compute forces from fluid model
-        component->apply_soil_model(soil_model, time);
+        component->apply_soil_model(env_model, time);
     }
 }
 
@@ -235,9 +240,21 @@ void System::run_presimulation(double duration, double dt, bool fix_foundations,
 }
 
 void System::add(std::shared_ptr<Turbine> turbine) {
-    turbines.push_back(turbine);
+    if (std::find(turbines.begin(), turbines.end(), turbine) == turbines.end()) {
+        turbines.push_back(turbine);
+        aero.add(turbine->get_shared_fluid());
+        elasto.add(turbine->get_shared_elasto());
+    } else {
+        spdlog::warn("Turbine already exists in the system, not adding again.");
+    }
 }
 
 void System::add(std::shared_ptr<ComponentDynamic> component) {
-    components.push_back(component);
+    if (std::find(components.begin(), components.end(), component) == components.end()) {
+        components.push_back(component);
+        aero.add(component->get_shared_fluid());
+        elasto.add(component->get_shared_elasto());
+    } else {
+        spdlog::warn("Components already exists in the system, not adding again.");
+    }
 }

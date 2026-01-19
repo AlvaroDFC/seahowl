@@ -97,7 +97,7 @@ void seahowl::servo::ControllerDISCON::update_turbine_variables(double time,
 void seahowl::servo::ControllerDISCON::initialize(double time, double dt, const seahowl::core::Turbine& turbine) {
     spdlog::debug("Initialization of DISCON controller.");
 
-    auto nblades = turbine.rna.blades.size();
+    auto nblades = turbine.rna.rotor.blades.size();
     if (nblades == 0) {
         spdlog::warn(
             "DISCON: number of blades is 0 (expected for actuator disk approach), setting it to 3 for control.");
@@ -375,10 +375,6 @@ seahowl::servo::DisconInterface::~DisconInterface() {
 
 void seahowl::servo::DisconInterface::Init(const std::string& libfile, const std::string& tmp_folder) {
     if (libfile != "") {
-        if (!std::filesystem::exists(std::filesystem::path(libfile)) && libfile != "") {
-            throw std::runtime_error("DISCON: dynamic library path for DISCON routine does not exist: " + libfile +
-                                     ".");
-        }
         // Load dynamic library and point to DISCON routine
         spdlog::debug("DISCON: loading library {}.", libfile);
 #ifdef __unix__
@@ -413,6 +409,10 @@ void seahowl::servo::DisconInterface::Init(const std::string& libfile, const std
         }
         DISCON = (DISCON_routine)GetProcAddress((HMODULE)handler, "DISCON");
 #endif
+        if (!handler) {
+            throw std::runtime_error("DISCON: could not load dynamic library for DISCON routine: " + libfile +
+                                     ".\n Are you sure the library is compatible with your system?");
+        }
         spdlog::debug("DISCON: loaded {}.", path_dll);
         has_dll = true;
     } else {
@@ -451,11 +451,6 @@ void seahowl::servo::DisconInterface::PrintAllOut(std::ostream& ssout) const {
 
 void seahowl::servo::DisconInterface::SetINFILE(const std::string& name) {
     spdlog::debug("Set DISCON INFILE: " + name + ".");
-    if (name == "") {
-        spdlog::warn("DISCON: no input file transmitted to DISCON interface.");
-    } else if (!std::filesystem::exists(std::filesystem::path(name))) {
-        throw std::runtime_error("DISCON: input file path for DISCON routine does not exist: " + name + ".");
-    }
     strcpy(accINFILE, name.c_str());
     SetAvrSWAP(50, name.length());
 }

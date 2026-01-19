@@ -1,10 +1,10 @@
 #include "fixture_components.h"
 
-#include <seahowl/hydro/morison.h>
+#include <seahowl/fluid/hydro/morison.h>
 #include <seahowl/env/wave_models.h>
 #include <seahowl/core/simulation.h>
 #ifdef HAVE_HYDROCHRONO
-    #include <seahowl/hydro/hydrochrono_adapter.h>
+    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
     #include <hydroc/hydro_forces.h>
 #endif
 
@@ -70,9 +70,9 @@ TEST_F(TestMorison, analytical_comparison) {
     node3.set_rotation(rot);
 
     // environmental conditions
-    auto wave_model = seahowl::env::WaveModelHydroChrono();
-    wave_model.water_depth = water_depth;
-    wave_model.mean_water_level = mean_water_level;
+    auto wave_model = std::make_shared<seahowl::env::WaveModelHydroChrono>();
+    wave_model->water_depth = water_depth;
+    wave_model->mean_water_level = mean_water_level;
     auto waves_hydrochrono = std::make_shared<RegularWave>();
     waves_hydrochrono->regular_wave_amplitude_ = wave_height / 2.0;
     waves_hydrochrono->regular_wave_omega_ = 2 * seahowl::PI / wave_period;
@@ -80,7 +80,10 @@ TEST_F(TestMorison, analytical_comparison) {
     waves_hydrochrono->water_depth_ = water_depth;
     waves_hydrochrono->wave_stretching_ = false;
     waves_hydrochrono->Initialize();
-    wave_model.waves = waves_hydrochrono;
+    wave_model->waves = waves_hydrochrono;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wave_model);
 
     // values to store
     auto load_analytical = seahowl::Vector3d(0.0, 0.0, 0.0);
@@ -91,10 +94,10 @@ TEST_F(TestMorison, analytical_comparison) {
                                        (test_dir / "test_morison_analytical_comparison.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [&time_current] { return time_current; });
     test_dataset.test_csv.add_function("fluid velocity (m/s)", [&wave_model, &time_current, &position] {
-        return wave_model.get_fluid_velocity(position, time_current);
+        return wave_model->get_velocity(position, time_current);
     });
     test_dataset.test_csv.add_function("fluid acceleration (m/s2)", [&wave_model, &time_current, &position] {
-        return wave_model.get_fluid_acceleration(position, time_current);
+        return wave_model->get_acceleration(position, time_current);
     });
     test_dataset.test_csv.add_function("load node1 (N/m)", [&node1] { return node1.load; });
     test_dataset.test_csv.add_function("load node1 analytical (N/m)", [&load_analytical] { return load_analytical; });
@@ -104,13 +107,13 @@ TEST_F(TestMorison, analytical_comparison) {
 
     while (time_current <= duration) {
         // compute loads
-        node1.compute_fluid_loads(wave_model, time_current);
-        node2.compute_fluid_loads(wave_model, time_current);
-        node3.compute_fluid_loads(wave_model, time_current);
+        node1.compute_env_loads(env_model, time_current);
+        node2.compute_env_loads(env_model, time_current);
+        node3.compute_env_loads(env_model, time_current);
 
         // compute loads with analytical formula
-        auto fluid_velocity = wave_model.get_fluid_velocity(position, time_current);
-        auto fluid_acceleration = wave_model.get_fluid_acceleration(position, time_current);
+        auto fluid_velocity = wave_model->get_velocity(position, time_current);
+        auto fluid_acceleration = wave_model->get_acceleration(position, time_current);
         load_analytical[0] =
             0.5 * rho * coefficients.drag_normal * node1.diameter * abs(fluid_velocity[0]) * fluid_velocity[0] +
             rho * (1.0 + coefficients.added_mass_normal) * PI * pow(node1.diameter, 2) / 4.0 * fluid_acceleration[0];
@@ -161,14 +164,15 @@ TEST_F(TestMorison, tower_morison) {
     waves_hydrochrono->wave_stretching_ = true;
     waves_hydrochrono->Initialize();
     wave_model->waves = waves_hydrochrono;
-    simulation.system_core->fluid_model = wave_model;
+    // env_model
+    simulation.system_core->env_model->add_model(wave_model);
 
     // tower
     auto tower_elasto = std::make_shared<seahowl::elasto::TowerElasto>();
     simulation.system_core->elasto.add(tower_elasto);
     auto tower_fluid = std::make_shared<seahowl::aero::TowerAero>();
     simulation.system_core->aero.add(tower_fluid);
-    auto tower = std::make_shared<seahowl::core::Tower>(*tower_elasto, *tower_fluid);
+    auto tower = std::make_shared<seahowl::core::Tower>(tower_elasto, tower_fluid);
     simulation.system_core->add(tower);
     // properties
     auto density = 7850.0;

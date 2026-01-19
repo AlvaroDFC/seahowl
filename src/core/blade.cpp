@@ -2,7 +2,7 @@
 
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/aero/blade_aero.h"
+#include "seahowl/fluid/aero/blade_aero.h"
 
 #include <memory>
 #include <spdlog/spdlog.h>
@@ -12,7 +12,9 @@ using namespace seahowl::elasto;
 using namespace seahowl::aero;
 using seahowl::Vector3d;
 
-Blade::Blade(seahowl::elasto::BladeElasto& elasto, seahowl::aero::BladeAero& aero) : elasto(elasto), aero(aero) {}
+Blade::Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
+             const std::shared_ptr<seahowl::aero::BladeAero> aero)
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
 
 void Blade::initialize_this(double time, double dt) {
     // mappings
@@ -35,8 +37,8 @@ void Blade::poststep(double time, double dt) {
     update_positions_aero();
 }
 
-void Blade::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
-    spdlog::warn("Fluid model must be applied from Rotor instead of Blade directly.");
+void Blade::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
+    spdlog::warn("env model must be applied from Rotor instead of Blade directly.");
 }
 
 void Blade::build() {

@@ -43,14 +43,13 @@ PYBIND11_MODULE(seahowl, m) {
         .def("set_rotational_velocity", &seahowl::EntityDynamic::set_rotational_velocity)
         .def("get_rotational_acceleration", &seahowl::EntityDynamic::get_rotational_acceleration)
         .def("set_rotational_acceleration", &seahowl::EntityDynamic::set_rotational_acceleration);
-    py::class_<seahowl::EntityEigen, std::shared_ptr<seahowl::EntityEigen>, seahowl::Entity>(m, "EntityEigen");
     py::class_<seahowl::EntityDynamicEigen, std::shared_ptr<seahowl::EntityDynamicEigen>, seahowl::EntityDynamic>(
         m, "EntityDynamicEigen")
         .def(py::init<>());
 
     // component
     py::class_<seahowl::ComponentFluid, std::shared_ptr<seahowl::ComponentFluid>>(m, "ComponentFluid")
-        .def("compute_fluid_loads", &seahowl::ComponentFluid::compute_fluid_loads);
+        .def("compute_env_loads", &seahowl::ComponentFluid::compute_env_loads);
 
     // env
     initialize_pyseahowl_env(m);

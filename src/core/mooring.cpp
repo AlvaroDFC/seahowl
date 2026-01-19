@@ -2,7 +2,7 @@
 
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/mooring_elasto.h"
-#include "seahowl/hydro/mooring_hydro.h"
+#include "seahowl/fluid/hydro/mooring_hydro.h"
 
 #include <spdlog/spdlog.h>
 
@@ -10,7 +10,8 @@ using namespace seahowl::core;
 using namespace seahowl::elasto;
 using namespace seahowl::hydro;
 
-Mooring::Mooring(MooringElastoFEA& elasto, MooringHydro& hydro) : elasto(elasto), hydro(hydro) {}
+Mooring::Mooring(std::shared_ptr<MooringElastoFEA> elasto, std::shared_ptr<MooringHydro> hydro)
+    : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {}
 
 void Mooring::set_length(double length) {
     elasto.set_length(length);
@@ -56,11 +57,11 @@ void Mooring::poststep(double time, double dt) {
     update_positions_hydro();
 }
 
-void Mooring::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
-    hydro.compute_fluid_loads(fluid_model, time);
+void Mooring::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
+    hydro.compute_env_loads(env_model, time);
 }
 
-void Mooring::apply_soil_model(seahowl::env::SoilModel& soil_model, double time) {
+void Mooring::apply_soil_model(seahowl::env::EnvModel& soil_model, double time) {
     elasto.compute_seabed_loads(soil_model);
 }
 
@@ -133,11 +134,28 @@ void Mooring::update_loads_elasto() {
     }
 }
 
-MooringSystem::MooringSystem(seahowl::elasto::MooringSystemElasto& elasto, seahowl::hydro::MooringSystemHydro& hydro)
-    : elasto(elasto), hydro(hydro) {}
+MooringSystem::MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
+                             std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro)
+    : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {
+    // initialize moorings
+    auto it_hydro = hydro->moorings.begin();
+    auto it_elasto = elasto->moorings.begin();
+    for (; it_hydro != hydro->moorings.end() && it_elasto != elasto->moorings.end(); ++it_hydro, ++it_elasto) {
+        if (auto mooring_elasto = std::dynamic_pointer_cast<MooringElastoFEA>(*it_elasto)) {
+            // create Mooring object that connects elasto and hydro components
+            moorings.push_back(std::make_shared<Mooring>(mooring_elasto, *it_hydro));
+        } else {
+            throw std::runtime_error("The Elasto Mooring is not an elastodynamic FEA component in mooring system.");
+        }
+    }
+}
 
 void MooringSystem::add_mooring(std::shared_ptr<Mooring> mooring) {
-    moorings.push_back(mooring);
+    if (std::find(moorings.begin(), moorings.end(), mooring) == moorings.end()) {
+        moorings.push_back(mooring);
+    } else {
+        spdlog::warn("Mooring already exists in the system, not adding again.");
+    }
 }
 
 void MooringSystem::perform_sanity_check() {
@@ -183,15 +201,15 @@ void MooringSystem::poststep(double time, double dt) {
     }
 }
 
-void MooringSystem::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
+void MooringSystem::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
     for (auto& mooring : moorings) {
-        mooring->apply_fluid_model(fluid_model, time);
+        mooring->apply_env_model(env_model, time);
     }
 }
 
-void MooringSystem::apply_soil_model(seahowl::env::SoilModel& soil_model, double time) {
+void MooringSystem::apply_soil_model(seahowl::env::EnvModel& env_model, double time) {
     for (auto& mooring : moorings) {
-        mooring->apply_soil_model(soil_model, time);
+        mooring->apply_soil_model(env_model, time);
     }
 }
 

@@ -7,7 +7,7 @@
     #include "seahowl/io/viz_insitu_irrlicht.h"
 #endif
 #ifdef HAVE_AERODYN
-    #include "seahowl/aero/aerodyn_adapter.h"
+    #include "seahowl/fluid/aero/aerodyn_adapter.h"
 #endif
 #include "seahowl/core/system.h"
 #include "seahowl/core/turbine.h"
@@ -19,8 +19,9 @@
 #include "seahowl/elasto/tower_elasto.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
-#include "seahowl/aero/blade_aero.h"
+#include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/env/wind_models.h"
+#include "seahowl/env/fluid_models.h"
 #include "seahowl/servo/controller.h"
 
 #include <filesystem>  // C++17
@@ -55,8 +56,8 @@ void add_basic_turbine_info_to_csv(seahowl::io::CustomCSV& custom_csv, seahowl::
     custom_csv.add_function("tower top moment (Nm)",
                             [&turbine]() { return turbine.tower.elasto.get_tower_top_moment(); });
     custom_csv.add_function("tower top force (N)", [&turbine]() { return turbine.tower.elasto.get_tower_top_force(); });
-    for (size_t idx_blade = 0; idx_blade < turbine.rna.blades.size(); idx_blade++) {
-        auto& blade = *turbine.rna.blades[idx_blade];
+    for (size_t idx_blade = 0; idx_blade < turbine.rna.rotor.blades.size(); idx_blade++) {
+        auto& blade = *turbine.rna.rotor.blades[idx_blade];
         custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " wind (m/s)",
                                 [&blade]() { return blade.aero.get_average_wind_velocity(); });
         custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " wind load (N)",
@@ -168,9 +169,9 @@ void OutputManager::initialize() {
             auto& system_core = this->system_core;
             auto& turbine = *system_core.turbines[idx_turbine];
             custom_csv.add_function("time (s)", [system_core]() { return system_core.get_time(); });
-            if (system_core.fluid_model) {
+            if (system_core.env_model->fluid_models.has_model()) {
                 custom_csv.add_function("wind (m/s)", [&system_core, &turbine]() {
-                    return system_core.fluid_model->get_fluid_velocity(
+                    return system_core.env_model->fluid_models.get_velocity(
                         turbine.rna.elasto.rotor->body_hub->get_position(), system_core.get_time());
                 });
             }
@@ -209,9 +210,9 @@ void OutputManager::output_all(int step) {
         output_sstring << "    turbine " << turbine_id << " info -> rpm: " << std::setprecision(3)
                        << turbine.rna.elasto.get_rpm() << ", power: " << turbine.get_generated_power()
                        << ", yaw: " << turbine.rna.elasto.get_yaw();
-        int nblades = turbine.rna.blades.size();
+        int nblades = turbine.rna.rotor.blades.size();
         if (nblades <= 3 && nblades > 0) {
-            for (int ii = 0; ii < turbine.rna.blades.size(); ii++) {
+            for (int ii = 0; ii < turbine.rna.rotor.blades.size(); ii++) {
                 output_sstring << ", pitch" << ii + 1 << ": " << turbine.rna.elasto.rotor->blades[ii]->get_pitch();
             }
         } else {
@@ -233,7 +234,7 @@ void OutputManager::output_initial_logs() {
 
         // reference points
         size_t idx_point;
-        auto& reference_points = turbine.elasto.tower.reference_points;
+        auto& reference_points = turbine.elasto.tower->reference_points;
         auto csv_out = seahowl::io::CustomCSV(
             (fs::path(logs_folder) / ("turbine" + std::to_string(idx_turbine + 1) + "_tower_points_reference.csv"))
                 .generic_string());
@@ -268,7 +269,7 @@ void OutputManager::output_initial_logs() {
         }
 
         // discretized points
-        auto& discretized_points = turbine.elasto.tower.discretized_points;
+        auto& discretized_points = turbine.elasto.tower->discretized_points;
         csv_out = seahowl::io::CustomCSV(
             (fs::path(logs_folder) / ("turbine" + std::to_string(idx_turbine + 1) + "_tower_points_discretized.csv"))
                 .generic_string());

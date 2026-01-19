@@ -1,11 +1,12 @@
 #include "fixture_components.h"
 
 #include <seahowl/commons/numerics.h>
-#include <seahowl/aero/turbine_aero.h>
+#include <seahowl/fluid/aero/turbine_aero.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/servo/controller.h>
-#include <seahowl/io/read_json.h>
+#include <seahowl/io/read_input.h>
 #include <seahowl/env/inflowwind_adapter.h>
+#include <seahowl/env/env_model.h>
 #include <seahowl/elasto/chrono_adapters.h>
 
 #include <gtest/gtest.h>
@@ -32,8 +33,14 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     auto verbose = false;
     // timestepping
     double dt = 0.1;
+
+    auto path = (DATADIR / "IEA15MW/env/InflowWind.dat").generic_string();
     // wind
-    auto wind_model = seahowl::env::InflowWindAdapter((DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
+    auto wind_model = std::make_shared<seahowl::env::InflowWindAdapter>(path);
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
     // turbine
     double initial_pitch = seahowl::PI / 8.0;
 
@@ -42,10 +49,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
     // turbine
-    auto turbine_elasto = seahowl::elasto::TurbineElasto();
-    auto turbine_aero = seahowl::aero::TurbineAero();
-    auto turbine = seahowl::core::Turbine(turbine_elasto, turbine_aero);
-    seahowl::io::populate_turbine_from_json((DATADIR / "IEA15MW/onshore/turbine.json").generic_string(), turbine);
+    auto turbine = seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string());
     // remove controller
     turbine.controller = std::make_shared<seahowl::servo::Controller>();
 
@@ -77,7 +81,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_fluid_loads(wind_model, time);
+        turbine.aero.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

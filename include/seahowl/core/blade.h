@@ -1,6 +1,7 @@
 #pragma once
 
 #include "seahowl/core/component.h"
+#include "seahowl/commons/utils.h"
 
 #include <memory>
 #include <vector>
@@ -49,7 +50,8 @@ class Blade : public ComponentDynamic {
      * @param[in] elasto Elastodynamic blade model.
      * @param[in] aero Aerodynamic blade model.
      */
-    Blade(seahowl::elasto::BladeElasto& elasto, seahowl::aero::BladeAero& aero);
+    Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
+          const std::shared_ptr<seahowl::aero::BladeAero> aero);
 
     /**
      * @brief Prestep for blade, called before elastodynamic stepping.
@@ -71,7 +73,7 @@ class Blade : public ComponentDynamic {
      */
     void poststep(double time, double dt) override;
 
-    void apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) override;
+    void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
 
     /**
      * @brief Builds the blade (aero and elasto part).
@@ -79,7 +81,7 @@ class Blade : public ComponentDynamic {
      * Sets the nodes and elements for elasto and aero components of the blade, as well as the aero->elasto mapping and
      * elasto->aero mapping.
      */
-    virtual void build();
+    virtual void build() override;
 
     /**
      * @brief Applies pitch increment to the blade (i.e. rotates the blade around its longitudinal axis).

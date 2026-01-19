@@ -2,7 +2,7 @@
 
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/tower_elasto.h"
-#include "seahowl/aero/tower_aero.h"
+#include "seahowl/fluid/aero/tower_aero.h"
 
 #include <spdlog/spdlog.h>
 
@@ -10,7 +10,8 @@ using namespace seahowl::core;
 using namespace seahowl::elasto;
 using namespace seahowl::aero;
 
-Tower::Tower(TowerElasto& elasto, TowerAero& aero) : elasto(elasto), aero(aero) {}
+Tower::Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero)
+    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
 
 void Tower::initialize_this(double time, double dt) {
     // mappings
@@ -33,8 +34,8 @@ void Tower::poststep(double time, double dt) {
     update_positions_aero();
 }
 
-void Tower::apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time) {
-    aero.compute_fluid_loads(fluid_model, time);
+void Tower::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
+    aero.compute_env_loads(env_model, time);
 }
 
 void Tower::build() {

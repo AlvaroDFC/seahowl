@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <stdexcept>
 #include <algorithm>
@@ -8,10 +9,13 @@
 
 // forward declarations
 namespace seahowl {
+class ComponentFluid;
 namespace env {
-class FluidModel;
-class SoilModel;
+class EnvModel;
 }  // namespace env
+namespace elasto {
+class ComponentElasto;
+}
 }  // namespace seahowl
 
 namespace seahowl {
@@ -22,6 +26,13 @@ namespace core {
  */
 class ComponentDynamic {
   public:
+    ComponentDynamic(const std::shared_ptr<seahowl::elasto::ComponentElasto> elasto_,
+                     const std::shared_ptr<seahowl::ComponentFluid> fluid_)
+        : elasto_ptr(elasto_), fluid_ptr(fluid_) {}
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~ComponentDynamic() = default;
     /**
      * @brief Builds the component, called before initializing the simulation.
      */
@@ -52,25 +63,40 @@ class ComponentDynamic {
     virtual void poststep(double time, double dt) = 0;
 
     /**
-     * @brief Applies fluid model to component.
+     * @brief Applies env model to component.
      *
-     * @param[in] fluid_model Fluid model affecting component.
+     * @param[in] env_model env model affecting component.
      * @param[in] time Time of simulation.
      */
-    virtual void apply_fluid_model(seahowl::env::FluidModel& fluid_model, double time){};
+    virtual void apply_env_model(seahowl::env::EnvModel& env_model, double time){};
 
     /**
      * @brief Applies soil model to component.
      *
-     * @param[in] fluid_model Fluid model affecting component.
+     * @param[in] env_model env model affecting component.
      * @param[in] time Time of simulation.
      */
-    virtual void apply_soil_model(seahowl::env::SoilModel& soil_model, double time){};
+    virtual void apply_soil_model(seahowl::env::EnvModel& env_model, double time){};
+
+    /**
+     * @brief Get elasto shared_ptr component.
+     */
+    std::shared_ptr<seahowl::elasto::ComponentElasto> get_shared_elasto() const { return elasto_ptr; }
+
+    /**
+     * @brief Get fluid shared_ptr component.
+     */
+    std::shared_ptr<seahowl::ComponentFluid> get_shared_fluid() const { return fluid_ptr; }
 
   protected:
     bool is_initialized = false;
 
   private:
+    // Only for memory management, never accessed (reference to underlying object is accessed instead).
+    std::shared_ptr<seahowl::elasto::ComponentElasto> elasto_ptr;
+    // Only for memory management, never accessed (reference to underlying object is accessed instead).
+    std::shared_ptr<seahowl::ComponentFluid> fluid_ptr;
+
     virtual void initialize_this(double time, double dt) = 0;
 };
 

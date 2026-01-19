@@ -3,14 +3,12 @@
 #include <pybind11/eigen.h>
 
 #include <seahowl/env/wind_models.h>
-#include <seahowl/env/wind_models.h>
 #include <seahowl/env/soil_models.h>
-#include <seahowl/env/combined_models.h>
 #ifdef HAVE_INFLOWWIND
     #include <seahowl/env/inflowwind_adapter.h>
 #endif
 #ifdef HAVE_HYDROCHRONO
-    #include <seahowl/hydro/hydrochrono_adapter.h>
+    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
 #endif
 
 namespace py = pybind11;
@@ -19,13 +17,48 @@ void initialize_pyseahowl_env(py::module& m) {
     // submodule
     auto m_env = m.def_submodule("env", "Env submodule.");
 
+    // env/model.h
+    py::class_<seahowl::env::Model, std::shared_ptr<seahowl::env::Model>>(m_env, "Model")
+        .def("is_inside", &seahowl::env::Model::is_inside);
+
+    // env/env_model.h
+    py::class_<seahowl::env::EnvModel, std::shared_ptr<seahowl::env::EnvModel>>(m_env, "EnvModel")
+        .def(py::init<>())
+        .def("add_model", &seahowl::env::EnvModel::add_model)
+        .def_readwrite("fluid_models", &seahowl::env::EnvModel::fluid_models)
+        .def_readwrite("soil_models", &seahowl::env::EnvModel::soil_models);
+
+    // env/ListModel<FluidModel>
+    py::class_<seahowl::env::ListModel<seahowl::env::FluidModel>,
+               std::shared_ptr<seahowl::env::ListModel<seahowl::env::FluidModel>>>(m_env, "ListModel_FluidModel");
+
+    // env/fluid_list_model.h
+    py::class_<seahowl::env::FluidListModel, std::shared_ptr<seahowl::env::FluidListModel>,
+               seahowl::env::ListModel<seahowl::env::FluidModel>>(m_env, "FluidListModel")
+        .def("get_density", &seahowl::env::FluidListModel::get_density)
+        .def("get_velocity", &seahowl::env::FluidListModel::get_velocity)
+        .def("get_acceleration", &seahowl::env::FluidListModel::get_acceleration)
+        .def("set_ramp", &seahowl::env::FluidListModel::set_ramp)
+        .def("get_models", &seahowl::env::FluidListModel::get_models)
+        .def("get_model", &seahowl::env::FluidListModel::get_model);
+
+    // env/ListModel<SoilModel>
+    py::class_<seahowl::env::ListModel<seahowl::env::SoilModel>,
+               std::shared_ptr<seahowl::env::ListModel<seahowl::env::SoilModel>>>(m_env, "ListModel_SoilModel");
+
+    // env/soil_list_model.h
+    py::class_<seahowl::env::SoilListModel, std::shared_ptr<seahowl::env::SoilListModel>,
+               seahowl::env::ListModel<seahowl::env::SoilModel>>(m_env, "SoilListModel")
+        .def("get_penetration_load", &seahowl::env::SoilListModel::get_penetration_load)
+        .def("get_models", &seahowl::env::SoilListModel::get_models)
+        .def("get_model", &seahowl::env::SoilListModel::get_model);
+
     // env/fluid_models.h
-    py::class_<seahowl::env::FluidModel, std::shared_ptr<seahowl::env::FluidModel>>(m_env, "FluidModel")
-        .def_readwrite("ramp_start", &seahowl::env::FluidModel::ramp_start)
-        .def_readwrite("ramp_end", &seahowl::env::FluidModel::ramp_end)
-        .def("get_fluid_velocity", &seahowl::env::FluidModel::get_fluid_velocity)
-        .def("get_fluid_acceleration", &seahowl::env::FluidModel::get_fluid_acceleration)
-        .def("get_fluid_density", &seahowl::env::FluidModel::get_fluid_density);
+    py::class_<seahowl::env::FluidModel, std::shared_ptr<seahowl::env::FluidModel>, seahowl::env::Model>(m_env,
+                                                                                                         "FluidModel")
+        .def("get_velocity", &seahowl::env::FluidModel::get_velocity)
+        .def("get_acceleration", &seahowl::env::FluidModel::get_acceleration)
+        .def("get_density", &seahowl::env::FluidModel::get_density);
 
     // env/wind_models.h
     py::class_<seahowl::env::WindModel, std::shared_ptr<seahowl::env::WindModel>, seahowl::env::FluidModel>(m_env,
@@ -60,7 +93,6 @@ void initialize_pyseahowl_env(py::module& m) {
     // env/wave_models.h
     py::class_<seahowl::env::WaveModel, std::shared_ptr<seahowl::env::WaveModel>, seahowl::env::FluidModel>(m_env,
                                                                                                             "WaveModel")
-        .def("is_in_water", &seahowl::env::WaveModel::is_in_water)
         .def("get_water_level", &seahowl::env::WaveModel::get_water_level)
         .def_readwrite("density", &seahowl::env::WaveModel::density)
         .def_readwrite("mean_water_level", &seahowl::env::WaveModel::mean_water_level)
@@ -83,8 +115,8 @@ void initialize_pyseahowl_env(py::module& m) {
 #endif
 
     // env/soil_models.h
-    py::class_<seahowl::env::SoilModel, std::shared_ptr<seahowl::env::SoilModel>>(m_env, "SoilModel")
-        .def("is_in_soil", &seahowl::env::SoilModel::is_in_soil)
+    py::class_<seahowl::env::SoilModel, std::shared_ptr<seahowl::env::SoilModel>, seahowl::env::Model>(m_env,
+                                                                                                       "SoilModel")
         .def("get_penetration_load", &seahowl::env::SoilModel::get_penetration_load);
     py::class_<seahowl::env::LinearSoilModel, std::shared_ptr<seahowl::env::LinearSoilModel>, seahowl::env::SoilModel>(
         m_env, "LinearSoilModel")
@@ -93,16 +125,4 @@ void initialize_pyseahowl_env(py::module& m) {
         .def_readwrite("soil_normal", &seahowl::env::LinearSoilModel::soil_normal)
         .def_readwrite("stiffness_normal", &seahowl::env::LinearSoilModel::stiffness_normal)
         .def_readwrite("stiffness_shear", &seahowl::env::LinearSoilModel::stiffness_shear);
-
-    // env/combined_models.h
-    py::class_<seahowl::env::WaveWindModel, std::shared_ptr<seahowl::env::WaveWindModel>, seahowl::env::FluidModel>(
-        m_env, "WaveWindModel")
-        .def(py::init<>())
-        .def_readwrite("wave_model", &seahowl::env::WaveWindModel::wave_model)
-        .def_readwrite("wind_model", &seahowl::env::WaveWindModel::wind_model);
-    py::class_<seahowl::env::FluidSoilModel, std::shared_ptr<seahowl::env::FluidSoilModel>, seahowl::env::FluidModel,
-               seahowl::env::SoilModel>(m_env, "FluidSoilModel")
-        .def(py::init<>())
-        .def_readwrite("fluid_model", &seahowl::env::FluidSoilModel::fluid_model)
-        .def_readwrite("soil_model", &seahowl::env::FluidSoilModel::soil_model);
 }

@@ -2,7 +2,7 @@
 
 #include "seahowl/core/tower.h"
 #include "seahowl/elasto/monopile_elasto.h"
-#include "seahowl/hydro/monopile_hydro.h"
+#include "seahowl/fluid/hydro/monopile_hydro.h"
 #include "seahowl/core/foundation.h"
 
 namespace seahowl {
@@ -24,8 +24,13 @@ class Monopile : public Tower, public virtual Foundation {
      * @param[in] elasto Elastodynamic tower model.
      * @param[in] aero Aerodynamic tower model.
      */
-    Monopile(seahowl::elasto::MonopileElasto& elasto, seahowl::hydro::MonopileHydro& hydro)
-        : Tower(elasto, hydro), elasto(elasto), hydro(hydro){};
+    Monopile(std::shared_ptr<seahowl::elasto::MonopileElasto> elasto,
+             std::shared_ptr<seahowl::hydro::MonopileHydro> hydro)
+        : Foundation(elasto, hydro),
+          Tower(elasto, hydro),
+          ComponentDynamic(elasto, hydro),
+          elasto(*elasto),
+          hydro(*hydro){};
 };
 
 }  // namespace core

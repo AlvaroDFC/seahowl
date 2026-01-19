@@ -24,6 +24,10 @@
 #include <spdlog/spdlog.h>
 #include <typeinfo>
 
+#define EIGEN_MATRIXBASE_PLUGIN <chrono/core/ChMatrixEigenExtensions.h>
+#define EIGEN_SPARSEMATRIX_PLUGIN <chrono/core/ChSparseMatrixEigenExtensions.h>
+#include <Eigen/Sparse>
+
 // default mass value for checking if ChBody mass was set.
 const double MASS_NOTSET_VALUE = -1.2345e-12;
 
@@ -1475,7 +1479,7 @@ void SystemElastoChrono::do_statics(bool linear, int nonlinear_steps) {
 
     // constrain rotor
     for (auto& turbine : turbines) {
-        turbine->rna.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        turbine->rna->link_shaft_hub->set_constraints(true, true, true, true, true, true);
     }
 
     // linear statics
@@ -1490,7 +1494,7 @@ void SystemElastoChrono::do_statics(bool linear, int nonlinear_steps) {
     // unconstrain rotor
     for (auto& turbine : turbines) {
         // rotor
-        turbine->rna.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+        turbine->rna->link_shaft_hub->set_constraints(true, true, true, false, true, true);
     }
 
     spdlog::debug("Performed statics prestep with linear step as {} and {} nonlinear steps.", linear, nonlinear_steps);
@@ -1502,6 +1506,24 @@ Vector3d SystemElastoChrono::get_gravitational_acceleration() const {
 
 void SystemElastoChrono::set_gravitational_acceleration(const Vector3d& gravitational_acceleration) {
     chobj->SetGravitationalAcceleration(gravitational_acceleration);
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_mass_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetMassMatrix(mat);
+    return mat;
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_stiffness_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetStiffnessMatrix(mat);
+    return mat;
+}
+
+Eigen::MatrixXd SystemElastoChrono::get_damping_matrix() const {
+    auto mat = chrono::ChSparseMatrix();
+    chobj->GetDampingMatrix(mat);
+    return mat;
 }
 
 void SystemElastoChrono::add(BodyElasto& body) {

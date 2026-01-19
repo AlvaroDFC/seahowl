@@ -2,7 +2,7 @@
 
 #include <seahowl/elasto/chrono_adapters.h>
 #include <seahowl/commons/numerics.h>
-#include <seahowl/io/read_json.h>
+#include <seahowl/io/read_input.h>
 
 #include <gtest/gtest.h>
 #include <filesystem>  // C++17
@@ -26,7 +26,7 @@ TEST_F(TestTower, mass) {
 
     // tower
     auto tower = seahowl::elasto::TowerElasto();
-    seahowl::io::populate_tower_elasto_from_json((DATADIR / "IEA15MW/onshore/tower.csv").generic_string(), tower);
+    seahowl::io::populate_tower_elasto_from_file((DATADIR / "IEA15MW/onshore/tower.csv").generic_string(), tower);
     tower.build();
     tower.assemble(system_elasto);
 
@@ -47,7 +47,7 @@ TEST_F(TestTower, frequency) {
 
     // tower
     auto tower = seahowl::elasto::TowerElasto();
-    seahowl::io::populate_tower_elasto_from_json((DATADIR / "IEA15MW/onshore/tower.csv").generic_string(), tower);
+    seahowl::io::populate_tower_elasto_from_file((DATADIR / "IEA15MW/onshore/tower.csv").generic_string(), tower);
     tower.discretization_fractions = {};
     tower.build();
     tower.assemble(system_elasto);
@@ -80,14 +80,14 @@ TEST_F(TestTower, frequency_json) {
 
     // tower
     auto tower = seahowl::elasto::TowerElasto();
-    seahowl::io::populate_tower_elasto_from_json((DATADIR / "IEA15MW/onshore/tower.json").generic_string(), tower);
+    seahowl::io::populate_tower_elasto_from_file((DATADIR / "IEA15MW/onshore/tower.json").generic_string(), tower);
     tower.discretization_fractions = {};
     tower.build();
     tower.assemble(system_elasto);
     tower.nodes.front()->set_fixed(true);
 
     // Setup TestFwDataSet
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_frequency.csv").generic_string(),
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_frequency_json.csv").generic_string(),
                                        (test_dir / "test_tower_frequency_json.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
     test_dataset.test_csv.add_function("top x (s)", [&tower] { return tower.nodes.back()->get_position().x(); });

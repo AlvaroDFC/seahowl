@@ -22,11 +22,10 @@ class WaveModel : public FluidModel {
 
     /**
      * @brief Returns whether position at time t in inside water.
-     *
      * @param[in] position Position at which fluid velocity is extracted.
      * @param[in] time Time of simulation.
      */
-    bool is_in_water(const Vector3d& position, double time) const;
+    virtual bool is_inside(const Vector3d& position, double time) const override;
 
     /**
      * @brief Returns water level.
@@ -44,13 +43,12 @@ class StillWater : public WaveModel {
      */
     StillWater();
 
-    virtual double get_fluid_density(const Vector3d& position, double time) const override;
-
     virtual double get_water_level(const Vector3d& position, double time) const override;
 
   protected:
-    virtual Vector3d get_fluid_velocity_this(const Vector3d& position, double time) const override;
-    virtual Vector3d get_fluid_acceleration_this(const Vector3d& position, double time) const override;
+    virtual double get_density_this(const Vector3d& position, double time) const override;
+    virtual Vector3d get_velocity_this(const Vector3d& position, double time) const override;
+    virtual Vector3d get_acceleration_this(const Vector3d& position, double time) const override;
 };
 
 /**
@@ -73,8 +71,8 @@ class CurrentConstant : public StillWater {
     CurrentConstant();
 
   protected:
-    virtual Vector3d get_fluid_velocity_this(const Vector3d& position, double time) const override;
-    virtual Vector3d get_fluid_acceleration_this(const Vector3d& position, double time) const override;
+    virtual Vector3d get_velocity_this(const Vector3d& position, double time) const override;
+    virtual Vector3d get_acceleration_this(const Vector3d& position, double time) const override;
 };
 
 }  // namespace env
