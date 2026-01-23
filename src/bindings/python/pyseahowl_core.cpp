@@ -2,11 +2,12 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
+#include <seahowl/commons/utils.h>
 #include <seahowl/core/component.h>
 #include <seahowl/core/simulation.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/elasto/turbine_elasto.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/core/rotor.h>
 #include <seahowl/core/blade.h>
 #include <seahowl/elasto/blade_elasto.h>
@@ -23,7 +24,7 @@
 #include <seahowl/fluid/hydro/floater_hydro.h>
 #include <seahowl/core/system.h>
 #include <seahowl/elasto/system_elasto.h>
-#include <seahowl/fluid/aero/system_aero.h>
+#include <seahowl/fluid/system_fluid.h>
 #include <seahowl/env/wind_models.h>
 #include <seahowl/env/env_model.h>
 #include <seahowl/servo/controller.h>
@@ -66,12 +67,18 @@ void initialize_pyseahowl_core(py::module& m) {
     // core/turbine.h
     py::class_<seahowl::core::Turbine, std::shared_ptr<seahowl::core::Turbine>, seahowl::core::ComponentDynamic>(
         m_core, "Turbine")
-        .def(py::init<std::shared_ptr<seahowl::elasto::TurbineElasto>, std::shared_ptr<seahowl::aero::TurbineAero>>())
+        .def(py::init<std::shared_ptr<seahowl::elasto::TurbineElasto>, std::shared_ptr<seahowl::fluid::TurbineFluid>>())
         .def("apply_control", &seahowl::core::Turbine::apply_control)
         .def("get_generated_power", &seahowl::core::Turbine::get_generated_power)
         .def("get_generator_rpm", &seahowl::core::Turbine::get_generator_rpm)
         .def_property_readonly("elasto", [](seahowl::core::Turbine& turbine) { return &turbine.elasto; })
-        .def_property_readonly("aero", [](seahowl::core::Turbine& turbine) { return &turbine.aero; })
+        .def_property_readonly("fluid", [](seahowl::core::Turbine& turbine) { return &turbine.fluid; })
+        .def_property_readonly(
+            "aero",
+            [](seahowl::core::Turbine& turbine) {
+                seahowl::log("Turbine.aero is deprecated, use Turbine.fluid instead for aero/hydro access.", "warn");
+                return &turbine.fluid;
+            })
         .def_readonly("controller", &seahowl::core::Turbine::controller)
         .def_readonly("tower", &seahowl::core::Turbine::tower)
         .def_readonly("rna", &seahowl::core::Turbine::rna)
@@ -149,7 +156,7 @@ void initialize_pyseahowl_core(py::module& m) {
     // core/system.h
     py::class_<seahowl::core::System, std::shared_ptr<seahowl::core::System>, seahowl::core::ComponentDynamic>(m_core,
                                                                                                                "System")
-        .def(py::init<std::shared_ptr<seahowl::elasto::SystemElasto>, std::shared_ptr<seahowl::aero::SystemAero>>())
+        .def(py::init<std::shared_ptr<seahowl::elasto::SystemElasto>, std::shared_ptr<seahowl::fluid::SystemFluid>>())
         .def("step", &seahowl::core::System::step)
         .def("get_time", &seahowl::core::System::get_time)
         .def("set_time", &seahowl::core::System::set_time)
@@ -163,5 +170,9 @@ void initialize_pyseahowl_core(py::module& m) {
         .def_readonly("components", &seahowl::core::System::components)
         .def_readwrite("env_model", &seahowl::core::System::env_model)
         .def_property_readonly("elasto", [](seahowl::core::System& system) { return &system.elasto; })
-        .def_property_readonly("aero", [](seahowl::core::System& system) { return &system.aero; });
+        .def_property_readonly("fluid", [](seahowl::core::System& system) { return &system.fluid; })
+        .def_property_readonly("aero", [](seahowl::core::System& system) {
+            seahowl::log("System.aero is deprecated, use System.fluid instead for aero/hydro access.", "warn");
+            return &system.fluid;
+        });
 }

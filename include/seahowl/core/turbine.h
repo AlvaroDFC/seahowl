@@ -17,11 +17,8 @@ namespace servo {
 class Controller;
 }  // namespace servo
 namespace fluid {
-namespace aero {
-class TurbineAero;
-}  // namespace aero
+class TurbineFluid;
 }  // namespace fluid
-namespace aero = fluid::aero;
 namespace elasto {
 class TurbineElasto;
 }  // namespace elasto
@@ -44,8 +41,8 @@ class Turbine : public ComponentDynamic {
     //
     /** @brief Elastodynamic model of the turbine. */
     seahowl::elasto::TurbineElasto& elasto;
-    /** @brief Aerodynamic model of the turbine. */
-    seahowl::aero::TurbineAero& aero;
+    /** @brief Fluid model of the turbine. */
+    seahowl::fluid::TurbineFluid& fluid;
     /** @brief Rotor-nacelle assembly of the turbine. */
     RotorNacelleAssembly rna;
     /** @brief Tower of the turbine. */
@@ -72,7 +69,8 @@ class Turbine : public ComponentDynamic {
      * @param[in] elasto Elastodynamic turbine model.
      * @param[in] aero Aerodynamic turbine model.
      */
-    Turbine(std::shared_ptr<seahowl::elasto::TurbineElasto> elasto, std::shared_ptr<seahowl::aero::TurbineAero> aero);
+    Turbine(std::shared_ptr<seahowl::elasto::TurbineElasto> elasto,
+            std::shared_ptr<seahowl::fluid::TurbineFluid> fluid);
 
     /**
      * @brief Applies control to turbine.

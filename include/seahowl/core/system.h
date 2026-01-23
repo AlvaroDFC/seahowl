@@ -14,11 +14,8 @@ namespace servo {
 class Controller;
 }  // namespace servo
 namespace fluid {
-namespace aero {
-class SystemAero;
-}  // namespace aero
+class SystemFluid;
 }  // namespace fluid
-namespace aero = fluid::aero;
 namespace elasto {
 class SystemElasto;
 }  // namespace elasto
@@ -42,8 +39,8 @@ class System : public ComponentDynamic {
     std::shared_ptr<seahowl::env::EnvModel> env_model;
     /** @brief System for elastodynamics. */
     seahowl::elasto::SystemElasto& elasto;
-    /** @brief System for aerodynamics. */
-    seahowl::aero::SystemAero& aero;
+    /** @brief System for fluid dynamics. */
+    seahowl::fluid::SystemFluid& fluid;
     /**
      * @brief Constructor.
      *
@@ -52,7 +49,7 @@ class System : public ComponentDynamic {
      * @param[in] elasto Elastodynamic system.
      * @param[in] aero Aerodynamic system.
      */
-    System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::aero::SystemAero> aero);
+    System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::fluid::SystemFluid> fluid);
 
     void build() override;
 

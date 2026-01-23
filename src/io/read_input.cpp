@@ -30,9 +30,9 @@
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
-#include "seahowl/fluid/aero/turbine_aero.h"
+#include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/fluid/hydro/monopile_hydro.h"
-#include "seahowl/fluid/aero/system_aero.h"
+#include "seahowl/fluid/system_fluid.h"
 #include "seahowl/fluid/hydro/mooring_hydro.h"
 #ifdef HAVE_HYDROCHRONO
     #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
@@ -221,7 +221,7 @@ std::shared_ptr<seahowl::aero::BladeAero> get_blade_aero_from_db(const BladeTurb
 }
 
 std::shared_ptr<seahowl::aero::RotorAero> get_rotor_aero_from_db(const TurbineDb& turbine_db,
-                                                                 const seahowl::aero::TurbineAero& turbine_aero) {
+                                                                 const seahowl::fluid::TurbineFluid& turbine_aero) {
     std::shared_ptr<seahowl::aero::RotorAero> rotor_aero;
     if (turbine_db.aero.solver == "bemt") {
         spdlog::info("Aerodynamic model: Blade Element Momentum Theory (BEMT).");
@@ -281,7 +281,7 @@ std::shared_ptr<seahowl::elasto::RotorElasto> get_rotor_elasto_from_db(const Tur
 
 std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> get_rna_aero_from_db(
     const TurbineDb& turbine_db,
-    const seahowl::aero::TurbineAero& turbine_aero) {
+    const seahowl::fluid::TurbineFluid& turbine_aero) {
     auto rna_aero = std::make_shared<seahowl::aero::RotorNacelleAssemblyAero>();
 
     rna_aero->rotor = get_rotor_aero_from_db(turbine_db, turbine_aero);
@@ -612,8 +612,8 @@ std::shared_ptr<seahowl::elasto::TurbineElasto> get_turbine_elasto_from_db(const
     return turbine_elasto;
 }
 
-std::shared_ptr<seahowl::aero::TurbineAero> get_turbine_aero_from_db(const TurbineDb& turbine_db) {
-    std::shared_ptr<seahowl::aero::TurbineAero> turbine_aero;
+std::shared_ptr<seahowl::fluid::TurbineFluid> get_turbine_aero_from_db(const TurbineDb& turbine_db) {
+    std::shared_ptr<seahowl::fluid::TurbineFluid> turbine_aero;
     // make turbine aero
     if (turbine_db.aero.solver == "aerodyn") {
 #ifdef HAVE_AERODYN
@@ -621,7 +621,7 @@ std::shared_ptr<seahowl::aero::TurbineAero> get_turbine_aero_from_db(const Turbi
         turbine_aero = std::make_shared<seahowl::aero::TurbineAeroDyn>(file_aerodyn_path);
 #endif
     } else {
-        turbine_aero = std::make_shared<seahowl::aero::TurbineAero>();
+        turbine_aero = std::make_shared<seahowl::fluid::TurbineFluid>();
     }
     // tower
     turbine_aero->tower = get_tower_aero_from_db(turbine_db);
@@ -812,8 +812,8 @@ void add_turbine_to_system_from_db(const TurbineDb& turbine_db, seahowl::core::S
     // add turbine elasto and aero to system
     auto turbine_elasto = std::dynamic_pointer_cast<seahowl::elasto::TurbineElasto>(turbine->get_shared_elasto());
     system_core.elasto.turbines.push_back(turbine_elasto);
-    auto turbine_aero = std::dynamic_pointer_cast<seahowl::aero::TurbineAero>(turbine->get_shared_fluid());
-    system_core.aero.turbines.push_back(turbine_aero);
+    auto turbine_aero = std::dynamic_pointer_cast<seahowl::fluid::TurbineFluid>(turbine->get_shared_fluid());
+    system_core.fluid.turbines.push_back(turbine_aero);
 
     turbine->build();
 }

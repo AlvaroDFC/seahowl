@@ -54,7 +54,7 @@ TEST_F(TestAeroDyn, rpm_initial_pitch) {
     // remove controller
     turbine.controller = std::make_shared<seahowl::servo::Controller>();
 
-    auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.aero);
+    auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.fluid);
     turbine_aero.aerodyn.set_aerodyn_infile(
         (DATADIR / "IEA15MW/base/aerodyn/IEA-15-240-RWT_AeroDyn15.dat").generic_string());
     turbine_aero.aerodyn.set_inflowwind_infile((DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
@@ -87,7 +87,7 @@ TEST_F(TestAeroDyn, rpm_initial_pitch) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

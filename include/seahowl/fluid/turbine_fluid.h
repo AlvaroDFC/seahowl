@@ -19,30 +19,28 @@ class WindModel;
 namespace seahowl {
 namespace fluid {
 
-/**@brief Seahowl aero module */
-namespace aero {
 /**
  * @brief Wind turbine (blades, rotor-nacelle assembly, tower).
  *
- * This class controls each component, ensuring proper workflow for the aero part.
+ * This class controls each component, ensuring proper workflow for the fluid part.
  */
-class TurbineAero : public ComponentFluid {
+class TurbineFluid : public ComponentFluid {
   public:
     // components
     //
     /** @brief Rotor-nacelle assembly of the turbine. */
-    std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> rna;
+    std::shared_ptr<seahowl::fluid::aero::RotorNacelleAssemblyAero> rna;
     /** @brief Tower of the turbine. */
-    std::shared_ptr<seahowl::aero::TowerAero> tower;
+    std::shared_ptr<seahowl::fluid::aero::TowerAero> tower;
     /** @brief Foundation of the turbine. */
-    std::shared_ptr<seahowl::hydro::FoundationFluid> foundation;
+    std::shared_ptr<seahowl::fluid::hydro::FoundationFluid> foundation;
 
     /**
      * @brief Constructor.
      *
      * Instantiates rotor component and tower component.
      */
-    TurbineAero();
+    TurbineFluid();
 
     /**
      * @brief Builds turbine.
@@ -58,14 +56,16 @@ class TurbineAero : public ComponentFluid {
     virtual void initialize(double time, double dt);
 
     /**
-     * @brief Computes aero loads on turbine.
+     * @brief Computes fluid loads on turbine.
      *
-     * @param[in] wind_model Wind model to use for applying aero loads.
+     * @param[in] env_model Environment model to use for applying fluid loads.
      * @param[in] time Time of simulation.
      */
     virtual void compute_env_loads(const env::EnvModel& env_model, double time) override;
 };
 
-}  // namespace aero
+// Backward-compatible alias
+using TurbineAero = TurbineFluid;
+
 }  // namespace fluid
 }  // namespace seahowl

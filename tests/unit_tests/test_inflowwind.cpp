@@ -1,7 +1,7 @@
 #include "fixture_components.h"
 
 #include <seahowl/commons/numerics.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/servo/controller.h>
 #include <seahowl/io/read_input.h>
@@ -81,7 +81,7 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

@@ -3,11 +3,11 @@
 #include <pybind11/eigen.h>
 
 #include <seahowl/commons/component_fluid.h>
-#include <seahowl/fluid/aero/system_aero.h>
+#include <seahowl/fluid/system_fluid.h>
 #include <seahowl/fluid/aero/blade_aero.h>
 #include <seahowl/fluid/aero/rotor_aero.h>
 #include <seahowl/fluid/aero/tower_aero.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/fluid/aero/reference_point_aero.h>
 
 namespace py = pybind11;
@@ -17,16 +17,16 @@ void initialize_pyseahowl_aero(py::module& m) {
     auto m_aero = m.def_submodule("aero", "Aero submodule.");
 
     // aero/system_aero.h
-    py::class_<seahowl::aero::SystemAero, std::shared_ptr<seahowl::aero::SystemAero>>(m_aero, "SystemAero")
+    py::class_<seahowl::fluid::SystemFluid, std::shared_ptr<seahowl::fluid::SystemFluid>>(m_aero, "SystemFluid")
         .def(py::init<>())
         .def("add",
-             static_cast<void (seahowl::aero::SystemAero::*)(std::shared_ptr<seahowl::aero::TurbineAero> turbine)>(
-                 &seahowl::aero::SystemAero::add))
+             static_cast<void (seahowl::fluid::SystemFluid::*)(std::shared_ptr<seahowl::fluid::TurbineFluid> turbine)>(
+                 &seahowl::fluid::SystemFluid::add))
         .def("add",
-             static_cast<void (seahowl::aero::SystemAero::*)(std::shared_ptr<seahowl::ComponentFluid> component)>(
-                 &seahowl::aero::SystemAero::add))
-        .def_readonly("turbines", &seahowl::aero::SystemAero::turbines)
-        .def_readonly("components", &seahowl::aero::SystemAero::components);
+             static_cast<void (seahowl::fluid::SystemFluid::*)(std::shared_ptr<seahowl::ComponentFluid> component)>(
+                 &seahowl::fluid::SystemFluid::add))
+        .def_readonly("turbines", &seahowl::fluid::SystemFluid::turbines)
+        .def_readonly("components", &seahowl::fluid::SystemFluid::components);
     ;
 
     // aero/blade_aero.h
@@ -66,12 +66,12 @@ void initialize_pyseahowl_aero(py::module& m) {
         .def_readwrite("use_Cd_correction", &seahowl::aero::TowerAero::use_Cd_correction);
 
     // aero/turbine_aero.h
-    py::class_<seahowl::aero::TurbineAero, std::shared_ptr<seahowl::aero::TurbineAero>, seahowl::ComponentFluid>(
-        m_aero, "TurbineAero")
+    py::class_<seahowl::fluid::TurbineFluid, std::shared_ptr<seahowl::fluid::TurbineFluid>, seahowl::ComponentFluid>(
+        m_aero, "TurbineFluid")
         .def(py::init<>())
-        .def_readonly("rna", &seahowl::aero::TurbineAero::rna)
-        .def_readonly("tower", &seahowl::aero::TurbineAero::tower)
-        .def_readonly("foundation", &seahowl::aero::TurbineAero::foundation);
+        .def_readonly("rna", &seahowl::fluid::TurbineFluid::rna)
+        .def_readonly("tower", &seahowl::fluid::TurbineFluid::tower)
+        .def_readonly("foundation", &seahowl::fluid::TurbineFluid::foundation);
 
     // aero/reference_point_aero.h
     py::class_<seahowl::aero::TowerReferencePointAero, std::shared_ptr<seahowl::aero::TowerReferencePointAero>>(

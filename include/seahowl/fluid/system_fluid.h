@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seahowl/fluid/aero/turbine_aero.h"  // @todo forward declare
+#include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/commons/component_fluid.h"
 
 #include <vector>
@@ -8,27 +8,26 @@
 
 namespace seahowl {
 namespace fluid {
-namespace aero {
 
 /**
- * @brief Aero system base class.
+ * @brief Fluid system base class.
  */
-class SystemAero : public ComponentFluid {
+class SystemFluid : public ComponentFluid {
   public:
     /** @brief Turbines in system. */
-    std::deque<std::shared_ptr<TurbineAero>> turbines{};
+    std::deque<std::shared_ptr<TurbineFluid>> turbines{};
     /** @brief Components in system. */
     std::deque<std::shared_ptr<ComponentFluid>> components{};
 
     /**
-     * @brief Builds the tower.
+     * @brief Builds the system.
      */
     void build() override;
 
     /**
-     * @brief Computes aero loads on sytem.
+     * @brief Computes fluid loads on system.
      *
-     * @param[in] env_model env model to use for applying aero loads.
+     * @param[in] env_model env model to use for applying fluid loads.
      * @param[in] time Time of simulation.
      */
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
@@ -38,7 +37,7 @@ class SystemAero : public ComponentFluid {
      *
      * @param[in] turbine Turbine to add to system.
      */
-    void add(std::shared_ptr<TurbineAero> turbine);
+    void add(std::shared_ptr<TurbineFluid> turbine);
 
     /**
      * @brief Adds component to system.
@@ -48,6 +47,8 @@ class SystemAero : public ComponentFluid {
     void add(std::shared_ptr<seahowl::ComponentFluid> component);
 };
 
-}  // namespace aero
+// Backward-compatible alias
+using SystemAero = SystemFluid;
+
 }  // namespace fluid
 }  // namespace seahowl

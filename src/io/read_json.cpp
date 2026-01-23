@@ -23,24 +23,24 @@
 #include "seahowl/env/wave_models.h"
 #include "seahowl/env/soil_models.h"
 #include "seahowl/env/combined_models.h"
-#include "seahowl/hydro/morison.h"
+#include "seahowl/fluid/hydro/morison.h"
 #ifdef HAVE_INFLOWWIND
     #include "seahowl/env/inflowwind_adapter.h"
 #endif
-#include "seahowl/aero/airfoil.h"
-#include "seahowl/aero/blade_aero.h"
-#include "seahowl/aero/rotor_aero.h"
-#include "seahowl/aero/turbine_aero.h"
-#include "seahowl/hydro/monopile_hydro.h"
-#include "seahowl/aero/system_aero.h"
-#include "seahowl/hydro/mooring_hydro.h"
+#include "seahowl/fluid/aero/airfoil.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/fluid/aero/rotor_aero.h"
+#include "seahowl/fluid/turbine_fluid.h"
+#include "seahowl/fluid/hydro/monopile_hydro.h"
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/fluid/hydro/mooring_hydro.h"
 #ifdef HAVE_HYDROCHRONO
-    #include "seahowl/hydro/hydrochrono_adapter.h"
+    #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
     #include "seahowl/elasto/chrono_adapters.h"
     #include <hydroc/hydro_forces.h>
 #endif
 #ifdef HAVE_AERODYN
-    #include "seahowl/aero/aerodyn_adapter.h"
+    #include "seahowl/fluid/aero/aerodyn_adapter.h"
 #endif
 
 #include <string>
@@ -624,7 +624,7 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
 
     if (aero_json.at("solver").get<std::string>() == "bemt" || aero_json.at("solver").get<std::string>() == "BEMT") {
         spdlog::info("Aerodynamic model: Blade Element Momentum Theory (BEMT).");
-        auto rotor_aero = std::make_shared<seahowl::aero::RotorAeroBEMT>(turbine.aero.tower);
+        auto rotor_aero = std::make_shared<seahowl::aero::RotorAeroBEMT>(turbine.fluid.tower);
         turbine.rna.aero.rotor = rotor_aero;
         auto aero_options = aero_json.at("options");
         aero_options.at("hub_loss").get_to(rotor_aero->has_hub_loss);
@@ -648,11 +648,11 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
 #ifdef HAVE_AERODYN
         // check that right turbine type was defined for AeroDyn
         try {
-            auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.aero);
+            auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.fluid);
         } catch (const std::exception& e) {
             throw std::runtime_error("Wrong aero turbine type to use AeroDyn solver (needs to be TurbineAeroDyn).");
         }
-        auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.aero);
+        auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.fluid);
         auto aero_options = aero_json.at("options");
         std::string inflowwind_filepath;
         std::string aerodyn_filepath;
@@ -667,7 +667,7 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
             throw std::runtime_error("Turbine set to use aerodyn but InflowWind file not defined.");
         }
         turbine_aero.aerodyn.set_infiles(aerodyn_filepath, inflowwind_filepath);
-        turbine_aero.rna.rotor = std::make_shared<seahowl::aero::RotorAeroDyn>(turbine.aero.tower);
+        turbine_aero.rna.rotor = std::make_shared<seahowl::aero::RotorAeroDyn>(turbine.fluid.tower);
 #else
         throw std::runtime_error("Trying to use AeroDyn for turbine but the code was not compiled for using AeroDyn.");
 #endif
@@ -732,7 +732,7 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
             blades.push_back(blade);
         }
         turbine.elasto.rna.rotor->blades = blades_elasto;
-        turbine.aero.rna.rotor->blades = blades_aero;
+        turbine.fluid.rna.rotor->blades = blades_aero;
         turbine.rna.blades = blades;
     }
 
@@ -770,23 +770,23 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
     auto filepath_tower = (DATADIR / tower_json.at("file").get<std::string>()).generic_string();
     populate_tower_from_json(filepath_tower, turbine.tower);
     tower_json.at("discretization").at("elasto").get_to(turbine.elasto.tower.discretization_fractions);
-    tower_json.at("discretization").at("aero").get_to(turbine.aero.tower.discretization_fractions);
+    tower_json.at("discretization").at("aero").get_to(turbine.fluid.tower.discretization_fractions);
     if (tower_json.contains("options")) {
         if (tower_json.at("options").contains("use_MacCamyFuchs_correction"))
             tower_json.at("options")
                 .at("use_MacCamyFuchs_correction")
-                .get_to(turbine.aero.tower.use_MacCamyFuchs_correction);
+                .get_to(turbine.fluid.tower.use_MacCamyFuchs_correction);
         else
             spdlog::warn(
                 "MacCamyFuchs correction for tower/pile not defined in turbine.json, it is by default set to {}.",
-                turbine.aero.tower.use_MacCamyFuchs_correction);
+                turbine.fluid.tower.use_MacCamyFuchs_correction);
 
         if (tower_json.at("options").contains("use_Cd_correction"))
-            tower_json.at("options").at("use_Cd_correction").get_to(turbine.aero.tower.use_Cd_correction);
+            tower_json.at("options").at("use_Cd_correction").get_to(turbine.fluid.tower.use_Cd_correction);
         else
             spdlog::warn(
                 "Drag Coefficient correction for tower/pile not defined in turbine.json, it is by default set to {}.",
-                turbine.aero.tower.use_Cd_correction);
+                turbine.fluid.tower.use_Cd_correction);
     }
     // controller
     if (controller_json.at("type").get<std::string>() == "DISCON") {
@@ -842,7 +842,7 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
             auto monopile_hydro = std::make_shared<seahowl::hydro::MonopileHydro>();
             auto monopile_core = std::make_shared<seahowl::core::Monopile>(*monopile_elasto, *monopile_hydro);
             turbine.elasto.foundation = monopile_elasto;
-            turbine.aero.foundation = monopile_hydro;
+            turbine.fluid.foundation = monopile_hydro;
             turbine.foundation = monopile_core;
 
             // populate monopile
@@ -854,27 +854,27 @@ void populate_turbine_from_json(const std::string& filepath, seahowl::core::Turb
                 if (foundation_json.at("options").contains("use_MacCamyFuchs_correction"))
                     foundation_json.at("options")
                         .at("use_MacCamyFuchs_correction")
-                        .get_to(turbine.aero.tower.use_MacCamyFuchs_correction);
+                        .get_to(turbine.fluid.tower.use_MacCamyFuchs_correction);
                 else
                     spdlog::warn(
                         "MacCamyFuchs correction for tower/pile not defined in turbine.json, it is by default set to "
                         "{}.",
-                        turbine.aero.tower.use_MacCamyFuchs_correction);
+                        turbine.fluid.tower.use_MacCamyFuchs_correction);
 
                 if (foundation_json.at("options").contains("use_Cd_correction"))
-                    foundation_json.at("options").at("use_Cd_correction").get_to(turbine.aero.tower.use_Cd_correction);
+                    foundation_json.at("options").at("use_Cd_correction").get_to(turbine.fluid.tower.use_Cd_correction);
                 else
                     spdlog::warn(
                         "Drag Coefficient correction for tower/pile not defined in turbine.json, it is by default set "
                         "to {}.",
-                        turbine.aero.tower.use_Cd_correction);
+                        turbine.fluid.tower.use_Cd_correction);
             }
 
         }
 
         else if (foundation_json.at("type") == "floater") {
             auto floater_hydro_ptr = std::make_shared<seahowl::hydro::FloaterHydro>();
-            turbine.aero.foundation = floater_hydro_ptr;
+            turbine.fluid.foundation = floater_hydro_ptr;
             auto& floater_hydro = *floater_hydro_ptr;
 
             if (foundation_json.contains("file")) {
