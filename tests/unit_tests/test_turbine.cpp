@@ -240,7 +240,7 @@ TEST_F(TestTurbine, multiturbines) {
     auto system_elasto_ptr = std::make_shared<SystemElastoChrono>();
     system_elasto_ptr->set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
-    auto system_core = seahowl::core::System(system_elasto_ptr, std::make_shared<seahowl::aero::SystemAero>());
+    auto system_core = seahowl::core::System(system_elasto_ptr, std::make_shared<seahowl::fluid::SystemFluid>());
     system_core.env_model->add_model(wind_model);
 
     constexpr int nturbines = 3;
