@@ -9,7 +9,7 @@
 #include <cmath>
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using seahowl::env::EnvModel;
 using seahowl::Vector3d;
 using seahowl::Vector2d;
@@ -169,7 +169,7 @@ void RotorAeroBEMT::compute_env_loads(const EnvModel& env_model, double time) {
             // correct wind velocity with tower shadow (if activated)
             if (has_tower_shadow) {
                 if (blade_azimuth > PI / 2.0 || blade_azimuth < -PI / 2.0) {
-                    seahowl::aero::apply_tower_shadow_effect_on_wind(wind_velocity, node_position, tower_ref);
+                    seahowl::fluid::aero::apply_tower_shadow_effect_on_wind(wind_velocity, node_position, tower_ref);
                 }
             }
             // relative velocity
@@ -210,10 +210,10 @@ void RotorAeroBEMT::compute_env_loads(const EnvModel& env_model, double time) {
                                                            has_tip_loss, has_hub_loss);
 
                 // get coefficients from angle of attack
-                double phi = seahowl::aero::get_phi(local_velocity);
-                double alpha = seahowl::aero::get_alpha_from_phi(phi, angle_airfoil);
+                double phi = seahowl::fluid::aero::get_phi(local_velocity);
+                double alpha = seahowl::fluid::aero::get_alpha_from_phi(phi, angle_airfoil);
                 auto coefficients =
-                    seahowl::aero::get_aero_coefficients_from_alpha(alpha, node.properties.airfoil_properties);
+                    seahowl::fluid::aero::get_aero_coefficients_from_alpha(alpha, node.properties.airfoil_properties);
 
                 // get drag and lift coefficients
                 auto cl = coefficients.lift;

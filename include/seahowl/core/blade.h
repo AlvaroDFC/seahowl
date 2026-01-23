@@ -15,9 +15,12 @@ class Blade;
 namespace elasto {
 class BladeElasto;
 }  // namespace elasto
+namespace fluid {
 namespace aero {
 class BladeAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {

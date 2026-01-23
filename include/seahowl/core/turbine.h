@@ -16,9 +16,12 @@ class FluidModel;
 namespace servo {
 class Controller;
 }  // namespace servo
+namespace fluid {
 namespace aero {
 class TurbineAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 namespace elasto {
 class TurbineElasto;
 }  // namespace elasto

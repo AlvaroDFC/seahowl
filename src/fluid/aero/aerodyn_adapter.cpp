@@ -12,7 +12,7 @@
 #include <fstream>
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using namespace seahowl::env;
 
 extern "C" {
@@ -114,7 +114,7 @@ void ADI_C_End(int& ErrStat_C, char* ErrMsg_C);
 /**
  * @brief Aerodyn_InflowWind wrapping inferface
  */
-struct seahowl::aero::AeroDynInflowLib {
+struct seahowl::fluid::aero::AeroDynInflowLib {
     // Input file handling
     int ADinputFilePassed = 0;   // false: read input info from a primary input file; true: passing info from data
     int IfWinputFilePassed = 0;  // false: read input info from a primary input file; true: passing info from data

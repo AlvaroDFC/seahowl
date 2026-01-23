@@ -7,7 +7,7 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 using namespace seahowl::env;
 
 FloaterHydroChrono::FloaterHydroChrono(){};

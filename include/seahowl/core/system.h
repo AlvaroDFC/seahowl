@@ -13,9 +13,12 @@ class EnvModel;
 namespace servo {
 class Controller;
 }  // namespace servo
+namespace fluid {
 namespace aero {
 class SystemAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 namespace elasto {
 class SystemElasto;
 }  // namespace elasto

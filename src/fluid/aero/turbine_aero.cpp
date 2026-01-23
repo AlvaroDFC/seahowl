@@ -1,6 +1,6 @@
 #include "seahowl/fluid/aero/turbine_aero.h"
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using seahowl::env::EnvModel;
 
 TurbineAero::TurbineAero() : rna(std::make_shared<RotorNacelleAssemblyAero>()), tower(std::make_shared<TowerAero>()) {}

@@ -3,6 +3,7 @@
 #include "seahowl/commons/component_fluid.h"
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Hydrodynamic module */
 namespace hydro {
@@ -16,4 +17,5 @@ class FoundationFluid : public virtual ComponentFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

@@ -17,6 +17,7 @@ class FluidModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Hydrodynamic module */
 namespace hydro {
@@ -101,4 +102,5 @@ class MooringSystemHydro : public ComponentFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

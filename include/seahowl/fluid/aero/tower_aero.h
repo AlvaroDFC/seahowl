@@ -16,6 +16,7 @@ class FluidModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Aerodynamic module */
 namespace aero {
@@ -57,4 +58,5 @@ class TowerAero : public virtual ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

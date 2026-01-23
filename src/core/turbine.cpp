@@ -12,7 +12,7 @@
 using namespace seahowl::core;
 using namespace seahowl::servo;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 Turbine::Turbine(std::shared_ptr<TurbineElasto> elasto, std::shared_ptr<TurbineAero> aero)
     : ComponentDynamic(elasto, aero),

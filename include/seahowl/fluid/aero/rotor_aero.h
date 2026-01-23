@@ -8,16 +8,20 @@
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace aero {
 class BladeAero;
 class TowerAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 namespace env {
 class EnvModel;
 }  // namespace env
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 class RotorAero : public ComponentFluid {
@@ -124,4 +128,5 @@ class RotorNacelleAssemblyAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

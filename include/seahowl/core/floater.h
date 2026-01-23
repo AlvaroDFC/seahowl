@@ -15,9 +15,12 @@ class MooringSystem;
 namespace elasto {
 class FloaterElasto;
 }  // namespace elasto
+namespace fluid {
 namespace hydro {
 class FloaterHydro;
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {

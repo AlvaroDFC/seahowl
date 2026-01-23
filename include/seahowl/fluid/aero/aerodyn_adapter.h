@@ -16,6 +16,7 @@ class EnvModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 namespace aero {
 
@@ -83,4 +84,5 @@ class RotorAeroDyn : public RotorAeroBEMT {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

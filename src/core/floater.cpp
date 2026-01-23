@@ -12,7 +12,7 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 
 Floater::Floater(std::shared_ptr<seahowl::elasto::FloaterElasto> elasto,
                  std::shared_ptr<seahowl::hydro::FloaterHydro> hydro)

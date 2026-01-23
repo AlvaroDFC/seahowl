@@ -2,7 +2,7 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 void SystemAero::add(std::shared_ptr<TurbineAero> turbine) {
     if (std::find(turbines.begin(), turbines.end(), turbine) == turbines.end()) {

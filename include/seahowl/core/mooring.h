@@ -13,10 +13,13 @@ namespace elasto {
 class MooringElastoFEA;
 class MooringSystemElasto;
 }  // namespace elasto
+namespace fluid {
 namespace hydro {
 class MooringHydro;
 class MooringSystemHydro;
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {

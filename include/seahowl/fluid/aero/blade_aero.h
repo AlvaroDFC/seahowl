@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Aerodynamic module */
 namespace aero {
@@ -170,4 +171,5 @@ class BladeAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

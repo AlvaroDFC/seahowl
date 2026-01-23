@@ -7,6 +7,7 @@
 #include <deque>
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 /**
@@ -48,4 +49,5 @@ class SystemAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

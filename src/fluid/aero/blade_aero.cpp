@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 BladeNodeAero::BladeNodeAero(const BladeReferencePointAero& point) : properties(point) {
     set_position(point.coordinates);

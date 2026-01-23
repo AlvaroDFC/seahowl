@@ -20,6 +20,7 @@ class WaveModelHydroChrono;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 
 /**
@@ -71,6 +72,7 @@ class FloaterHydroChrono : public elasto::FloaterElasto {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 
 namespace env {
 

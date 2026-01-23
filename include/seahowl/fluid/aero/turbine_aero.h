@@ -17,6 +17,7 @@ class WindModel;
 
 /**@brief Seahowl base namespace */
 namespace seahowl {
+namespace fluid {
 
 /**@brief Seahowl aero module */
 namespace aero {
@@ -66,4 +67,5 @@ class TurbineAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl
