@@ -1,4 +1,4 @@
-# Seahowl
+# seahowl
 
 ::: seahowl
     options:

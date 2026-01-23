@@ -45,7 +45,7 @@ anchor_body.set_fixed(True)
 mooring_elasto = seahowl.elasto.MooringElastoFEA(fairlead_body, anchor_body)
 system_core.elasto.add(mooring_elasto)
 # hydro
-mooring_hydro = seahowl.hydro.MooringHydro()
+mooring_hydro = seahowl.fluid.hydro.MooringHydro()
 system_core.aero.add(mooring_hydro)
 # core
 mooring = seahowl.core.Mooring(mooring_elasto, mooring_hydro)

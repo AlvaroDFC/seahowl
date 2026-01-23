@@ -1,5 +1,5 @@
-# Hydro
+# seahowl.fluid.hydro
 
-::: seahowl.hydro
+::: seahowl.fluid.hydro
     options:
       show_root_toc_entry: true

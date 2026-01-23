@@ -108,8 +108,9 @@ nav:
     - seahowl: api/python/seahowl.md
     - seahowl.core: api/python/core.md
     - seahowl.elasto: api/python/elasto.md
-    - seahowl.aero: api/python/aero.md
-    - seahowl.hydro: api/python/hydro.md
+    - seahowl.fluid: api/python/fluid.md
+    - seahowl.fluid.aero: api/python/aero.md
+    - seahowl.fluid.hydro: api/python/hydro.md
     - seahowl.servo: api/python/servo.md
     - seahowl.env: api/python/env.md
     - seahowl.io: api/python/io.md

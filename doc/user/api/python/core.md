@@ -1,4 +1,4 @@
-# Core
+# seahowl.core
 
 ::: seahowl.core
     options:

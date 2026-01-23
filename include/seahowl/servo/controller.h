@@ -99,11 +99,10 @@ class ControllerVariableTorque : public Controller {
     double torque_elec = 0.0;
     /** @brief Previous electrical torque [Nm] */
     double torque_elec_previous = 0.0;
-
-  public:
     /** @brief Target RPM (max RPM for turbine) [rpm] */
     double target_rpm = 0.0;
 
+  public:
     /**
      * @brief Constructor.
      */

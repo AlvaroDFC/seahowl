@@ -1,5 +1,5 @@
-# seahowl.servo
+# seahowl.fluid
 
-::: seahowl.servo
+::: seahowl.fluid
     options:
       show_root_toc_entry: true

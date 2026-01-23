@@ -9,7 +9,7 @@ t_output_next = 0.0
 
 # get system
 system_elasto = seahowl.elasto.SystemElastoChrono()
-system_aero = seahowl.aero.SystemAero()
+system_aero = seahowl.fluid.SystemFluid()
 system_core = seahowl.core.System(system_elasto, system_aero)
 seahowl.io.populate_system_from_file(filepath, system_core)
 

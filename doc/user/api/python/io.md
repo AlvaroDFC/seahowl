@@ -1,4 +1,4 @@
-# IO
+# seahowl.io
 
 ::: seahowl.io
     options:

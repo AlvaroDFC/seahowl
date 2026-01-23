@@ -1,4 +1,4 @@
-# Elasto
+# seahowl.elasto
 
 ::: seahowl.elasto
     options:

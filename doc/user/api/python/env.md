@@ -1,4 +1,4 @@
-# Env
+# seahowl.env
 
 ::: seahowl.env
     options:

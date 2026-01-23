@@ -95,14 +95,6 @@ class RotorElasto : public ComponentElasto {
     void apply_collective_pitch_increment(double pitch_increment);
 
     /**
-     * @brief Applies pitch increment on a given blade, rotating it around its longitudinal axis.
-     *
-     * @param[in] pitch_increment Pitch increment to apply [rad]
-     * @param[in] blade_index Index of blade to pitch (0, 1, or 2 for a 3-bladed turbine).
-     */
-    void apply_blade_pitch_increment(double pitch_increment, int blade_index);
-
-    /**
      * @brief Accumulates torque on the rotor.
      *
      * @param[in] torque Torque to accumulate on axial axis of hub [Nm]
