@@ -23,6 +23,14 @@ class Simulation {
 
     Simulation();
 
+    // Enable move semantics
+    Simulation(Simulation&&) = default;
+    Simulation& operator=(Simulation&&) = default;
+
+    // Disable copy
+    Simulation(const Simulation&) = delete;
+    Simulation& operator=(const Simulation&) = delete;
+
     void populate_from_file(const std::string& filepath);
     void populate_from_config();
     void initialize_from_config();
