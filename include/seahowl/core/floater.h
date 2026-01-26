@@ -1,11 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/core/foundation.h"
+
+// Standard library
 #include <memory>
 #include <vector>
-
-#include "seahowl/commons/utils.h"  // for DiscretizationPoint
-#include "seahowl/core/foundation.h"
-#include "seahowl/core/mooring.h"
 
 // forward declarations
 namespace seahowl {
@@ -47,6 +47,9 @@ class Floater : public Foundation {
      */
     Floater(std::shared_ptr<seahowl::elasto::FloaterElasto> elasto,
             std::shared_ptr<seahowl::hydro::FloaterHydro> hydro);
+
+    /** @brief Destructor. */
+    ~Floater();
 
     /**
      * @brief Prestep for floater, called before elastodynamic stepping.

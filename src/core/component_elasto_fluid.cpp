@@ -1,6 +1,7 @@
 #include "seahowl/core/component_elasto_fluid.h"
 
 #include "seahowl/elasto/component_elasto.h"
+#include "seahowl/fluid/component_fluid.h"
 
 namespace seahowl {
 namespace core {

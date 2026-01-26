@@ -1,4 +1,7 @@
 #include "seahowl/io/read_input.h"
+
+#include "seahowl/env/env_model.h"
+#include "seahowl/io/config_manager.h"
 #include "seahowl/io/utils_io.h"
 #include "seahowl/io/read_rotor_perf.h"
 

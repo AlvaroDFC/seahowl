@@ -1,10 +1,12 @@
 #pragma once
 
-#include "seahowl/elasto/turbine_elasto.h"  // @todo forward declare Turbine
+// SEAHOWL headers
+#include "seahowl/elasto/turbine_elasto.h"
 
-#include <vector>
+// Standard library
 #include <deque>
 #include <memory>
+#include <vector>
 
 namespace seahowl {
 ///@brief Elastodynamic model module

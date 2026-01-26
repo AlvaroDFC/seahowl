@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/aero/reference_point_aero.h"
 #include "seahowl/fluid/component_fluid.h"
 
+// Standard library
 #include <memory>
 
 namespace seahowl {

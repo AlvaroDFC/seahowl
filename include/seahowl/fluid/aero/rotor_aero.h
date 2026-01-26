@@ -1,9 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/entities.h"
 #include "seahowl/commons/numerics.h"
 #include "seahowl/fluid/component_fluid.h"
 
+// Standard library
 #include <memory>
 
 // forward declarations

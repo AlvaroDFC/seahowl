@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/io/viz_insitu.h"
 
 namespace chrono {

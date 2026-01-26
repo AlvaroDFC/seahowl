@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/tower_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"

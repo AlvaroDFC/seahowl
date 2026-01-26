@@ -1,9 +1,10 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/core/component.h"
-#include "seahowl/fluid/component_fluid.h"
 #include "seahowl/commons/utils.h"
 
+// Standard library
 #include <memory>
 #include <vector>
 
@@ -12,6 +13,9 @@ namespace seahowl {
 namespace elasto {
 class ComponentElasto;
 }  // namespace elasto
+namespace fluid {
+class ComponentFluid;
+}  // namespace fluid
 }  // namespace seahowl
 
 namespace seahowl {

@@ -1,8 +1,9 @@
 #pragma once
 
+// Standard library
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace seahowl {
 namespace io {

@@ -1,5 +1,6 @@
 #include "seahowl/core/system.h"
 
+#include "seahowl/env/env_model.h"
 #include "seahowl/elasto/system_elasto.h"
 #include "seahowl/fluid/system_fluid.h"
 #include "seahowl/elasto/mooring_elasto.h"

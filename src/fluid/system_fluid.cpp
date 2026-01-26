@@ -1,5 +1,7 @@
 #include "seahowl/fluid/system_fluid.h"
 
+#include "seahowl/env/env_model.h"
+
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::fluid;

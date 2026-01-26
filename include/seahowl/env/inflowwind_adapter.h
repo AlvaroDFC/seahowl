@@ -1,10 +1,12 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
-#include <memory>
+// SEAHOWL headers
+#include "seahowl/env/wind_models.h"
 
-#include <seahowl/env/wind_models.h>
+// Standard library
+#include <cstring>
+#include <iostream>
+#include <memory>
 
 namespace seahowl {
 

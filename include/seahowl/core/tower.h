@@ -1,9 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/commons/utils.h"  // for DiscretizationPoint
+#include "seahowl/core/component.h"
+#include "seahowl/core/component_elasto_fluid.h"
+
+// Standard library
 #include <memory>
 #include <vector>
-
-#include "seahowl/core/component_elasto_fluid.h"
 
 // forward declarations
 namespace seahowl {

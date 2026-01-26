@@ -1,8 +1,9 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/elasto/chrono_adapters.h"
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/elasto/reference_point_elasto.h"
-#include "seahowl/elasto/chrono_adapters.h"
 
 namespace seahowl {
 namespace elasto {

@@ -1,5 +1,6 @@
 #include "seahowl/io/output_manager.h"
 
+#include "seahowl/env/env_model.h"
 #include "seahowl/io/write_csv.h"
 #include "seahowl/io/write_vtk.h"
 #include "seahowl/io/viz_insitu.h"

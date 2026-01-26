@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
-#include <string>
-#include <map>
+// Standard library
 #include <functional>
+#include <map>
+#include <string>
 #include <vector>
 
 // forward declarations

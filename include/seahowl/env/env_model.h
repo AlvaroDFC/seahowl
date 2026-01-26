@@ -1,10 +1,19 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-#include "seahowl/env/model.h"
+// SEAHOWL headers
 #include "seahowl/env/fluid_list_model.h"
 #include "seahowl/env/soil_list_model.h"
+
+// Standard library
+#include <memory>
+#include <vector>
+
+// forward declarations
+namespace seahowl {
+namespace env {
+class Model;
+}  // namespace env
+}  // namespace seahowl
 
 namespace seahowl {
 namespace env {

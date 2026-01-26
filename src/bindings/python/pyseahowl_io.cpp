@@ -3,6 +3,7 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
+#include <seahowl/env/env_model.h>
 #include <seahowl/io/read_input.h>
 #include <seahowl/core/blade.h>
 #include <seahowl/core/tower.h>

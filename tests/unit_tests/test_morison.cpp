@@ -1,5 +1,6 @@
 #include "fixture_components.h"
 
+#include <seahowl/env/env_model.h>
 #include <seahowl/fluid/hydro/morison.h>
 #include <seahowl/env/wave_models.h>
 #include <seahowl/core/simulation.h>

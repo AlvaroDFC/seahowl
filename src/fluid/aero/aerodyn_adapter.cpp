@@ -1,5 +1,6 @@
 #include <seahowl/fluid/aero/aerodyn_adapter.h>
 
+#include <seahowl/env/env_model.h>
 #include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/fluid/aero/blade_aero.h>
 #include <seahowl/env/fluid_models.h>

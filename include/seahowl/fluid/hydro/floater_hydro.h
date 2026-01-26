@@ -1,7 +1,9 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 
+// Standard library
 #include <memory>
 
 // forward declarations

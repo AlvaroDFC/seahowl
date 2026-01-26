@@ -1,8 +1,13 @@
-#include <vector>
-#include <string>
-#include <memory>
-#include "seahowl/fluid/aero/rotor_aero.h"
+#pragma once
+
+// SEAHOWL headers
 #include "seahowl/core/turbine.h"
+#include "seahowl/fluid/aero/rotor_aero.h"
+
+// Standard library
+#include <memory>
+#include <string>
+#include <vector>
 
 /**
  * @brief Returns rotor disk performance tables (Cp, Cq, Ct).

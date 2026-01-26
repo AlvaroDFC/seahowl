@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/hydro/morison.h"

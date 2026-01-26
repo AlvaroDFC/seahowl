@@ -1,8 +1,8 @@
 #include "seahowl/fluid/aero/tower_aero.h"
 
+#include "seahowl/env/env_model.h"
 #include "seahowl/commons/utils.h"
 #include "seahowl/commons/numerics.h"
-#include "seahowl/fluid/aero/reference_point_aero.h"
 #include "seahowl/env/wind_models.h"
 
 #include <spdlog/spdlog.h>

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
+// Standard library
 #include <map>
-#include <vector>
 #include <memory>
-// #include <optional>
+#include <string>
+#include <vector>
 
 namespace seahowl {
 namespace io {

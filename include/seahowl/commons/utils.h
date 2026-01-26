@@ -1,9 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <stdexcept>
-#include <algorithm>
+// Third-party libraries
 #include <Eigen/Dense>
+
+// Standard library
+#include <algorithm>
+#include <stdexcept>
+#include <vector>
 
 namespace seahowl {
 

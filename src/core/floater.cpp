@@ -22,6 +22,8 @@ Floater::Floater(std::shared_ptr<seahowl::elasto::FloaterElasto> elasto,
       hydro(*hydro),
       mooring_system(std::make_unique<MooringSystem>(elasto->mooring_system, hydro->mooring_system)) {}
 
+Floater::~Floater() = default;
+
 void Floater::initialize_this(double time, double dt) {
     mooring_system->initialize(time, dt);
 

@@ -1,11 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/floater_elasto.h"
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
-#include "seahowl/elasto/floater_elasto.h"
 #include "seahowl/env/wave_models.h"
 
+// Standard library
 #include <string>
 
 // forward declarations for HydroChrono

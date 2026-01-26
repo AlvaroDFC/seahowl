@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
+#include <seahowl/env/env_model.h>
 #include <seahowl/commons/entities.h>
 #include <seahowl/commons/utils.h>
 #include <seahowl/fluid/component_fluid.h>

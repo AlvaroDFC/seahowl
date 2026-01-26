@@ -1,6 +1,7 @@
 #pragma once
 
-#include <seahowl/io/input_structures.h>
+// SEAHOWL headers
+#include "seahowl/io/input_structures.h"
 
 namespace seahowl {
 namespace io {

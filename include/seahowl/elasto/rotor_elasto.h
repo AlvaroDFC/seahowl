@@ -1,10 +1,12 @@
 #pragma once
 
-#include "seahowl/elasto/component_elasto.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+#include "seahowl/elasto/component_elasto.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {
