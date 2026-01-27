@@ -4,7 +4,7 @@
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/aero/reference_point_aero.h"
 #include "seahowl/fluid/hydro/morison.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <vector>
 

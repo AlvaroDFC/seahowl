@@ -11,7 +11,7 @@ void SystemFluid::add(std::shared_ptr<TurbineFluid> turbine) {
         spdlog::warn("Turbine fluid already exists in the system, not adding again.");
 }
 
-void SystemFluid::add(std::shared_ptr<seahowl::ComponentFluid> component) {
+void SystemFluid::add(std::shared_ptr<seahowl::fluid::ComponentFluid> component) {
     if (std::find(components.begin(), components.end(), component) == components.end()) {
         components.push_back(component);
     } else

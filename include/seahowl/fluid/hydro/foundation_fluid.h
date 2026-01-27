@@ -1,6 +1,6 @@
 #pragma once
 
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 namespace seahowl {
 namespace fluid {

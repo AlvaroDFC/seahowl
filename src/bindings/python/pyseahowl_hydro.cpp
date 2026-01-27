@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
-#include <seahowl/commons/component_fluid.h>
+#include <seahowl/fluid/component_fluid.h>
 #include <seahowl/fluid/hydro/morison.h>
 #include <seahowl/fluid/hydro/mooring_hydro.h>
 #include <seahowl/fluid/hydro/foundation_fluid.h>
@@ -66,8 +66,8 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def_readwrite("reverse_direction", &seahowl::hydro::MorisonPlate::reverse_direction);
 
     // hydro/mooring_hydro.h
-    py::class_<seahowl::hydro::MooringHydro, std::shared_ptr<seahowl::hydro::MooringHydro>, seahowl::ComponentFluid>(
-        m_hydro, "MooringHydro")
+    py::class_<seahowl::hydro::MooringHydro, std::shared_ptr<seahowl::hydro::MooringHydro>,
+               seahowl::fluid::ComponentFluid>(m_hydro, "MooringHydro")
         .def(py::init<>())
         .def_readwrite("discretization_fractions", &seahowl::hydro::MooringHydro::discretization_fractions)
         .def_readwrite("length", &seahowl::hydro::MooringHydro::length)
@@ -80,7 +80,7 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def("set_diameter", &seahowl::hydro::MooringHydro::set_diameter);
 
     py::class_<seahowl::hydro::MooringSystemHydro, std::shared_ptr<seahowl::hydro::MooringSystemHydro>,
-               seahowl::ComponentFluid>(m_hydro, "MooringSystemHydro")
+               seahowl::fluid::ComponentFluid>(m_hydro, "MooringSystemHydro")
         .def(py::init<>())
         .def_readonly("moorings", &seahowl::hydro::MooringSystemHydro::moorings)
         .def("add_mooring", &seahowl::hydro::MooringSystemHydro::add_mooring)
@@ -88,7 +88,7 @@ void initialize_pyseahowl_hydro(py::module& m) {
 
     // hydro/foundation_fluid.h
     py::class_<seahowl::hydro::FoundationFluid, std::shared_ptr<seahowl::hydro::FoundationFluid>,
-               seahowl::ComponentFluid>(m_hydro, "FoundationFluid");
+               seahowl::fluid::ComponentFluid>(m_hydro, "FoundationFluid");
 
     // hydro/floater_hydro.h
     py::class_<seahowl::hydro::FloaterHydro, std::shared_ptr<seahowl::hydro::FloaterHydro>,

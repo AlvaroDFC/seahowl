@@ -1,7 +1,7 @@
 #pragma once
 
 #include "seahowl/fluid/turbine_fluid.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <vector>
 #include <deque>
@@ -44,7 +44,7 @@ class SystemFluid : public ComponentFluid {
      *
      * @param[in] component Component to add to system.
      */
-    void add(std::shared_ptr<seahowl::ComponentFluid> component);
+    void add(std::shared_ptr<seahowl::fluid::ComponentFluid> component);
 };
 
 // Backward-compatible alias

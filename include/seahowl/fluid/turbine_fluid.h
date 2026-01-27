@@ -4,7 +4,7 @@
 #include "seahowl/fluid/aero/tower_aero.h"
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 #include "seahowl/fluid/hydro/floater_hydro.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <vector>
 

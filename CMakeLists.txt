@@ -188,7 +188,6 @@ set(SEAHOWL_COMMONS_SOURCES
 set(SEAHOWL_COMMONS_HEADERS
     include/seahowl/commons/numerics.h
     include/seahowl/commons/entities.h
-    include/seahowl/commons/component_fluid.h
     include/seahowl/commons/utils.h
 )
 source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS})
@@ -261,6 +260,7 @@ set(SEAHOWL_FLUID_SOURCES
     src/fluid/turbine_fluid.cpp
 )
 set(SEAHOWL_FLUID_HEADERS
+    include/seahowl/fluid/component_fluid.h
     include/seahowl/fluid/system_fluid.h
     include/seahowl/fluid/turbine_fluid.h
 )

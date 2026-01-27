@@ -3,7 +3,7 @@
 #include "seahowl/commons/numerics.h"
 #include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <iostream>
 #include <cstring>
