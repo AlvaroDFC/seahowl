@@ -1,8 +1,7 @@
 #include "fixture_components.h"
 
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/io/read_input.h>
+#include <seahowl/elasto.h>
+#include <seahowl/io.h>
 
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>

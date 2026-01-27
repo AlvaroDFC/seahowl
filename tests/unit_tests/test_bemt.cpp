@@ -1,10 +1,9 @@
 #include "fixture_components.h"
 
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/fluid/aero/bemt.h>
-#include <seahowl/core/tower.h>
-#include <seahowl/commons/numerics.h>
-#include <seahowl/io/read_input.h>
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
 
 #include <gtest/gtest.h>
 #include <filesystem>  // C++17

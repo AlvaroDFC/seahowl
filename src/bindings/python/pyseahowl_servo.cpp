@@ -2,9 +2,8 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
-#include <seahowl/servo/controller.h>
-#include <seahowl/servo/controller_discon.h>
-#include <seahowl/core/turbine.h>
+#include <seahowl/core.h>
+#include <seahowl/servo.h>
 
 namespace py = pybind11;
 

@@ -3,21 +3,11 @@
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
 
-#include <seahowl/env/env_model.h>
-#include <seahowl/io/read_input.h>
-#include <seahowl/core/blade.h>
-#include <seahowl/core/tower.h>
-#include <seahowl/core/rotor.h>
-#include <seahowl/core/turbine.h>
-#include <seahowl/core/system.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/elasto/tower_elasto.h>
-#include <seahowl/elasto/rotor_elasto.h>
-#include <seahowl/fluid/aero/blade_aero.h>
-#include <seahowl/fluid/aero/tower_aero.h>
-#include <seahowl/fluid/aero/rotor_aero.h>
-#include <seahowl/io/write_csv.h>
-#include <seahowl/io/output_manager.h>
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
 
 namespace py = pybind11;
 

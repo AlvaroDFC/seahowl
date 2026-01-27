@@ -1,11 +1,9 @@
 #include "fixture_components.h"
 
-#include <seahowl/env/env_model.h>
-#include <seahowl/fluid/hydro/morison.h>
-#include <seahowl/env/wave_models.h>
-#include <seahowl/core/simulation.h>
+#include <seahowl/core.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
 #ifdef HAVE_HYDROCHRONO
-    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
     #include <hydroc/hydro_forces.h>
 #endif
 

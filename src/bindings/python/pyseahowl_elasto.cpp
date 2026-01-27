@@ -2,19 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
-#include <seahowl/elasto/entities_elasto.h>
-#include <seahowl/elasto/component_elasto.h>
-#include <seahowl/elasto/reference_point_elasto.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/elasto/rotor_elasto.h>
-#include <seahowl/elasto/tower_elasto.h>
-#include <seahowl/elasto/mooring_elasto.h>
-#include <seahowl/elasto/foundation_elasto.h>
-#include <seahowl/elasto/floater_elasto.h>
-#include <seahowl/elasto/monopile_elasto.h>
-#include <seahowl/elasto/turbine_elasto.h>
-#include <seahowl/elasto/system_elasto.h>
-#include <seahowl/elasto/chrono_adapters.h>
+#include <seahowl/elasto.h>
 
 namespace py = pybind11;
 

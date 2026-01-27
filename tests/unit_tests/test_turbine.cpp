@@ -1,18 +1,14 @@
 #include "fixture_components.h"
 
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
+#include <seahowl/servo.h>
+
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/env/wind_models.h>
-#include <seahowl/env/env_model.h>
-#include <seahowl/commons/numerics.h>
-#include <seahowl/fluid/turbine_fluid.h>
-#include <seahowl/core/turbine.h>
-#include <seahowl/core/system.h>
-#include <seahowl/servo/controller.h>
-#include <seahowl/fluid/system_fluid.h>
-#include <seahowl/io/read_input.h>
 
 #include <filesystem>  // C++17
 using std::filesystem::path;

@@ -2,34 +2,13 @@
 #include <pybind11/stl.h>
 #include <pybind11/eigen.h>
 
-#include <seahowl/commons/utils.h>
-#include <seahowl/core/component.h>
-#include <seahowl/core/simulation.h>
-#include <seahowl/core/turbine.h>
-#include <seahowl/elasto/turbine_elasto.h>
-#include <seahowl/fluid/turbine_fluid.h>
-#include <seahowl/core/rotor.h>
-#include <seahowl/core/blade.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/fluid/aero/blade_aero.h>
-#include <seahowl/core/tower.h>
-#include <seahowl/elasto/tower_elasto.h>
-#include <seahowl/core/mooring.h>
-#include <seahowl/elasto/mooring_elasto.h>
-#include <seahowl/fluid/hydro/mooring_hydro.h>
-#include <seahowl/core/foundation.h>
-#include <seahowl/core/floater.h>
-#include <seahowl/core/monopile.h>
-#include <seahowl/elasto/floater_elasto.h>
-#include <seahowl/fluid/hydro/floater_hydro.h>
-#include <seahowl/core/system.h>
-#include <seahowl/elasto/system_elasto.h>
-#include <seahowl/fluid/system_fluid.h>
-#include <seahowl/env/wind_models.h>
-#include <seahowl/env/env_model.h>
-#include <seahowl/servo/controller.h>
-#include <seahowl/io/read_input.h>
-#include <seahowl/io/read_input.h>
+#include <seahowl/commons.h>
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
+#include <seahowl/servo.h>
 
 namespace py = pybind11;
 
