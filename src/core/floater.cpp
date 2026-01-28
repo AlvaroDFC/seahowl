@@ -12,13 +12,15 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 
 Floater::Floater(std::shared_ptr<seahowl::elasto::FloaterElasto> elasto,
                  std::shared_ptr<seahowl::hydro::FloaterHydro> hydro)
-    : Foundation(elasto, hydro), ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {
-    mooring_system = std::make_unique<MooringSystem>(elasto->mooring_system, hydro->mooring_system);
-}
+    : Foundation(elasto, hydro),
+      ComponentDynamic(elasto, hydro),
+      elasto(*elasto),
+      hydro(*hydro),
+      mooring_system(std::make_unique<MooringSystem>(elasto->mooring_system, hydro->mooring_system)) {}
 
 void Floater::initialize_this(double time, double dt) {
     mooring_system->initialize(time, dt);

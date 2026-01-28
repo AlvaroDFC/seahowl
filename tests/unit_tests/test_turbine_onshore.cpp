@@ -7,11 +7,11 @@
 #include <seahowl/env/wind_models.h>
 #include <seahowl/env/env_model.h>
 #include <seahowl/commons/numerics.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/core/system.h>
 #include <seahowl/servo/controller.h>
-#include <seahowl/fluid/aero/system_aero.h>
+#include <seahowl/fluid/system_fluid.h>
 #include <seahowl/io/read_input.h>
 
 #include <filesystem>  // C++17
@@ -88,7 +88,7 @@ TEST_F(TestTurbine, rpm_initial_pitch) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -167,7 +167,7 @@ TEST_F(TestTurbine, rpm_initial_pitch_fpm) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -244,7 +244,7 @@ TEST_F(TestTurbine, rpm_initial_pitch_rigid_rotor) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -317,7 +317,7 @@ TEST_F(TestTurbine, controller_target_rpm) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -394,7 +394,7 @@ TEST_F(TestTurbine, actuator_disk) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -422,7 +422,7 @@ TEST_F(TestTurbine, actuator_disk) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 
@@ -460,7 +460,7 @@ TEST_F(TestTurbine, multiturbines) {
     // system
     auto system_elasto = std::make_shared<SystemElastoChrono>();
     system_elasto->set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
-    auto system_aero = std::make_shared<seahowl::aero::SystemAero>();
+    auto system_aero = std::make_shared<seahowl::fluid::SystemFluid>();
 
     // system core
     auto system_core = seahowl::core::System(system_elasto, system_aero);
@@ -478,7 +478,7 @@ TEST_F(TestTurbine, multiturbines) {
         turbine.elasto.translate(Vector3d(0.0 + ii * 150.0, 0.0 + ii * (-150.0), 0.0));
         system_core.turbines.push_back(std::make_shared<seahowl::core::Turbine>(turbine));
         system_core.elasto.turbines.push_back(std::make_shared<seahowl::elasto::TurbineElasto>(turbine.elasto));
-        system_core.aero.turbines.push_back(std::make_shared<seahowl::aero::TurbineAero>(turbine.aero));
+        system_core.fluid.turbines.push_back(std::make_shared<seahowl::fluid::TurbineFluid>(turbine.fluid));
     }
 
     double time = 0.0;

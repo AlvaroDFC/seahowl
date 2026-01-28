@@ -8,8 +8,8 @@
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::aero;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::aero;
+using namespace seahowl::fluid::hydro;
 using seahowl::env::EnvModel;
 
 TowerAero::TowerAero() {}
@@ -39,7 +39,7 @@ void TowerAero::build() {
     discretized_points = seahowl::get_discretized_points(discretization_fractions, reference_points);
     // nodes
     nodes.clear();
-    for (auto& point : discretized_points) {
+    for (const auto& point : discretized_points) {
         // push empty load
         nodes.push_back(MorisonNode());
         nodes.back().set_position(point.coordinates);

@@ -11,6 +11,7 @@ namespace elasto {
 class FloaterElasto;
 }
 
+namespace fluid {
 namespace hydro {
 
 // forward declare (defined in .cpp file)
@@ -84,5 +85,6 @@ class MonopileHydroDyn : public MonopileHydro {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 
 }  // namespace seahowl

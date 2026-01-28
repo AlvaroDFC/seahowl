@@ -9,7 +9,7 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using seahowl::Vector3d;
 
 Blade::Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
@@ -54,11 +54,11 @@ void Blade::apply_pitch_increment(double pitch_increment) {
     update_positions_aero();
 }
 
-void Blade::set_discretization_elasto(std::vector<double> fractions) {
+void Blade::set_discretization_elasto(const std::vector<double>& fractions) {
     elasto.discretization_fractions = fractions;
 };
 
-void Blade::set_discretization_aero(std::vector<double> fractions) {
+void Blade::set_discretization_aero(const std::vector<double>& fractions) {
     aero.discretization_fractions = fractions;
 };
 

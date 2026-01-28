@@ -3,7 +3,7 @@ include(vcpkg_find_fortran)
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL https://github.com/openfast/openfast.git
-    REF 02847314dfdc4069d70b8b493e37b12b810a11e2
+    REF 3a9d3f29f03b52b536d391fbd360683f847be712
     PATCHES
         "openfast_custom_command.patch"
 )

@@ -19,6 +19,7 @@ class RotorNacelleAssemblyElasto;
 struct BladeReferencePointElasto;
 struct TowerReferencePointElasto;
 }  // namespace elasto
+namespace fluid {
 namespace aero {
 class BladeAero;
 class TowerAero;
@@ -26,6 +27,8 @@ class RotorNacelleAssemblyAero;
 struct BladeReferencePointAero;
 struct TowerReferencePointAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 namespace env {
 class EnvModel;
 }  // namespace env

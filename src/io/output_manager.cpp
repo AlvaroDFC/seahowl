@@ -116,7 +116,7 @@ void OutputManager::preinitialize() {
         for (auto& turbine : system_core.turbines) {
             try {
                 // set VTK options if using AeroDyn
-                auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine->aero);
+                auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine->fluid);
                 turbine_aero.WrVTK = 2;
                 turbine_aero.WrVTK_dt = dt_output;
             } catch (const std::bad_cast& e) {

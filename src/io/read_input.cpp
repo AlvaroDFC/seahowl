@@ -33,9 +33,9 @@
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
-#include "seahowl/fluid/aero/turbine_aero.h"
+#include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/fluid/hydro/monopile_hydro.h"
-#include "seahowl/fluid/aero/system_aero.h"
+#include "seahowl/fluid/system_fluid.h"
 #include "seahowl/fluid/hydro/mooring_hydro.h"
 #ifdef HAVE_HYDROCHRONO
     #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
@@ -75,7 +75,7 @@ std::vector<seahowl::elasto::BladeReferencePointElasto> get_blade_elasto_referen
 
     double blade_length = blade_db.reference_points.back().coordinates.z();
 
-    for (auto& ref_point_db : blade_db.reference_points) {
+    for (const auto& ref_point_db : blade_db.reference_points) {
         auto reference_point = seahowl::elasto::BladeReferencePointElasto();
         reference_point.coordinates = ref_point_db.coordinates;
         reference_point.fraction = reference_point.coordinates.z() / blade_length;
@@ -224,7 +224,7 @@ std::shared_ptr<seahowl::aero::BladeAero> get_blade_aero_from_db(const BladeTurb
 }
 
 std::shared_ptr<seahowl::aero::RotorAero> get_rotor_aero_from_db(const TurbineDb& turbine_db,
-                                                                 const seahowl::aero::TurbineAero& turbine_aero) {
+                                                                 const seahowl::fluid::TurbineFluid& turbine_aero) {
     std::shared_ptr<seahowl::aero::RotorAero> rotor_aero;
     if (turbine_db.aero.solver == "bemt") {
         spdlog::info("Aerodynamic model: Blade Element Momentum Theory (BEMT).");
@@ -284,7 +284,7 @@ std::shared_ptr<seahowl::elasto::RotorElasto> get_rotor_elasto_from_db(const Tur
 
 std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> get_rna_aero_from_db(
     const TurbineDb& turbine_db,
-    const seahowl::aero::TurbineAero& turbine_aero) {
+    const seahowl::fluid::TurbineFluid& turbine_aero) {
     auto rna_aero = std::make_shared<seahowl::aero::RotorNacelleAssemblyAero>();
 
     rna_aero->rotor = get_rotor_aero_from_db(turbine_db, turbine_aero);
@@ -470,9 +470,14 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
         if (foundation_db.options.has_value()) {
             auto& options = foundation_db.options.value();
             if (options.solver_hydro.has_value() && options.solver_hydro.value() == "hydrodyn") {
+#if SEAHOWL_HAVE_HYDRODYN
                 // replace monopile hydro with HydroDyn type
                 monopile_hydro =
                     std::make_shared<seahowl::hydro::MonopileHydroDyn>(options.file_hydrodyn_path.generic_string());
+#else
+                throw std::runtime_error(
+                    "Trying to use HydroDyn for monopile but did not compile SEAHOWL with HydroDyn dependency.");
+#endif
             }
             if (options.use_MacCamyFuchs_correction.has_value()) {
                 monopile_hydro->use_MacCamyFuchs_correction = options.use_MacCamyFuchs_correction.value();
@@ -492,7 +497,7 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
         auto floater_hydro = std::make_shared<seahowl::hydro::FloaterHydro>();
 
         if (foundation_db.file.has_value()) {
-            for (auto& mooring_db : foundation_db.data_floater.moorings) {
+            for (const auto& mooring_db : foundation_db.data_floater.moorings) {
                 // hydro
                 floater_hydro->mooring_system->moorings.push_back(std::make_shared<seahowl::hydro::MooringHydro>());
                 auto mooring_hydro = floater_hydro->mooring_system->moorings.back();
@@ -572,7 +577,7 @@ std::shared_ptr<seahowl::elasto::FoundationElasto> get_foundation_elasto_from_db
 
             floater_elasto->body_main->set_damping_matrix(floater_db.damping_matrix);
 
-            for (auto& mooring_db : floater_db.moorings) {
+            for (const auto& mooring_db : floater_db.moorings) {
                 auto rotation_axis = mooring_db.rotation_axis;
                 auto rotation_angle = mooring_db.rotation_angle * seahowl::PI / 180.0;
                 auto rotation = seahowl::AngleAxisd(rotation_angle, rotation_axis);
@@ -640,8 +645,8 @@ std::shared_ptr<seahowl::elasto::TurbineElasto> get_turbine_elasto_from_db(const
     return turbine_elasto;
 }
 
-std::shared_ptr<seahowl::aero::TurbineAero> get_turbine_aero_from_db(const TurbineDb& turbine_db) {
-    std::shared_ptr<seahowl::aero::TurbineAero> turbine_aero;
+std::shared_ptr<seahowl::fluid::TurbineFluid> get_turbine_aero_from_db(const TurbineDb& turbine_db) {
+    std::shared_ptr<seahowl::fluid::TurbineFluid> turbine_aero;
     // make turbine aero
     if (turbine_db.aero.solver == "aerodyn") {
 #ifdef HAVE_AERODYN
@@ -649,7 +654,7 @@ std::shared_ptr<seahowl::aero::TurbineAero> get_turbine_aero_from_db(const Turbi
         turbine_aero = std::make_shared<seahowl::aero::TurbineAeroDyn>(file_aerodyn_path);
 #endif
     } else {
-        turbine_aero = std::make_shared<seahowl::aero::TurbineAero>();
+        turbine_aero = std::make_shared<seahowl::fluid::TurbineFluid>();
     }
     // tower
     turbine_aero->tower = get_tower_aero_from_db(turbine_db);
@@ -842,8 +847,8 @@ void add_turbine_to_system_from_db(const TurbineDb& turbine_db, seahowl::core::S
     // add turbine elasto and aero to system
     auto turbine_elasto = std::dynamic_pointer_cast<seahowl::elasto::TurbineElasto>(turbine->get_shared_elasto());
     system_core.elasto.turbines.push_back(turbine_elasto);
-    auto turbine_aero = std::dynamic_pointer_cast<seahowl::aero::TurbineAero>(turbine->get_shared_fluid());
-    system_core.aero.turbines.push_back(turbine_aero);
+    auto turbine_aero = std::dynamic_pointer_cast<seahowl::fluid::TurbineFluid>(turbine->get_shared_fluid());
+    system_core.fluid.turbines.push_back(turbine_aero);
 
     turbine->build();
 }
@@ -872,9 +877,7 @@ std::shared_ptr<seahowl::env::EnvModel> get_environmental_model_from_db(const En
     std::shared_ptr<seahowl::env::WaveModel> wave_model_ptr;
 
     // sea
-    bool has_sea = false;
     if (environment_db.sea.has_value()) {
-        has_sea = true;
         auto sea_db = environment_db.sea.value();
 
         // specific model options

@@ -13,10 +13,13 @@ namespace elasto {
 class MooringElastoFEA;
 class MooringSystemElasto;
 }  // namespace elasto
+namespace fluid {
 namespace hydro {
 class MooringHydro;
 class MooringSystemHydro;
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -107,14 +110,14 @@ class Mooring : public ComponentDynamic {
      *
      * @param[in] fractions Normalized discretization fractions within [0, 1].
      */
-    void set_discretization_elasto(std::vector<double> fractions);
+    void set_discretization_elasto(const std::vector<double>& fractions);
 
     /**
      * @brief Sets the discretization fractions to use when building the hydro part of the mooring.
      *
      * @param[in] fractions Normalized discretization fractions within [0, 1].
      */
-    void set_discretization_hydro(std::vector<double> fractions);
+    void set_discretization_hydro(const std::vector<double>& fractions);
 
     /**
      * @brief Updates hydro positions, rotations, velocities and accelerations from elasto component of the mooring.

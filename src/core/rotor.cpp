@@ -13,7 +13,7 @@
 using namespace seahowl;
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 Rotor::Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::aero::RotorAero> aero)
     : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {

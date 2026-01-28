@@ -8,11 +8,11 @@
 #include <seahowl/env/wind_models.h>
 #include <seahowl/env/env_model.h>
 #include <seahowl/commons/numerics.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/core/turbine.h>
 #include <seahowl/core/system.h>
 #include <seahowl/servo/controller.h>
-#include <seahowl/fluid/aero/system_aero.h>
+#include <seahowl/fluid/system_fluid.h>
 
 #include <seahowl/io/read_input.h>
 #include <seahowl/io/input_structures.h>

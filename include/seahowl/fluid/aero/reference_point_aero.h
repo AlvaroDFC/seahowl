@@ -6,12 +6,16 @@
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace aero {
 struct AirfoilProperties;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 /**
@@ -71,4 +75,5 @@ struct TowerReferencePointAero {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

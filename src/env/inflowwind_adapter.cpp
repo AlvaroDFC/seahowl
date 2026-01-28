@@ -64,7 +64,7 @@ struct seahowl::env::InflowWindLib {
     std::string IfWinputFileString;
 
     // Input file string length
-    int IfWinputFileStringLength;
+    int IfWinputFileStringLength = 0;
 
     int IfWinputFilePassed = 0;
 
@@ -72,7 +72,7 @@ struct seahowl::env::InflowWindLib {
     int NumWindPts = 1;
 
     // Time step
-    double DT;
+    double DT = 0.0;
 
     // Debug level
     int DebugLevel = 0;
@@ -144,7 +144,7 @@ void InflowWindLib::SetFlowFieldPointer(void* FlowFieldPtr) {
     CheckError();
 }
 
-InflowWindAdapter::InflowWindAdapter(std::string inflowwind_infile_) : inflowwind_infile(inflowwind_infile_) {
+InflowWindAdapter::InflowWindAdapter(const std::string& inflowwind_infile_) : inflowwind_infile(inflowwind_infile_) {
     spdlog::info("Using InflowWind.");
     pImpl.reset(new InflowWindLib);
     pImpl->SetIFWINFILE(inflowwind_infile);

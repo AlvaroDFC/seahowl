@@ -1,21 +1,25 @@
 #pragma once
 
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 
 #include <memory>
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 class MooringSystemHydro;
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 namespace env {
 class FluidModel;
 }  // namespace env
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Hydrodynamic module */
 namespace hydro {
@@ -55,4 +59,5 @@ class FloaterHydro : public FoundationFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

@@ -2,22 +2,26 @@
 
 #include "seahowl/commons/entities.h"
 #include "seahowl/commons/numerics.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <memory>
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace aero {
 class BladeAero;
 class TowerAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 namespace env {
 class EnvModel;
 }  // namespace env
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 class RotorAero : public ComponentFluid {
@@ -124,4 +128,5 @@ class RotorNacelleAssemblyAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

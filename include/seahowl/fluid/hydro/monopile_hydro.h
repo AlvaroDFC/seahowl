@@ -4,6 +4,7 @@
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief HydroDynamic module */
 namespace hydro {
@@ -14,4 +15,6 @@ namespace hydro {
 class MonopileHydro : public seahowl::aero::TowerAero, public virtual FoundationFluid {};
 
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 }  // namespace seahowl

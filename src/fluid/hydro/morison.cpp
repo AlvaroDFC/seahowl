@@ -7,15 +7,17 @@
 #include <cmath>
 
 using namespace seahowl;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 
-seahowl::hydro::MacCamyFuchsTable::MacCamyFuchsTable() {
+seahowl::fluid::hydro::MacCamyFuchsTable::MacCamyFuchsTable() {
     generateMacCamyFuchsTable();  //
 }
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 MacCamyFuchsTable myMCFtable = MacCamyFuchsTable();
 }
+}  // namespace fluid
 }  // namespace seahowl
 
 HydroCoefficients HydroCoefficients::operator*(const double factor) const {

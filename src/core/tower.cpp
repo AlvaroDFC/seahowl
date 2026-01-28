@@ -8,7 +8,7 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 Tower::Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero)
     : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
@@ -46,11 +46,11 @@ void Tower::build() {
     aero.build();
 }
 
-void Tower::set_discretization_elasto(std::vector<double> fractions) {
+void Tower::set_discretization_elasto(const std::vector<double>& fractions) {
     elasto.discretization_fractions = fractions;
 }
 
-void Tower::set_discretization_aero(std::vector<double> fractions) {
+void Tower::set_discretization_aero(const std::vector<double>& fractions) {
     aero.discretization_fractions = fractions;
 }
 

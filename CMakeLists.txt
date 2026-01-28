@@ -212,7 +212,6 @@ set(SEAHOWL_COMMONS_SOURCES
 set(SEAHOWL_COMMONS_HEADERS
     include/seahowl/commons/numerics.h
     include/seahowl/commons/entities.h
-    include/seahowl/commons/component_fluid.h
     include/seahowl/commons/utils.h
 )
 source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS})
@@ -279,26 +278,34 @@ set(SEAHOWL_ELASTO_HEADERS
 )
 source_group(elasto FILES ${SEAHOWL_ELASTO_SOURCES} ${SEAHOWL_ELASTO_HEADERS})
 
+# fluid (shared between aero and hydro)
+set(SEAHOWL_FLUID_SOURCES
+    src/fluid/system_fluid.cpp
+    src/fluid/turbine_fluid.cpp
+)
+set(SEAHOWL_FLUID_HEADERS
+    include/seahowl/fluid/component_fluid.h
+    include/seahowl/fluid/system_fluid.h
+    include/seahowl/fluid/turbine_fluid.h
+)
+source_group(fluid FILES ${SEAHOWL_FLUID_SOURCES} ${SEAHOWL_FLUID_HEADERS})
+
 # aero
 set(SEAHOWL_AERO_SOURCES
-    src/fluid/aero/system_aero.cpp
     src/fluid/aero/airfoil.cpp
     src/fluid/aero/bemt.cpp
     src/fluid/aero/reference_point_aero.cpp
     src/fluid/aero/blade_aero.cpp
     src/fluid/aero/rotor_aero.cpp
     src/fluid/aero/tower_aero.cpp
-    src/fluid/aero/turbine_aero.cpp
 )
 set(SEAHOWL_AERO_HEADERS
     include/seahowl/fluid/aero/airfoil.h
     include/seahowl/fluid/aero/bemt.h
     include/seahowl/fluid/aero/blade_aero.h
     include/seahowl/fluid/aero/reference_point_aero.h
-    include/seahowl/fluid/aero/system_aero.h
     include/seahowl/fluid/aero/rotor_aero.h
     include/seahowl/fluid/aero/tower_aero.h
-    include/seahowl/fluid/aero/turbine_aero.h
 )
 if (SEAHOWL_ENABLE_AERODYN)
     list(APPEND SEAHOWL_AERO_SOURCES src/fluid/aero/aerodyn_adapter.cpp)
@@ -419,6 +426,8 @@ set(SEAHOWL_FILES
     ${SEAHOWL_CORE_HEADERS}
     ${SEAHOWL_ELASTO_SOURCES}
     ${SEAHOWL_ELASTO_HEADERS}
+    ${SEAHOWL_FLUID_SOURCES}
+    ${SEAHOWL_FLUID_HEADERS}
     ${SEAHOWL_AERO_SOURCES}
     ${SEAHOWL_AERO_HEADERS}
     ${SEAHOWL_SERVO_SOURCES}
@@ -707,8 +716,8 @@ if(SEAHOWL_ENABLE_PYTHON)
         file(WRITE ${FILE_INITPY}
             "#!/bin/bash\n"
             "SCRIPT_DIR=$(cd \"$(dirname \"\${BASH_SOURCE}\")\" && pwd)\n"
-            "sed -i 's|^prefix=.*|prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.11-config\"\n"
-            "sed -i 's|^exec_prefix=.*|exec_prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.11-config\"\n"
+            "sed -i 's|^prefix=.*|prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.12-config\"\n"
+            "sed -i 's|^exec_prefix=.*|exec_prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.12-config\"\n"
             "\"$SCRIPT_DIR/python3/python3\" -m virtualenv .venv \n"
             "CALL_DIR=$(pwd)\n"
             "source \"$CALL_DIR/.venv/bin/activate\"\n"
@@ -717,8 +726,8 @@ if(SEAHOWL_ENABLE_PYTHON)
         set(FILE_INITPY ${CMAKE_BINARY_DIR}/init_pyseahowl.bat)
         file(WRITE ${FILE_INITPY}
             "set SCRIPT_DIR=%~dp0\n"
-            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\") -replace '^prefix=.*', 'prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\"\"\n"
-            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\") -replace '^exec_prefix=.*', 'exec_prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\"\"\n"
+            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\") -replace '^prefix=.*', 'prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\"\"\n"
+            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\") -replace '^exec_prefix=.*', 'exec_prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\"\"\n"
             "\"%SCRIPT_DIR%python3/python.exe\" -m virtualenv \"%SCRIPT_DIR%.venv\"\n"
             "call \"%SCRIPT_DIR%.venv/Scripts/activate\"\n"
             "set PYTHONPATH=%SCRIPT_DIR%;%PYTHONPATH%\n"

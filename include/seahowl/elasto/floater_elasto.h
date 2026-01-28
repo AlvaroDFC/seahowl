@@ -15,9 +15,6 @@ namespace seahowl {
 namespace elasto {
 class SystemElasto;
 }  // namespace elasto
-namespace hydro {
-class HydroDynAdapter;
-}  // namespace hydro
 }  // namespace seahowl
 
 namespace seahowl {

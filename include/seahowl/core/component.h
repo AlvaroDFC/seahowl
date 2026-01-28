@@ -9,7 +9,9 @@
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 class ComponentFluid;
+}  // namespace fluid
 namespace env {
 class EnvModel;
 }  // namespace env
@@ -27,7 +29,7 @@ namespace core {
 class ComponentDynamic {
   public:
     ComponentDynamic(const std::shared_ptr<seahowl::elasto::ComponentElasto> elasto_,
-                     const std::shared_ptr<seahowl::ComponentFluid> fluid_)
+                     const std::shared_ptr<seahowl::fluid::ComponentFluid> fluid_)
         : elasto_ptr(elasto_), fluid_ptr(fluid_) {}
     /**
      * @brief Virtual destructor.
@@ -86,7 +88,7 @@ class ComponentDynamic {
     /**
      * @brief Get fluid shared_ptr component.
      */
-    std::shared_ptr<seahowl::ComponentFluid> get_shared_fluid() const { return fluid_ptr; }
+    std::shared_ptr<seahowl::fluid::ComponentFluid> get_shared_fluid() const { return fluid_ptr; }
 
   protected:
     bool is_initialized = false;
@@ -95,7 +97,7 @@ class ComponentDynamic {
     // Only for memory management, never accessed (reference to underlying object is accessed instead).
     std::shared_ptr<seahowl::elasto::ComponentElasto> elasto_ptr;
     // Only for memory management, never accessed (reference to underlying object is accessed instead).
-    std::shared_ptr<seahowl::ComponentFluid> fluid_ptr;
+    std::shared_ptr<seahowl::fluid::ComponentFluid> fluid_ptr;
 
     virtual void initialize_this(double time, double dt) = 0;
 };

@@ -3,11 +3,12 @@
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/aero/reference_point_aero.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <memory>
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Aerodynamic module */
 namespace aero {
@@ -45,7 +46,7 @@ struct BladeNodeAero : public EntityDynamicEigen {
     /**
      * @brief Constructor.
      */
-    BladeNodeAero(BladeReferencePointAero& point);
+    BladeNodeAero(const BladeReferencePointAero& point);
 
     /**
      * @brief Get aero offset in global frame of reference.
@@ -170,4 +171,5 @@ class BladeAero : public ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

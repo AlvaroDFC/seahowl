@@ -3,7 +3,7 @@
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/hydro/morison.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <vector>
 #include <deque>
@@ -17,6 +17,7 @@ class FluidModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Hydrodynamic module */
 namespace hydro {
@@ -101,4 +102,5 @@ class MooringSystemHydro : public ComponentFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl
