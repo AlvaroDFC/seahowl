@@ -146,7 +146,7 @@ struct seahowl::env::SeaStateLib {
     float MSL2SWL = 0;        // Offset between still-water level and mean sea level (m) [positive upward]
 
     // Debug level
-    int DebugLevel = 4;  // FIXME: change to 0
+    int DebugLevel = 0;  // FIXME: change to 0
 
     // VTK
     int WrVTK = 0;

@@ -13,7 +13,6 @@
 #include <seahowl/core/system.h>
 #include <seahowl/servo/controller.h>
 #include <seahowl/fluid/system_fluid.h>
-
 #include <seahowl/io/read_input.h>
 #include <seahowl/io/input_structures.h>
 #include <seahowl/io/input_handler.h>
@@ -24,6 +23,9 @@
 #endif
 #ifdef HAVE_HYDRODYN
     #include <seahowl/fluid/hydro/hydrodyn_adapter.h>
+#endif
+#ifdef HAVE_SEASTATE
+    #include <seahowl/env/seastate_adapter.h>
 #endif
 
 #include <filesystem>  // C++17
@@ -43,11 +45,11 @@ class TestMonopile : public FixtureComponents {
 
 #ifdef HAVE_HYDROCHRONO
 TEST_F(TestMonopile, monopile_hydrochrono) {
-    double rho = 1025.0;
+    double water_density = 1025.0;
     double wave_height = 5.0;
     double wave_period = 10.0;
-    double water_depth = 50.0;
-    double mean_water_level = 20.0;
+    double water_depth = 30.0;
+    double mean_water_level = 0.0;
 
     // general options
     bool visualization_on = true;
@@ -62,6 +64,7 @@ TEST_F(TestMonopile, monopile_hydrochrono) {
     wind_model->shear_coefficient = 0.12;
     // wave
     auto wave_model = std::make_shared<seahowl::env::WaveModelHydroChrono>();
+    wave_model->density = water_density;
     wave_model->water_depth = water_depth;
     wave_model->mean_water_level = mean_water_level;
     auto waves_hydrochrono = std::make_shared<RegularWave>();
@@ -128,12 +131,6 @@ TEST_F(TestMonopile, monopile_hydrochrono) {
 
 #ifdef HAVE_HYDRODYN
 TEST_F(TestMonopile, monopile_hydrodyn) {
-    double rho = 1025.0;
-    double wave_height = 5.0;
-    double wave_period = 10.0;
-    double water_depth = 30.0;
-    double mean_water_level = 20.0;
-
     // general options
     bool visualization_on = true;
     bool statics_prestep = true;
@@ -142,15 +139,16 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
     // timestepping
     double dt = 0.1;
     // wind
-    // auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    // wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
-    // wind_model->shear_coefficient = 0.12;
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(0.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
     // wave
-    // auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((DATADIR /
-    // "env/SeaState_regular.dat").generic_string()); env_model
+    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((ref_dir / "SeaState.dat").generic_string());
+    wave_model->density = 1025.0;
+    // env_model
     auto env_model = seahowl::env::EnvModel();
-    // env_model.add_model(wind_model);
-    // env_model.add_model(wave_model);
+    env_model.add_model(wind_model);
+    env_model.add_model(wave_model);
 
     // system
     auto system_elasto = SystemElastoChrono();
@@ -177,6 +175,77 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_hydrodyn.csv").generic_string(),
                                        (test_dir / "test_monopile_hydrodyn.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("monopile base moment (Nm)",
+                                       [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
+    test_dataset.test_csv.add_function("monopile base force (N)",
+                                       [&monopile]() { return monopile.elasto.get_tower_base_force(); });
+    test_dataset.test_csv.add_function("monopile top position (m)",
+                                       [&monopile]() { return monopile.elasto.nodes.back()->get_position(); });
+
+    double time = 0.0;
+    while (time < 50.0) {
+        // prestep
+        // compute forces
+        monopile_hydro->compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        monopile.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        monopile.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}
+#endif
+
+#ifdef HAVE_SEASTATE
+TEST_F(TestMonopile, monopile_seastate) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(0.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // wave
+    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((ref_dir / "SeaState.dat").generic_string());
+    wave_model->density = 1025.0;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+    env_model.add_model(wave_model);
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // monopile
+    auto monopile_elasto = std::make_shared<seahowl::elasto::MonopileElasto>();
+    seahowl::io::populate_tower_elasto_from_file((DATADIR / "IEA15MW/monopile/monopile.csv").generic_string(),
+                                                 *monopile_elasto);
+    auto monopile_hydro = std::make_shared<seahowl::hydro::MonopileHydro>();
+    seahowl::io::populate_tower_aero_from_file((DATADIR / "IEA15MW/monopile/monopile.csv").generic_string(),
+                                               *monopile_hydro);
+    monopile_hydro->discretization_fractions = {450};
+    auto monopile = seahowl::core::Monopile(monopile_elasto, monopile_hydro);
+
+    monopile.build();
+    monopile_elasto->assemble(system_elasto);
+    monopile.initialize(0.0, dt);
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_seastate.csv").generic_string(),
+                                       (test_dir / "test_monopile_seastate.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
     test_dataset.test_csv.add_function("monopile base moment (Nm)",
                                        [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
