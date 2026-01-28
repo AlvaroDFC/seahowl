@@ -8,8 +8,8 @@
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::aero;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::aero;
+using namespace seahowl::fluid::hydro;
 using seahowl::env::EnvModel;
 
 TowerAero::TowerAero() {}

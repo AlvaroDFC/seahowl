@@ -1,6 +1,6 @@
 #include <seahowl/fluid/aero/aerodyn_adapter.h>
 
-#include <seahowl/fluid/aero/turbine_aero.h>
+#include <seahowl/fluid/turbine_fluid.h>
 #include <seahowl/fluid/aero/blade_aero.h>
 #include <seahowl/env/fluid_models.h>
 #include <seahowl/env/inflowwind_adapter.h>
@@ -12,8 +12,9 @@
 #include <fstream>
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using namespace seahowl::env;
+using seahowl::fluid::TurbineFluid;
 
 extern "C" {
 
@@ -114,7 +115,7 @@ void ADI_C_End(int& ErrStat_C, char* ErrMsg_C);
 /**
  * @brief Aerodyn_InflowWind wrapping inferface
  */
-struct seahowl::aero::AeroDynInflowLib {
+struct seahowl::fluid::aero::AeroDynInflowLib {
     // Input file handling
     int ADinputFilePassed = 0;   // false: read input info from a primary input file; true: passing info from data
     int IfWinputFilePassed = 0;  // false: read input info from a primary input file; true: passing info from data
@@ -400,7 +401,7 @@ void AeroDynAdapter::set_inflowwind_infile(const std::string& inflowwind_infile_
     pImpl->set_inflowwind_infile(inflowwind_infile_);
 }
 
-void AeroDynAdapter::initialize(double time, double dt, TurbineAero& turbine) {
+void AeroDynAdapter::initialize(double time, double dt, TurbineFluid& turbine) {
     pImpl->DT = dt;
     pImpl->set_time(time);
 
@@ -433,7 +434,7 @@ void AeroDynAdapter::initialize(double time, double dt, TurbineAero& turbine) {
     pImpl->Init();
 }
 
-void AeroDynAdapter::compute_loads(double time, TurbineAero& turbine) {
+void AeroDynAdapter::compute_loads(double time, TurbineFluid& turbine) {
     pImpl->set_time(time);
     update_turbine_variables(turbine);
     pImpl->Update();
@@ -458,14 +459,14 @@ void AeroDynAdapter::end() {
     pImpl->End();
 }
 
-void AeroDynAdapter::update_turbine_variables(TurbineAero& turbine) {
+void AeroDynAdapter::update_turbine_variables(TurbineFluid& turbine) {
     update_hub_motion(turbine);
     update_nacelle_motion(turbine);
     update_roots_motion(turbine);
     update_mesh_motion(turbine);
 }
 
-void AeroDynAdapter::update_hub_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_hub_motion(TurbineFluid& turbine) {
     // Get the information about hub
     const auto& hub = turbine.rna->rotor->body_hub;
     auto hubPos = hub.get_position();
@@ -488,7 +489,7 @@ void AeroDynAdapter::update_hub_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_nacelle_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_nacelle_motion(TurbineFluid& turbine) {
     // Get the information about nacelle
     const auto& nac = turbine.rna->body_nacelle;
     auto nacPos = nac.get_position();
@@ -511,7 +512,7 @@ void AeroDynAdapter::update_nacelle_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_roots_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_roots_motion(TurbineFluid& turbine) {
     auto nblades = turbine.rna->rotor->blades.size();
     pImpl->NumBlades = nblades;
 
@@ -541,7 +542,7 @@ void AeroDynAdapter::update_roots_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_mesh_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_mesh_motion(TurbineFluid& turbine) {
     auto nblades = turbine.rna->rotor->blades.size();
     auto nMeshPerBlade = turbine.rna->rotor->blades[0]->nodes.size();
     auto nMesh = nMeshPerBlade * nblades;

@@ -4,7 +4,7 @@
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/aero/reference_point_aero.h"
 #include "seahowl/fluid/hydro/morison.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
 #include <vector>
 
@@ -16,6 +16,7 @@ class FluidModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Aerodynamic module */
 namespace aero {
@@ -57,4 +58,5 @@ class TowerAero : public virtual ComponentFluid {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

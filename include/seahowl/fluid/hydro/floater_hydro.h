@@ -6,15 +6,19 @@
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 class MooringSystemHydro;
 }  // namespace hydro
+}  // namespace fluid
+namespace hydro = fluid::hydro;
 namespace env {
 class FluidModel;
 }  // namespace env
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
 /**@brief Hydrodynamic module */
 namespace hydro {
@@ -38,4 +42,5 @@ class FloaterHydro : public FoundationFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

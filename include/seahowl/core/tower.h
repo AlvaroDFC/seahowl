@@ -14,9 +14,12 @@ struct TowerReferencePoint;
 namespace elasto {
 class TowerElasto;
 }  // namespace elasto
+namespace fluid {
 namespace aero {
 class TowerAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {

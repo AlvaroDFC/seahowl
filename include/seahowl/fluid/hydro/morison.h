@@ -11,6 +11,7 @@ class EnvModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 
 struct HydroCoefficients {
@@ -139,4 +140,5 @@ class MorisonPlate : public EntityDynamicEigen {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

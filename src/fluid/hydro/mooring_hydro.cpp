@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 using seahowl::env::EnvModel;
 
 MooringHydro::MooringHydro() {

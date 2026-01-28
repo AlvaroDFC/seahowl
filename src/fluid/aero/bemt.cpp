@@ -11,12 +11,12 @@ using seahowl::Vector2d;
 using seahowl::Vector3d;
 using seahowl::PI;
 
-double seahowl::aero::get_phi(const Vector2d& fluid_velocity) {
+double seahowl::fluid::aero::get_phi(const Vector2d& fluid_velocity) {
     double phi = atan2(fluid_velocity.y(), fluid_velocity.x());
     return phi;
 }
 
-double seahowl::aero::get_alpha_from_phi(const double phi, const double pitch) {
+double seahowl::fluid::aero::get_alpha_from_phi(const double phi, const double pitch) {
     double alpha = phi - pitch;
     // check that alpha is still in range
     if (alpha < -PI || alpha > PI) {
@@ -25,26 +25,26 @@ double seahowl::aero::get_alpha_from_phi(const double phi, const double pitch) {
     return alpha;
 }
 
-double seahowl::aero::get_alpha(const Vector2d& fluid_velocity, const double pitch) {
+double seahowl::fluid::aero::get_alpha(const Vector2d& fluid_velocity, const double pitch) {
     double phi = get_phi(fluid_velocity);
     double alpha = get_alpha_from_phi(phi, pitch);
     return alpha;
 }
 
-seahowl::aero::AirfoilCoefficients seahowl::aero::get_aero_coefficients_from_alpha(
+seahowl::fluid::aero::AirfoilCoefficients seahowl::fluid::aero::get_aero_coefficients_from_alpha(
     const double alpha,
-    std::vector<seahowl::aero::AirfoilProperties>& airfoil_properties) {
+    std::vector<seahowl::fluid::aero::AirfoilProperties>& airfoil_properties) {
     // get coefficients from angle of attack
     auto coefficients = airfoil_properties[0].find_coefficients(alpha * 180 / PI);
     return coefficients;
 }
 
-Vector2d seahowl::aero::get_induced_velocity(seahowl::aero::BladeNodeAero& node,
-                                             const Vector2d& local_velocity_rotor0,
-                                             const double pitch,
-                                             const size_t nblades,
-                                             const bool tip_loss,
-                                             const bool hub_loss) {
+Vector2d seahowl::fluid::aero::get_induced_velocity(seahowl::fluid::aero::BladeNodeAero& node,
+                                                    const Vector2d& local_velocity_rotor0,
+                                                    const double pitch,
+                                                    const size_t nblades,
+                                                    const bool tip_loss,
+                                                    const bool hub_loss) {
     // local_velocity is in local element frame
     Vector2d local_velocity;
     Vector2d local_velocity_rotor;
@@ -79,9 +79,10 @@ Vector2d seahowl::aero::get_induced_velocity(seahowl::aero::BladeNodeAero& node,
         local_velocity_rotor = Vector2d(local_velocity_rotor0[0] * (1.0 + ap), local_velocity_rotor0[1] * (1.0 - aa));
 
         // get coefficients from angle of attack
-        double phi = seahowl::aero::get_phi(local_velocity_rotor);
-        alpha = seahowl::aero::get_alpha_from_phi(phi, pitch);
-        auto coefficients = seahowl::aero::get_aero_coefficients_from_alpha(alpha, node.properties.airfoil_properties);
+        double phi = seahowl::fluid::aero::get_phi(local_velocity_rotor);
+        alpha = seahowl::fluid::aero::get_alpha_from_phi(phi, pitch);
+        auto coefficients =
+            seahowl::fluid::aero::get_aero_coefficients_from_alpha(alpha, node.properties.airfoil_properties);
 
         // get drag and lift coefficients
         auto cl = coefficients.lift;
@@ -192,9 +193,9 @@ Vector2d seahowl::aero::get_induced_velocity(seahowl::aero::BladeNodeAero& node,
     return local_velocity_rotor;
 }
 
-void seahowl::aero::apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
-                                                      const Vector3d& position,
-                                                      const seahowl::aero::TowerAero& tower_aero) {
+void seahowl::fluid::aero::apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity,
+                                                             const Vector3d& position,
+                                                             const seahowl::fluid::aero::TowerAero& tower_aero) {
     // check that wind velocity is not ~zero
     double tol = 1e-6;
     if (wind_velocity.norm() < tol) {

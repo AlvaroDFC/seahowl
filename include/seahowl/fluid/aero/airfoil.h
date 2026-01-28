@@ -3,6 +3,7 @@
 #include <vector>
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 /**
@@ -57,4 +58,5 @@ struct AirfoilProperties {
 };
 
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

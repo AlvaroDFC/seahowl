@@ -4,7 +4,7 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 BladeReferencePointAero::BladeReferencePointAero() {}
 

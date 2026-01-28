@@ -3,8 +3,8 @@
 #include <spdlog/spdlog.h>
 #include <string>
 
-using seahowl::aero::AirfoilCoefficients;
-using seahowl::aero::AirfoilProperties;
+using seahowl::fluid::aero::AirfoilCoefficients;
+using seahowl::fluid::aero::AirfoilProperties;
 
 AirfoilCoefficients::AirfoilCoefficients() {}
 

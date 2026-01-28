@@ -9,7 +9,7 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 using seahowl::Vector3d;
 
 Blade::Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,

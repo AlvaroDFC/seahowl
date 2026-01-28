@@ -15,10 +15,13 @@ namespace elasto {
 class RotorNacelleAssemblyElasto;
 class RotorElasto;
 }  // namespace elasto
+namespace fluid {
 namespace aero {
 class RotorNacelleAssemblyAero;
 class RotorAero;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {

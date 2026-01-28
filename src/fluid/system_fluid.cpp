@@ -1,24 +1,24 @@
-#include "seahowl/fluid/aero/system_aero.h"
+#include "seahowl/fluid/system_fluid.h"
 
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid;
 
-void SystemAero::add(std::shared_ptr<TurbineAero> turbine) {
+void SystemFluid::add(std::shared_ptr<TurbineFluid> turbine) {
     if (std::find(turbines.begin(), turbines.end(), turbine) == turbines.end()) {
         turbines.push_back(turbine);
     } else
-        spdlog::warn("Turbine aero already exists in the system, not adding again.");
+        spdlog::warn("Turbine fluid already exists in the system, not adding again.");
 }
 
-void SystemAero::add(std::shared_ptr<seahowl::ComponentFluid> component) {
+void SystemFluid::add(std::shared_ptr<seahowl::fluid::ComponentFluid> component) {
     if (std::find(components.begin(), components.end(), component) == components.end()) {
         components.push_back(component);
     } else
-        spdlog::warn("Component aero already exists in the system, not adding again.");
+        spdlog::warn("Component fluid already exists in the system, not adding again.");
 }
 
-void SystemAero::build() {
+void SystemFluid::build() {
     // build all turbines
     for (auto& turbine : turbines) {
         turbine->build();
@@ -29,7 +29,7 @@ void SystemAero::build() {
     }
 }
 
-void SystemAero::compute_env_loads(const env::EnvModel& env_model, double time) {
+void SystemFluid::compute_env_loads(const env::EnvModel& env_model, double time) {
     for (auto& turbine : turbines) {
         // compute forces from fluid model
         turbine->compute_env_loads(env_model, time);

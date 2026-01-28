@@ -8,7 +8,7 @@
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 
 Mooring::Mooring(std::shared_ptr<MooringElastoFEA> elasto, std::shared_ptr<MooringHydro> hydro)
     : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {}

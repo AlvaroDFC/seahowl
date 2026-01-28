@@ -6,13 +6,17 @@
 
 // forward declarations
 namespace seahowl {
+namespace fluid {
 namespace aero {
 struct AirfoilProperties;
 struct AirfoilCoefficients;
 }  // namespace aero
+}  // namespace fluid
+namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace aero {
 
 /**
@@ -74,4 +78,5 @@ Vector2d get_induced_velocity(BladeNodeAero& node,
  */
 void apply_tower_shadow_effect_on_wind(Vector3d& wind_velocity, const Vector3d& position, const TowerAero& tower_aero);
 }  // namespace aero
+}  // namespace fluid
 }  // namespace seahowl

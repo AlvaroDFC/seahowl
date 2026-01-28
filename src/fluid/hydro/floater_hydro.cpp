@@ -3,7 +3,7 @@
 #include "seahowl/env/env_model.h"
 
 using namespace seahowl;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 using namespace seahowl::env;
 
 FloaterHydro::FloaterHydro() : mooring_system(std::make_unique<MooringSystemHydro>()) {}
