@@ -22,9 +22,6 @@ endif()
 
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
 
-# Add the cmake folder so the FindSphinx module is found
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
 # Retrieve date and time of build
 string(TIMESTAMP TODAY "%Y-%m-%d %H:%M:%S")
 set (SEAHOWL_BUILD_DATE ${TODAY})
@@ -655,7 +652,7 @@ if (SEAHOWL_ENABLE_PYTHON)
             message(FATAL_ERROR "Failed to create virtual environment")
         endif()
 
-        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
+        set(CMD_PIP "pip install mkdocs mkdocs-material mkdocstrings[python] matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
         set(CMD_PRECOMMIT "pre-commit install")
 
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
