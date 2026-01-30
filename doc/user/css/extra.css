@@ -1,0 +1,19 @@
+/* Rend les bordures des cartes plus marquées */
+.md-typeset .grid.cards> :is(ul, ol)>li {
+    border: 0.1rem solid rgba(0, 0, 0, 0.15);
+    /* Bordure grise plus foncée */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Ombre légère pour donner du relief */
+    border-radius: 8px;
+    /* Coins arrondis plus doux */
+    transition: all 0.3s;
+    /* Animation fluide au survol */
+}
+
+/* Style au survol (hover) */
+.md-typeset .grid.cards> :is(ul, ol)>li:hover {
+    border-color: var(--md-primary-fg-color);
+    /* Bordure prend la couleur du thème */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    /* Ombre plus forte */
+}
