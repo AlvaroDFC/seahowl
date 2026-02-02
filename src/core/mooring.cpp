@@ -11,7 +11,7 @@ using namespace seahowl::elasto;
 using namespace seahowl::fluid::hydro;
 
 Mooring::Mooring(std::shared_ptr<MooringElastoFEA> elasto, std::shared_ptr<MooringHydro> hydro)
-    : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {}
+    : ComponentDynamic(elasto, hydro), ComponentElastoFluid(elasto, hydro), elasto(*elasto), hydro(*hydro) {}
 
 void Mooring::set_length(double length) {
     elasto.set_length(length);
@@ -38,8 +38,8 @@ void Mooring::initialize_this(double time, double dt) {
     perform_sanity_check();
 
     // mappings
-    compute_mapping_hydro2elasto();
-    compute_mapping_elasto2hydro();
+    compute_mapping_fluid2elasto();
+    compute_mapping_elasto2fluid();
     // update position of hydro points
     update_positions_hydro();
 
@@ -79,36 +79,13 @@ void Mooring::set_discretization_hydro(const std::vector<double>& fractions) {
     hydro.discretization_fractions = fractions;
 }
 
-void Mooring::compute_mapping_hydro2elasto() {
-    mapping_hydro2elasto_nodes =
-        get_indice_and_positions(hydro.discretization_fractions, elasto.discretization_fractions);
-
-    // get hydro element position (center) from which loads will be applied
-    if (hydro.elements.size() != hydro.discretization_fractions.size() - 1) {
-        throw std::runtime_error("There are " + std::to_string(hydro.elements.size()) + " elements for " +
-                                 std::to_string(hydro.discretization_fractions.size() - 1) +
-                                 "discretization fractions (" + std::to_string(hydro.nodes.size()) + " nodes).");
-    }
-    std::vector<double> hydro_discretization_fractions_elements;
-    for (int ii = 0; ii < hydro.elements.size(); ii++) {
-        auto element_fraction = 0.5 * (hydro.discretization_fractions[ii] + hydro.discretization_fractions[ii + 1]);
-        hydro_discretization_fractions_elements.push_back(element_fraction);
-    }
-    mapping_hydro2elasto_elements =
-        get_indice_and_positions(hydro_discretization_fractions_elements, elasto.discretization_fractions);
-}
-
-void Mooring::compute_mapping_elasto2hydro() {
-    mapping_elasto2hydro = get_indice_and_positions(elasto.discretization_fractions, hydro.discretization_fractions);
-}
-
 void Mooring::update_positions_hydro() {
     for (int ii = 0; ii < hydro.nodes.size(); ii++) {
         auto& node_hydro = hydro.nodes[ii];
 
         // update position and rotation of hydro elements
-        int elasto_element_index = mapping_hydro2elasto_nodes[ii].index;
-        double eta = mapping_hydro2elasto_nodes[ii].eta;
+        int elasto_element_index = mapping_fluid2elasto_nodes[ii].index;
+        double eta = mapping_fluid2elasto_nodes[ii].eta;
         auto entity = elasto.get_entity_along_component(eta, elasto_element_index);
         node_hydro.set_rotation(entity.get_rotation());
         node_hydro.set_position(entity.get_position());
@@ -121,15 +98,15 @@ void Mooring::update_positions_hydro() {
 
 void Mooring::update_loads_elasto() {
     elasto.reset_loads();
-    if (hydro.elements.size() != mapping_hydro2elasto_elements.size()) {
+    if (hydro.elements.size() != mapping_fluid2elasto_elements.size()) {
         throw std::runtime_error("Mooring: length of vector of elements (" + std::to_string(hydro.elements.size()) +
                                  ") and length of hydro to elasto mapping (" +
-                                 std::to_string(mapping_hydro2elasto_elements.size()) + ") do not match.");
+                                 std::to_string(mapping_fluid2elasto_elements.size()) + ") do not match.");
     }
     auto offset = Vector3d(0.0, 0.0, 0.0);
     for (int ii = 0; ii < hydro.elements.size(); ii++) {
         elasto.accumulate_element_load(hydro.elements[ii].get_load(), Vector3d(0.0, 0.0, 0.0),
-                                       mapping_hydro2elasto_elements[ii].index, mapping_hydro2elasto_elements[ii].eta,
+                                       mapping_fluid2elasto_elements[ii].index, mapping_fluid2elasto_elements[ii].eta,
                                        offset);
     }
 }

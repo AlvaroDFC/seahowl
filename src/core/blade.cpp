@@ -14,12 +14,12 @@ using seahowl::Vector3d;
 
 Blade::Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
              const std::shared_ptr<seahowl::aero::BladeAero> aero)
-    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {}
+    : ComponentDynamic(elasto, aero), ComponentElastoFluid(elasto, aero), elasto(*elasto), aero(*aero) {}
 
 void Blade::initialize_this(double time, double dt) {
     // mappings
-    compute_mapping_aero2elasto();
-    compute_mapping_elasto2aero();
+    compute_mapping_fluid2elasto();
+    compute_mapping_elasto2fluid();
     // update position of aero points
     update_positions_aero();
 
@@ -62,33 +62,13 @@ void Blade::set_discretization_aero(const std::vector<double>& fractions) {
     aero.discretization_fractions = fractions;
 };
 
-void Blade::compute_mapping_aero2elasto() {
-    // get aero element position (center) from which loads will be applied
-    std::vector<double> aero_discretization_fractions_elements;
-    for (auto& element : aero.elements) {
-        aero_discretization_fractions_elements.push_back(element.fraction);
-    }
-    mapping_aero2elasto_elements =
-        get_indice_and_positions(aero_discretization_fractions_elements, elasto.discretization_fractions);
-    std::vector<double> aero_discretization_fractions_nodes;
-    for (auto& node : aero.nodes) {
-        aero_discretization_fractions_nodes.push_back(node.properties.fraction);
-    }
-    mapping_aero2elasto_nodes =
-        get_indice_and_positions(aero_discretization_fractions_nodes, elasto.discretization_fractions);
-}
-
-void Blade::compute_mapping_elasto2aero() {
-    mapping_elasto2aero = get_indice_and_positions(elasto.discretization_fractions, aero.discretization_fractions);
-}
-
 void Blade::update_positions_aero() {
     for (int ii = 0; ii < aero.nodes.size(); ii++) {
         auto& node_aero = aero.nodes[ii];
 
         // update position and rotation of aero elements
-        int elasto_element_index = mapping_aero2elasto_nodes[ii].index;
-        double eta = mapping_aero2elasto_nodes[ii].eta;
+        int elasto_element_index = mapping_fluid2elasto_nodes[ii].index;
+        double eta = mapping_fluid2elasto_nodes[ii].eta;
         auto entity = elasto.get_entity_along_blade(eta, elasto_element_index);
         node_aero.set_rotation(entity.get_rotation());
         node_aero.set_position(entity.get_position() + node_aero.get_offset_aero_absolute());
@@ -113,14 +93,14 @@ void Blade::update_positions_aero() {
 
 void Blade::update_loads_elasto() {
     elasto.reset_loads();
-    if (aero.elements.size() != mapping_aero2elasto_elements.size()) {
+    if (aero.elements.size() != mapping_fluid2elasto_elements.size()) {
         throw std::runtime_error("Blade: length of vector of elements (" + std::to_string(aero.elements.size()) +
                                  " and length of aero to elasto mapping(" +
-                                 std::to_string(mapping_aero2elasto_elements.size()) + ") do not match.");
+                                 std::to_string(mapping_fluid2elasto_elements.size()) + ") do not match.");
     }
     for (int ii = 0; ii < aero.elements.size(); ii++) {
-        elasto.accumulate_load_along_blade(aero.elements[ii].get_load(), aero.elements[ii].get_moment(),
-                                           mapping_aero2elasto_elements[ii].index, mapping_aero2elasto_elements[ii].eta,
-                                           aero.elements[ii].get_offset_aero_absolute());
+        elasto.accumulate_load_along_blade(
+            aero.elements[ii].get_load(), aero.elements[ii].get_moment(), mapping_fluid2elasto_elements[ii].index,
+            mapping_fluid2elasto_elements[ii].eta, aero.elements[ii].get_offset_aero_absolute());
     }
 }

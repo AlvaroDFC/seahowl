@@ -201,6 +201,7 @@ source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS}
 set(SEAHOWL_CORE_SOURCES
     src/core/reference_point.cpp
     src/core/component.cpp
+    src/core/component_elasto_fluid.cpp
     src/core/rotor.cpp
     src/core/blade.cpp
     src/core/tower.cpp
@@ -213,6 +214,7 @@ set(SEAHOWL_CORE_SOURCES
 set(SEAHOWL_CORE_HEADERS
     include/seahowl/core/reference_point.h
     include/seahowl/core/component.h
+    include/seahowl/core/component_elasto_fluid.h
     include/seahowl/core/blade.h
     include/seahowl/core/rotor.h
     include/seahowl/core/tower.h
