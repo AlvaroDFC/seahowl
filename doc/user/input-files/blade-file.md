@@ -59,49 +59,6 @@ Array of blade stations defining properties along the span.
 | `airfoil_file` | string | - | Path to airfoil polar file (for built-in BEMT) |
 | `offset_aero` | [float, float] | m | Aerodynamic center offset [x, y] |
 
-## Mass and Stiffness Matrices
-
-### Matrix Format
-
-Both matrices are 6x6, representing coupled behavior in 6 degrees of freedom per unit length:
-
-```
-     [  ux    uy    uz    Rx    Ry    Rz  ]
-ux   [ m11   m12   m13   m14   m15   m16 ]
-uy   [ m21   m22   m23   m24   m25   m26 ]
-uz   [ m31   m32   m33   m34   m35   m36 ]
-Rx   [ m41   m42   m43   m44   m45   m46 ]
-Ry   [ m51   m52   m53   m54   m55   m56 ]
-Rz   [ m61   m62   m63   m64   m65   m66 ]
-```
-
-Where:
-- `ux, uy, uz` - translations along x (edgewise), y (flapwise), z (spanwise)
-- `Rx, Ry, Rz` - rotations about x (flapwise bending), y (edgewise bending), z (torsion)
-
-### Mass Matrix Units
-
-| Block | Unit |
-|-------|------|
-| Translation-translation (rows/cols 1-3) | kg/m |
-| Translation-rotation (rows 1-3, cols 4-6) | kg-m/m |
-| Rotation-translation (rows 4-6, cols 1-3) | kg-m/m |
-| Rotation-rotation (rows/cols 4-6) | kg-m^2/m |
-
-### Stiffness Matrix Units
-
-| Block | Unit |
-|-------|------|
-| Translation-translation | (N/m)/m |
-| Translation-rotation | (N/rad)/m |
-| Rotation-translation | (N-m/m)/m |
-| Rotation-rotation | (N-m/rad)/m |
-
-### FEA vs FPM Rotor Types
-
-- **FPM** (`"type": "fpm"`): Uses the full 6x6 matrices including off-diagonal coupling terms
-- **FEA** (`"type": "fea"`): Uses only diagonal terms of the matrices
-
 ## Example
 
 ```json

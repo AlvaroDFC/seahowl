@@ -5,6 +5,7 @@
 #include "seahowl/fluid/hydro/foundation_fluid.h"
 
 namespace seahowl {
+/**@brief Fluid model module */
 namespace fluid {
 
 /**@brief HydroDynamic module */
