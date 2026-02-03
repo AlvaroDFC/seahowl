@@ -92,25 +92,29 @@ class TestTurbine : public FixtureComponents {
     }
 };
 
-TEST_F(TestTurbine, rpm_initial_pitch) {
+TEST_F(TestTurbine, IEA15MW_fixed_pitch_fea) {
     setup_wind(Vector3d(8.0, 0.0, 0.0));
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
     auto turbine = load_turbine("IEA15MW/onshore/turbine.json");
+    // force FEA mode on blades
+    for (auto& blade : turbine.elasto.rna->rotor->blades) {
+        dynamic_cast<seahowl::elasto::BladeElastoFEA&>(*blade).fpm_mode = false;
+    }
     init_turbine(turbine);
 
     turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
     do_statics(turbine);
 
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_rpm_initial_pitch.csv").generic_string(),
-                                       (test_dir / "test_turbine_rpm_initial_pitch.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_fixed_pitch_fea.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_fixed_pitch_fea.test.csv").generic_string()});
     add_common_metrics(test_dataset, turbine);
 
     run_simulation(turbine, test_dataset, 50.0);
     EvaluateTest(test_dataset);
 }
 
-TEST_F(TestTurbine, rpm_initial_pitch_fpm) {
+TEST_F(TestTurbine, IEA15MW_fixed_pitch_fpm) {
     setup_wind(Vector3d(8.0, 0.0, 0.0));
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
@@ -124,15 +128,15 @@ TEST_F(TestTurbine, rpm_initial_pitch_fpm) {
     turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
     do_statics(turbine);
 
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_rpm_initial_pitch_fpm.csv").generic_string(),
-                                       (test_dir / "test_turbine_rpm_initial_pitch_fpm.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_fixed_pitch_fpm.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_fixed_pitch_fpm.test.csv").generic_string()});
     add_common_metrics(test_dataset, turbine);
 
     run_simulation(turbine, test_dataset, 50.0);
     EvaluateTest(test_dataset);
 }
 
-TEST_F(TestTurbine, rpm_initial_pitch_rigid_rotor) {
+TEST_F(TestTurbine, IEA15MW_fixed_pitch_rigid) {
     setup_wind(Vector3d(8.0, 0.0, 0.0));
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
@@ -142,16 +146,15 @@ TEST_F(TestTurbine, rpm_initial_pitch_rigid_rotor) {
     turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
     do_statics(turbine);
 
-    TestFrameworkDataset test_dataset(
-        {false, (ref_dir / "test_turbine_rpm_initial_pitch_rigid_rotor.csv").generic_string(),
-         (test_dir / "test_turbine_rpm_initial_pitch_rigid_rotor.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_fixed_pitch_rigid.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_fixed_pitch_rigid.test.csv").generic_string()});
     add_common_metrics(test_dataset, turbine);
 
     run_simulation(turbine, test_dataset, 50.0);
     EvaluateTest(test_dataset);
 }
 
-TEST_F(TestTurbine, controller_target_rpm) {
+TEST_F(TestTurbine, IEA15MW_target_rpm) {
     dt = 0.05;
     setup_wind(Vector3d(8.0, 0.0, 0.0));
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
@@ -165,8 +168,8 @@ TEST_F(TestTurbine, controller_target_rpm) {
     turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
     do_statics(turbine);
 
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_controller_target_rpm.csv").generic_string(),
-                                       (test_dir / "test_turbine_controller_target_rpm.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_target_rpm.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_target_rpm.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [this]() { return system_elasto.get_time(); });
     test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
 
@@ -174,7 +177,7 @@ TEST_F(TestTurbine, controller_target_rpm) {
     EvaluateTest(test_dataset);
 }
 
-TEST_F(TestTurbine, actuator_disk) {
+TEST_F(TestTurbine, IEA15MW_actuator_disk) {
     setup_wind(Vector3d(11.0, 0.0, 0.0));
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
 
@@ -188,8 +191,8 @@ TEST_F(TestTurbine, actuator_disk) {
     turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
     do_statics(turbine);
 
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_actuator_disk.csv").generic_string(),
-                                       (test_dir / "test_turbine_actuator_disk.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_actuator_disk.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_actuator_disk.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [this]() { return system_elasto.get_time(); });
     test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
     test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
@@ -234,7 +237,7 @@ TEST_F(TestTurbine, actuator_disk) {
     EvaluateTest(test_dataset);
 }
 
-TEST_F(TestTurbine, multiturbines) {
+TEST_F(TestTurbine, IEA15MW_multiturbines) {
     setup_wind(Vector3d(8.0, 0.0, 0.0));
 
     auto system_elasto_ptr = std::make_shared<SystemElastoChrono>();
@@ -262,8 +265,8 @@ TEST_F(TestTurbine, multiturbines) {
     system_elasto_ptr->do_statics(true, 10);
     system_core.poststep(0.0, dt);
 
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_multiturbines.csv").generic_string(),
-                                       (test_dir / "test_turbine_multiturbines.test.csv").generic_string()});
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_multiturbines.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_multiturbines.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time (s)", [&system_elasto_ptr]() { return system_elasto_ptr->get_time(); });
     for (size_t idx = 0; idx < system_core.turbines.size(); idx++) {
         test_dataset.test_csv.add_function("rpm turbine " + std::to_string(idx + 1) + " (-)", [&system_core, idx]() {
@@ -279,5 +282,49 @@ TEST_F(TestTurbine, multiturbines) {
         test_dataset.test_csv.write_row();
     }
 
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, IEA34MW_fixed_pitch) {
+    setup_wind(Vector3d(8.0, 0.0, 0.0));
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+
+    auto turbine = load_turbine("IEA34MW/turbine.json");
+    // force FPM mode on blades
+    for (auto& blade : turbine.elasto.rna->rotor->blades) {
+        dynamic_cast<seahowl::elasto::BladeElastoFEA&>(*blade).fpm_mode = true;
+    }
+    init_turbine(turbine);
+
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
+    do_statics(turbine);
+
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA34MW_fixed_pitch.csv").generic_string(),
+                                       (test_dir / "test_IEA34MW_fixed_pitch.test.csv").generic_string()});
+    add_common_metrics(test_dataset, turbine);
+
+    run_simulation(turbine, test_dataset, 50.0);
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, IEA10MW_fixed_pitch) {
+    setup_wind(Vector3d(8.0, 0.0, 0.0));
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+
+    auto turbine = load_turbine("IEA10MW/turbine.json");
+    // force FPM mode on blades
+    for (auto& blade : turbine.elasto.rna->rotor->blades) {
+        dynamic_cast<seahowl::elasto::BladeElastoFEA&>(*blade).fpm_mode = true;
+    }
+    init_turbine(turbine);
+
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(seahowl::PI / 8.0);
+    do_statics(turbine);
+
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA10MW_fixed_pitch.csv").generic_string(),
+                                       (test_dir / "test_IEA10MW_fixed_pitch.test.csv").generic_string()});
+    add_common_metrics(test_dataset, turbine);
+
+    run_simulation(turbine, test_dataset, 50.0);
     EvaluateTest(test_dataset);
 }
