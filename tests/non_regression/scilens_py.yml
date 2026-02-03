@@ -6,7 +6,7 @@ readers:
       curve_parser:
         name: "col_x"
         parameters:
-          x: ["time (s)", "fraction"]
+          x: ["time [s]", "time (s)", "fraction"]
       rows:
         line_start : 3
 compare:
