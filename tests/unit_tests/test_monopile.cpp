@@ -38,6 +38,7 @@ using namespace seahowl::elasto;
 class TestMonopile : public FixtureComponents {
   protected:
     TestMonopile() : FixtureComponents() {
+        root_dir /= "test_monopile";
         ref_dir /= "test_monopile/ref";
         test_dir /= "test_monopile/test";
     }
@@ -48,8 +49,8 @@ TEST_F(TestMonopile, monopile_hydrochrono) {
     double water_density = 1025.0;
     double wave_height = 5.0;
     double wave_period = 10.0;
-    double water_depth = 30.0;
-    double mean_water_level = 0.0;
+    double water_depth = 40.0;
+    double mean_water_level = 10.0;
 
     // general options
     bool visualization_on = true;
@@ -101,12 +102,12 @@ TEST_F(TestMonopile, monopile_hydrochrono) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_hydrochrono.csv").generic_string(),
                                        (test_dir / "test_monopile_hydrochrono.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("monopile base moment (Nm)",
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("monopile base moment [Nm]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
-    test_dataset.test_csv.add_function("monopile base force (N)",
+    test_dataset.test_csv.add_function("monopile base force [N]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_force(); });
-    test_dataset.test_csv.add_function("monopile top position (m)",
+    test_dataset.test_csv.add_function("monopile top position [m]",
                                        [&monopile]() { return monopile.elasto.nodes.back()->get_position(); });
 
     double time = 0.0;
@@ -143,7 +144,7 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
     wind_model->set_wind_velocity(Vector3d(0.0, 0.0, 0.0));
     wind_model->shear_coefficient = 0.12;
     // wave
-    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((ref_dir / "SeaState.dat").generic_string());
+    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((root_dir / "SeaState.dat").generic_string());
     wave_model->density = 1025.0;
     // env_model
     auto env_model = seahowl::env::EnvModel();
@@ -164,7 +165,7 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
         (DATADIR / "IEA15MW/monopile/IEA-15-240-RWT-Monopile_HydroDyn.dat").generic_string());
     seahowl::io::populate_tower_aero_from_file((DATADIR / "IEA15MW/monopile/monopile.csv").generic_string(),
                                                *monopile_hydro);
-    monopile_hydro->set_seastate_infile((ref_dir / "SeaState.dat").generic_string());
+    monopile_hydro->set_seastate_infile((root_dir / "SeaState.dat").generic_string());
     monopile_hydro->discretization_fractions = {45};
     auto monopile = seahowl::core::Monopile(monopile_elasto, monopile_hydro);
 
@@ -175,12 +176,12 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_hydrodyn.csv").generic_string(),
                                        (test_dir / "test_monopile_hydrodyn.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("monopile base moment (Nm)",
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("monopile base moment [Nm]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
-    test_dataset.test_csv.add_function("monopile base force (N)",
+    test_dataset.test_csv.add_function("monopile base force [N]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_force(); });
-    test_dataset.test_csv.add_function("monopile top position (m)",
+    test_dataset.test_csv.add_function("monopile top position [m]",
                                        [&monopile]() { return monopile.elasto.nodes.back()->get_position(); });
 
     double time = 0.0;
@@ -217,7 +218,7 @@ TEST_F(TestMonopile, monopile_seastate) {
     wind_model->set_wind_velocity(Vector3d(0.0, 0.0, 0.0));
     wind_model->shear_coefficient = 0.12;
     // wave
-    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((ref_dir / "SeaState.dat").generic_string());
+    auto wave_model = std::make_shared<seahowl::env::SeaStateAdapter>((root_dir / "SeaState.dat").generic_string());
     wave_model->density = 1025.0;
     // env_model
     auto env_model = seahowl::env::EnvModel();
@@ -246,12 +247,12 @@ TEST_F(TestMonopile, monopile_seastate) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_seastate.csv").generic_string(),
                                        (test_dir / "test_monopile_seastate.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("monopile base moment (Nm)",
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("monopile base moment [Nm]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
-    test_dataset.test_csv.add_function("monopile base force (N)",
+    test_dataset.test_csv.add_function("monopile base force [N]",
                                        [&monopile]() { return monopile.elasto.get_tower_base_force(); });
-    test_dataset.test_csv.add_function("monopile top position (m)",
+    test_dataset.test_csv.add_function("monopile top position [m]",
                                        [&monopile]() { return monopile.elasto.nodes.back()->get_position(); });
 
     double time = 0.0;

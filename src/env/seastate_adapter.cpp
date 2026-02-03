@@ -203,38 +203,19 @@ void SeaStateLib::Init() {
     char OutVTKDir[PASSED_STRING_LENGTH - 1];
     strcpy(OutVTKDir, "./vtk/");  // FIXME: need some way to set this
 
-    spdlog::debug("SeaState PreInit");
     SeaSt_C_PreInit(Gravity, WtrDens, WtrDpth, MSL2SWL, DebugLevel, OutVTKDir, WrVTK, WrVTK_DT, ErrStat, ErrMsg);
     CheckError();
 
-    spdlog::debug("SeaState Init");
     SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, TShift, NumChannels, OutputChannelNames, OutputChannelUnits,
                  ErrStat, ErrMsg);
     CheckError();
 
     // get min and max wave elevations to streamline node in water checks where possible
-    spdlog::debug("SeaState MinMaxEstimate");
     SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
-    spdlog::debug("Min wave elev: {}   Max wave elev: {}", min_water_level, max_water_level);
     CheckError();
-
-    /* The following was a quick and dirty check on pointer getting/setting.  It appears to work as expected.
-        // Testing pointer retrieve and setting
-        void* TmpPtr = GetWaveFieldPointer();
-        CheckError();
-        spdlog::debug("GetWaveFieldPointer pointer {}", TmpPtr);
-        // try setting pointer
-        SetWaveFieldPointer(TmpPtr);
-        CheckError();
-    */
-
-    spdlog::debug("SeaState water density: {}", GetFluidDensity());
-    spdlog::debug("SeaState water depth: {}", GetWaterDepth());
-    spdlog::debug("SeaState MSL2SWL: {}", GetWaterMSL2SWL());
 }
 
 double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
-    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
     float* Pos_C = new float[2];
     for (int i = 0; i < 2; i++) {
         Pos_C[i] = position[i];
@@ -251,8 +232,7 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
 
     delete[] Pos_C;
 
-    spdlog::debug("Elevation: {}", Elev_C);
-    return Elev_C;
+    return GetWaterMSL2SWL() + Elev_C;
 };
 
 double SeaStateLib::GetFluidDensity() {
@@ -277,12 +257,11 @@ double SeaStateLib::GetWaterMSL2SWL() {
 }
 
 seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& position, double time) {
-    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
-
     float* Pos_C = new float[3];
     for (int i = 0; i < 3; i++) {
         Pos_C[i] = position[i];
     }
+    Pos_C[2] -= GetWaterMSL2SWL();
     float* Vel_C = new float[3];
     float* Acc_C = new float[3];
     int NodeInWater_C = 1;
@@ -297,7 +276,6 @@ seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& positio
     CheckError();
 
     auto velocity = seahowl::Vector3d(Vel_C[0], Vel_C[1], Vel_C[2]);
-    spdlog::debug("velocity ({}, {}, {})", velocity.x(), velocity.y(), velocity.z());
 
     delete[] Pos_C;
     delete[] Vel_C;
@@ -307,11 +285,11 @@ seahowl::Vector3d SeaStateLib::GetFluidVelocity(const seahowl::Vector3d& positio
 }
 
 seahowl::Vector3d SeaStateLib::GetFluidAcceleration(const seahowl::Vector3d& position, double time) {
-    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
     float* Pos_C = new float[3];
     for (int i = 0; i < 3; i++) {
         Pos_C[i] = position[i];
     }
+    Pos_C[2] -= GetWaterMSL2SWL();
     float* Vel_C = new float[3];
     float* Acc_C = new float[3];
     int NodeInWater_C = 1;
@@ -327,7 +305,6 @@ seahowl::Vector3d SeaStateLib::GetFluidAcceleration(const seahowl::Vector3d& pos
     CheckError();
 
     auto acceleration = seahowl::Vector3d(Acc_C[0], Acc_C[1], Acc_C[2]);
-    spdlog::debug("acceleration ({}, {}, {})", acceleration.x(), acceleration.y(), acceleration.z());
 
     delete[] Pos_C;
     delete[] Vel_C;
@@ -360,7 +337,6 @@ void SeaStateLib::SetWaveFieldPointer(void* WaveFieldPtr) {
 
     SeaSt_C_GetElevMinMaxEstimate(min_water_level, max_water_level, ErrStat, ErrMsg);
     CheckError();
-    spdlog::debug("Min wave elev: {}   Max wave elev: {}", min_water_level, max_water_level);
 }
 
 // FIXME: add way to set size and number of timesteps
