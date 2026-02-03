@@ -26,8 +26,6 @@ class BladeElasto : public virtual ComponentElasto {
     double precone = 0.0;
     /** @brief List of reference points describing the blade properties along its longitudinal axis. */
     std::vector<BladeReferencePointElasto> reference_points;
-    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the FEA component. */
-    std::vector<double> discretization_fractions{};
 
     BladeElasto();
     ~BladeElasto() = default;
@@ -92,7 +90,6 @@ class BladeElastoFEA : public BladeElasto, public ComponentElastoFEA {
     std::vector<BladeReferencePointElasto> discretized_points;
     /** @brief Whether the blade uses FPM or simple Timoshenko elements. */
     bool fpm_mode = false;
-    using BladeElasto::discretization_fractions;
 
     /**
      * @brief Constructor.

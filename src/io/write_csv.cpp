@@ -73,6 +73,7 @@ void CustomCSV::write_row() {
                         dim = "dim" + std::to_string(ivalue);
                     }
                     size_t pos = function_pair.first.find("(");
+                    pos = function_pair.first.find("[");
                     if (pos != std::string::npos) {
                         pos += header.size();
                         header.append(function_pair.first).insert(pos, dim + " ").append(",");

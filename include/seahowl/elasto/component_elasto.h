@@ -79,6 +79,10 @@ class ComponentElasto {
   protected:
     bool is_assembled = false;
     virtual void assemble_this(SystemElasto& system) = 0;
+
+  public:
+    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1]. */
+    std::vector<double> discretization_fractions{};
 };
 
 /**
@@ -92,8 +96,6 @@ class ComponentElastoFEA : public virtual ComponentElasto {
     std::vector<std::shared_ptr<NodeElasto>> nodes;
     /** @brief Finite element beams. */
     std::vector<std::shared_ptr<ElementElasto>> elements;
-    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the FEA component. */
-    std::vector<double> discretization_fractions{};
 
     /**
      * @brief Builds nodes for the elasto component based on reference points.

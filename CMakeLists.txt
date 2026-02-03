@@ -48,11 +48,6 @@ else()
     set(SEAHOWL_GIT_HASH "N/A")
 endif()
 
-# set default SEAHOWL_DATADIR
-set(SEAHOWL_DATADIR_VALUE ${PROJECT_SOURCE_DIR}/data)
-message(STATUS "SEAHOWL_DATADIR set to: ${SEAHOWL_DATADIR_VALUE}")
-add_definitions(-DSEAHOWL_DATADIR="${SEAHOWL_DATADIR_VALUE}")
-
 # =============
 # OPTIONS
 # =============
@@ -165,7 +160,12 @@ endif(SEAHOWL_ENABLE_HYDROCHRONO)
 if(SEAHOWL_ENABLE_PYTHON)
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
     find_package(pybind11 CONFIG REQUIRED)
+    add_definitions("-DHAVE_PYTHON=1")
 endif(SEAHOWL_ENABLE_PYTHON)
+
+IF(SEAHOWL_ENABLE_VIRTUALENV)
+     add_definitions("-DHAVE_ENV_PYTHON=1")
+endif()
 
 # --------------------------------------------------------------
 # Tweaks to disable some warnings with MSVC
@@ -196,8 +196,11 @@ endif()
 if(DEFINED ENV{SEAHOWL_DATADIR})
     set(SEAHOWL_DATADIR $ENV{SEAHOWL_DATADIR})
 else()
-    set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data/IEA15MW")
+    set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
 endif()
+
+message(STATUS "SEAHOWL_DATADIR set to: ${SEAHOWL_DATADIR}")
+add_definitions(-DSEAHOWL_DATADIR="${SEAHOWL_DATADIR}")
 
 # ================
 # CORE LIBRARY
@@ -220,6 +223,7 @@ source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS}
 set(SEAHOWL_CORE_SOURCES
     src/core/reference_point.cpp
     src/core/component.cpp
+    src/core/component_elasto_fluid.cpp
     src/core/rotor.cpp
     src/core/blade.cpp
     src/core/tower.cpp
@@ -232,6 +236,7 @@ set(SEAHOWL_CORE_SOURCES
 set(SEAHOWL_CORE_HEADERS
     include/seahowl/core/reference_point.h
     include/seahowl/core/component.h
+    include/seahowl/core/component_elasto_fluid.h
     include/seahowl/core/blade.h
     include/seahowl/core/rotor.h
     include/seahowl/core/tower.h
@@ -678,11 +683,17 @@ if (VCPKG_APPLOCAL_DEPS)
     endif()
 
     set(LIBRARY_PATH "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/${LIB_FILE_NAME}")
-    set(DESTINATION_PATH "${SEAHOWL_DATADIR}/base/controller")
+    set(DESTINATION_PATH_IEA15 "${SEAHOWL_DATADIR}/IEA15MW/base/controller")
+    set(DESTINATION_PATH_IEA34 "${SEAHOWL_DATADIR}/IEA34MW/controller")
+    set(DESTINATION_PATH_IEA10 "${SEAHOWL_DATADIR}/IEA10MW/controller")
 
     if(EXISTS ${LIBRARY_PATH})
-        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH})
-        file(RENAME "${DESTINATION_PATH}/${LIB_FILE_NAME}" "${DESTINATION_PATH}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA15})
+        file(RENAME "${DESTINATION_PATH_IEA15}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA15}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA34})
+        file(RENAME "${DESTINATION_PATH_IEA34}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA34}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA10})
+        file(RENAME "${DESTINATION_PATH_IEA10}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA10}/libdiscon.so")
     else()
         message(WARNING "Library ${LIBRARY_PATH} does not exist.")
     endif()

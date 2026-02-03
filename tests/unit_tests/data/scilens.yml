@@ -6,13 +6,13 @@ readers:
       curve_parser:
         name: "col_x"
         parameters:
-          x: ["time (s)", "fraction"]
+          x: ["time [s]", "time (s)", "fraction"]
 compare:
   errors_limit: 10000
   float_thresholds:
     relative_vs_absolute_min: 1e-12
-    relative_error_min: 1e-3
-    relative_error_max: 1e-2
+    relative_error_min: 1e-4
+    relative_error_max: 1e-3
     absolute_error_min: 1e-7
     absolute_error_max: 1e-6
   sources:
