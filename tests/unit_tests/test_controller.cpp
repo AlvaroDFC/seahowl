@@ -24,6 +24,7 @@ using namespace seahowl::elasto;
 class TestController : public FixtureComponents {
   protected:
     TestController() : FixtureComponents() {
+        root_dir /= "test_controller";
         ref_dir /= "test_controller/ref";
         test_dir /= "test_controller/test";
     }

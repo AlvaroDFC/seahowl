@@ -20,6 +20,7 @@ using namespace seahowl::elasto;
 class TestBlade : public FixtureComponents {
   protected:
     TestBlade() : FixtureComponents() {
+        root_dir /= "test_blade";
         ref_dir /= "test_blade/ref";
         test_dir /= "test_blade/test";
     }
@@ -47,7 +48,7 @@ TEST_F(TestBlade, mass_geometry) {
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_blade_geometry.csv").generic_string(),
                                        (test_dir / "test_blade_geometry.test.csv").generic_string()});
     auto& node = blade.nodes.front();
-    test_dataset.test_csv.add_function("position (m)", [&node] { return node->get_position(); });
+    test_dataset.test_csv.add_function("position [m]", [&node] { return node->get_position(); });
     // check geometry
     for (int ii = 0; ii < blade.nodes.size(); ii++) {
         node = blade.nodes[ii];
@@ -60,7 +61,7 @@ TEST_F(TestBlade, mass_geometry) {
     // check mass
     TestFrameworkDataset test_dataset_mass({false, (ref_dir / "test_blade_mass.csv").generic_string(),
                                             (test_dir / "test_blade_mass.test.csv").generic_string()});
-    test_dataset_mass.test_csv.add_function("mass (kg)", [&blade] { return blade.get_mass(); });
+    test_dataset_mass.test_csv.add_function("mass [kg]", [&blade] { return blade.get_mass(); });
     test_dataset_mass.test_csv.write_row();
     EvaluateTest(test_dataset_mass);
 }
@@ -90,8 +91,8 @@ TEST_F(TestBlade, edgewise) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_blade_edgewise.csv").generic_string(),
                                        (test_dir / "test_blade_edgewise.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("tip y (s)", [&blade, &pos_equilibrium] {
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("tip y [m]", [&blade, &pos_equilibrium] {
         return blade.nodes.back()->get_position().y() - pos_equilibrium.y();
     });
 
@@ -112,7 +113,7 @@ TEST_F(TestBlade, edgewise) {
     TestFrameworkDataset test_dataset_deflection(
         {false, (ref_dir / "test_blade_edgewise_deflection.csv").generic_string(),
          (test_dir / "test_blade_edgewise_deflection.test.csv").generic_string()});
-    test_dataset_deflection.test_csv.add_function("deflection (m)",
+    test_dataset_deflection.test_csv.add_function("deflection [m]",
                                                   [&blade] { return blade.nodes.back()->get_position().z(); });
 
     // rotate blade (flat along y axis)
@@ -156,8 +157,8 @@ TEST_F(TestBlade, flapwise) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_blade_flapwise.csv").generic_string(),
                                        (test_dir / "test_blade_flapwise.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("tip x (s)", [&blade, &pos_equilibrium] {
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("tip x [m]", [&blade, &pos_equilibrium] {
         return blade.nodes.back()->get_position().x() - pos_equilibrium.x();
     });
 
@@ -178,7 +179,7 @@ TEST_F(TestBlade, flapwise) {
     TestFrameworkDataset test_dataset_deflection(
         {false, (ref_dir / "test_blade_flapwise_deflection.csv").generic_string(),
          (test_dir / "test_blade_flapwise_deflection.test.csv").generic_string()});
-    test_dataset_deflection.test_csv.add_function("deflection (m)",
+    test_dataset_deflection.test_csv.add_function("deflection [m]",
                                                   [&blade] { return blade.nodes.back()->get_position().z(); });
 
     // rotate blade (flat along x axis)
