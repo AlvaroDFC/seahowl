@@ -17,6 +17,7 @@ using namespace seahowl::elasto;
 class TestBEMT : public FixtureComponents {
   protected:
     TestBEMT() : FixtureComponents() {
+        root_dir /= "test_bemt";
         ref_dir /= "test_bemt/ref";
         test_dir /= "test_bemt/test";
     }
@@ -29,7 +30,7 @@ TEST_F(TestBEMT, tower_shadow_check) {
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_bemt_tower_shadow_check.csv").generic_string(),
                                        (test_dir / "test_bemt_tower_shadow_check.test.csv").generic_string()});
 
-    test_dataset.test_csv.add_function("wind velocity (m/s)", [&wind_velocity] { return wind_velocity; });
+    test_dataset.test_csv.add_function("wind velocity [m/s]", [&wind_velocity] { return wind_velocity; });
     // system
     auto system_elasto = SystemElastoChrono();
     system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));

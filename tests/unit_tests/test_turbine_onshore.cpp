@@ -24,6 +24,7 @@ using namespace seahowl::elasto;
 class TestTurbine : public FixtureComponents {
   protected:
     TestTurbine() : FixtureComponents() {
+        root_dir /= "test_turbine";
         ref_dir /= "test_turbine/ref";
         test_dir /= "test_turbine/test";
     }
@@ -68,11 +69,11 @@ class TestTurbine : public FixtureComponents {
 
     // Add common turbine metrics to test dataset
     void add_common_metrics(TestFrameworkDataset& dataset, seahowl::core::Turbine& turbine) {
-        dataset.test_csv.add_function("time (s)", [this]() { return system_elasto.get_time(); });
-        dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-        dataset.test_csv.add_function("axial torque (Nm)",
+        dataset.test_csv.add_function("time [s]", [this]() { return system_elasto.get_time(); });
+        dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+        dataset.test_csv.add_function("axial torque [Nm]",
                                       [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
-        dataset.test_csv.add_function("blade1 root moment (Nm)", [&turbine]() {
+        dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
             return turbine.rna.elasto.rotor->blades[0]->get_blade_root_moment();
         });
     }
@@ -169,8 +170,8 @@ TEST_F(TestTurbine, IEA15MW_target_rpm) {
 
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_target_rpm.csv").generic_string(),
                                        (test_dir / "test_IEA15MW_target_rpm.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [this]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("time [s]", [this]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
 
     run_simulation(turbine, test_dataset, 100.0);
     EvaluateTest(test_dataset);
@@ -192,9 +193,9 @@ TEST_F(TestTurbine, IEA15MW_actuator_disk) {
 
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_actuator_disk.csv").generic_string(),
                                        (test_dir / "test_IEA15MW_actuator_disk.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [this]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("time [s]", [this]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
 
     // Phase 1: wind 11 m/s
     int count = 0;
@@ -266,9 +267,9 @@ TEST_F(TestTurbine, IEA15MW_multiturbines) {
 
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_multiturbines.csv").generic_string(),
                                        (test_dir / "test_IEA15MW_multiturbines.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto_ptr]() { return system_elasto_ptr->get_time(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto_ptr]() { return system_elasto_ptr->get_time(); });
     for (size_t idx = 0; idx < system_core.turbines.size(); idx++) {
-        test_dataset.test_csv.add_function("rpm turbine " + std::to_string(idx + 1) + " (-)", [&system_core, idx]() {
+        test_dataset.test_csv.add_function("rpm turbine " + std::to_string(idx + 1) + " [-]", [&system_core, idx]() {
             return system_core.turbines[idx]->rna.elasto.get_rpm();
         });
     }

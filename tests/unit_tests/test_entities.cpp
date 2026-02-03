@@ -14,6 +14,7 @@ using namespace seahowl::elasto;
 class TestEntities : public FixtureComponents {
   protected:
     TestEntities() : FixtureComponents() {
+        root_dir /= "test_entities";
         ref_dir /= "test_entities/ref";
         test_dir /= "test_entities/test";
     }
@@ -87,12 +88,12 @@ TEST_F(TestEntities, added_mass_damping) {
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_entities_added_mass_damping.csv").generic_string(),
                                        (test_dir / "test_entities_added_mass_damping.test.csv").generic_string()});
 
-    test_dataset.test_csv.add_function("time (s)", [&current_time] { return current_time; });
+    test_dataset.test_csv.add_function("time [s]", [&current_time] { return current_time; });
     int idx_body = 0;
     for (auto& body : bodies) {
-        test_dataset.test_csv.add_function("z pos body" + std::to_string(idx_body) + " (m)",
+        test_dataset.test_csv.add_function("z pos body" + std::to_string(idx_body) + " [m]",
                                            [&body] { return body.get_position(); });
-        test_dataset.test_csv.add_function("velocity rotation body" + std::to_string(idx_body) + " (rad/s)",
+        test_dataset.test_csv.add_function("velocity rotation body" + std::to_string(idx_body) + " [rad/s]",
                                            [&body] { return body.get_rotational_velocity(true); });
         idx_body += 1;
     }
