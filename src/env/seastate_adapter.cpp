@@ -36,8 +36,8 @@ void SeaSt_C_PreInit(
 void SeaSt_C_Init(char InputFile_C[PASSED_STRING_LENGTH],    // in  - SeaState input file (absolute or relative path)
                   char OutRootName_C[PASSED_STRING_LENGTH],  // in  - rootname for output summary, output, or echo files
                                                              // (absolute or relative path)
-                  int& NSteps_C,                             // in  - total number of timesteps to simulate (-)
                   double& TimeInterval_C,                    // in  - timestep (s)
+                  double& TimeMax_C,                         // in  - maximum size (s)
                   double& WaveTimeShift_C,                   // timeshift (s)
                   int& NumChannels_C,                        // out - number of output channels
                   char* OutputChannelNames_C,  // out - channel names - each channel name is CHANNEL_NAME_SIZE in length
@@ -125,7 +125,7 @@ struct seahowl::env::SeaStateLib {
     void CheckError();
 
     void SetTimeStep(double dt);
-    void SetNumSteps(int NumSteps);
+    void SetTMax(double TMax);
 
     void* GetWaveFieldPointer();
     void SetWaveFieldPointer(void* WaveFieldPtr);
@@ -144,10 +144,9 @@ struct seahowl::env::SeaStateLib {
 
   private:
     // Time step
-    double DT = 0.25;     // (s) -- I don't think this is used
+    double DT = 0.25;     // (s) -- expected dt for calling
+    double TMax = 600;    // (s) -- maximum time for simulation
     double TShift = 0.0;  // (s) -- for phase shifting
-    // Number of time steps
-    int NumSteps = 2400;  // may not be used (FIXME)
 
     // Env vars (check if seastate checks these values)
     float Gravity = 9.80665;  // (m/s^2)
@@ -203,8 +202,8 @@ void SeaStateLib::SetTimeStep(double dt) {
     DT = dt;
 }
 
-void SeaStateLib::SetNumSteps(int numsteps) {
-    NumSteps = numsteps;
+void SeaStateLib::SetTMax(double tmax) {
+    TMax = tmax;
 }
 
 void SeaStateLib::Init() {
@@ -218,7 +217,7 @@ void SeaStateLib::Init() {
     SeaSt_C_PreInit(Gravity, WtrDens, WtrDpth, MSL2SWL, DebugLevel, OutVTKDir, WrVTK, WrVTK_DT, ErrStat, ErrMsg);
     CheckError();
 
-    SeaSt_C_Init(SSinputFile, OutRootName, NumSteps, DT, TShift, NumChannels, OutputChannelNames, OutputChannelUnits,
+    SeaSt_C_Init(SSinputFile, OutRootName, DT, TMax, TShift, NumChannels, OutputChannelNames, OutputChannelUnits,
                  ErrStat, ErrMsg);
     CheckError();
 
@@ -382,7 +381,7 @@ SeaStateAdapter::SeaStateAdapter(std::string seastate_infile) : seastate_infile(
     pImpl.reset(new SeaStateLib);
     pImpl->SetSSINFILE(seastate_infile);
     pImpl->SetTimeStep(0.25);  // With number of timesteps, sets the total wave simlulation time. 0.25 typical
-    pImpl->SetNumSteps(2400);  // for 600 second simulation.
+    pImpl->SetTMax(600);       // 600 second simulation
     pImpl->Init();
 }
 
