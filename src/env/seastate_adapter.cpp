@@ -88,6 +88,14 @@ void SeaSt_C_GetSurfNorm(double& Time_C,    // in  - current time (s)
                          int& ErrStat_C,    // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
                          char* ErrMsg_C);   // out - Message returned about error (empty if none)
 
+/* TODO: missing in OpenFAST 4.2.0
+void SeaSt_C_GetFluidDynP(double& Time_C,   // in  - current time (s)
+                         float* Pos_c,     // in  - position in 2D (m).
+                         float& DynP_C,    // out - dynamic pressure at requested location (N/m^2)
+                         int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                         char* ErrMsg_C);  // out - Message returned about error (empty if none)
+*/
+
 // NOTE: this routine overestimates the range when 2nd order is used
 void SeaSt_C_GetElevMinMaxEstimate(float& min,       // out - minimum wave elevation across entire wavefield (m)
                                    float& max,       // out - maximum wave elevation across entire wavefield (m)
@@ -125,6 +133,8 @@ struct seahowl::env::SeaStateLib {
     void Init();
     void Calcul(double time);
     double GetWaterLevel(const seahowl::Vector3d& position, double time);
+    /* TODO: missing in OpenFAST 4.2.0
+        double GetDynPressure(const seahowl::Vector3d& position, double time); */
     double GetFluidDensity();
     double GetWaterDepth();
     double GetWaterMSL2SWL();
@@ -236,6 +246,31 @@ double SeaStateLib::GetWaterLevel(const Vector3d& position, double time) {
 
     return GetWaterMSL2SWL() + Elev_C;
 };
+
+/* TODO: missing in OpenFAST 4.2.0
+double SeaStateLib::GetDynPressure(const Vector3d& position, double time) {
+    spdlog::debug("Node position ({}, {}, {})", position.x(), position.y(), position.z());
+    float* Pos_C = new float[3];
+    float DynP_C = 0;
+    for (int i = 0; i < 3; i++) {
+        Pos_C[i] = position[i];
+    }
+    int ErrStat = 0;
+    float Elev_C = 0;
+    char ErrMsg[ERROR_MSG_LEN - 1];
+    SeaSt_C_GetFluidDynP(time,     // in  - current time (s)
+                         Pos_C,    // in  - position in 2D (m).
+                         DynP_C,   // out - Dynamic pressure (N/m^2)
+                         ErrStat,  // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                         ErrMsg);  // out - Message returned about error (empty if none)
+    CheckError();
+
+    delete[] Pos_C;
+
+    spdlog::debug("Dynamic pressure: {}", DynP_C);
+    return DynP_C;
+};
+*/
 
 double SeaStateLib::GetFluidDensity() {
     float Density = 0;
@@ -356,6 +391,12 @@ SeaStateAdapter::~SeaStateAdapter() {}
 double SeaStateAdapter::get_water_level(const Vector3d& position, double time) const {
     return pImpl->GetWaterLevel(position, time);
 };
+
+/* TODO: missing in OpenFAST 4.2.0
+double SeaStateAdapter::get_dyn_pressure(const Vector3d& position, double time) const {
+    return pImpl->GetDynPressure(position, time);
+};
+*/
 
 double SeaStateAdapter::get_density_this(const seahowl::Vector3d& position, double time) const {
     return pImpl->GetFluidDensity();

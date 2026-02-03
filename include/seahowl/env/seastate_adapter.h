@@ -31,6 +31,8 @@ class SeaStateAdapter : public WaveModel {
 
     double get_water_level(const Vector3d& position, double time) const override;
 
+    // double get_dyn_pressure(const Vector3d& position, double time) const;
+
   protected:
     double get_density_this(const Vector3d& position, double time) const override;
     virtual Vector3d get_velocity_this(const Vector3d& position, double time) const override;
