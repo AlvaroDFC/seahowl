@@ -193,7 +193,8 @@ struct seahowl::hydro::HydroDynLib {
 };
 
 HydroDynLib::~HydroDynLib() {
-    delete[] NodePos, NodeVel, NodeAcc, NodeFrc, NodeAdm;
+    delete[] NodePos, delete[] NodeVel, delete[] NodeAcc, delete[] NodeFrc, delete[] NodeAdm;
+    End();
 }
 
 void HydroDynLib::initialize_arrays(int NumNodePts) {

@@ -293,6 +293,7 @@ AeroDynInflowLib::~AeroDynInflowLib() {
     delete[] TurbOrigin;
     delete[] HHVel;
     delete[] DiskAvgVel;
+    End();
 }
 
 void AeroDynInflowLib::CheckError() {

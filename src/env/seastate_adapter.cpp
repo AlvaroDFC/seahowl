@@ -168,7 +168,9 @@ struct seahowl::env::SeaStateLib {
     float max_water_level = 0;  // Set during init
 };
 
-SeaStateLib::~SeaStateLib() {}
+SeaStateLib::~SeaStateLib() {
+    End();
+}
 
 void SeaStateLib::SetSSINFILE(std::string name) {
     spdlog::info("Set SeaState INFILE: {}.", name);

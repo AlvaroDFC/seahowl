@@ -88,6 +88,7 @@ struct seahowl::env::InflowWindLib {
 
 InflowWindLib::~InflowWindLib() {
     delete[] OutputChannelValues;
+    End();
 }
 
 void InflowWindLib::SetIFWINFILE(std::string name) {
