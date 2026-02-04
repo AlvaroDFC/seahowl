@@ -1,12 +1,14 @@
 #include "seahowl/core/turbine.h"
 
-#include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/fluid/turbine_fluid.h"
+// SEAHOWL headers
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/turbine_elasto.h"
+#include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/servo/controller.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::core;

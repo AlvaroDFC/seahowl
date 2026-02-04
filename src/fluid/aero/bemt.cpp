@@ -1,10 +1,12 @@
 #include "seahowl/fluid/aero/bemt.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/tower_aero.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using seahowl::Vector2d;

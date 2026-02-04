@@ -1,14 +1,17 @@
 #include "seahowl/io/utils_io.h"
 
-#include <filesystem>
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <map>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <algorithm>
+#include <filesystem>
 #include <iomanip>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 

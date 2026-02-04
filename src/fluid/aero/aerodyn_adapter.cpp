@@ -1,17 +1,21 @@
-#include <seahowl/fluid/aero/aerodyn_adapter.h>
+#include "seahowl/fluid/aero/aerodyn_adapter.h"
 
-#include <seahowl/env/env_model.h>
-#include <seahowl/fluid/turbine_fluid.h>
-#include <seahowl/fluid/aero/blade_aero.h>
-#include <seahowl/env/fluid_models.h>
-#include <seahowl/env/inflowwind_adapter.h>
+// SEAHOWL headers
+#include "seahowl/env/env_model.h"
+#include "seahowl/env/fluid_models.h"
+#include "seahowl/env/inflowwind_adapter.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/fluid/turbine_fluid.h"
 
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace seahowl::fluid::aero;
 using namespace seahowl::env;

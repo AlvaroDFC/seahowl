@@ -1,4 +1,6 @@
 #include "seahowl/io/input_handler.h"
+
+// SEAHOWL headers
 #include "seahowl/io/input_reader.h"
 #include "seahowl/io/input_reader_json.h"
 

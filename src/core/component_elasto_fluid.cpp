@@ -1,5 +1,6 @@
 #include "seahowl/core/component_elasto_fluid.h"
 
+// SEAHOWL headers
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/fluid/component_fluid.h"
 

@@ -1,15 +1,20 @@
+// Local test headers
 #include "fixture_components.h"
 
+// SEAHOWL headers
 #include <seahowl/core.h>
 #include <seahowl/elasto.h>
 #include <seahowl/env.h>
 #include <seahowl/io.h>
 #include <seahowl/servo.h>
 
+// Third-party libraries
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
-#include <filesystem>  // C++17
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;

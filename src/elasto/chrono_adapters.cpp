@@ -1,32 +1,34 @@
 #include "seahowl/elasto/chrono_adapters.h"
 
-#include "seahowl/elasto/reference_point_elasto.h"
+// SEAHOWL headers
 #include "seahowl/elasto/entities_elasto.h"
+#include "seahowl/elasto/reference_point_elasto.h"
 
-#include <chrono/core/ChVector3.h>
+// Third-party libraries
 #include <chrono/core/ChMatrix.h>
+#include <chrono/core/ChVector3.h>
 #include <chrono/fea/ChBeamSectionTaperedTimoshenkoFPM.h>
 #include <chrono/fea/ChElementBeamTaperedTimoshenkoFPM.h>
 #include <chrono/fea/ChElementCableANCF.h>
-#include <chrono/physics/ChLinkMate.h>
-#include <chrono/physics/ChLoadsBody.h>
-#include <chrono/physics/ChLoadContainer.h>
-#include <chrono/fea/ChLinkNodeNode.h>
 #include <chrono/fea/ChLinkNodeFrame.h>
-#include <chrono/physics/ChLinkRevolute.h>
+#include <chrono/fea/ChLinkNodeNode.h>
 #include <chrono/fea/ChMesh.h>
+#include <chrono/physics/ChLinkMate.h>
+#include <chrono/physics/ChLinkMotorRotationAngle.h>
+#include <chrono/physics/ChLinkRevolute.h>
+#include <chrono/physics/ChLoadContainer.h>
+#include <chrono/physics/ChLoadsBody.h>
 #include <chrono/physics/ChSystemSMC.h>
 #include <chrono/solver/ChDirectSolverLS.h>
-#include <chrono/physics/ChLinkMotorRotationAngle.h>
-
-#include <vector>
-#include <memory>
 #include <spdlog/spdlog.h>
-#include <typeinfo>
-
 #define EIGEN_MATRIXBASE_PLUGIN <chrono/core/ChMatrixEigenExtensions.h>
 #define EIGEN_SPARSEMATRIX_PLUGIN <chrono/core/ChSparseMatrixEigenExtensions.h>
 #include <Eigen/Sparse>
+
+// Standard library
+#include <memory>
+#include <typeinfo>
+#include <vector>
 
 // default mass value for checking if ChBody mass was set.
 const double MASS_NOTSET_VALUE = -1.2345e-12;

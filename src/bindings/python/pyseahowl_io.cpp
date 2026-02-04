@@ -1,8 +1,10 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/functional.h>
+// pybind11 headers
 #include <pybind11/eigen.h>
+#include <pybind11/functional.h>
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+// SEAHOWL headers
 #include <seahowl/core.h>
 #include <seahowl/elasto.h>
 #include <seahowl/env.h>

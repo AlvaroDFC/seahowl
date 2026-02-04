@@ -1,9 +1,11 @@
 #include "seahowl/core/tower.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/tower_elasto.h"
 #include "seahowl/fluid/aero/tower_aero.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::core;

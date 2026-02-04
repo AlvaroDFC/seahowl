@@ -1,5 +1,6 @@
 #include "seahowl/fluid/turbine_fluid.h"
 
+// SEAHOWL headers
 #include "seahowl/env/env_model.h"
 
 using namespace seahowl::fluid;

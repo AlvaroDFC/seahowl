@@ -1,14 +1,20 @@
+// Local test headers
 #include "fixture_components.h"
 
+// SEAHOWL headers
 #include <seahowl/core.h>
 #include <seahowl/env.h>
 #include <seahowl/fluid.h>
+
+// Third-party libraries
+#include <gtest/gtest.h>
 #ifdef HAVE_HYDROCHRONO
     #include <hydroc/hydro_forces.h>
 #endif
 
-#include <gtest/gtest.h>
-#include <filesystem>  // C++17
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;

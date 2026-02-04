@@ -1,10 +1,12 @@
 #include "seahowl/fluid/aero/tower_aero.h"
 
-#include "seahowl/env/env_model.h"
-#include "seahowl/commons/utils.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+#include "seahowl/commons/utils.h"
+#include "seahowl/env/env_model.h"
 #include "seahowl/env/wind_models.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;

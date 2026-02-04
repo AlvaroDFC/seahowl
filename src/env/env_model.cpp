@@ -1,5 +1,6 @@
 #include "seahowl/env/env_model.h"
 
+// SEAHOWL headers
 #include "seahowl/env/model.h"
 #include "seahowl/env/wind_models.h"
 

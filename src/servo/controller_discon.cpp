@@ -1,14 +1,18 @@
 #include "seahowl/servo/controller_discon.h"
 
+// SEAHOWL headers
 #include "seahowl/core/turbine.h"
-#include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
+#include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/io/utils_io.h"
 
-#include <vector>
-#include <string>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
 #include <filesystem>
+#include <string>
+#include <vector>
 #ifdef __unix__
     #include <dlfcn.h>
 #endif

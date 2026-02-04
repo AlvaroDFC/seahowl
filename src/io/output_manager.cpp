@@ -1,35 +1,39 @@
 #include "seahowl/io/output_manager.h"
 
+// SEAHOWL headers
+#include "seahowl/core/blade.h"
+#include "seahowl/core/floater.h"
+#include "seahowl/core/monopile.h"
+#include "seahowl/core/system.h"
+#include "seahowl/core/turbine.h"
+#include "seahowl/elasto/blade_elasto.h"
+#include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/rotor_elasto.h"
+#include "seahowl/elasto/tower_elasto.h"
+#include "seahowl/elasto/turbine_elasto.h"
 #include "seahowl/env/env_model.h"
+#include "seahowl/env/fluid_models.h"
+#include "seahowl/env/wind_models.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/io/viz_insitu.h"
 #include "seahowl/io/write_csv.h"
 #include "seahowl/io/write_vtk.h"
-#include "seahowl/io/viz_insitu.h"
+#include "seahowl/servo/controller.h"
 #ifdef HAVE_IRRLICHT
     #include "seahowl/io/viz_insitu_irrlicht.h"
 #endif
 #ifdef HAVE_AERODYN
     #include "seahowl/fluid/aero/aerodyn_adapter.h"
 #endif
-#include "seahowl/core/system.h"
-#include "seahowl/core/turbine.h"
-#include "seahowl/core/blade.h"
-#include "seahowl/core/floater.h"
-#include "seahowl/core/monopile.h"
-#include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/elasto/tower_elasto.h"
-#include "seahowl/elasto/rotor_elasto.h"
-#include "seahowl/elasto/floater_elasto.h"
-#include "seahowl/fluid/aero/blade_aero.h"
-#include "seahowl/env/wind_models.h"
-#include "seahowl/env/fluid_models.h"
-#include "seahowl/servo/controller.h"
 
-#include <filesystem>  // C++17
-#include <sstream>
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
-#include <spdlog/spdlog.h>
+#include <sstream>
 
 using seahowl::PI;
 using namespace seahowl::io;

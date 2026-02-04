@@ -1,11 +1,13 @@
 #include "seahowl/elasto/mooring_elasto.h"
 
-#include "seahowl/env/env_model.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/utils.h"
-#include "seahowl/elasto/reference_point_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
+#include "seahowl/elasto/reference_point_elasto.h"
+#include "seahowl/env/env_model.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::elasto;

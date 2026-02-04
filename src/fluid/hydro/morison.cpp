@@ -1,9 +1,12 @@
 #include "seahowl/fluid/hydro/morison.h"
 
+// SEAHOWL headers
 #include "seahowl/env/env_model.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
+// Standard library
 #include <cmath>
 
 using namespace seahowl;

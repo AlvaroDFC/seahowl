@@ -1,14 +1,18 @@
 #include "seahowl/fluid/aero/rotor_aero.h"
 
+// SEAHOWL headers
+#include "seahowl/commons/utils.h"
 #include "seahowl/env/env_model.h"
-#include "seahowl/fluid/aero/blade_aero.h"
-#include "seahowl/fluid/aero/tower_aero.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/bemt.h"
-#include "seahowl/commons/utils.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/fluid/aero/tower_aero.h"
 
-#include <cmath>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <cmath>
 
 using namespace seahowl::fluid::aero;
 using seahowl::env::EnvModel;
