@@ -77,7 +77,7 @@ class TestFloating : public FixtureComponents {
             blade->elasto.apply_pitch_increment(seahowl::PI / 8.0);
         }
 
-        system_core.run_presimulation(2.5, 0.025, false, true);
+        system_core.run_presimulation(5.0, 0.05, false, true);
 
         dataset.test_csv.write_row();  // write outputs at t=0.0
         // simulation loop
@@ -92,12 +92,32 @@ class TestFloating : public FixtureComponents {
 TEST_F(TestFloating, IEA15MW_hydrodyn) {
     // create simulation
     auto turbine_filepath = (DATADIR / "IEA15MW/floating/turbine_hydrodyn.json").generic_string();
-    auto env_filepath = (root_dir / "assets/env_waves_200m_seastate.json").generic_string();
-    auto simulation = create_simulation(0.05, 200.0, turbine_filepath, env_filepath);
+    auto env_filepath = (root_dir / "assets/env_waves_200m_seastate_regular.json").generic_string();
+    auto simulation = create_simulation(0.05, 100.0, turbine_filepath, env_filepath);
 
     // create test dataset
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_hydrodyn.csv").generic_string(),
                                        (test_dir / "test_IEA15MW_hydrodyn.test.csv").generic_string()});
+    add_common_metrics(simulation, test_dataset);
+
+    // run simulation
+    run_simulation_loop(simulation, test_dataset);
+
+    // evaluate test results
+    EvaluateTest(test_dataset);
+}
+#endif
+
+#ifdef HAVE_HYDROCHRONO
+TEST_F(TestFloating, IEA15MW_hydrochrono) {
+    // create simulation
+    auto turbine_filepath = (DATADIR / "IEA15MW/floating/turbine_hydrochrono.json").generic_string();
+    auto env_filepath = (root_dir / "assets/env_waves_200m_hydrochrono_regular.json").generic_string();
+    auto simulation = create_simulation(0.05, 100.0, turbine_filepath, env_filepath);
+
+    // create test dataset
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_hydrochrono.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_hydrochrono.test.csv").generic_string()});
     add_common_metrics(simulation, test_dataset);
 
     // run simulation
