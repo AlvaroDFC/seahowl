@@ -1,13 +1,17 @@
 #include "seahowl/elasto/tower_elasto.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
-#include "seahowl/elasto/reference_point_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
+#include "seahowl/elasto/reference_point_elasto.h"
 
-#include <memory>
-#include <vector>
-#include <numeric>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <memory>
+#include <numeric>
+#include <vector>
 
 using seahowl::elasto::TowerElasto;
 

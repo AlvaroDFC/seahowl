@@ -1,11 +1,14 @@
 #include "seahowl/env/inflowwind_adapter.h"
 
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <fstream>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
 #include <filesystem>
+#include <fstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace seahowl::env;
 namespace fs = std::filesystem;

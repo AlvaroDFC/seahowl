@@ -1,8 +1,11 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+
+// Standard library
+#include <memory>
+#include <vector>
 
 namespace seahowl {
 namespace env {

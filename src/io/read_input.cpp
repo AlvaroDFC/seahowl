@@ -1,58 +1,65 @@
 #include "seahowl/io/read_input.h"
-#include "seahowl/io/utils_io.h"
-#include "seahowl/io/read_rotor_perf.h"
 
+// SEAHOWL headers
+#include "seahowl/commons/numerics.h"
 #include "seahowl/commons/utils.h"
 #include "seahowl/core/blade.h"
-#include "seahowl/core/rotor.h"
-#include "seahowl/core/tower.h"
+#include "seahowl/core/floater.h"
 #include "seahowl/core/monopile.h"
-#include "seahowl/core/turbine.h"
+#include "seahowl/core/rotor.h"
 #include "seahowl/core/system.h"
-#include "seahowl/elasto/tower_elasto.h"
-#include "seahowl/elasto/system_elasto.h"
-#include "seahowl/elasto/system_elasto.h"
-#include "seahowl/elasto/reference_point_elasto.h"
+#include "seahowl/core/tower.h"
+#include "seahowl/core/turbine.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
-#include "seahowl/elasto/monopile_elasto.h"
 #include "seahowl/elasto/foundation_elasto.h"
-#include "seahowl/servo/controller_discon.h"
-#include "seahowl/commons/numerics.h"
+#include "seahowl/elasto/monopile_elasto.h"
+#include "seahowl/elasto/reference_point_elasto.h"
+#include "seahowl/elasto/system_elasto.h"
+#include "seahowl/elasto/tower_elasto.h"
+#include "seahowl/env/env_model.h"
 #include "seahowl/env/fluid_models.h"
-#include "seahowl/env/wind_models.h"
-#include "seahowl/env/wave_models.h"
 #include "seahowl/env/soil_models.h"
-#include "seahowl/fluid/hydro/morison.h"
-#ifdef HAVE_INFLOWWIND
-    #include "seahowl/env/inflowwind_adapter.h"
-#endif
+#include "seahowl/env/wave_models.h"
+#include "seahowl/env/wind_models.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
-#include "seahowl/fluid/turbine_fluid.h"
-#include "seahowl/fluid/hydro/monopile_hydro.h"
-#include "seahowl/fluid/system_fluid.h"
 #include "seahowl/fluid/hydro/mooring_hydro.h"
+#include "seahowl/fluid/hydro/monopile_hydro.h"
+#include "seahowl/fluid/hydro/morison.h"
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/fluid/turbine_fluid.h"
+#include "seahowl/io/config_manager.h"
+#include "seahowl/io/input_handler.h"
+#include "seahowl/io/input_structures.h"
+#include "seahowl/io/read_rotor_perf.h"
+#include "seahowl/io/utils_io.h"
+#include "seahowl/servo/controller_discon.h"
+#ifdef HAVE_INFLOWWIND
+    #include "seahowl/env/inflowwind_adapter.h"
+#endif
 #ifdef HAVE_HYDROCHRONO
-    #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
     #include "seahowl/elasto/chrono_adapters.h"
-    #include <hydroc/hydro_forces.h>
+    #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 #endif
 #ifdef HAVE_AERODYN
     #include "seahowl/fluid/aero/aerodyn_adapter.h"
 #endif
 
-#include "seahowl/io/input_structures.h"
-#include "seahowl/io/input_handler.h"
-
-#include <string>
-#include <memory>
-#include <vector>
-#include <fstream>
-#include <typeinfo>
-#include <filesystem>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+#ifdef HAVE_HYDROCHRONO
+    #include <hydroc/hydro_forces.h>
+#endif
+
+// Standard library
+#include <filesystem>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace fs = std::filesystem;
 using std::filesystem::path;

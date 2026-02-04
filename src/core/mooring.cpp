@@ -1,9 +1,11 @@
 #include "seahowl/core/mooring.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/mooring_elasto.h"
 #include "seahowl/fluid/hydro/mooring_hydro.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::core;

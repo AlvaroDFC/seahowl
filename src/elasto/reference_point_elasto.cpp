@@ -1,5 +1,6 @@
 #include "seahowl/elasto/reference_point_elasto.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::elasto;

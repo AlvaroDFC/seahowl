@@ -1,12 +1,16 @@
-#include <seahowl/core/simulation.h>
-#include <seahowl/io/read_input.h>
-#include <seahowl/io/config_manager.h>
+// SEAHOWL headers
+#include "seahowl/core/simulation.h"
+#include "seahowl/io/config_manager.h"
+#include "seahowl/io/read_input.h"
 
-#include <filesystem>  // C++17
-#include <spdlog/spdlog.h>
+// Third-party libraries
 #include <spdlog/pattern_formatter.h>
-#include <map>
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
 #include <iostream>
+#include <map>
 
 namespace fs = std::filesystem;
 

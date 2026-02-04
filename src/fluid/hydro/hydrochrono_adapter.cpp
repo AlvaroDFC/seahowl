@@ -1,10 +1,11 @@
 #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 
+// SEAHOWL headers
 #include "seahowl/elasto/chrono_adapters.h"
 
-#include <hydroc/hydro_forces.h>
+// Third-party libraries
 #include <chrono/physics/ChBody.h>
-
+#include <hydroc/hydro_forces.h>
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::fluid::hydro;

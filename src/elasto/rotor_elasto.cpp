@@ -1,5 +1,6 @@
 #include "seahowl/elasto/rotor_elasto.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"

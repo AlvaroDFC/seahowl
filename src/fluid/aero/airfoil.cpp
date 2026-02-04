@@ -1,6 +1,9 @@
 #include "seahowl/fluid/aero/airfoil.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
 #include <string>
 
 using seahowl::fluid::aero::AirfoilCoefficients;

@@ -1,8 +1,11 @@
 #pragma once
 
-#include <seahowl/io/input_reader.h>
-#include <string>
+// SEAHOWL headers
+#include "seahowl/io/input_reader.h"
+
+// Standard library
 #include <memory>
+#include <string>
 
 namespace seahowl {
 namespace io {

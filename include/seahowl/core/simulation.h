@@ -1,11 +1,13 @@
 #pragma once
 
-#include "seahowl/io/output_manager.h"
+// SEAHOWL headers
 #include "seahowl/core/system.h"
-#include "seahowl/fluid/system_fluid.h"
 #include "seahowl/elasto/system_elasto.h"
-#include <seahowl/io/config_manager.h>
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/io/config_manager.h"
+#include "seahowl/io/output_manager.h"
 
+// Standard library
 #include <memory>
 #include <string>
 

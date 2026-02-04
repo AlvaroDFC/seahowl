@@ -1,11 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/core/component.h"
-#include "seahowl/core/turbine.h"  // @todo forward declare Turbine
+#include "seahowl/core/turbine.h"
 
+// Standard library
 #include <deque>
 
-// forward declarations
+// Forward declarations
 namespace seahowl {
 namespace env {
 class EnvModel;

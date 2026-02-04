@@ -1,11 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/io/viz_insitu.h"
 #include "seahowl/io/write_csv.h"
 #ifdef HAVE_VTK
     #include "seahowl/io/write_vtk.h"
 #endif
 
+// Standard library
 #include <memory>
 #include <string>
 

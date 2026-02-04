@@ -1,9 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/servo/controller.h"
 
-#include <iostream>
+// Standard library
 #include <cstring>
+#include <iostream>
 
 /// <summary>
 /// Fortran Fonction definition of DISCO (ROSCO) controller

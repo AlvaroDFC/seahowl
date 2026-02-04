@@ -1,7 +1,10 @@
 #include "seahowl/core/component.h"
 
-#include <typeinfo>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <typeinfo>
 
 using namespace seahowl::core;
 

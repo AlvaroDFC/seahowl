@@ -1,8 +1,10 @@
 #include "seahowl/elasto/floater_elasto.h"
 
+// SEAHOWL headers
 #include "seahowl/elasto/chrono_adapters.h"
 #include "seahowl/elasto/mooring_elasto.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::elasto;

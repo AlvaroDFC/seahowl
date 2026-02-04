@@ -1,11 +1,19 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/commons/numerics.h"
-#include "seahowl/env/env_model.h"
 
+// Standard library
 #include <deque>
+
+// forward declarations
+namespace seahowl {
+namespace env {
+class EnvModel;
+}  // namespace env
+}  // namespace seahowl
 
 namespace seahowl {
 namespace elasto {

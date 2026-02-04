@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/elasto/reference_point_elasto.h"
 

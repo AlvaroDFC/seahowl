@@ -1,12 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
-#include "seahowl/fluid/component_fluid.h"
 
-#include <iostream>
+// Standard library
 #include <cstring>
+#include <iostream>
 #include <memory>
 
 namespace seahowl {

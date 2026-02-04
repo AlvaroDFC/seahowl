@@ -1,8 +1,11 @@
 #pragma once
 
-#include <seahowl/commons/numerics.h>
-#include <optional>
+// SEAHOWL headers
+#include "seahowl/commons/numerics.h"
+
+// Standard library
 #include <filesystem>
+#include <optional>
 
 namespace fs = std::filesystem;
 

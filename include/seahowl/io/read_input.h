@@ -32,13 +32,18 @@ namespace aero = fluid::aero;
 namespace env {
 class EnvModel;
 }  // namespace env
+namespace io {
+namespace app {
+class ConfigManager;
+}  // namespace app
+}  // namespace io
 }  // namespace seahowl
 
-#include <vector>
-#include <string>
-#include <memory>
-#include <seahowl/io/config_manager.h>
+// Standard library
 #include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 

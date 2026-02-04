@@ -1,5 +1,6 @@
 #pragma once
 
+// Third-party libraries
 #include <Eigen/Dense>
 
 namespace seahowl {

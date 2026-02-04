@@ -1,11 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <stdexcept>
-#include <algorithm>
-
+// SEAHOWL headers
 #include "seahowl/commons/entities.h"
+
+// Standard library
+#include <algorithm>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
 // forward declarations
 namespace seahowl {

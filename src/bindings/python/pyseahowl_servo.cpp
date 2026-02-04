@@ -1,10 +1,11 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/servo/controller.h>
-#include <seahowl/servo/controller_discon.h>
-#include <seahowl/core/turbine.h>
+// SEAHOWL headers
+#include <seahowl/core.h>
+#include <seahowl/servo.h>
 
 namespace py = pybind11;
 

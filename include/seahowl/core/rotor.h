@@ -1,10 +1,12 @@
 #pragma once
 
-#include "seahowl/core/component.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+#include "seahowl/core/component.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {

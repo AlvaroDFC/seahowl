@@ -1,7 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/commons/utils.h"
+#include "seahowl/core/component.h"
 #include "seahowl/core/component_elasto_fluid.h"
 
+// Standard library
 #include <memory>
 #include <vector>
 

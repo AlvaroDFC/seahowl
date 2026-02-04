@@ -1,9 +1,11 @@
 #include "seahowl/servo/controller.h"
 
+// SEAHOWL headers
 #include "seahowl/core/turbine.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::servo;

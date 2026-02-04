@@ -1,7 +1,9 @@
 #include "seahowl/fluid/aero/reference_point_aero.h"
 
+// SEAHOWL headers
 #include "seahowl/fluid/aero/airfoil.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::fluid::aero;

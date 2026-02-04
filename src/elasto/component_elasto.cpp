@@ -1,13 +1,17 @@
 #include "seahowl/elasto/component_elasto.h"
 
+// SEAHOWL headers
+#include "seahowl/elasto/chrono_adapters.h"
 #include "seahowl/elasto/reference_point_elasto.h"
 #include "seahowl/elasto/system_elasto.h"
-#include "seahowl/elasto/chrono_adapters.h"
 
-#include <vector>
-#include <numeric>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <numeric>
 #include <typeinfo>
+#include <vector>
 
 using namespace seahowl::elasto;
 using namespace seahowl;
