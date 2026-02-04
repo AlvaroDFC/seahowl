@@ -502,7 +502,17 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
         foundation_fluid = monopile_hydro;
 
     } else if (foundation_db.type == "floater") {
+        Floaterdb floater_db = foundation_db.data_floater;
+
         auto floater_hydro = std::make_shared<seahowl::hydro::FloaterHydro>();
+        if (floater_db.type == "hydrodyn") {
+#ifdef HAVE_HYDRODYN
+            spdlog::info("Hydrodynamic model: HydroChrono.");
+            floater_hydro = std::make_shared<seahowl::hydro::FloaterHydroDyn>(floater_db.options_file_path);
+#else
+            throw std::runtime_error("Trying to use HydroChrono but did not compile with HydroDyn dependency.");
+#endif
+        }
 
         if (foundation_db.file.has_value()) {
             for (const auto& mooring_db : foundation_db.data_floater.moorings) {

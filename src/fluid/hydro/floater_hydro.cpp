@@ -8,7 +8,9 @@ using namespace seahowl;
 using namespace seahowl::fluid::hydro;
 using namespace seahowl::env;
 
-FloaterHydro::FloaterHydro() : mooring_system(std::make_unique<MooringSystemHydro>()) {}
+FloaterHydro::FloaterHydro() : mooring_system(std::make_unique<MooringSystemHydro>()) {
+    body_main = std::make_unique<seahowl::EntityDynamicEigen>();
+}
 
 void FloaterHydro::build() {
     mooring_system->build();

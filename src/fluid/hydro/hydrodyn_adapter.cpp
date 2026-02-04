@@ -1,6 +1,5 @@
 #include "seahowl/fluid/hydro/hydrodyn_adapter.h"
 #include "seahowl/env/seastate_adapter.h"
-#include "seahowl/elasto/floater_elasto.h"  // TODO: create main body for floater hydro
 
 #include <spdlog/spdlog.h>
 
@@ -143,11 +142,11 @@ struct seahowl::hydro::HydroDynLib {
     int HD_InputFilePassed = 0;     // 1: pass the input file content; 0: pass the input file name
 
     // Input file string
-    std::string HDinputFileString;
-    std::string SSinputFileString;
+    std::string HDinputFileString = "";
+    std::string SSinputFileString = "";
 
     // Input file string length
-    int HDinputFileStringLength;
+    int HDinputFileStringLength = 0;
     int SSinputFileStringLength = 0;
 
     // Initial environmental conditions
@@ -340,7 +339,7 @@ void HydroDynAdapter::update_nodes_motion(const std::vector<EntityDynamic*>& nod
 
 void HydroDynAdapter::setup_environment(const env::EnvModel& env_model) {
     if (interface_hydrodyn->SSinputFileStringLength > 0) {
-        spdlog::info("HydroDynAdapter: SeaState file was already passed ({}), ignoring setup from environment.",
+        spdlog::info("HydroDynAdapter: SeaState file was already passed (\"{}\"), ignoring setup from environment.",
                      interface_hydrodyn->SSinputFileString);
         return;
     }
@@ -392,8 +391,7 @@ void HydroDynAdapter::end() {
     interface_hydrodyn->End();
 }
 
-FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath, elasto::FloaterElasto& floater_elasto)
-    : floater_elasto(floater_elasto) {
+FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath) {
     hydrodyn = std::make_unique<HydroDynAdapter>();
     hydrodyn->set_hydrodyn_infile(hydrodyn_filepath);
 }
@@ -404,7 +402,7 @@ void FloaterHydroDyn::setup_environment(const env::EnvModel& env_model) {
 
 void FloaterHydroDyn::initialize(double time, double dt) {
     std::vector<EntityDynamic*> bodies;
-    bodies.push_back(floater_elasto.body_main.get());
+    bodies.push_back(body_main.get());
     hydrodyn->initialize(time, dt, bodies);
 }
 
@@ -412,7 +410,7 @@ void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double t
     FloaterHydro::compute_env_loads(env_model, time);
 
     std::vector<EntityDynamic*> bodies;
-    bodies.push_back(floater_elasto.body_main.get());
+    bodies.push_back(body_main.get());
     hydrodyn->compute_loads(time, bodies);
 
     // set floater forces and added mass (to be called from seahowl::core::Floater and passed to elasto)

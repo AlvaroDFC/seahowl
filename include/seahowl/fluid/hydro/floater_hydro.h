@@ -32,6 +32,8 @@ class FloaterHydro : public FoundationFluid {
   public:
     /** @brief Mooring system of the floater. */
     std::shared_ptr<MooringSystemHydro> mooring_system;
+    /** @brief Main body of floater.*/
+    std::unique_ptr<seahowl::EntityDynamicEigen> body_main;
 
     /**
      * @brief Constructor.

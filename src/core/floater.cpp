@@ -32,6 +32,9 @@ void Floater::initialize_this(double time, double dt) {
     mooring_system->initialize(time, dt);
 
     elasto.initialize();
+    // update positions before initializing hydro part
+    // needed for initial positions for HydroDyn
+    update_positions_hydro();
     hydro.initialize(time, dt);
 
     spdlog::info("Initialized floater of total mass {:.4}kg (with moorings).", elasto.get_mass());
@@ -40,16 +43,13 @@ void Floater::initialize_this(double time, double dt) {
 void Floater::prestep(double time, double dt) {
     mooring_system->prestep(time, dt);
 
-    elasto.body_main->reset_loads_internals();
-
-    // set hydro forces if any
-    elasto.body_main->accumulate_force(hydro.get_force_hydro(), false);
-    elasto.body_main->accumulate_torque(hydro.get_torque_hydro(), false);
-    elasto.body_main->set_added_mass_matrix(hydro.get_added_mass_matrix());
+    update_loads_elasto();
 }
 
 void Floater::poststep(double time, double dt) {
     mooring_system->poststep(time, dt);
+
+    update_positions_hydro();
 }
 
 void Floater::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
@@ -63,4 +63,23 @@ void Floater::apply_soil_model(seahowl::env::EnvModel& env_model, double time) {
 void Floater::build() {
     // build elasto
     elasto.build();
+}
+
+void Floater::update_positions_hydro() {
+    // main body
+    hydro.body_main->set_rotation(elasto.body_main->get_rotation());
+    hydro.body_main->set_position(elasto.body_main->get_position());
+    hydro.body_main->set_velocity(elasto.body_main->get_velocity());
+    hydro.body_main->set_rotational_velocity(elasto.body_main->get_rotational_velocity());
+    hydro.body_main->set_acceleration(elasto.body_main->get_acceleration());
+    hydro.body_main->set_rotational_acceleration(elasto.body_main->get_rotational_acceleration());
+}
+
+void Floater::update_loads_elasto() {
+    elasto.body_main->reset_loads_internals();
+
+    // set hydro forces if any
+    elasto.body_main->accumulate_force_internals(hydro.get_force_hydro(), false);
+    elasto.body_main->accumulate_torque_internals(hydro.get_torque_hydro(), false);
+    elasto.body_main->set_added_mass_matrix(hydro.get_added_mass_matrix());
 }

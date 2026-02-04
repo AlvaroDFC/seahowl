@@ -51,7 +51,7 @@ class HydroDynAdapter {
  */
 class FloaterHydroDyn : public FloaterHydro {
   public:
-    FloaterHydroDyn(const std::string& hydrodyn_filepath, elasto::FloaterElasto& floater_elasto);
+    FloaterHydroDyn(const std::string& hydrodyn_filepath);
 
     void setup_environment(const env::EnvModel& env_model) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
@@ -61,9 +61,6 @@ class FloaterHydroDyn : public FloaterHydro {
   private:
     /** @brief HydroDyn adapter. */
     std::unique_ptr<seahowl::hydro::HydroDynAdapter> hydrodyn;
-
-    /** @brief reference to elasto floater where information is extracted */
-    elasto::FloaterElasto& floater_elasto;
 };
 
 /**

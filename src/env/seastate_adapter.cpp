@@ -342,10 +342,10 @@ void SeaStateLib::SetWaveFieldPointer(void* WaveFieldPtr) {
 }
 
 // FIXME: add way to set size and number of timesteps
-SeaStateAdapter::SeaStateAdapter(std::string SeaStateInfile) {
+SeaStateAdapter::SeaStateAdapter(std::string seastate_infile) : seastate_infile(seastate_infile) {
     spdlog::info("Using SeaState.");
     pImpl.reset(new SeaStateLib);
-    pImpl->SetSSINFILE(SeaStateInfile);
+    pImpl->SetSSINFILE(seastate_infile);
     pImpl->SetTimeStep(0.25);  // With number of timesteps, sets the total wave simlulation time. 0.25 typical
     pImpl->SetNumSteps(2400);  // for 600 second simulation.
     pImpl->Init();

@@ -81,6 +81,16 @@ class Floater : public Foundation {
      */
     void build() override;
 
+    /**
+     * @brief Updates hydro positions, rotations, velocities and accelerations from elasto component of the blade.
+     */
+    void update_positions_hydro();
+
+    /**
+     * @brief Accumulates hydro loads to the elasto component of the blade.
+     */
+    void update_loads_elasto();
+
   private:
     /**
      * @brief Initialize floater, called before starting the simulation.

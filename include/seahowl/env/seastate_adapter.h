@@ -22,7 +22,7 @@ class SeaStateAdapter : public WaveModel {
   public:
     std::unique_ptr<SeaStateLib> pImpl;
 
-    SeaStateAdapter(std::string SeaStateInfile);
+    SeaStateAdapter(std::string seastate_infile);
     ~SeaStateAdapter();
 
     std::string get_seastate_infile() const { return seastate_infile; }
