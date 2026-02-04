@@ -8,6 +8,10 @@
 #include <seahowl/servo/controller.h>
 #include <seahowl/io/read_input.h>
 #include <seahowl/fluid/aero/aerodyn_adapter.h>
+#include <seahowl/env/inflowwind_adapter.h>
+#include <seahowl/core/simulation.h>
+#include <seahowl/core/blade.h>
+#include <seahowl/elasto/blade_elasto.h>
 using namespace seahowl;
 using namespace seahowl::elasto;
 
@@ -24,81 +28,102 @@ class TestAeroDyn : public FixtureComponents {
         ref_dir /= "test_aerodyn/ref";
         test_dir /= "test_aerodyn/test";
     }
+
+    // Create simulation with standard output settings disabled
+    seahowl::core::Simulation create_simulation(double dt,
+                                                double duration,
+                                                const std::string& turbine_filepath,
+                                                const std::string& ifw_filepath) {
+        // create simulation object
+        seahowl::core::Simulation simulation;
+        simulation.dt = dt;
+        simulation.duration = duration;
+        simulation.outputs->dt_output = 9999.9;
+        simulation.outputs->has_csv = false;
+        simulation.outputs->has_gui = false;
+        simulation.outputs->has_vtk = false;
+
+        auto& system_core = *simulation.system_core;
+        // add turbine
+        seahowl::io::add_turbine_to_system_from_file(turbine_filepath, system_core);
+        auto& turbine = *system_core.turbines[0];
+        // remove controller
+        turbine.controller = std::make_shared<seahowl::servo::Controller>();
+        // add inflowwind model
+        auto wind_model = std::make_shared<seahowl::env::InflowWindAdapter>(ifw_filepath);
+        system_core.env_model->add_model(wind_model);
+
+        return simulation;
+    }
+
+    // Add common turbine metrics to test dataset
+    void add_common_metrics(seahowl::core::Simulation& simulation, TestFrameworkDataset& dataset) {
+        auto& system_core = *simulation.system_core;
+        auto& turbine = *system_core.turbines[0];
+        dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+        dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+        dataset.test_csv.add_function("axial torque [Nm]",
+                                      [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
+    }
+
+    // Run simulation loop writing to dataset each step
+    void run_simulation_loop(seahowl::core::Simulation& simulation, TestFrameworkDataset& dataset) {
+        auto& system_core = *simulation.system_core;
+        auto& turbine = *system_core.turbines[0];
+
+        // initialization
+        simulation.initialize();
+
+        // apply initial pitch
+        for (auto& blade : turbine.rna.rotor.blades) {
+            blade->elasto.apply_pitch_increment(seahowl::PI / 8.0);
+        }
+
+        // statics
+        system_core.elasto.do_statics(true, 10);
+        system_core.poststep(0.0, simulation.dt);
+
+        dataset.test_csv.write_row();  // write outputs at t=0.0
+        // simulation loop
+        while (system_core.get_time() < simulation.duration) {
+            simulation.step();
+            dataset.test_csv.write_row();
+        }
+    }
 };
 
-TEST_F(TestAeroDyn, rpm_initial_pitch) {
-    // general options
-    bool visualization_on = true;
-    bool statics_prestep = true;
-    // solver
-    auto verbose = false;
-    // timestepping
-    double dt = 0.1;
-    // wind (this is essentially ignored for the rotor as AeroDyn uses InflowWind input)
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
-    wind_model->shear_coefficient = 0.12;
-    // env_model
-    auto env_model = seahowl::env::EnvModel();
-    env_model.add_model(wind_model);
+TEST_F(TestAeroDyn, IEA15MW_fixed_pitch) {
+    // create simulation
+    auto turbine_filepath = (DATADIR / "IEA15MW/onshore/turbine_aerodyn.json").generic_string();
+    auto inflowwind_filepath = (DATADIR / "IEA15MW/env/InflowWind.dat").generic_string();
+    auto simulation = create_simulation(0.1, 50.0, turbine_filepath, inflowwind_filepath);
 
-    // turbine
-    double initial_pitch = seahowl::PI / 8.0;
+    // create test dataset
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_fixed_pitch.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_fixed_pitch.test.csv").generic_string()});
+    add_common_metrics(simulation, test_dataset);
 
-    // system
-    auto system_elasto = SystemElastoChrono();
-    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    // run simulation
+    run_simulation_loop(simulation, test_dataset);
 
-    // turbine
-    auto turbine =
-        seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_aerodyn.json").generic_string());
-    // remove controller
-    turbine.controller = std::make_shared<seahowl::servo::Controller>();
+    // evaluate test results
+    EvaluateTest(test_dataset);
+}
 
-    auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine.fluid);
-    turbine_aero.aerodyn.set_aerodyn_infile(
-        (DATADIR / "IEA15MW/base/aerodyn/IEA-15-240-RWT_AeroDyn15.dat").generic_string());
-    turbine_aero.aerodyn.set_inflowwind_infile((DATADIR / "IEA15MW/env/InflowWind.dat").generic_string());
+TEST_F(TestAeroDyn, IEA34MW_fixed_pitch) {
+    // create simulation
+    auto turbine_filepath = (DATADIR / "IEA34MW/turbine_aerodyn.json").generic_string();
+    auto inflowwind_filepath = (DATADIR / "IEA34MW/env/InflowWind.dat").generic_string();
+    auto simulation = create_simulation(0.1, 50.0, turbine_filepath, inflowwind_filepath);
 
-    turbine.build();
-    turbine.elasto.assemble(system_elasto);
-    double time = 0.0;
-    turbine.initialize(time, dt);
+    // create test dataset
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA34MW_fixed_pitch.csv").generic_string(),
+                                       (test_dir / "test_IEA34MW_fixed_pitch.test.csv").generic_string()});
+    add_common_metrics(simulation, test_dataset);
 
-    // apply pitch before statics
-    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+    // run simulation
+    run_simulation_loop(simulation, test_dataset);
 
-    // statics
-    if (statics_prestep) {
-        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
-        system_elasto.do_statics(true, 10);
-        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
-    }
-    turbine.poststep(0.0, dt);  // to update positions aero after statics step
-
-    // Setup TestFwDataSet
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_aerodyn_rpm_initial_pitch.csv").generic_string(),
-                                       (test_dir / "test_aerodyn_rpm_initial_pitch.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-    test_dataset.test_csv.add_function("axial torque [Nm]",
-                                       [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
-
-    while (time < 50.0) {
-        // prestep
-        // compute forces
-        turbine.apply_control(time, dt);
-        turbine.fluid.compute_env_loads(env_model, time);
-        // prestep (accumulates loads from aero to elasto)
-        turbine.prestep(time, dt);
-
-        system_elasto.step(dt);
-        time += dt;
-
-        // poststep
-        turbine.poststep(time, dt);
-        test_dataset.test_csv.write_row();
-    }
-
+    // evaluate test results
     EvaluateTest(test_dataset);
 }
