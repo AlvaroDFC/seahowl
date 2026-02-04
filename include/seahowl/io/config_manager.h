@@ -70,6 +70,14 @@ class ConfigManager {
     explicit ConfigManager(const ConfigManagerOptions& options);
     ~ConfigManager();
 
+    // Enable move semantics (defined in source file due to PIMPL)
+    ConfigManager(ConfigManager&&) noexcept;
+    ConfigManager& operator=(ConfigManager&&) noexcept;
+
+    // Disable copy
+    ConfigManager(const ConfigManager&) = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
+
     /**
      * @brief Compute the configuration manager.
      * @param argc Number of arguments.

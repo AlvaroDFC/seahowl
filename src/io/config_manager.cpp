@@ -184,6 +184,8 @@ ConfigManager::ConfigManager() : ConfigManager(ConfigManagerOptions{}) {}
 ConfigManager::ConfigManager(const ConfigManagerOptions& options)
     : pimpl_(std::make_unique<ConfigManagerImpl>(options)) {}
 ConfigManager::~ConfigManager() = default;
+ConfigManager::ConfigManager(ConfigManager&&) noexcept = default;
+ConfigManager& ConfigManager::operator=(ConfigManager&&) noexcept = default;
 
 void ConfigManager::compute(int argc, char** argv) {
     pimpl_->load_defaults();

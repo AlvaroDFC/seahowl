@@ -24,6 +24,7 @@ class FixtureComponents : public ::testing::Test {
         // set test directories roots
         TESTDIR = get_test_dir();
 
+        root_dir = path(TESTDIR) / "unit_tests/data";
         ref_dir = path(TESTDIR) / "unit_tests/data";
         test_dir = path(TESTDIR) / "unit_tests/data";
     }
@@ -61,6 +62,7 @@ class FixtureComponents : public ::testing::Test {
 
     path DATADIR;
     path TESTDIR;
+    path root_dir;
     path ref_dir;
     path test_dir;
     double rel_error = 1e-3;

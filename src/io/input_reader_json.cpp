@@ -738,7 +738,7 @@ TurbineDb InputReaderJson::read_turbine() {
             auto discon_filepath = main_directory / turbine_db.controller.options.infile;
             turbine_db.controller.options.infile_path = discon_filepath;
             if (!fs::is_regular_file(discon_filepath)) {
-                throw std::runtime_error(
+                spdlog::warn(
                     "DISCON: input file path for DISCON routine does not exist: " + discon_filepath.u8string() + ".");
             }
         }
@@ -746,7 +746,7 @@ TurbineDb InputReaderJson::read_turbine() {
             auto lib_filepath = main_directory / turbine_db.controller.options.libfile;
             turbine_db.controller.options.libfile_path = lib_filepath;
             if (!fs::is_regular_file(lib_filepath)) {
-                throw std::runtime_error(
+                spdlog::warn(
                     "DISCON: dynamic library path for DISCON routine does not exist: " + lib_filepath.u8string() + ".");
             }
         }

@@ -24,205 +24,174 @@ using namespace seahowl::elasto;
 class TestController : public FixtureComponents {
   protected:
     TestController() : FixtureComponents() {
+        root_dir /= "test_controller";
         ref_dir /= "test_controller/ref";
         test_dir /= "test_controller/test";
     }
+
+    // Create simulation with standard output settings disabled
+    seahowl::core::Simulation create_simulation(double dt,
+                                                double duration,
+                                                const std::string& turbine_filepath,
+                                                const Vector3d& velocity,
+                                                bool has_actuator_dynamics) {
+        seahowl::core::Simulation simulation;
+        simulation.dt = dt;
+        simulation.duration = duration;
+        simulation.outputs->dt_output = 9999.9;
+        simulation.outputs->has_csv = false;
+        simulation.outputs->has_gui = false;
+        simulation.outputs->has_vtk = false;
+
+        auto& system_core = *simulation.system_core;
+        auto& system_elasto = system_core.elasto;
+
+        seahowl::io::add_turbine_to_system_from_file(turbine_filepath, system_core);
+
+        auto& turbine = *system_core.turbines[0];
+        for (auto& blade : turbine.rna.rotor.blades) {
+            blade->elasto.actuator_pitch->set_fixed_actuator(!has_actuator_dynamics);
+            blade->elasto.apply_pitch_increment(0.2);
+        }
+
+        auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+        wind_model->shear_coefficient = 0.12;
+        wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
+        wind_model->set_wind_velocity(velocity);
+        system_core.env_model->add_model(wind_model);
+
+        return simulation;
+    }
+
+    // Run simulation loop writing to dataset each step
+    void run_simulation_loop(seahowl::core::Simulation& simulation, TestFrameworkDataset& dataset) {
+        auto& system_core = *simulation.system_core;
+
+        // initialization
+        simulation.initialize();
+        system_core.elasto.do_statics(true, 10);
+        system_core.poststep(0.0, simulation.dt);  // update aero positions before starting sim
+        dataset.test_csv.write_row();              // write outputs at t=0.0
+
+        // simulation loop
+        while (system_core.get_time() < simulation.duration) {
+            simulation.step();
+            dataset.test_csv.write_row();
+        }
+    }
 };
 
-TEST_F(TestController, collective_pitch_control) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 200.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA15MW_CPC) {
+    auto simulation = create_simulation(0.05, 200.0, (DATADIR / "IEA15MW/onshore/turbine.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), true);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string(),
-                                                 system_core);
     auto& turbine = *system_core.turbines[0];
-    for (auto& blade : turbine.rna.rotor.blades) {
-        blade->elasto.actuator_pitch->set_fixed_actuator(false);
-        blade->elasto.apply_pitch_increment(0.2);
-    }
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 0.0, 0.0));
-
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_collective_pitch_control.csv").generic_string(),
-                                       (test_dir / "test_collective_pitch_control.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("blade pitch (rad)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_CPC.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_CPC.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("blade1 pitch [rad]",
                                        [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_pitch(); });
-    test_dataset.test_csv.add_function(
-        "blade root moment (Nm)", [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment(); });
+    test_dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
+        return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment();
+    });
 
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    while (system_core.get_time() < simulation.duration) {
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-    }
-
-    // compare ref and test CSVs
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 };
 
-TEST_F(TestController, collective_pitch_control_snap) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 200.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA10MW_CPC) {
+    auto simulation = create_simulation(0.05, 200.0, (DATADIR / "IEA10MW/turbine.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), true);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string(),
-                                                 system_core);
     auto& turbine = *system_core.turbines[0];
-    for (auto& blade : turbine.rna.rotor.blades) {
-        blade->elasto.actuator_pitch->set_fixed_actuator(true);
-        blade->elasto.apply_pitch_increment(0.2);
-    }
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 0.0, 0.0));
-
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_collective_pitch_control_snap.csv").generic_string(),
-                                       (test_dir / "test_collective_pitch_control_snap.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("blade pitch (rad)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA10MW_CPC.csv").generic_string(),
+                                       (test_dir / "test_IEA10MW_CPC.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("blade1 pitch [rad]",
                                        [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_pitch(); });
-    test_dataset.test_csv.add_function(
-        "blade root moment (Nm)", [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment(); });
+    test_dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
+        return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment();
+    });
 
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    while (system_core.get_time() < simulation.duration) {
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-    }
-
-    // compare ref and test CSVs
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 };
 
-TEST_F(TestController, individual_pitch_control) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 200.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA34MW_CPC) {
+    auto simulation = create_simulation(0.05, 200.0, (DATADIR / "IEA34MW/turbine.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), true);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine_ipc.json").generic_string(),
-                                                 system_core);
     auto& turbine = *system_core.turbines[0];
-    for (auto& blade : turbine.rna.rotor.blades) {
-        blade->elasto.apply_pitch_increment(0.2);
-    }
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 0.0, 0.0));
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_individual_pitch_control.csv").generic_string(),
-                                       (test_dir / "test_individual_pitch_control.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("blade pitch (rad)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA34MW_CPC.csv").generic_string(),
+                                       (test_dir / "test_IEA34MW_CPC.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("blade1 pitch [rad]",
                                        [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_pitch(); });
-    test_dataset.test_csv.add_function(
-        "blade root moment (Nm)", [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment(); });
+    test_dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
+        return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment();
+    });
 
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    while (system_core.get_time() < simulation.duration) {
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-    }
-
-    // compare ref and test CSVs
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 };
 
-TEST_F(TestController, yaw_control) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 50.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA15MW_CPC_snap) {
+    auto simulation = create_simulation(0.05, 200.0, (DATADIR / "IEA15MW/onshore/turbine.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), false);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
-                                                 system_core);
     auto& turbine = *system_core.turbines[0];
 
-    // update controller to have yaw control
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_CPC_snap.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_CPC_snap.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("blade1 pitch [rad]",
+                                       [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_pitch(); });
+    test_dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
+        return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment();
+    });
+
+    run_simulation_loop(simulation, test_dataset);
+    EvaluateTest(test_dataset);
+};
+
+TEST_F(TestController, IEA15MW_IPC) {
+    auto simulation = create_simulation(0.05, 200.0, (DATADIR / "IEA15MW/onshore/turbine_ipc.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), false);
+    auto& system_core = *simulation.system_core;
+    auto& turbine = *system_core.turbines[0];
+
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_IPC.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_IPC.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("blade1 pitch [rad]",
+                                       [&turbine]() { return turbine.rna.rotor.blades[0]->elasto.get_pitch(); });
+    test_dataset.test_csv.add_function("blade1 root moment [Nm]", [&turbine]() {
+        return turbine.rna.rotor.blades[0]->elasto.get_blade_root_moment();
+    });
+
+    run_simulation_loop(simulation, test_dataset);
+    EvaluateTest(test_dataset);
+};
+
+TEST_F(TestController, IEA15MW_yaw_control) {
+    auto simulation = create_simulation(0.05, 50.0, (DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 1.0, 0.0), true);
+    auto& system_core = *simulation.system_core;
+    auto& turbine = *system_core.turbines[0];
+
     auto controller = std::make_shared<seahowl::servo::ControllerDISCON>(
         (DATADIR / "IEA15MW/base/controller/DISCON_yaw.IN").generic_string(),
         (DATADIR / "IEA15MW/base/controller/libdiscon.so").generic_string());
@@ -230,61 +199,26 @@ TEST_F(TestController, yaw_control) {
 
     turbine.rna.elasto.actuator_yaw->set_fixed_actuator(false);
     turbine.rna.elasto.apply_yaw_increment(-0.1);
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 1.0, 0.0));
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_yaw_control.csv").generic_string(),
-                                       (test_dir / "test_yaw_control.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("yaw (rad)", [&turbine]() { return turbine.rna.elasto.get_yaw(); });
-    test_dataset.test_csv.add_function("towerbase moment (N)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_yaw_control.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_yaw_control.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("yaw [rad]", [&turbine]() { return turbine.rna.elasto.get_yaw(); });
+    test_dataset.test_csv.add_function("towerbase moment [N]",
                                        [&turbine]() { return turbine.tower.elasto.get_tower_base_moment(); });
 
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    while (system_core.get_time() < simulation.duration) {
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-    }
-
-    // compare ref and test CSVs
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 };
 
-TEST_F(TestController, yaw_control_snap) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 50.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA15MW_yaw_control_snap) {
+    auto simulation = create_simulation(0.05, 50.0, (DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 1.0, 0.0), true);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
-                                                 system_core);
     auto& turbine = *system_core.turbines[0];
 
-    // update controller to have yaw control
     auto controller = std::make_shared<seahowl::servo::ControllerDISCON>(
         (DATADIR / "IEA15MW/base/controller/DISCON_yaw.IN").generic_string(),
         (DATADIR / "IEA15MW/base/controller/libdiscon.so").generic_string());
@@ -292,238 +226,58 @@ TEST_F(TestController, yaw_control_snap) {
 
     turbine.rna.elasto.actuator_yaw->set_fixed_actuator(true);
     turbine.rna.elasto.apply_yaw_increment(-0.1);
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 1.0, 0.0));
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_yaw_control_snap.csv").generic_string(),
-                                       (test_dir / "test_yaw_control_snap.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("yaw (rad)", [&turbine]() { return turbine.rna.elasto.get_yaw(); });
-    test_dataset.test_csv.add_function("towerbase moment (N)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_yaw_control_snap.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_yaw_control_snap.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("yaw [rad]", [&turbine]() { return turbine.rna.elasto.get_yaw(); });
+    test_dataset.test_csv.add_function("towerbase moment [N]",
                                        [&turbine]() { return turbine.tower.elasto.get_tower_base_moment(); });
 
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    while (system_core.get_time() < simulation.duration) {
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-    }
-
-    // compare ref and test CSVs
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 };
 
-TEST_F(TestController, IEA15) {
-    // wind speeds to test at different times: pairs are (time, speed)
-    std::vector<std::pair<double, double>> time_speed_vector;
-    time_speed_vector.push_back(std::make_pair(0.0, 8.0));
-    time_speed_vector.push_back(std::make_pair(150.0, 10.0));
-    time_speed_vector.push_back(std::make_pair(200.0, 12.0));
-    time_speed_vector.push_back(std::make_pair(250.0, 15.0));
-    time_speed_vector.push_back(std::make_pair(300.0, 20.0));
-    time_speed_vector.push_back(std::make_pair(350.0, 25.0));
-
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 400.0;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
+TEST_F(TestController, IEA15MW_libdiscon_50turbines) {
+    auto simulation = create_simulation(0.05, 0.1, (DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), true);
     auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
 
-    // add turbine to system
-    seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string(),
-                                                 system_core);
-    auto& turbine = *system_core.turbines[0];
-    // statics
-    system_elasto.do_statics(true, 10);
-
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = turbine.elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(time_speed_vector[0].second, 0.0, 0.0));
-
-    // initialize simulation
-    simulation.initialize();
-
-    // instantiate test dataset class (custom CSV)
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_controller.csv").generic_string(),
-                                       (test_dir / "test_controller.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
-    for (size_t idx_blade = 0; idx_blade < turbine.rna.elasto.rotor->blades.size(); idx_blade++) {
-        test_dataset.test_csv.add_function(
-            "pitch blade" + std::to_string(idx_blade + 1) + " (rad)",
-            [&turbine, idx_blade]() { return turbine.rna.elasto.rotor->blades[idx_blade]->get_pitch(); });
-    }
-
-    // output values at time = 0
-    test_dataset.test_csv.write_row();
-
-    // simulation loop
-    size_t istep = 0;
-    while (system_core.get_time() < simulation.duration) {
-        // check if new wind speed needs to be set
-        for (auto& time_speed_pair : time_speed_vector) {
-            if (istep == (int)round(time_speed_pair.first / simulation.dt)) {
-                auto wind_speed = time_speed_pair.second;
-                spdlog::info("Setting wind speed to {}m/s after {:.2f}s simulation time.", wind_speed,
-                             round(system_core.get_time()));
-                wind_model->set_wind_velocity(seahowl::Vector3d(wind_speed, 0.0, 0.0));
-            }
-        }
-
-        // simulation step
-        simulation.step();
-        test_dataset.test_csv.write_row();
-        istep += 1;
-    }
-
-    // compare ref and test CSVs
-    EvaluateTest(test_dataset);
-}
-
-TEST_F(TestController, discon_50turbines) {
-    // make simulation object
-    auto simulation = seahowl::core::Simulation();
-    simulation.dt = 0.05;
-    simulation.duration = 0.1;
-    simulation.outputs->dt_output = 9999.9;  // no output, using custom CSV
-    simulation.outputs->has_csv = false;
-    simulation.outputs->has_gui = false;
-    simulation.outputs->has_vtk = false;
-
-    auto& system_core = *simulation.system_core;
-    auto& system_elasto = system_core.elasto;
-
-    // add turbine to system
-    for (int ii = 0; ii < 50; ii++) {
+    for (int ii = 0; ii < 49; ii++) {
         seahowl::io::add_turbine_to_system_from_file((DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string(),
                                                      system_core);
-        system_core.turbines.back()->elasto.translate(seahowl::Vector3d(200.0 * ii, 200.0 * ii, 0.0));
+        system_core.turbines.back()->elasto.translate(seahowl::Vector3d(200.0 * (ii + 1), 200.0 * (ii + 1), 0.0));
     }
-    // statics
-    system_elasto.do_statics(true, 10);
 
-    // add wind model
-    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
-    wind_model->shear_coefficient = 0.12;
-    wind_model->reference_height = system_core.turbines[0]->elasto.rna->rotor->body_hub->get_position().z();
-    wind_model->set_wind_velocity(seahowl::Vector3d(12.0, 0.0, 0.0));
-    // env_model
-    system_core.env_model->add_model(wind_model);
-
-    // initialize simulation
     simulation.initialize();
 
-    // simulation loop
     while (system_core.get_time() < simulation.duration) {
-        // simulation step
         simulation.step();
     }
-
     // this test will throw an error if discon libraries cannot be loaded.
 }
 
-TEST_F(TestController, actuator_disk) {
-    // general options
-    bool visualization_on = true;
-    bool statics_prestep = true;
-    // solver
-    auto verbose = false;
-    // timestepping
-    double dt = 0.05;
-    double simul_time = 350.0;
-    // wind ramp
+TEST_F(TestController, IEA15MW_actuator_disk_control) {
+    auto simulation = create_simulation(0.05, 350.0, (DATADIR / "IEA15MW/onshore/turbine_disk.json").generic_string(),
+                                        seahowl::Vector3d(12.0, 0.0, 0.0), true);
+    auto& system_core = *simulation.system_core;
+    auto& turbine = *system_core.turbines[0];
+
     auto wind_model = std::make_shared<seahowl::env::WindRamp>();
-    const Vector3d wind_in(5.0, 0.0, 0.0);
-    const Vector3d wind_end(15.0, 0.0, 0.0);
-    wind_model->set_wind_ramp(wind_in, 0.0, wind_end, 250.0);
-
+    wind_model->set_wind_ramp(Vector3d(5.0, 0.0, 0.0), 0.0, Vector3d(15.0, 0.0, 0.0), 250.0);
     wind_model->shear_coefficient = 0.12;
+    system_core.env_model->add_model(wind_model);
 
-    // env_model
-    auto env_model = seahowl::env::EnvModel();
-    env_model.add_model(wind_model);
-
-    // turbine
-    double initial_pitch = 0.0 * seahowl::PI / 1000.0;
-
-    // system
-    auto system_elasto = SystemElastoChrono();
-    auto system_chrono = system_elasto.chobj;
-
-    // turbine
-    auto turbine = seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_disk.json").generic_string());
-
-    turbine.build();
-    turbine.elasto.assemble(system_elasto);
-
-    // statics
-    if (statics_prestep) {
-        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
-        system_elasto.do_statics(true, 10);
-        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
-    }
-
-    double time = 0.0;
-    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
-    turbine.initialize(time, dt);
-
-    // Setup TestFwDataSet
-    TestFrameworkDataset test_dataset({false, (ref_dir / "test_controller_actuator_disk.csv").generic_string(),
-                                       (test_dir / "test_controller_actuator_disk.test.csv").generic_string()});
-
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-
-    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
-    test_dataset.test_csv.add_function("pitch (rad)",
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_actuator_disk_control.csv").generic_string(),
+                                       (test_dir / "test_IEA15MW_actuator_disk_control.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
+    test_dataset.test_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("pitch [rad]",
                                        [&turbine]() { return turbine.rna.elasto.rotor->pitch_collective; });
 
-    int count = 0;
-    while (time < simul_time) {
-        // prestep
-        // compute forces
-        turbine.apply_control(time, dt);
-        turbine.fluid.compute_env_loads(env_model, time);
-        // prestep (accumulates loads from aero to elasto)
-        turbine.prestep(time, dt);
-
-        system_elasto.step(dt);
-        time += dt;
-
-        // poststep
-        turbine.poststep(time, dt);
-        if (count == 10) {
-            test_dataset.test_csv.write_row();
-            count = 0;
-        }
-        count += 1;
-    }
-
+    run_simulation_loop(simulation, test_dataset);
     EvaluateTest(test_dataset);
 }
