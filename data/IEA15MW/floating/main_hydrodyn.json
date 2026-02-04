@@ -1,0 +1,33 @@
+﻿{
+  "numerics": {
+    "dt": 0.025,
+    "duration": 2000.0,
+    "statics": {
+      "linear_step": false,
+      "nonlinear_steps": 0
+    },
+    "presimulation": {
+      "dt": 0.025,
+      "duration": 2.5,
+      "presetup": true,
+      "fix_towers": true
+    }
+  },
+  "outputs": {
+    "dt": 0.025,
+    "folder": "./output",
+    "vtk": false,
+    "log_level": "debug",
+    "gui": true
+  },
+  "environment": {
+    "file": "../env/env_waves_200m_seastate.json"
+  },
+  "turbines": [
+    {
+      "file": "./turbine_hydrodyn.json",
+      "translation": [0, 0, 0],
+      "rotation": 0
+    }
+  ]
+}

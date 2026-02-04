@@ -8,10 +8,10 @@
     }
   },
   "rotor": {
-    "type": "fea",
+    "type": "rigid",
     "discretization": {
-      "elasto": [49],
-      "aero": [49]
+      "elasto": [],
+      "aero": []
     },
     "pitch_actuator_dynamics": true,
     "blades": [
@@ -40,7 +40,7 @@
   "tower": {
     "discretization": {
       "elasto": [],
-      "aero": [19]
+      "aero": []
     },
     "file": "./tower_floating.csv",
     "options":{
@@ -50,7 +50,7 @@
   },
   "foundation": {
     "type": "floater",
-    "file": "./floater.json"
+    "file": "./floater_hydrochrono.json"
   },
   "controller": {
     "type": "DISCON",
