@@ -1,8 +1,9 @@
 #include "seahowl/elasto/turbine_elasto.h"
 
-#include "seahowl/elasto/system_elasto.h"
+// SEAHOWL headers
 #include "seahowl/elasto/chrono_adapters.h"
 #include "seahowl/elasto/foundation_elasto.h"
+#include "seahowl/elasto/system_elasto.h"
 
 using namespace seahowl::elasto;
 

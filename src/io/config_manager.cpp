@@ -1,14 +1,19 @@
 #include "seahowl/io/config_manager.h"
-#include "seahowl/io/utils_io.h"
-#include "seahowl/io/command_parser.h"
 
-#include <vector>
+// SEAHOWL headers
+#include "seahowl/io/command_parser.h"
+#include "seahowl/io/utils_io.h"
+
+// Third-party libraries
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
+#include <vector>
 
 namespace fs = std::filesystem;
 

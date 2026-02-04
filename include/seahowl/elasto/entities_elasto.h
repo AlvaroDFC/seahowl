@@ -1,9 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/entities.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 namespace seahowl {
 ///@brief Elastodynamic model module

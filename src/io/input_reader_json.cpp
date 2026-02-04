@@ -1,16 +1,21 @@
 #include "seahowl/io/input_reader_json.h"
+
+// SEAHOWL headers
 #include "seahowl/io/input_structures.h"
 
+// Third-party libraries
 #include <Eigen/Dense>
-#include <nlohmann/json.hpp>
 #include <nlohmann/detail/macro_scope.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <iostream>
+
+// Standard library
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 

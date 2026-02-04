@@ -1,8 +1,11 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/io/config_manager.h"
+
+// Standard library
 #include <map>
 #include <string>
-#include <seahowl/io/config_manager.h>
 
 namespace seahowl {
 namespace io {

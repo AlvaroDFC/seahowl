@@ -1,5 +1,6 @@
 #include "seahowl/elasto/system_elasto.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::elasto;

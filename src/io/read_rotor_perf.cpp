@@ -1,14 +1,18 @@
 #include "seahowl/io/read_rotor_perf.h"
 
+// SEAHOWL headers
 #include "seahowl/core/rotor.h"
 
-#include <string>
-#include <memory>
-#include <vector>
-#include <fstream>
+// Third-party libraries
 #include <spdlog/spdlog.h>
-#include <typeinfo>
+
+// Standard library
 #include <filesystem>
+#include <fstream>
+#include <memory>
+#include <string>
+#include <typeinfo>
+#include <vector>
 
 namespace fs = std::filesystem;
 using std::filesystem::path;

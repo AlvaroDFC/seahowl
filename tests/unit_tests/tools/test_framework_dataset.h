@@ -1,12 +1,14 @@
 #pragma once
 
+// SEAHOWL headers
 #include <seahowl/io/write_csv.h>
 
+// Standard library
 #include <functional>
+#include <map>
 #include <string>
 #include <tuple>
 #include <vector>
-#include <map>
 
 class TestFrameworkDataset {
   private:

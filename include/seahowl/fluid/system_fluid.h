@@ -1,10 +1,12 @@
 #pragma once
 
-#include "seahowl/fluid/turbine_fluid.h"
+// SEAHOWL headers
 #include "seahowl/fluid/component_fluid.h"
+#include "seahowl/fluid/turbine_fluid.h"
 
-#include <vector>
+// Standard library
 #include <deque>
+#include <vector>
 
 namespace seahowl {
 namespace fluid {

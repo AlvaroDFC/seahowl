@@ -1,22 +1,26 @@
 #include "seahowl/io/write_vtk.h"
+
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
-#include "seahowl/core/system.h"
 #include "seahowl/core/blade.h"
+#include "seahowl/core/system.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
 
+// Third-party libraries
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkPoints.h>
-#include <vtkPointData.h>
-#include <vtkDoubleArray.h>
 
-#include <filesystem>  // C++17
+// Standard library
+#include <cstdio>
+#include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <cstdio>
 
 namespace fs = std::filesystem;
 

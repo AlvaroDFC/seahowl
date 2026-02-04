@@ -1,15 +1,11 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/env/wind_models.h>
-#include <seahowl/env/soil_models.h>
-#ifdef HAVE_INFLOWWIND
-    #include <seahowl/env/inflowwind_adapter.h>
-#endif
-#ifdef HAVE_HYDROCHRONO
-    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
-#endif
+// SEAHOWL headers
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
 
 namespace py = pybind11;
 

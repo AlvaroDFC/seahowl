@@ -1,6 +1,9 @@
 #include "seahowl/io/viz_insitu.h"
 
+// SEAHOWL headers
 #include "seahowl/core/system.h"
+
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::io;

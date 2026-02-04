@@ -3,11 +3,13 @@
 // Disable inherits via dominance warning when there is multiple inheritance
 #pragma warning(disable : 4250)
 
+// SEAHOWL headers
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/elasto/system_elasto.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {

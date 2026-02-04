@@ -1,0 +1,523 @@
+// Local test headers
+#include "fixture_components.h"
+
+// SEAHOWL headers
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
+#include <seahowl/servo.h>
+
+// Third-party libraries
+#include <gtest/gtest.h>
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
+
+using std::filesystem::path;
+
+using namespace seahowl;
+using namespace seahowl::elasto;
+
+// The fixture for testing
+class TestTurbine : public FixtureComponents {
+  protected:
+    TestTurbine() : FixtureComponents() {
+        ref_dir /= "test_turbine/ref";
+        test_dir /= "test_turbine/test";
+    }
+};
+
+TEST_F(TestTurbine, rpm_initial_pitch) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
+    // turbine
+    double initial_pitch = seahowl::PI / 8.0;
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // turbine
+    auto turbine = seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string());
+    // remove controller
+    turbine.controller = std::make_shared<seahowl::servo::Controller>();
+    turbine.build();
+    double time = 0.0;
+    turbine.elasto.assemble(system_elasto);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    // statics
+    if (statics_prestep) {
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        system_elasto.do_statics(true, 10);
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+    }
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_rpm_initial_pitch.csv").generic_string(),
+                                       (test_dir / "test_turbine_rpm_initial_pitch.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("axial torque (Nm)",
+                                       [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
+    test_dataset.test_csv.add_function("blade1 root moment (Nm)", [&turbine]() {
+        return turbine.rna.elasto.rotor->blades[0]->get_blade_root_moment();
+    });
+
+    while (time < 50.0) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, rpm_initial_pitch_fpm) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
+    // turbine
+    double initial_pitch = seahowl::PI / 8.0;
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // turbine
+    auto turbine = seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine.json").generic_string());
+    // force FPM mode on blades
+    for (auto& blade : turbine.elasto.rna->rotor->blades) {
+        dynamic_cast<seahowl::elasto::BladeElastoFEA&>(*blade).fpm_mode = true;
+    }
+
+    // remove controller
+    turbine.controller = std::make_shared<seahowl::servo::Controller>();
+    turbine.build();
+    double time = 0.0;
+    turbine.elasto.assemble(system_elasto);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    // statics
+    if (statics_prestep) {
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        system_elasto.do_statics(true, 10);
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+    }
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_rpm_initial_pitch_fpm.csv").generic_string(),
+                                       (test_dir / "test_turbine_rpm_initial_pitch_fpm.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("axial torque (Nm)",
+                                       [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
+    test_dataset.test_csv.add_function("blade1 root moment (Nm)", [&turbine]() {
+        return turbine.rna.elasto.rotor->blades[0]->get_blade_root_moment();
+    });
+
+    while (time < 50.0) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, rpm_initial_pitch_rigid_rotor) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
+    // turbine
+    double initial_pitch = seahowl::PI / 8.0;
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // turbine
+    auto turbine =
+        seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string());
+
+    // remove controller
+    turbine.controller = std::make_shared<seahowl::servo::Controller>();
+    turbine.build();
+    double time = 0.0;
+    turbine.elasto.assemble(system_elasto);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    // statics
+    if (statics_prestep) {
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        system_elasto.do_statics(true, 10);
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+    }
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset(
+        {false, (ref_dir / "test_turbine_rpm_initial_pitch_rigid_rotor.csv").generic_string(),
+         (test_dir / "test_turbine_rpm_initial_pitch_rigid_rotor.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("axial torque (Nm)",
+                                       [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
+    test_dataset.test_csv.add_function("blade1 root moment (Nm)", [&turbine]() {
+        return turbine.rna.elasto.rotor->blades[0]->get_blade_root_moment();
+    });
+
+    while (time < 50.0) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, controller_target_rpm) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.05;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+    // turbine
+    double initial_pitch = seahowl::PI / 8.0;
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // turbine
+    auto turbine =
+        seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string());
+
+    // make controller
+    double target_rpm = 2.0;
+    auto controller = std::make_shared<seahowl::servo::ControllerVariableTorque>();
+    controller->target_rpm = target_rpm;
+    turbine.controller = controller;
+    turbine.build();
+    double time = 0.0;
+    turbine.elasto.assemble(system_elasto);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    // statics
+    if (statics_prestep) {
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        system_elasto.do_statics(true, 10);
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+    }
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_controller_target_rpm.csv").generic_string(),
+                                       (test_dir / "test_turbine_controller_target_rpm.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+
+    while (time < 100) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, actuator_disk) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(11.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+    // env_model
+    auto env_model = seahowl::env::EnvModel();
+    env_model.add_model(wind_model);
+
+    // turbine
+    double initial_pitch = 0.0 * seahowl::PI / 1000.0;
+    // power target
+    auto reference_power = 15.5e6;
+
+    // system
+    auto system_elasto = SystemElastoChrono();
+    system_elasto.set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_chrono = system_elasto.chobj;
+
+    // turbine
+    auto turbine = seahowl::io::get_turbine_from_file((DATADIR / "IEA15MW/onshore/turbine_disk.json").generic_string());
+
+    // remove controller
+    double target_rpm = 7.56;
+    auto controller = std::make_shared<seahowl::servo::ControllerVariableTorque>();
+    controller->target_rpm = target_rpm;
+    turbine.controller = controller;
+    turbine.build();
+    double time = 0.0;
+    turbine.elasto.assemble(system_elasto);
+    turbine.initialize(time, dt);
+
+    // apply pitch before statics
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    // statics
+    if (statics_prestep) {
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, true, true, true);
+        system_elasto.do_statics(true, 10);
+        turbine.rna.elasto.link_shaft_hub->set_constraints(true, true, true, false, true, true);
+    }
+    turbine.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_actuator_disk.csv").generic_string(),
+                                       (test_dir / "test_turbine_actuator_disk.test.csv").generic_string()});
+
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
+    int count = 0;
+    while (time < 100) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        if (count == 5) {
+            test_dataset.test_csv.write_row();
+            count = 0;
+        }
+        count += 1;
+    }
+
+    reference_power = 15.3e6;
+    // wind
+    wind_model->set_wind_velocity(Vector3d(15.0, 0.0, 0.0));
+    // turbine
+    initial_pitch = 11.0 * seahowl::PI / 180.0;
+    turbine.rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+
+    count = 0;
+    while (time < 200) {
+        // prestep
+        // compute forces
+        turbine.apply_control(time, dt);
+        turbine.fluid.compute_env_loads(env_model, time);
+        // prestep (accumulates loads from aero to elasto)
+        turbine.prestep(time, dt);
+
+        system_elasto.step(dt);
+        time += dt;
+
+        // poststep
+        turbine.poststep(time, dt);
+        if (count == 5) {
+            test_dataset.test_csv.write_row();
+            count = 0;
+        }
+        count += 1;
+    }
+
+    EvaluateTest(test_dataset);
+}
+
+TEST_F(TestTurbine, multiturbines) {
+    // general options
+    bool visualization_on = true;
+    bool statics_prestep = true;
+    // solver
+    auto verbose = false;
+    // timestepping
+    double dt = 0.1;
+    // wind
+    auto wind_model = std::make_shared<seahowl::env::ConstantWind>();
+    wind_model->set_wind_velocity(Vector3d(8.0, 0.0, 0.0));
+    wind_model->shear_coefficient = 0.12;
+
+    // turbine
+    double initial_pitch = seahowl::PI / 8.0;
+
+    // system
+    auto system_elasto = std::make_shared<SystemElastoChrono>();
+    system_elasto->set_gravitational_acceleration(Vector3d(0.0, 0.0, -9.81));
+    auto system_aero = std::make_shared<seahowl::fluid::SystemFluid>();
+
+    // system core
+    auto system_core = seahowl::core::System(system_elasto, system_aero);
+    system_core.env_model->add_model(wind_model);
+
+    // turbines
+    auto turbine_file = (DATADIR / "IEA15MW/onshore/turbine_rigid.json").generic_string();
+    auto nturbines = 3;
+    for (int ii = 0; ii < nturbines; ii++) {
+        auto turbine = seahowl::io::get_turbine_from_file(turbine_file);
+        // empty controller
+        turbine.controller = std::make_shared<seahowl::servo::Controller>();
+        // translate
+        turbine.build();
+        turbine.elasto.translate(Vector3d(0.0 + ii * 150.0, 0.0 + ii * (-150.0), 0.0));
+        system_core.turbines.push_back(std::make_shared<seahowl::core::Turbine>(turbine));
+        system_core.elasto.turbines.push_back(std::make_shared<seahowl::elasto::TurbineElasto>(turbine.elasto));
+        system_core.fluid.turbines.push_back(std::make_shared<seahowl::fluid::TurbineFluid>(turbine.fluid));
+    }
+
+    double time = 0.0;
+    system_core.initialize(time, dt);
+
+    // apply pitch before statics
+    for (auto& turbine : system_core.turbines) {
+        turbine->rna.elasto.rotor->apply_collective_pitch_increment(initial_pitch);
+    }
+
+    // statics
+    if (statics_prestep) {
+        system_elasto->do_statics(true, 10);
+    }
+    system_core.poststep(0.0, dt);  // to update positions aero after statics step
+
+    // Setup TestFwDataSet
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_turbine_multiturbines.csv").generic_string(),
+                                       (test_dir / "test_turbine_multiturbines.test.csv").generic_string()});
+    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto->get_time(); });
+    // test_dataset.add_test_function("time (s)", system_elasto.get_time);
+    for (size_t idx_turbine = 0; idx_turbine < system_core.turbines.size(); idx_turbine++)
+        test_dataset.test_csv.add_function(
+            "rpm turbine " + std::to_string(idx_turbine + 1) + " (-)",
+            [&system_core, idx_turbine]() { return system_core.turbines[idx_turbine]->rna.elasto.get_rpm(); });
+
+    while (time < 50.0) {
+        // prestep
+        system_core.prestep(time, dt);
+
+        // step
+        system_core.step(dt);
+        time += dt;
+
+        // poststep
+        system_core.poststep(time, dt);
+        test_dataset.test_csv.write_row();
+    }
+
+    EvaluateTest(test_dataset);
+}

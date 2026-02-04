@@ -1,10 +1,12 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/commons/entities.h>
-#include <seahowl/commons/utils.h>
-#include <seahowl/fluid/component_fluid.h>
+// SEAHOWL headers
+#include <seahowl/commons.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
 
 namespace py = pybind11;
 

@@ -1,12 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/mooring_elasto.h"
 
-#include <seahowl/fluid/hydro/hydrodyn_adapter.h>
-
+// Standard library
 #include <deque>
 #include <map>
 

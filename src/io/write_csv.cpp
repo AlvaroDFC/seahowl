@@ -1,11 +1,15 @@
 #include "seahowl/io/write_csv.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
 #include <fstream>
 #include <string>
-#include <spdlog/spdlog.h>
-#include <filesystem>  // C++17
 
 using namespace seahowl::io;
 namespace fs = std::filesystem;

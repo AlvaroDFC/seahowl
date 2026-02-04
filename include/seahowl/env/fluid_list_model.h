@@ -1,9 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+// SEAHOWL headers
 #include "seahowl/env/fluid_models.h"
 #include "seahowl/env/list_model.h"
+
+// Standard library
+#include <memory>
+#include <vector>
 
 namespace seahowl {
 namespace env {

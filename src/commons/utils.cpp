@@ -1,11 +1,14 @@
 #include "seahowl/commons/utils.h"
 
-#include <string>
-#include <spdlog/spdlog.h>
+// Third-party libraries
 #include <spdlog/fmt/ostr.h>
-#include <iostream>
-#include <iomanip>
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
 bool seahowl::LOG_LEVEL_SET = false;
 

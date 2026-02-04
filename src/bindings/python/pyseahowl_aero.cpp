@@ -1,14 +1,10 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/fluid/component_fluid.h>
-#include <seahowl/fluid/system_fluid.h>
-#include <seahowl/fluid/aero/blade_aero.h>
-#include <seahowl/fluid/aero/rotor_aero.h>
-#include <seahowl/fluid/aero/tower_aero.h>
-#include <seahowl/fluid/turbine_fluid.h>
-#include <seahowl/fluid/aero/reference_point_aero.h>
+// SEAHOWL headers
+#include <seahowl/fluid.h>
 
 namespace py = pybind11;
 

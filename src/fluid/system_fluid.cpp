@@ -1,5 +1,9 @@
 #include "seahowl/fluid/system_fluid.h"
 
+// SEAHOWL headers
+#include "seahowl/env/env_model.h"
+
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::fluid;

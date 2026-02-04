@@ -1,9 +1,12 @@
 #include "seahowl/fluid/aero/blade_aero.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
-#include "seahowl/fluid/aero/reference_point_aero.h"
+#include "seahowl/env/env_model.h"
 #include "seahowl/fluid/aero/bemt.h"
+#include "seahowl/fluid/aero/reference_point_aero.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;

@@ -1,5 +1,6 @@
 #include "seahowl/commons/entities.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
 using namespace seahowl;

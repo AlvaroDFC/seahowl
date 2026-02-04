@@ -1,14 +1,18 @@
 #include "seahowl/core/rotor.h"
 
+// SEAHOWL headers
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
 
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <memory>
 #include <vector>
-#include <spdlog/spdlog.h>
 
 using namespace seahowl;
 using namespace seahowl::core;

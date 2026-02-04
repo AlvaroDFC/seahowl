@@ -1,12 +1,16 @@
-
+// Local test headers
 #include "fixture_components.h"
 
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/io/read_input.h>
+// SEAHOWL headers
+#include <seahowl/elasto.h>
+#include <seahowl/io.h>
 
+// Third-party libraries
 #include <gtest/gtest.h>
-#include <filesystem>  // C++17
+
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;

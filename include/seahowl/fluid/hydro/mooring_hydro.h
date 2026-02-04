@@ -1,13 +1,15 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/hydro/morison.h"
 #include "seahowl/fluid/component_fluid.h"
 
-#include <vector>
+// Standard library
 #include <deque>
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {

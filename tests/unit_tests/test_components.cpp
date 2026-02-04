@@ -1,8 +1,13 @@
-#include <gtest/gtest.h>
+// Local test headers
 #include "tools/get_env_var.h"
-#include <filesystem>
+
+// Third-party libraries
+#include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
+
+// Standard library
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 
 class MyEnvironment : public ::testing::Environment {

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "seahowl/commons/numerics.h"
+// SEAHOWL headers
 #include "seahowl/commons/entities.h"
+#include "seahowl/commons/numerics.h"
 #include "seahowl/env/model.h"
 
 namespace seahowl {

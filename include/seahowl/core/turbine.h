@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/core/component.h"
+#include "seahowl/core/floater.h"
 #include "seahowl/core/rotor.h"
 #include "seahowl/core/tower.h"
-#include "seahowl/core/floater.h"
 
+// Standard library
 #include <vector>
 
 // forward declarations

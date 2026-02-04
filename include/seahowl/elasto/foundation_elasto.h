@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/elasto/entities_elasto.h"

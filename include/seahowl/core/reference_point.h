@@ -1,7 +1,9 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
+// Standard library
 #include <vector>
 
 // forward declarations

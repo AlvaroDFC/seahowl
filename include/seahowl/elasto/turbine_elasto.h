@@ -1,8 +1,10 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/elasto/tower_elasto.h"
 
+// Standard library
 #include <vector>
 
 // forward declarations

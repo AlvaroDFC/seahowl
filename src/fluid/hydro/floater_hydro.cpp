@@ -1,6 +1,8 @@
 #include "seahowl/fluid/hydro/floater_hydro.h"
-#include "seahowl/fluid/hydro/mooring_hydro.h"
+
+// SEAHOWL headers
 #include "seahowl/env/env_model.h"
+#include "seahowl/fluid/hydro/mooring_hydro.h"
 
 using namespace seahowl;
 using namespace seahowl::fluid::hydro;

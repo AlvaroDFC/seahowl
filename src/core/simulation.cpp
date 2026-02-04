@@ -1,20 +1,24 @@
 #include "seahowl/core/simulation.h"
 
+// SEAHOWL headers
+#include "seahowl/commons/utils.h"
 #include "seahowl/core/system.h"
-#include "seahowl/elasto/system_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/fluid/system_fluid.h"
 #include "seahowl/elasto/chrono_adapters.h"
+#include "seahowl/elasto/system_elasto.h"
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/io/output_manager.h"
 #include "seahowl/io/read_input.h"
 #include "seahowl/io/write_csv.h"
-#include "seahowl/io/output_manager.h"
-#include "seahowl/commons/utils.h"
 
-#include <fstream>
-#include <filesystem>  // C++17
+// Third-party libraries
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
+
+// Standard library
+#include <filesystem>
+#include <fstream>
 
 using namespace seahowl::core;
 namespace fs = std::filesystem;

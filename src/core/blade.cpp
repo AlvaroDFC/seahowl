@@ -1,11 +1,15 @@
 #include "seahowl/core/blade.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 
-#include <memory>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <memory>
 
 using namespace seahowl::core;
 using namespace seahowl::elasto;

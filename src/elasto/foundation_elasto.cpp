@@ -1,5 +1,6 @@
 #include "seahowl/elasto/foundation_elasto.h"
 
+// SEAHOWL headers
 #include "seahowl/elasto/chrono_adapters.h"
 
 using namespace seahowl::elasto;
