@@ -128,3 +128,21 @@ TEST_F(TestAeroDyn, IEA34MW_fixed_pitch) {
     // evaluate test results
     EvaluateTest(test_dataset);
 }
+
+TEST_F(TestAeroDyn, IEA10MW_fixed_pitch) {
+    // create simulation
+    auto turbine_filepath = (DATADIR / "IEA10MW/turbine_aerodyn.json").generic_string();
+    auto inflowwind_filepath = (DATADIR / "IEA10MW/env/InflowWind.dat").generic_string();
+    auto simulation = create_simulation(0.1, 50.0, turbine_filepath, inflowwind_filepath);
+
+    // create test dataset
+    TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA10MW_fixed_pitch.csv").generic_string(),
+                                       (test_dir / "test_IEA10MW_fixed_pitch.test.csv").generic_string()});
+    add_common_metrics(simulation, test_dataset);
+
+    // run simulation
+    run_simulation_loop(simulation, test_dataset);
+
+    // evaluate test results
+    EvaluateTest(test_dataset);
+}

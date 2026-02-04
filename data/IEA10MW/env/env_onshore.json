@@ -6,7 +6,7 @@
     "type": "ramp",
     "air_density": 1.225,
     "options": {
-      "reference_height": 110.0,
+      "reference_height": 119.0,
       "shear_coefficient": 0.12,
       "velocity_start": [12, 0, 0],
       "velocity_end": [25, 0, 0],
