@@ -20,6 +20,8 @@
 #include "seahowl/env/env_model.h"
 #include "seahowl/env/fluid_models.h"
 #include "seahowl/env/soil_models.h"
+#include "seahowl/env/wave_models.h"
+#include "seahowl/env/wind_models.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
