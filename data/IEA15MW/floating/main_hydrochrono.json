@@ -21,7 +21,7 @@
     "gui": true
   },
   "environment": {
-    "file": "../env/env_waves_200m.json"
+    "file": "../env/env_waves_200m_regular.json"
   },
   "turbines": [
     {
