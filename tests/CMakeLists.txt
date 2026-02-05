@@ -16,7 +16,7 @@ set(TEST_FILES
 	unit_tests/test_entities.cpp
 	unit_tests/test_rotor.cpp
 	unit_tests/test_tower.cpp
-	unit_tests/test_turbine_onshore.cpp
+	unit_tests/test_turbine.cpp
 	unit_tests/test_monopile.cpp
 	unit_tests/test_controller.cpp
 	unit_tests/test_morison.cpp
