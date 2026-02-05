@@ -1,6 +1,6 @@
-site_name: SEAHOWL User Language documentation
+site_name: SEAHOWL documentation
 docs_dir: user
-site_dir: ../build/doc/user
+site_dir: ../build/doc/source
 theme:
   name: material
   logo: assets/logo.png
@@ -35,6 +35,7 @@ theme:
         name: Switch to light mode
 
 plugins:
+  - include-markdown
   - search
   - offline
   - mkdocstrings:
@@ -48,6 +49,7 @@ plugins:
             docstring_style: google
             show_symbol_type_heading: true
             show_symbol_type_toc: true
+            allow_inspection: true
           paths: ["build"]
 
 markdown_extensions:
@@ -82,13 +84,20 @@ extra_css:
 
 nav:
   - Home: index.md
-  - Quick Start: input-files/index.md
-  - Developer Guide:
-    - input-files/introduction.md
-    - Main: input-files/main-file.md
-    - Turbine: input-files/turbine-file.md
-    - Environment: input-files/environment-file.md
-    - Blade: input-files/blade-file.md
-    - Rna: input-files/rna-file.md
-    - Tower: input-files/tower-file.md
-    - Floater: input-files/floater-file.md
+  - User Guide:
+    - Install: INSTALL.md
+    - Input files:
+      - Main file: user-guide/input-files/main-file.md
+      - Turbine file: user-guide/input-files/turbine-file.md
+      - Tower file: user-guide/input-files/tower-file.md
+      - Blade file: user-guide/input-files/blade-file.md
+      - Rna file: user-guide/input-files/rna-file.md
+      - Floater file: user-guide/input-files/floater-file.md
+      - Environment file: user-guide/input-files/environment-file.md
+  - Dev Guide:
+    - Contributing: CONTRIBUTING.md
+    - Core workflow: dev-guide/core-workflow.md
+    - Simulation workflow: dev-guide/sim-workflow.md
+  - About:
+    - Contributors: CONTRIBUTORS.md
+    - Licence: LICENSE.md

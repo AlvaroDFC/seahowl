@@ -31,6 +31,8 @@ if(SEAHOWL_ENABLE_PYTHON)
           "#!/bin/bash\n"
           "export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH\n"
           "source ${ACTIVATE_PY}\n"
+          "# Generate stub files for pybind11 module (required for mkdocstrings)\n"
+          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR} 2>/dev/null || true\n"
           "${MKDOCS_EXECUTABLE} build\n"
           )
           set(FILE_MKDOCS ${CMAKE_BINARY_DIR}/run_mkdocs.sh)
@@ -41,6 +43,8 @@ if(SEAHOWL_ENABLE_PYTHON)
           file(WRITE ${CMAKE_BINARY_DIR}/run_mkdocs.bat
           "set PYTHONPATH=${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};%PYTHONPATH%\n"
           "call ${ACTIVATE_PY}\n"
+          "REM Generate stub files for pybind11 module (required for mkdocstrings)\n"
+          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE} 2>nul\n"
           "call ${MKDOCS_EXECUTABLE} build\n"
           )
           set(FILE_MKDOCS ${CMAKE_BINARY_DIR}/run_mkdocs.bat)
