@@ -17,3 +17,11 @@
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     /* Ombre plus forte */
 }
+
+/* Hide member name headings for attributes and methods (signature already shows the name with cross-refs).
+   Class and module headings are kept. */
+.doc-object:not(.doc-class):not(.doc-module) > .doc-heading > .doc-object-name,
+.doc-object:not(.doc-class):not(.doc-module) > .doc-heading > .doc-labels,
+.doc-object:not(.doc-class):not(.doc-module) > .doc-heading > .headerlink {
+    display: none;
+}

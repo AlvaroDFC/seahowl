@@ -8,7 +8,6 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
-    - navigation.expand
     - navigation.sections
     - search.highlight
     - search.suggest
@@ -47,15 +46,19 @@ plugins:
               ignore_init_summary: false
             merge_init_into_class: false
             docstring_style: google
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
+            show_symbol_type_heading: false
+            show_symbol_type_toc: false
+            show_if_no_docstring: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
             allow_inspection: true
           paths: ["build"]
 
 markdown_extensions:
   - toc:
       permalink: true
-      toc_depth: 3
+      toc_depth: 2
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.highlight:
@@ -98,6 +101,16 @@ nav:
     - Contributing: CONTRIBUTING.md
     - Core workflow: dev-guide/core-workflow.md
     - Simulation workflow: dev-guide/sim-workflow.md
+  - Python API:
+    - Modules: api/python/modules.md
+    - seahowl: api/python/seahowl.md
+    - seahowl.core: api/python/core.md
+    - seahowl.elasto: api/python/elasto.md
+    - seahowl.aero: api/python/aero.md
+    - seahowl.hydro: api/python/hydro.md
+    - seahowl.servo: api/python/servo.md
+    - seahowl.env: api/python/env.md
+    - seahowl.io: api/python/io.md
   - About:
     - Contributors: CONTRIBUTORS.md
     - Licence: LICENSE.md
