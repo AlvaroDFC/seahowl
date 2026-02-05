@@ -101,6 +101,7 @@ nav:
     - Contributing: CONTRIBUTING.md
     - Core workflow: dev-guide/core-workflow.md
     - Simulation workflow: dev-guide/sim-workflow.md
+  - C++ API: api/cpp/cpp.md
   - Python API:
     - Modules: api/python/modules.md
     - seahowl: api/python/seahowl.md

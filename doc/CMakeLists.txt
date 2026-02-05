@@ -99,6 +99,13 @@ else(SEAHOWL_ENABLE_PYTHON)
 endif(SEAHOWL_ENABLE_PYTHON)
 
 add_custom_target(docs DEPENDS ${TARGET_DOC})
+
+add_custom_command(TARGET docs POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/build/doc/html
+        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+    COMMENT "Copying Doxygen HTML into MkDocs site"
+)
 if(SEAHOWL_ENABLE_PYTHON)
   add_dependencies(docs pyseahowl)
   # For MSVC IDE
