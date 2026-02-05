@@ -71,7 +71,9 @@ class TestNonRegressionCpp(unittest.TestCase):
         self._generic_test("cpp/monopile", main_json, description)
 
     def test_floating(self):
-        main_json = os.path.join(WORKING_DIR, "data/IEA15MW/floating/main.json")
+        main_json = os.path.join(
+            WORKING_DIR, "data/IEA15MW/floating/main_hydrochrono.json"
+        )
         description = (
             "Non regression Test for Seahowl for Floating case with duration 100s"
         )
