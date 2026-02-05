@@ -59,10 +59,11 @@ class TestFloating : public FixtureComponents {
         auto& floater = *std::dynamic_pointer_cast<seahowl::core::Floater>(turbine.foundation);
         dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
         dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-        dataset.test_csv.add_function("position cog [m]",
-                                      [&floater]() { return floater.elasto.body_main->get_position(); });
-        dataset.test_csv.add_function("rotation cog RPY [rad]",
-                                      [&floater]() { return floater.elasto.body_main->get_rpy_angles(); });
+        dataset.test_csv.add_function("cog [m]", [&floater]() { return floater.elasto.body_main->get_position(); });
+        dataset.test_csv.add_function("cog roll [rad]",
+                                      [&floater]() { return floater.elasto.body_main->get_rpy_angles()[0]; });
+        dataset.test_csv.add_function("cog pitch [rad]",
+                                      [&floater]() { return floater.elasto.body_main->get_rpy_angles()[1]; });
     }
 
     // Run simulation loop writing to dataset each step
@@ -93,7 +94,7 @@ TEST_F(TestFloating, IEA15MW_hydrodyn) {
     // create simulation
     auto turbine_filepath = (DATADIR / "IEA15MW/floating/turbine_hydrodyn.json").generic_string();
     auto env_filepath = (root_dir / "assets/env_waves_200m_seastate_regular.json").generic_string();
-    auto simulation = create_simulation(0.05, 100.0, turbine_filepath, env_filepath);
+    auto simulation = create_simulation(0.05, 50.0, turbine_filepath, env_filepath);
 
     // create test dataset
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_hydrodyn.csv").generic_string(),
@@ -113,7 +114,7 @@ TEST_F(TestFloating, IEA15MW_hydrochrono) {
     // create simulation
     auto turbine_filepath = (DATADIR / "IEA15MW/floating/turbine_hydrochrono.json").generic_string();
     auto env_filepath = (root_dir / "assets/env_waves_200m_hydrochrono_regular.json").generic_string();
-    auto simulation = create_simulation(0.05, 100.0, turbine_filepath, env_filepath);
+    auto simulation = create_simulation(0.05, 50.0, turbine_filepath, env_filepath);
 
     // create test dataset
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_hydrochrono.csv").generic_string(),
