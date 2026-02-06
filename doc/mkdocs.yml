@@ -90,6 +90,7 @@ nav:
   - User Guide:
     - Install: INSTALL.md
     - Input files:
+      - File hierarchy: user-guide/input-files/index.md
       - Main file: user-guide/input-files/main-file.md
       - Turbine file: user-guide/input-files/turbine-file.md
       - Tower file: user-guide/input-files/tower-file.md

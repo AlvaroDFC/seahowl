@@ -72,20 +72,17 @@ All file paths in JSON files are **relative to the file containing the reference
 }
 ```
 
-### Arrays vs Integers for Discretization
+### Discretization options
 
 Discretization can be specified in two ways:
 
 ```json
-// Array: explicit normalized positions (0 = root, 1 = tip)
+// Array: explicit normalized positions (0 = root/base, 1 = tip/top)
 "elasto": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
 // Integer: number of uniform elements
 "elasto": [10]
+
+// Empty list: use discretization as described in file
+"elasto": [10]
 ```
-
-### Optional vs Required Fields
-
-- Required fields have no default and must be specified
-- Optional fields show their default value in the documentation
-- Nested objects are required if any of their children are required
