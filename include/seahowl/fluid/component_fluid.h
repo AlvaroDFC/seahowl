@@ -24,7 +24,7 @@ class ComponentFluid {
      * @brief Computes environmental loads on fluid component.
      *
      * @param[in] env_model Environmental model providing fluid conditions.
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     virtual void compute_env_loads(const env::EnvModel& env_model, double time) = 0;
 
@@ -38,8 +38,8 @@ class ComponentFluid {
     /**
      * @brief Initializes the fluid component.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize(double time, double dt){};
 };

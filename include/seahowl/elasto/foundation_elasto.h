@@ -38,7 +38,7 @@ class FoundationElastoBody : public virtual FoundationElasto {
   public:
     /** @brief Body of foundation. */
     std::unique_ptr<BodyElasto> body_foundation;
-    /** @brief Link between foundation and entity (e.g. towerbase of turbine). */
+    /** @brief Link between foundation and entity (such as towerbase of turbine). */
     std::unique_ptr<Link> link_foundation_entity;
 
     FoundationElastoBody();

@@ -19,15 +19,15 @@ namespace aero {
  * @brief Blade aerodynamic node.
  */
 struct BladeNodeAero : public EntityDynamicEigen {
-    /** @brief Load calculated at node. */
+    /** @brief Load calculated at node [N] */
     Vector3d load{0.0, 0.0, 0.0};
-    /** @brief Moment calculated at node. */
+    /** @brief Moment calculated at node [Nm] */
     Vector3d moment{0.0, 0.0, 0.0};
-    /** @brief Uninduced wind velocity at node. */
+    /** @brief Uninduced wind velocity at node [m/s] */
     Vector3d wind_velocity{0.0, 0.0, 0.0};
-    /** @brief Tower-shadowed wind velocity at node. */
+    /** @brief Tower-shadowed wind velocity at node [m/s] */
     Vector3d wind_velocity_shadowed{0.0, 0.0, 0.0};
-    /** @brief Induced wind velocity at node. */
+    /** @brief Induced wind velocity at node [m/s] */
     Vector3d relative_velocity_induced{0.0, 0.0, 0.0};
     /** @brief Reference point associated to node (aerodynamic properties). */
     BladeReferencePointAero properties;
@@ -38,11 +38,11 @@ struct BladeNodeAero : public EntityDynamicEigen {
     double induction_factor_axial = 0.0;
     /** @brief Tangential induction factor (first guess for next iteration). */
     double induction_factor_tangential = 0.0;
-    /** @brief Radius (distance from hub apex). */
+    /** @brief Radius (distance from hub apex) [m] */
     double radius = 0.0;
-    /** @brief Distance of node from hub (~infinitely far by default for no effect) */
+    /** @brief Distance of node from hub (~infinitely far by default for no effect) [m] */
     double distance_from_hub = 99999.9;
-    /** @brief Distance of node from blade tip (~infinitely far by default for no effect) */
+    /** @brief Distance of node from blade tip (~infinitely far by default for no effect) [m] */
     double distance_from_tip = 99999.9;
 
     /**
@@ -68,9 +68,9 @@ struct BladeElementAero {
     const BladeNodeAero& node2;
     /** @brief Fraction (normalized abscissa along longitudinal axis of component) of center of element. */
     double fraction = 0.0;
-    /** @brief Length of element. */
+    /** @brief Length of element [m] */
     double length = 0.0;
-    /** @brief Offset (x, y) for the aerodynamic center of blade at center of element. */
+    /** @brief Offset (x, y) for the aerodynamic center of blade at center of element [m] */
     Vector2d offset_aero = {0.0, 0.0};
 
     /**
@@ -82,12 +82,12 @@ struct BladeElementAero {
     BladeElementAero(const BladeNodeAero& node1, const BladeNodeAero& node2);
 
     /**
-     * @brief Returns integrated load at center of element.
+     * @brief Returns integrated load at center of element [N]
      */
     Vector3d get_load() const;
 
     /**
-     * @brief Returns integrated moment at center of element.
+     * @brief Returns integrated moment at center of element [Nm]
      */
     Vector3d get_moment() const;
 
@@ -123,9 +123,9 @@ class BladeAero : public ComponentFluid {
     std::vector<BladeNodeAero> nodes;
     /** @brief Aero elements. */
     std::vector<BladeElementAero> elements;
-    /** @brief Initial azimuth of the blade relative to rotor azimuth (in radians). */
+    /** @brief Initial azimuth of the blade relative to rotor azimuth [rad] */
     double azimuth0 = 0.0;
-    /** @brief Pitch of the blade (in radians). */
+    /** @brief Pitch of the blade [rad] */
     double pitch = 0.0;
     /** @brief Body at the root of the blade. */
     std::unique_ptr<EntityDynamic> body_root;
@@ -146,7 +146,7 @@ class BladeAero : public ComponentFluid {
      * @brief Computes aerodynamic loads from environmental model.
      *
      * @param[in] env_model Environmental model containing wind data.
-     * @param[in] time Current simulation time [s].
+     * @param[in] time Current simulation time [s]
      */
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
 
@@ -171,12 +171,12 @@ class BladeAero : public ComponentFluid {
     void compute_radii(const Vector3d& hub_apex_position);
 
     /**
-     * @brief Returns average wind velocity along blade.
+     * @brief Returns average wind velocity along blade [m/s]
      */
     Vector3d get_average_wind_velocity();
 
     /**
-     * @brief Returns total aero load on blade.
+     * @brief Returns total aero load on blade [N]
      */
     Vector3d get_total_load();
 };

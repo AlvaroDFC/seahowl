@@ -26,42 +26,42 @@ class EntityLoadable : public virtual EntityDynamic {
     virtual void reset_loads_internals() = 0;
 
     /**
-     * @brief Returns applied force on entity.
+     * @brief Returns applied force on entity [N]
      *
      * @param[in] is_local Whether the force is returned from local or global reference frame.
      */
     virtual Vector3d get_force(bool is_local = false) const = 0;
 
     /**
-     * @brief Returns applied internal force on entity. For internal workflow.
+     * @brief Returns applied internal force on entity [N] For internal workflow.
      *
      * @param[in] is_local Whether the force is returned from local or global reference frame.
      */
     virtual Vector3d get_force_internals(bool is_local = false) const = 0;
 
     /**
-     * @brief Returns total applied force (internal and external) on entity.
+     * @brief Returns total applied force (internal and external) on entity [N]
      *
      * @param[in] is_local Whether the force is returned from local or global reference frame.
      */
     virtual Vector3d get_force_total(bool is_local = false) const;
 
     /**
-     * @brief Returns applied torque on entity.
+     * @brief Returns applied torque on entity [Nm]
      *
      * @param[in] is_local Whether the torque is returned from local or global reference frame.
      */
     virtual Vector3d get_torque(bool is_local = true) const = 0;
 
     /**
-     * @brief Returns applied internal torque on entity. For internal workflow.
+     * @brief Returns applied internal torque on entity [Nm] For internal workflow.
      *
      * @param[in] is_local Whether the torque is returned from local or global reference frame.
      */
     virtual Vector3d get_torque_internals(bool is_local = true) const = 0;
 
     /**
-     * @brief Returns total applied torque (internal and external) on entity.
+     * @brief Returns total applied torque (internal and external) on entity [Nm]
      *
      * @param[in] is_local Whether the torque is returned from local or global reference frame.
      */
@@ -70,7 +70,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Sets force on entity.
      *
-     * @param[in] force Force to be set.
+     * @param[in] force Force to be set [N]
      * @param[in] is_local Whether the force is applied from local or global reference frame.
      */
     virtual void set_force(const Vector3d& force, bool is_local = false) = 0;
@@ -78,7 +78,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Sets torque on entity.
      *
-     * @param[in] torque Torque to be set.
+     * @param[in] torque Torque to be set [Nm]
      * @param[in] is_local Whether the torque is applied from local or global reference frame.
      */
     virtual void set_torque(const Vector3d& torque, bool is_local = true) = 0;
@@ -86,7 +86,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Accumulates force on entity.
      *
-     * @param[in] force Force to be accumulated.
+     * @param[in] force Force to be accumulated [N]
      * @param[in] is_local Whether the force is applied from local or global reference frame.
      */
     virtual void accumulate_force(const Vector3d& force, bool is_local = false) = 0;
@@ -94,7 +94,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Accumulates internal force on entity. Do not call manually.
      *
-     * @param[in] force Force to be accumulated.
+     * @param[in] force Force to be accumulated [N]
      * @param[in] is_local Whether the force is applied from local or global reference frame.
      */
     virtual void accumulate_force_internals(const Vector3d& force, bool is_local = false) = 0;
@@ -102,7 +102,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Accumulates torque on entity.
      *
-     * @param[in] torque Torque to be accumulated.
+     * @param[in] torque Torque to be accumulated [Nm]
      * @param[in] is_local Whether the torque is applied from local or global reference frame.
      */
     virtual void accumulate_torque(const Vector3d& torque, bool is_local = true) = 0;
@@ -110,7 +110,7 @@ class EntityLoadable : public virtual EntityDynamic {
     /**
      * @brief Accumulates internal torque on entity. Do not call manually.
      *
-     * @param[in] torque Torque to be accumulated.
+     * @param[in] torque Torque to be accumulated [Nm]
      * @param[in] is_local Whether the torque is applied from local or global reference frame.
      */
     virtual void accumulate_torque_internals(const Vector3d& torque, bool is_local = true) = 0;
@@ -162,12 +162,12 @@ class BodyElasto : public virtual EntityLoadable {
     /**
      * @brief Sets mass of body.
      *
-     * @param[in] mass Mass of body.
+     * @param[in] mass Mass of body [kg]
      */
     virtual void set_mass(double mass) = 0;
 
     /**
-     * @brief Get mass of body.
+     * @brief Get mass of body [kg]
      */
     virtual double get_mass() = 0;
 
@@ -211,12 +211,12 @@ class NodeElasto : public virtual EntityLoadable {
     /**
      * @brief Sets mass of node.
      *
-     * @param[in] mass Mass of node.
+     * @param[in] mass Mass of node [kg]
      */
     virtual void set_mass(double mass) = 0;
 
     /**
-     * @brief Get mass of node.
+     * @brief Get mass of node [kg]
      */
     virtual double get_mass() = 0;
 
@@ -290,7 +290,7 @@ class ElementElasto {
      * @brief Returns force of point within element.
      *
      * @param[in] eta Normalized abscissa along element within range [-1, +1].
-     * @return Force at the specified eta location.
+     * @return Force at the specified eta location [N]
      */
     Vector3d get_force(double eta) const;
 
@@ -298,12 +298,12 @@ class ElementElasto {
      * @brief Returns torque of point within element.
      *
      * @param[in] eta Normalized abscissa along element within range [-1, +1].
-     * @return Torque at the specified eta location.
+     * @return Torque at the specified eta location [Nm]
      */
     Vector3d get_torque(double eta) const;
 
     /**
-     * @brief Returns mass of elasto element.
+     * @brief Returns mass of elasto element [kg]
      */
     virtual double get_mass() = 0;
 };
@@ -329,22 +329,22 @@ class ElementMooringElasto : public virtual ElementElasto {
     /**
      * @brief Sets properties of mooring elasto element.
      *
-     * @param[in] density Density of element.
-     * @param[in] diameter Diameter of element.
-     * @param[in] stiffness_axial Axial stiffness of element.
-     * @param[in] stiffness_bending Bending stiffness of element.
+     * @param[in] density Density of element [kg/m]
+     * @param[in] diameter Diameter of element [m]
+     * @param[in] stiffness_axial Axial stiffness of element [N]
+     * @param[in] stiffness_bending Bending stiffness of element [N.m^2]
      */
     virtual void set_properties(double density, double diameter, double stiffness_axial, double stiffness_bending) = 0;
 
     /**
      * @brief Sets rest length of mooring elasto element.
      *
-     * @param[in] rest_length Rest length of element.
+     * @param[in] rest_length Rest length of element [m]
      */
     virtual void set_rest_length(double rest_length) = 0;
 
     /**
-     * @brief Returns rest length of mooring elasto element.
+     * @brief Returns rest length of mooring elasto element [m]
      */
     virtual double get_rest_length() const = 0;
 };
@@ -384,7 +384,7 @@ class SpringLinear {
     /**
      * @brief Sets rest length of spring.
      *
-     * @param[in] rest_length Rest length of spring.
+     * @param[in] rest_length Rest length of spring [m]
      */
     virtual void set_rest_length(double rest_length) = 0;
 
@@ -403,7 +403,7 @@ class SpringLinear {
     virtual void set_damping_coefficient(double damping_coefficient) = 0;
 
     /**
-     * @brief Returns force.
+     * @brief Returns force [N]
      */
     virtual double get_force() = 0;
 };
@@ -438,12 +438,12 @@ class Link {
     virtual void set_constraints(bool surge, bool sway, bool heave, bool roll, bool pitch, bool yaw) = 0;
 
     /**
-     * @brief Returns reaction force.
+     * @brief Returns reaction force [N]
      */
     virtual Vector3d get_reaction_force() const = 0;
 
     /**
-     * @brief Returns reaction torque.
+     * @brief Returns reaction torque [Nm]
      */
     virtual Vector3d get_reaction_torque() const = 0;
 };
@@ -507,8 +507,8 @@ class ActuatorRotation : public virtual Entity {
     /**
      * @brief Sets timeseries for actuator.
      *
-     * @param[in] time_array Time array.
-     * @param[in] values_array Values array (angles).
+     * @param[in] time_array Time array [s]
+     * @param[in] values_array Values array (angles) [rad]
      */
     virtual void set_control_timeseries(const std::vector<double>& time_array,
                                         const std::vector<double>& values_array) = 0;
@@ -516,7 +516,7 @@ class ActuatorRotation : public virtual Entity {
     /**
      * @brief Returns wanted value for actuator at given time.
      *
-     * @param[in] time Time value.
+     * @param[in] time Time value [s]
      */
     virtual double get_control_value(double time) const = 0;
 
@@ -535,7 +535,7 @@ class ActuatorRotation : public virtual Entity {
     virtual void increment_value_constant(double value) = 0;
 
     /**
-     * @brief Returns current angle between the 2 actuator bodies.
+     * @brief Returns current angle between the 2 actuator bodies [rad]
      */
     virtual double get_angle() const = 0;
 

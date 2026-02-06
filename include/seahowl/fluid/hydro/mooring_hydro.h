@@ -34,9 +34,9 @@ class MooringHydro : public ComponentFluid {
     std::vector<hydro::MorisonNode> nodes;
     /** @brief Hydro elements. */
     std::vector<hydro::MorisonElement> elements;
-    /** @brief Position of the mooring line. */
+    /** @brief Position of the mooring line [m] */
     double diameter = 0.0;
-    /** @brief Length of the mooring line. */
+    /** @brief Length of the mooring line [m] */
     double length = 0.0;
 
     /**
@@ -47,14 +47,14 @@ class MooringHydro : public ComponentFluid {
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     void set_length(double length);
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     void set_diameter(double diameter);
 

@@ -12,13 +12,13 @@ namespace env {
  */
 class WaveModel : public FluidModel {
   public:
-    /** @brief Water density. */
+    /** @brief Water density [kg/m^3] */
     double density = 1025;
-    /** @brief Mean water level. */
+    /** @brief Mean water level [m] */
     double mean_water_level = 0.0;
     /** @brief Free surface normal. */
     Vector3d surface_normal{0.0, 0.0, 1.0};
-    /** @brief Water depth. */
+    /** @brief Water depth [m] */
     double water_depth = 0.0;
 
     virtual bool is_inside(const Vector3d& position, double time) const override;
@@ -28,7 +28,7 @@ class WaveModel : public FluidModel {
      *
      * @param[in] position Horizontal position at which water level is computed.
      * @param[in] time Time of simulation.
-     * @return Water level (free surface elevation) [m].
+     * @return Water level (free surface elevation) [m]
      */
     virtual double get_water_level(const Vector3d& position, double time) const = 0;
 };
@@ -56,9 +56,9 @@ class StillWater : public WaveModel {
  */
 class CurrentConstant : public StillWater {
   public:
-    /** @brief Horizontal velocity of fluid at the free surface. */
+    /** @brief Horizontal velocity of fluid at the free surface [m/s] */
     double velocity_surface = 0.0;
-    /** @brief Horizontal velocity of fluid at the seabed. */
+    /** @brief Horizontal velocity of fluid at the seabed [m/s] */
     double velocity_seabed = 0.0;
     /** @brief Current direction. */
     Vector3d direction{1.0, 0.0, 0.0};

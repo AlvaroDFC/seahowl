@@ -65,7 +65,7 @@ class TurbineAeroDyn : public TurbineAero {
     int WrVTK = 0;
     /** @brief VTK save type, 1: surface; 2: lines; 3: both. */
     int WrVTK_Type = 1;
-    /** @brief VTK save time step. */
+    /** @brief VTK save time step [s] */
     double WrVTK_dt = 0.0;
 
     TurbineAeroDyn(const std::string& aerodyn_Infile);

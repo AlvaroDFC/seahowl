@@ -14,13 +14,13 @@ namespace servo {
  */
 class DisconInterface {
   public:
-    /** @brief Time [s]. */
+    /** @brief Time [s] */
     float& m_time = avrSWAP[1];
-    /** @brief Time step [s]. */
+    /** @brief Time step [s] */
     float& m_dt = avrSWAP[2];
-    /** @brief Pitch return controller states [rad]. */
+    /** @brief Pitch return controller states [rad] */
     float& m_pitch = avrSWAP[41];
-    /** @brief Torque return controller states [Nm]. */
+    /** @brief Torque return controller states [Nm] */
     float& m_torque = avrSWAP[46];
 
     ~DisconInterface();
@@ -53,7 +53,7 @@ class DisconInterface {
     /**
      * @brief Sets the guess pitch.
      *
-     * @param[in] pitch_angle Pitch angle [rad].
+     * @param[in] pitch_angle Pitch angle [rad]
      */
     void SetPitch(double pitch_angle);
 
@@ -61,7 +61,7 @@ class DisconInterface {
      * @brief Sets blade pitch.
      *
      * @param[in] index_blade Index of blade.
-     * @param[in] pitch_angle Pitch angle [rad].
+     * @param[in] pitch_angle Pitch angle [rad]
      */
     void SetPitchBlade(int index_blade, double pitch_angle);
 
@@ -69,81 +69,81 @@ class DisconInterface {
      * @brief Sets blade root moment.
      *
      * @param[in] index_blade Index of blade.
-     * @param[in] flap Flapwise moment [Nm].
-     * @param[in] edge Edgewise moment [Nm].
+     * @param[in] flap Flapwise moment [Nm]
+     * @param[in] edge Edgewise moment [Nm]
      */
     void SetRootMomentBlade(int index_blade, double flap, double edge);
 
     /**
      * @brief Sets tower top acceleration.
      *
-     * @param[in] foreaft Fore-aft acceleration [m/s^2].
-     * @param[in] sideside Side-side acceleration [m/s^2].
+     * @param[in] foreaft Fore-aft acceleration [m/s^2]
+     * @param[in] sideside Side-side acceleration [m/s^2]
      */
     void SetTowerTopAcceleration(double foreaft, double sideside);
 
     /**
      * @brief Sets nacelle rotational acceleration.
      *
-     * @param[in] roll Roll acceleration [rad/s^2].
-     * @param[in] pitch Pitch acceleration [rad/s^2].
-     * @param[in] yaw Yaw acceleration [rad/s^2].
+     * @param[in] roll Roll acceleration [rad/s^2]
+     * @param[in] pitch Pitch acceleration [rad/s^2]
+     * @param[in] yaw Yaw acceleration [rad/s^2]
      */
     void SetNacelleRotationalAcceleration(double roll, double pitch, double yaw);
 
     /**
      * @brief Sets inflow wind speed.
      *
-     * @param[in] ws The inflow wind speed [m/s].
+     * @param[in] ws The inflow wind speed [m/s]
      */
     void SetWindSpeed(double ws);
 
     /**
      * @brief Sets rotor speed.
      *
-     * @param[in] omega The rotor speed [rad/s].
+     * @param[in] omega The rotor speed [rad/s]
      */
     void SetRotorSpeed(double omega);
 
     /**
      * @brief Sets generator speed.
      *
-     * @param[in] omega The generator speed [rad/s].
+     * @param[in] omega The generator speed [rad/s]
      */
     void SetGeneratorSpeed(double omega);
 
     /**
      * @brief Sets time.
      *
-     * @param[in] time The time [s].
+     * @param[in] time The time [s]
      */
     void SetTime(double time);
 
     /**
      * @brief Sets time step size.
      *
-     * @param[in] dt The time step size [s].
+     * @param[in] dt The time step size [s]
      */
     void SetDeltaTime(double dt);
 
     /**
      * @brief Sets rotor azimuth.
      *
-     * @param[in] azimuth The rotor azimuth [rad].
+     * @param[in] azimuth The rotor azimuth [rad]
      */
     void SetRotorAzimuth(double azimuth);
 
     /**
      * @brief Sets the generated power.
      *
-     * @param[in] power The generated power [W].
+     * @param[in] power The generated power [W]
      */
     void SetGeneratedPower(double power);
 
     /**
      * @brief Sets the shaft power.
      *
-     * @param[in] power The shaft power [W].
+     * @param[in] power The shaft power [W]
      */
     void SetShaftPower(double power);
 
@@ -157,7 +157,7 @@ class DisconInterface {
     /**
      * @brief Sets yaw error of the RNA.
      *
-     * @param[in] yaw_error The yaw error [rad].
+     * @param[in] yaw_error The yaw error [rad]
      */
     void SetYawError(double yaw_error);
 
@@ -253,8 +253,8 @@ class ControllerDISCON : public Controller {
     /**
      * @brief Updates turbine variables of object communicating with DISCON module.
      *
-     * @param[in] time Time of simulation [s].
-     * @param[in] dt Time step length [s].
+     * @param[in] time Time of simulation [s]
+     * @param[in] dt Time step length [s]
      * @param[in] turbine Turbine that is controlled by this controller.
      */
     void update_turbine_variables(double time, double dt, const seahowl::core::Turbine& turbine);

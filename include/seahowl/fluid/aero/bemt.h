@@ -24,16 +24,16 @@ namespace aero {
  * @brief Returns phi (angle of fluid velocity from zero-pitch axis).
  *
  * @param[in] fluid_velocity Velocity of fluid in 2D airfoil coordinates.
- * @return Angle phi [rad].
+ * @return Angle phi [rad]
  */
 double get_phi(const Vector2d& fluid_velocity);
 
 /**
  * @brief Returns angle of attack from phi and blade pitch.
  *
- * @param[in] phi Angle of fluid velocity from zero-pitch axis [rad].
- * @param[in] pitch Pitch angle of blade [rad].
- * @return Angle of attack [rad].
+ * @param[in] phi Angle of fluid velocity from zero-pitch axis [rad]
+ * @param[in] pitch Pitch angle of blade [rad]
+ * @return Angle of attack [rad]
  */
 double get_alpha_from_phi(const double phi, const double pitch);
 
@@ -41,8 +41,8 @@ double get_alpha_from_phi(const double phi, const double pitch);
  * @brief Returns angle of attack from fluid velocity and blade pitch.
  *
  * @param[in] fluid_velocity Velocity of fluid in 2D airfoil plane coordinates.
- * @param[in] pitch Pitch angle of blade [rad].
- * @return Angle of attack [rad].
+ * @param[in] pitch Pitch angle of blade [rad]
+ * @return Angle of attack [rad]
  */
 double get_alpha(const Vector2d& fluid_velocity, const double pitch);
 
@@ -52,7 +52,7 @@ double get_alpha(const Vector2d& fluid_velocity, const double pitch);
  * Interpolates airfoil coefficients (Cl, Cd, Cm) from tabulated data
  * based on the given angle of attack.
  *
- * @param[in] alpha Angle of attack [rad].
+ * @param[in] alpha Angle of attack [rad]
  * @param[in] airfoil_properties Vector of airfoil properties containing coefficient tables.
  * @return Interpolated airfoil coefficients at the given angle of attack.
  */
@@ -67,7 +67,7 @@ AirfoilCoefficients get_aero_coefficients_from_alpha(const double alpha,
  *
  * @param[in,out] node Blade aerodynamic node; induction factors are updated.
  * @param[in] local_velocity_rotor0 Local uninduced velocity at node in 2D rotor plane coordinates.
- * @param[in] pitch Pitch angle of blade [rad].
+ * @param[in] pitch Pitch angle of blade [rad]
  * @param[in] nblades Number of blades on rotor.
  * @param[in] tip_loss Whether to apply Prandtl tip loss correction.
  * @param[in] hub_loss Whether to apply Prandtl hub loss correction.

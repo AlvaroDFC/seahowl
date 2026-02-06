@@ -32,19 +32,19 @@ class RotorAero : public ComponentFluid {
     std::vector<std::shared_ptr<seahowl::aero::BladeAero>> blades;
     /** @brief Hub. */
     EntityDynamicEigen body_hub;
-    /** @brief Radius of hub. */
+    /** @brief Radius of hub [m] */
     double hub_radius = 0.0;
-    /** @brief Aerodynamic torque on hub. */
+    /** @brief Aerodynamic torque on hub [Nm] */
     double hub_torque_aero = 0.0;
-    /** @brief Aerodynamic thrust on hub. */
+    /** @brief Aerodynamic thrust on hub [N] */
     double hub_thrust_aero = 0.0;
-    /** @brief Total radius of the rotor (hub + blades). */
+    /** @brief Total radius of the rotor (hub + blades) [m] */
     double radius = 0.0;
-    /** @brief Azimuth of rotor. */
+    /** @brief Azimuth of rotor [rad] */
     double azimuth = 0.0;
-    /** @brief Collective pitch of blades (in radians). */
+    /** @brief Collective pitch of blades [rad] */
     double pitch_collective = 0.0;
-    /** @brief Disk averaged wind speed. */
+    /** @brief Disk averaged wind speed [m/s] */
     Vector3d disk_averaged_wind_velocity{0.0, 0.0, 0.0};
 
     /**

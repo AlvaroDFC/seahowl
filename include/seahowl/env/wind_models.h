@@ -12,7 +12,7 @@ namespace env {
  */
 class WindModel : public FluidModel {
   public:
-    /** @brief Air density. */
+    /** @brief Air density [kg/m^3] */
     double density = 1.225;
     /** @brief Direction of gravitational acceleration. */
     Vector3d direction_gravity{0.0, 0.0, -1.0};
@@ -26,14 +26,14 @@ class ShearedWind : public WindModel {
   public:
     /** @brief Wind shear coefficient. */
     double shear_coefficient = 0.0;
-    /** @brief Reference height (where constant velocity is defined). */
+    /** @brief Reference height (where constant velocity is defined) [m] */
     double reference_height = 150.0;
 };
 
 /** @brief Constant wind models. */
 class ConstantWind : public ShearedWind {
   public:
-    /** @brief Wind velocity. */
+    /** @brief Wind velocity [m/s] */
     Vector3d wind_velocity;
 
     /**
@@ -44,7 +44,7 @@ class ConstantWind : public ShearedWind {
     /**
      * @brief Sets wind velocity.
      *
-     * @param[in] wind_velocity Wind velocity to use as constant.
+     * @param[in] wind_velocity Wind velocity to use as constant [m/s]
      */
     void set_wind_velocity(Vector3d velocity);
 
@@ -56,13 +56,13 @@ class ConstantWind : public ShearedWind {
 /** @brief Wind ramp model. */
 class WindRamp : public ShearedWind {
   public:
-    /** @brief Starting time of ramp. */
+    /** @brief Starting time of ramp [s] */
     double time_start = 0.0;
-    /** @brief Ending time of ramp. */
+    /** @brief Ending time of ramp [s] */
     double time_end = 0.0;
-    /** @brief Wind velocity at starting of ramp. */
+    /** @brief Wind velocity at starting of ramp [m/s] */
     Vector3d wind_velocity_start{0.0, 0.0, 0.0};
-    /** @brief Wind velocity at end of ramp. */
+    /** @brief Wind velocity at end of ramp [m/s] */
     Vector3d wind_velocity_end{0.0, 0.0, 0.0};
 
     /**
@@ -73,10 +73,10 @@ class WindRamp : public ShearedWind {
     /**
      * @brief Sets wind ramp.
      *
-     * @param[in] velocity_start Wind velocity at starting of ramp.
-     * @param[in] time_start Time at which the ramp starts.
-     * @param[in] velocity_end Wind velocity at end of ramp.
-     * @param[in] time_end Time at which the ramp ends.
+     * @param[in] velocity_start Wind velocity at starting of ramp [m/s]
+     * @param[in] time_start Time at which the ramp starts [s]
+     * @param[in] velocity_end Wind velocity at end of ramp [m/s]
+     * @param[in] time_end Time at which the ramp ends [s]
      */
     void set_wind_ramp(const Vector3d& velocity_start,
                        double time_start,

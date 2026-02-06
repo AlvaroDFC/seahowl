@@ -57,8 +57,8 @@ class Rotor : public ComponentDynamic {
      *
      * Runs preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };
@@ -98,7 +98,7 @@ class RotorNacelleAssembly : public ComponentDynamic {
     void update_positions_aero();
 
     /**
-     * @brief Returns yaw error.
+     * @brief Returns yaw error [rad]
      *
      * The yaw error is defined as the angle between the rotor disk normal vector to the rotor-disk-averaged relative
      * wind velocity, both projected on global X-Y plane.
@@ -111,8 +111,8 @@ class RotorNacelleAssembly : public ComponentDynamic {
      *
      * Runs preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

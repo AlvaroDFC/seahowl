@@ -14,7 +14,7 @@ namespace env {
 class SoilModel : public Model {
   public:
     /**
-     * @brief Returns soil penetration load.
+     * @brief Returns soil penetration load [N]
      *
      * @param[in] entity Dynamic entity (potentially) penetrating soil.
      * @param[in] contact_area Contact area of entity penetrating soil.
@@ -33,7 +33,7 @@ class SoilModel : public Model {
  */
 class LinearSoilModel : public SoilModel {
   public:
-    /** @brief Soil position. */
+    /** @brief Soil position [m] */
     double soil_position = 0.0;
     /** @brief Soil normal vector. */
     Vector3d soil_normal{0.0, 0.0, 1.0};

@@ -19,9 +19,9 @@ class TowerElasto : public ComponentElastoFEA {
     std::vector<TowerReferencePointElasto> reference_points;
     /** @brief List of discretized points (interpolated reference points) describing the tower properties. */
     std::vector<TowerReferencePointElasto> discretized_points;
-    /** @brief Height of the tower (absolute value above ground / sea water level). */
+    /** @brief Height of the tower (absolute value above ground / sea water level) [m] */
     double height = 0.0;
-    /** @brief Height of the base of the tower (absolute value above ground / sea water level). */
+    /** @brief Height of the base of the tower (absolute value above ground / sea water level) [m] */
     double base_height = 0.0;
 
     /**
@@ -32,22 +32,22 @@ class TowerElasto : public ComponentElastoFEA {
     void build() override;
 
     /**
-     * @brief Returns tower base moment (first node of first element of tower).
+     * @brief Returns tower base moment (first node of first element of tower) [Nm]
      */
     Vector3d get_tower_base_moment() const;
 
     /**
-     * @brief Returns tower base moment (second node of last element of tower).
+     * @brief Returns tower top moment (second node of last element of tower) [Nm]
      */
     Vector3d get_tower_top_moment() const;
 
     /**
-     * @brief Returns tower base force (first node of first element of tower).
+     * @brief Returns tower base force (first node of first element of tower) [N]
      */
     Vector3d get_tower_base_force() const;
 
     /**
-     * @brief Returns tower base force (second node of last element of tower).
+     * @brief Returns tower top force (second node of last element of tower) [N]
      */
     Vector3d get_tower_top_force() const;
 

@@ -53,8 +53,8 @@ class TurbineFluid : public ComponentFluid {
     /**
      * @brief Initializes turbine.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize(double time, double dt);
 
@@ -62,7 +62,7 @@ class TurbineFluid : public ComponentFluid {
      * @brief Computes fluid loads on turbine.
      *
      * @param[in] env_model Environment model to use for applying fluid loads.
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     virtual void compute_env_loads(const env::EnvModel& env_model, double time) override;
 };

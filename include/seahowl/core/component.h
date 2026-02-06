@@ -46,24 +46,24 @@ class ComponentDynamic {
     /**
      * @brief Initializes the component, called before starting the simulation.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize(double time, double dt);
 
     /**
      * @brief Prestep for component, called before elastodynamic stepping.
      *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void prestep(double time, double dt) = 0;
 
     /**
      * @brief Poststep for component, called after elastodynamic stepping.
      *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void poststep(double time, double dt) = 0;
 
@@ -71,7 +71,7 @@ class ComponentDynamic {
      * @brief Applies env model to component.
      *
      * @param[in] env_model env model affecting component.
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     virtual void apply_env_model(seahowl::env::EnvModel& env_model, double time){};
 
@@ -79,7 +79,7 @@ class ComponentDynamic {
      * @brief Applies soil model to component.
      *
      * @param[in] env_model env model affecting component.
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     virtual void apply_soil_model(seahowl::env::EnvModel& env_model, double time){};
 
@@ -105,8 +105,8 @@ class ComponentDynamic {
     /**
      * @brief Component-specific initialization, called by initialize().
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize_this(double time, double dt) = 0;
 };

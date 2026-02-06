@@ -50,10 +50,10 @@ class FloaterHydro : public FoundationFluid {
     Eigen::Matrix<double, 6, 6> get_added_mass_matrix();
 
   protected:
-    /** @brief External force acting on floater. */
+    /** @brief External force acting on floater [N] */
     Vector3d force_hydro = {0.0, 0.0, 0.0};
 
-    /** @brief External torque acting on floater. */
+    /** @brief External torque acting on floater [Nm] */
     Vector3d torque_hydro = {0.0, 0.0, 0.0};
 
     /** @brief Added mass matrix of floater. */

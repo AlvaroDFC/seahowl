@@ -13,7 +13,7 @@ namespace aero {
  * Holds airfoil properties for a given angle of attack.
  */
 struct AirfoilCoefficients {
-    /** @brief Angle of attack. */
+    /** @brief Angle of attack [rad] */
     double alpha = 0.0;
     /** @brief Lift coefficient (Cl). */
     double lift = 0.0;
@@ -63,7 +63,7 @@ struct AirfoilProperties {
     /**
      * @brief Returns airfoil coefficients for a given angle of attack.
      *
-     * @param[in] alpha Angle of attack.
+     * @param[in] alpha Angle of attack [rad]
      */
     AirfoilCoefficients find_coefficients(double alpha);
 

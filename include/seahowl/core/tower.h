@@ -85,8 +85,8 @@ class Tower : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

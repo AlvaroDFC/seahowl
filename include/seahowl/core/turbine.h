@@ -81,17 +81,17 @@ class Turbine : public ComponentDynamic {
     virtual void build() override;
 
     /**
-     * @brief Returns shaft power.
+     * @brief Returns shaft power [W]
      */
     double get_shaft_power() const;
 
     /**
-     * @brief Returns generated power.
+     * @brief Returns generated power [W]
      */
     double get_generated_power() const;
 
     /**
-     * @brief Returns generator RPM.
+     * @brief Returns generator RPM [rpm]
      */
     double get_generator_rpm() const;
 
@@ -104,8 +104,8 @@ class Turbine : public ComponentDynamic {
      *
      * Calls init for each of its components.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize_this(double time, double dt) override;
 };

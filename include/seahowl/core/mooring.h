@@ -54,14 +54,14 @@ class Mooring : public ComponentElastoFluid {
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     void set_length(double length);
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     void set_diameter(double diameter);
 
@@ -103,8 +103,8 @@ class Mooring : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and hydro components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

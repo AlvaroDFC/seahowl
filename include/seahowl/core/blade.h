@@ -58,9 +58,9 @@ class Blade : public ComponentElastoFluid {
     virtual void build() override;
 
     /**
-     * @brief Applies pitch increment to the blade (i.e. rotates the blade around its longitudinal axis).
+     * @brief Applies pitch increment to the blade, rotating it around its longitudinal axis.
      *
-     * @param pitch_increment Pitch increment value (in radians).
+     * @param pitch_increment Pitch increment value [rad]
      */
     void apply_pitch_increment(double pitch_increment);
 
@@ -94,8 +94,8 @@ class Blade : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

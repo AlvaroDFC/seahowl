@@ -39,29 +39,29 @@ class MooringElasto : public virtual ComponentElasto {
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     virtual void set_length(double length) = 0;
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     virtual void set_diameter(double diameter) = 0;
 
     /**
-     * @brief Returns tension at fairlead.
+     * @brief Returns tension at fairlead [N]
      */
     virtual Vector3d get_tension_fairlead() const = 0;
 
     /**
-     * @brief Returns tension at anchor.
+     * @brief Returns tension at anchor [N]
      */
     virtual Vector3d get_tension_anchor() const = 0;
 
     /**
-     * @brief Returns total length of mooring.
+     * @brief Returns total length of mooring [m]
      */
     virtual double get_length() const = 0;
 };
@@ -109,15 +109,15 @@ class MooringElastoFEA : public MooringElasto, public ComponentElastoFEA {
     std::unique_ptr<seahowl::elasto::Link> fairlead_link;
     /** @brief Link between line and anchor. */
     std::unique_ptr<seahowl::elasto::Link> anchor_link;
-    /** @brief Position of the mooring line. */
+    /** @brief Diameter of the mooring line [m] */
     double diameter = 0.0;
-    /** @brief Axial stiffness of the mooring line. */
+    /** @brief Axial stiffness of the mooring line [N] */
     double stiffness_axial = 0.0;
-    /** @brief Bending stiffness of the mooring line. */
+    /** @brief Bending stiffness of the mooring line [N.m^2] */
     double stiffness_bending = 0.0;
-    /** @brief Linear density of the mooring line. */
+    /** @brief Linear density of the mooring line [kg/m] */
     double density_linear = 0.0;
-    /** @brief Unstretched length of the mooring line. */
+    /** @brief Unstretched length of the mooring line [m] */
     double length = 0.0;
 
     /**
@@ -131,14 +131,14 @@ class MooringElastoFEA : public MooringElasto, public ComponentElastoFEA {
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     virtual void set_length(double length) override;
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     virtual void set_diameter(double diameter) override;
 
@@ -164,17 +164,17 @@ class MooringElastoFEA : public MooringElasto, public ComponentElastoFEA {
     void compute_seabed_loads(const seahowl::env::EnvModel& seabed);
 
     /**
-     * @brief Returns tension at fairlead.
+     * @brief Returns tension at fairlead [N]
      */
     virtual Vector3d get_tension_fairlead() const override;
 
     /**
-     * @brief Returns tension at anchor.
+     * @brief Returns tension at anchor [N]
      */
     virtual Vector3d get_tension_anchor() const override;
 
     /**
-     * @brief Returns total length of mooring.
+     * @brief Returns total length of mooring [m]
      */
     virtual double get_length() const override;
 
@@ -182,7 +182,7 @@ class MooringElastoFEA : public MooringElasto, public ComponentElastoFEA {
     virtual void assemble_this(SystemElasto& system) override;
 
   private:
-    /** @brief Actual length of mooring before presetup. */
+    /** @brief Actual length of mooring before presetup [m] */
     double length0 = -1.0;
     /**
      * @brief Builds the mooring with ANCF cable elements.
