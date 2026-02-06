@@ -124,17 +124,4 @@ False            OutAll         - Output all user-specified member and joint loa
 "ES11.4e2"       OutFmt         - Output format for numerical results (quoted string) [not checked for validity!]
 "A11"            OutSFmt        - Output format for header strings (quoted string) [not checked for validity!]
 ---------------------- OUTPUT CHANNELS -----------------------------------------
-"Wave1Elev"               - Wave elevation at the platform reference point (  0,  0)
-"WavesF1xi"
-"WavesF1zi"
-"WavesM1yi"
-"WavesF2xi"
-"WavesF2zi"
-"WavesM2yi"
-"WavesF2xi"
-"WavesF2yi"
-"WavesF2zi"
-"WavesM2xi"
-"WavesM2yi"
-"WavesM2zi"
 END of output channels and end of file. (the word "END" must appear in the first 3 columns of this line)
