@@ -61,7 +61,7 @@ class ComponentElasto {
     /**
      * @brief Rotates the component.
      *
-     * @param[in] translation_vector The angle of rotation (in radians).
+     * @param[in] angle The angle of rotation (in radians).
      * @param[in] axis The axis of rotation (3D vector).
      */
     virtual void rotate(double angle, const Vector3d& axis) const = 0;

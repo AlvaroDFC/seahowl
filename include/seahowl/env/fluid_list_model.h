@@ -11,7 +11,7 @@
 namespace seahowl {
 namespace env {
 /**
- * @brief Class to store list of fluids
+ * @brief Class to store list of fluids.
  */
 class FluidListModel : public ListModel<FluidModel> {
   public:
@@ -40,7 +40,7 @@ class FluidListModel : public ListModel<FluidModel> {
     Vector3d get_acceleration(const Vector3d& position, double time) const;
 
     /**
-     * @brief set ramp time for all fluid model.
+     * @brief Sets ramp time for all fluid models.
      * @param[in] start_time Start time of the ramp.
      * @param[in] end_time End time of the ramp.
      */

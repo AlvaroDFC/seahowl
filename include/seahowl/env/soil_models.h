@@ -9,7 +9,7 @@ namespace seahowl {
 namespace env {
 
 /**
- * @brief Base class for soil models
+ * @brief Base class for soil models.
  */
 class SoilModel : public Model {
   public:

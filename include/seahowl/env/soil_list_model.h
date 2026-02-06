@@ -11,7 +11,7 @@
 namespace seahowl {
 namespace env {
 /**
- * @brief Class to store list of soils
+ * @brief Class to store list of soils.
  */
 class SoilListModel : public ListModel<SoilModel> {
   public:

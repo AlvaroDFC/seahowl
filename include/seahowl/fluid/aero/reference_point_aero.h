@@ -51,7 +51,7 @@ struct BladeReferencePointAero {
     BladeReferencePointAero operator+(const BladeReferencePointAero& other) const;
 };
 
-/**@brief Tower aerodynamic element */
+/** @brief Tower aerodynamic element */
 struct TowerReferencePointAero {
     /** @brief Fraction (normalized abscissa along longitudinal axis of component) of reference point. */
     double fraction = 0.0;

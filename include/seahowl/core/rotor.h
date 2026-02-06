@@ -28,7 +28,7 @@ class RotorAero;
 namespace seahowl {
 namespace core {
 /**
- * @brief Rotor
+ * @brief Rotor.
  */
 class Rotor : public ComponentDynamic {
   public:
@@ -100,7 +100,7 @@ class RotorNacelleAssembly : public ComponentDynamic {
     /**
      * @brief Returns yaw error.
      *
-     * The yaw error is defined as the angle bteween the rotor disk normal vector to the rotor-disk-averaged relative
+     * The yaw error is defined as the angle between the rotor disk normal vector to the rotor-disk-averaged relative
      * wind velocity, both projected on global X-Y plane.
      */
     double get_yaw_error() const;

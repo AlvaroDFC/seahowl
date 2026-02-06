@@ -8,7 +8,7 @@ namespace seahowl {
 namespace env {
 
 /**
- * @brief Base class for fluid models
+ * @brief Base class for fluid models.
  */
 class FluidModel : public Model {
   public:

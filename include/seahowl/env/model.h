@@ -8,7 +8,7 @@ namespace seahowl {
 namespace env {
 
 /**
- * @brief Base class for models
+ * @brief Base class for models.
  */
 class Model {
   public:

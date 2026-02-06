@@ -66,7 +66,7 @@ class Entity {
     /**
      * @brief Rotates the entity.
      *
-     * @param[in] translation_vector The angle of rotation (in radians).
+     * @param[in] angle The angle of rotation (in radians).
      * @param[in] axis The axis of rotation (3D vector).
      */
     void rotate(double angle, const Vector3d& axis);
@@ -133,7 +133,7 @@ class EntityDynamic : public virtual Entity {
     virtual Vector3d get_rotational_acceleration(bool is_local = true) const = 0;
 
     /**
-     * @brief Ensure a virtual destructor
+     * @brief Ensure a virtual destructor.
      */
     virtual ~EntityDynamic() = default;
 };

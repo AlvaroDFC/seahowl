@@ -72,7 +72,7 @@ class CustomCSV {
   private:
     /** @brief CSV filepath. */
     std::string csv_filepath = "";
-    /** @brief Paris of <header, function>. */
+    /** @brief Pairs of <header, function>. */
     std::vector<std::pair<std::string, std::function<std::vector<double>()>>> functions;
     /** @brief Whether the CSV has been initialized or not (outputs headers if false). */
     bool is_initialized = false;

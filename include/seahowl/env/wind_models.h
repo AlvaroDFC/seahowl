@@ -8,7 +8,7 @@ namespace seahowl {
 namespace env {
 
 /**
- * @brief Base class for wind models
+ * @brief Base class for wind models.
  */
 class WindModel : public FluidModel {
   public:
@@ -21,7 +21,7 @@ class WindModel : public FluidModel {
     virtual double get_density_this(const Vector3d& position, double time) const override;
 };
 
-/**@brief Sheared wind model. This model and derived models assume a ground level at z=0.0. */
+/** @brief Sheared wind model. This model and derived models assume a ground level at z=0.0. */
 class ShearedWind : public WindModel {
   public:
     /** @brief Wind shear coefficient. */
@@ -30,7 +30,7 @@ class ShearedWind : public WindModel {
     double reference_height = 150.0;
 };
 
-/**@brief Constant wind models. */
+/** @brief Constant wind models. */
 class ConstantWind : public ShearedWind {
   public:
     /** @brief Wind velocity. */
@@ -53,14 +53,14 @@ class ConstantWind : public ShearedWind {
     virtual Vector3d get_acceleration_this(const Vector3d& position, double time) const override;
 };
 
-/**@brief Wind ramp model. */
+/** @brief Wind ramp model. */
 class WindRamp : public ShearedWind {
   public:
     /** @brief Starting time of ramp. */
     double time_start = 0.0;
     /** @brief Ending time of ramp. */
     double time_end = 0.0;
-    /** @brief Wind velocity at startning of ramp. */
+    /** @brief Wind velocity at starting of ramp. */
     Vector3d wind_velocity_start{0.0, 0.0, 0.0};
     /** @brief Wind velocity at end of ramp. */
     Vector3d wind_velocity_end{0.0, 0.0, 0.0};

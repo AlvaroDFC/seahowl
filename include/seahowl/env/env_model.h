@@ -18,13 +18,13 @@ class Model;
 namespace seahowl {
 namespace env {
 /**
- * @brief Class to store multiple models
+ * @brief Class to store multiple models.
  */
 class EnvModel {
   public:
-    /** @brief List of fluid models */
+    /** @brief List of fluid models. */
     FluidListModel fluid_models;
-    /** @brief List of soil models */
+    /** @brief List of soil models. */
     SoilListModel soil_models;
 
     EnvModel() = default;

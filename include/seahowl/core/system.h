@@ -37,7 +37,7 @@ class System : public ComponentDynamic {
     std::deque<std::shared_ptr<Turbine>> turbines{};
     /** @brief Other dynamics components. */
     std::deque<std::shared_ptr<ComponentDynamic>> components{};
-    /** @brief environmental model. */
+    /** @brief Environmental model. */
     std::shared_ptr<seahowl::env::EnvModel> env_model;
     /** @brief System for elastodynamics. */
     seahowl::elasto::SystemElasto& elasto;

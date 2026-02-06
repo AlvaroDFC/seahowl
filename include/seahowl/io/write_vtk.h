@@ -13,7 +13,7 @@ class System;
 
 namespace seahowl {
 namespace io {
-/**@brief Output mesh with VTK format */
+/** @brief Output mesh with VTK format */
 struct OutputMeshVTK {
     vtkUnstructuredGrid* mesh;
 
@@ -35,7 +35,7 @@ struct OutputMeshVTK {
     void write(double time, int time_step) const;
 };
 
-/**@brief Output system with VTK format */
+/** @brief Output system with VTK format */
 class OutputSystemVTK {
   public:
     OutputSystemVTK(seahowl::core::System& system_core, const std::string& output_folder);
