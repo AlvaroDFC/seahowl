@@ -19,6 +19,7 @@ class System;
 }  // namespace seahowl
 
 namespace seahowl {
+/** @brief Input/output module (reading, writing, visualization). */
 namespace io {
 
 /** Class for managing simulation outputs (CSV, VTK, in situ, logs etc).

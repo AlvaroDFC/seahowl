@@ -11,7 +11,7 @@ class Turbine;
 }  // namespace seahowl
 
 namespace seahowl {
-/** @brief Servo controller module */
+/** @brief Servo controller module. */
 namespace servo {
 
 /**

@@ -17,7 +17,7 @@ struct ReferencePointElasto;
 }  // namespace seahowl
 
 namespace seahowl {
-///@brief Elastodynamic model module
+/** @brief Elastodynamic model module. */
 namespace elasto {
 
 /**

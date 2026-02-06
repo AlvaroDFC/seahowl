@@ -5,6 +5,7 @@
 #include <vector>
 
 namespace seahowl {
+/** @brief Fluid dynamics module (aerodynamics and hydrodynamics). */
 namespace fluid {
 
 class ComponentFluid {

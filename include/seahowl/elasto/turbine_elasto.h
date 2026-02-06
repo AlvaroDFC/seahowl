@@ -15,10 +15,7 @@ class FoundationElasto;
 }  // namespace elasto
 }  // namespace seahowl
 
-/**@brief Seahowl base namespace */
 namespace seahowl {
-
-/**@brief Seahowl elasto module */
 namespace elasto {
 
 /**

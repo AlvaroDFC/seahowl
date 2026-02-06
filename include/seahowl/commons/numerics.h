@@ -3,6 +3,7 @@
 // Third-party libraries
 #include <Eigen/Dense>
 
+/** @brief SEAHOWL library namespace. */
 namespace seahowl {
 
 /** @brief Pi constant. */

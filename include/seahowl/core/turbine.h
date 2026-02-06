@@ -26,10 +26,7 @@ class TurbineElasto;
 }  // namespace elasto
 }  // namespace seahowl
 
-/**@brief Seahowl base namespace */
 namespace seahowl {
-
-/**@brief Seahowl core module */
 namespace core {
 
 /**

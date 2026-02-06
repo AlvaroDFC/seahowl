@@ -12,7 +12,7 @@
 namespace seahowl {
 namespace fluid {
 
-/**@brief Aerodynamic module */
+/** @brief Aerodynamic module. */
 namespace aero {
 
 /**

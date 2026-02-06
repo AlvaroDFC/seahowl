@@ -4,6 +4,7 @@
 #include "seahowl/commons/numerics.h"
 
 namespace seahowl {
+/** @brief Environmental models (wind, wave, soil). */
 namespace env {
 
 /**

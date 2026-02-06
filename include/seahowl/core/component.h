@@ -23,6 +23,7 @@ class ComponentElasto;
 }  // namespace seahowl
 
 namespace seahowl {
+/** @brief Core module for dynamic components and simulation workflow. */
 namespace core {
 
 /**

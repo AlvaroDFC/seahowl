@@ -17,7 +17,6 @@ class WindModel;
 }  // namespace env
 }  // namespace seahowl
 
-/**@brief Seahowl base namespace */
 namespace seahowl {
 namespace fluid {
 
