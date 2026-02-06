@@ -13,7 +13,6 @@ namespace aero {
 struct AirfoilProperties;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -55,7 +54,7 @@ struct BladeReferencePoint {
     /** @brief Damping coefficients at reference point {along x, along y, along z, about x, mass-proportional}.*/
     std::vector<double> damping_coefficients{0.03, 0.03, 0.03, 0.06, 0.0};
     /** @brief Airfoil properties of blade at reference point. */
-    std::vector<seahowl::aero::AirfoilProperties> airfoil_properties{};
+    std::vector<seahowl::fluid::aero::AirfoilProperties> airfoil_properties{};
 
     /**
      * @brief Constructor.

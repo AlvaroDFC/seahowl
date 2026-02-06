@@ -20,7 +20,6 @@ namespace hydro {
 class FloaterHydro;
 }  // namespace hydro
 }  // namespace fluid
-namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -35,7 +34,7 @@ class Floater : public Foundation {
     /** @brief Elastodynamic model of the mooring. */
     seahowl::elasto::FloaterElasto& elasto;
     /** @brief Hydrodynamic model of the mooring. */
-    seahowl::hydro::FloaterHydro& hydro;
+    seahowl::fluid::hydro::FloaterHydro& hydro;
     /** @brief Mooring system of the floater. */
     std::unique_ptr<MooringSystem> mooring_system;
 
@@ -46,7 +45,7 @@ class Floater : public Foundation {
      * @param[in] aero Hydrodynamic floater model.
      */
     Floater(std::shared_ptr<seahowl::elasto::FloaterElasto> elasto,
-            std::shared_ptr<seahowl::hydro::FloaterHydro> hydro);
+            std::shared_ptr<seahowl::fluid::hydro::FloaterHydro> hydro);
 
     /** @brief Destructor. */
     ~Floater();

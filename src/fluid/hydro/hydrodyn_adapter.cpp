@@ -3,7 +3,7 @@
 
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 
 extern "C" {
 
@@ -115,7 +115,7 @@ void HydroDyn_C_End(int& ErrStat, char* ErrMsg);
  *       used -- they are only for reporting purposes.
  */
 
-struct seahowl::hydro::HydroDynLib {
+struct seahowl::fluid::hydro::HydroDynLib {
     ~HydroDynLib();
 
     void set_hydrodyn_infile(const std::string& name);
@@ -462,7 +462,7 @@ void MonopileHydroDyn::compute_env_loads(const env::EnvModel& env_model, double 
     hydrodyn->compute_loads(time, nodes_hd);
 
     for (int ii = 0; ii < nodes.size(); ii++) {
-        auto& node = dynamic_cast<seahowl::hydro::MorisonNode&>(nodes[ii]);
+        auto& node = dynamic_cast<seahowl::fluid::hydro::MorisonNode&>(nodes[ii]);
 
         // loads
         node.load = hydrodyn->forces_hydrodyn[ii];

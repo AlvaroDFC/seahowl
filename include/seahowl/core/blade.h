@@ -23,7 +23,6 @@ namespace aero {
 class BladeAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -42,7 +41,7 @@ class Blade : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the blade. */
     seahowl::elasto::BladeElasto& elasto;
     /** @brief Aerodynamic model of the blade. */
-    seahowl::aero::BladeAero& aero;
+    seahowl::fluid::aero::BladeAero& aero;
 
     /**
      * @brief Instantiates blade for communication between elasto and aero components.
@@ -51,7 +50,7 @@ class Blade : public ComponentElastoFluid {
      * @param[in] aero Aerodynamic blade model.
      */
     Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
-          const std::shared_ptr<seahowl::aero::BladeAero> aero);
+          const std::shared_ptr<seahowl::fluid::aero::BladeAero> aero);
 
     /**
      * @brief Prestep for blade, called before elastodynamic stepping.

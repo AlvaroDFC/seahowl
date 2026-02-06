@@ -22,7 +22,6 @@ class MooringHydro;
 class MooringSystemHydro;
 }  // namespace hydro
 }  // namespace fluid
-namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -41,7 +40,7 @@ class Mooring : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the mooring. */
     seahowl::elasto::MooringElastoFEA& elasto;
     /** @brief Hydrodynamic model of the mooring. */
-    seahowl::hydro::MooringHydro& hydro;
+    seahowl::fluid::hydro::MooringHydro& hydro;
 
     /**
      * @brief Instantiates mooring for communication between elasto and hydro components.
@@ -50,7 +49,7 @@ class Mooring : public ComponentElastoFluid {
      * @param[in] hydro hydrodynamic mooring model.
      */
     Mooring(std::shared_ptr<seahowl::elasto::MooringElastoFEA> elasto,
-            std::shared_ptr<seahowl::hydro::MooringHydro> hydro);
+            std::shared_ptr<seahowl::fluid::hydro::MooringHydro> hydro);
 
     /**
      * @brief Sets length of the mooring line.
@@ -145,7 +144,7 @@ class MooringSystem : public ComponentDynamic {
     /** @brief Elastodynamic model of the mooring system. */
     seahowl::elasto::MooringSystemElasto& elasto;
     /** @brief Hydrodynamic model of the mooring system. */
-    seahowl::hydro::MooringSystemHydro& hydro;
+    seahowl::fluid::hydro::MooringSystemHydro& hydro;
     /** @brief List of mooring lines. */
     std::deque<std::shared_ptr<Mooring>> moorings;
 
@@ -156,7 +155,7 @@ class MooringSystem : public ComponentDynamic {
      * @param[in] hydro hydrodynamic mooring system model.
      */
     MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
-                  std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro);
+                  std::shared_ptr<seahowl::fluid::hydro::MooringSystemHydro> hydro);
 
     /**
      * @brief Adds mooring to mooring system.

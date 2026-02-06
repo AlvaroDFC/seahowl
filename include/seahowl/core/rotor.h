@@ -23,7 +23,6 @@ class RotorNacelleAssemblyAero;
 class RotorAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -36,7 +35,7 @@ class Rotor : public ComponentDynamic {
     /** @brief Elastodynamic model of the Rotor. */
     seahowl::elasto::RotorElasto& elasto;
     /** @brief Aerodynamic model of the Rotor. */
-    seahowl::aero::RotorAero& aero;
+    seahowl::fluid::aero::RotorAero& aero;
     /** @brief Blades of the turbine. */
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
 
@@ -46,7 +45,7 @@ class Rotor : public ComponentDynamic {
      * @param[in] elasto Elastodynamic Rotor model.
      * @param[in] aero Aerodynamic Rotor model.
      */
-    Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::aero::RotorAero> aero);
+    Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::fluid::aero::RotorAero> aero);
 
     /**
      * @brief Prestep for Rotor, called before elastodynamic stepping.
@@ -95,7 +94,7 @@ class RotorNacelleAssembly : public ComponentDynamic {
     /** @brief Elastodynamic model of the RNA. */
     seahowl::elasto::RotorNacelleAssemblyElasto& elasto;
     /** @brief Aerodynamic model of the RNA. */
-    seahowl::aero::RotorNacelleAssemblyAero& aero;
+    seahowl::fluid::aero::RotorNacelleAssemblyAero& aero;
     /** @brief Rotor. */
     Rotor rotor;
 
@@ -106,7 +105,7 @@ class RotorNacelleAssembly : public ComponentDynamic {
      * @param[in] aero Aerodynamic RNA model.
      */
     RotorNacelleAssembly(std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> elasto,
-                         std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> aero);
+                         std::shared_ptr<seahowl::fluid::aero::RotorNacelleAssemblyAero> aero);
 
     /**
      * @brief Prestep for RNA, called before elastodynamic stepping.

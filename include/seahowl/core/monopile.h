@@ -17,7 +17,7 @@ class Monopile : public Tower, public virtual Foundation {
     /** @brief Elastodynamic model of the monopile. */
     seahowl::elasto::MonopileElasto& elasto;
     /** @brief Aerodynamic model of the monopile. */
-    seahowl::hydro::MonopileHydro& hydro;
+    seahowl::fluid::hydro::MonopileHydro& hydro;
 
     /**
      * @brief Instantiates tower for communication between elasto and aero components.
@@ -26,7 +26,7 @@ class Monopile : public Tower, public virtual Foundation {
      * @param[in] aero Aerodynamic tower model.
      */
     Monopile(std::shared_ptr<seahowl::elasto::MonopileElasto> elasto,
-             std::shared_ptr<seahowl::hydro::MonopileHydro> hydro)
+             std::shared_ptr<seahowl::fluid::hydro::MonopileHydro> hydro)
         : Foundation(elasto, hydro),
           Tower(elasto, hydro),
           ComponentDynamic(elasto, hydro),

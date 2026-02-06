@@ -22,7 +22,6 @@ namespace aero {
 class TowerAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -41,7 +40,7 @@ class Tower : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the tower. */
     seahowl::elasto::TowerElasto& elasto;
     /** @brief Aerodynamic model of the tower. */
-    seahowl::aero::TowerAero& aero;
+    seahowl::fluid::aero::TowerAero& aero;
 
     /**
      * @brief Instantiates tower for communication between elasto and aero components.
@@ -49,7 +48,7 @@ class Tower : public ComponentElastoFluid {
      * @param[in] elasto Elastodynamic tower model.
      * @param[in] aero Aerodynamic tower model.
      */
-    Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero);
+    Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::fluid::aero::TowerAero> aero);
 
     /**
      * @brief Prestep for tower, called before elastodynamic stepping.
