@@ -210,6 +210,7 @@ set(SEAHOWL_COMMONS_SOURCES
     src/commons/utils.cpp
 )
 set(SEAHOWL_COMMONS_HEADERS
+    include/seahowl/seahowl.h
     include/seahowl/commons.h
     include/seahowl/commons/numerics.h
     include/seahowl/commons/entities.h
