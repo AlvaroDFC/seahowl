@@ -177,10 +177,10 @@ TEST_F(TestMonopile, monopile_hydrodyn) {
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_monopile_hydrodyn.csv").generic_string(),
                                        (test_dir / "test_monopile_hydrodyn.test.csv").generic_string()});
     test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("monopile base moment [Nm]",
-                                       [&monopile]() { return monopile.elasto.get_tower_base_moment(); });
-    test_dataset.test_csv.add_function("monopile base force [N]",
-                                       [&monopile]() { return monopile.elasto.get_tower_base_force(); });
+    test_dataset.test_csv.add_function("monopile base moment y [Nm]",
+                                       [&monopile]() { return monopile.elasto.get_tower_base_moment()[1]; });
+    test_dataset.test_csv.add_function("monopile base force x [N]",
+                                       [&monopile]() { return monopile.elasto.get_tower_base_force()[0]; });
     test_dataset.test_csv.add_function("monopile top position [m]",
                                        [&monopile]() { return monopile.elasto.nodes.back()->get_position(); });
 
