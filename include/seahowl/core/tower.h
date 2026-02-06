@@ -50,39 +50,9 @@ class Tower : public ComponentElastoFluid {
      */
     Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::fluid::aero::TowerAero> aero);
 
-    /**
-     * @brief Prestep for tower, called before elastodynamic stepping.
-     *
-     * Updates aero loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for tower, called afetr elastodynamic stepping.
-     *
-     * Updates aero positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies env model to tower.
-     * @param[in] env_model Environmental model affecting tower.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Builds the tower (aero and elasto part).
-     *
-     * Sets the nodes and elements for elasto and aero components of the tower, as well as the aero->elasto mapping and
-     * elasto->aero mapping.
-     */
     void build() override;
 
     /**

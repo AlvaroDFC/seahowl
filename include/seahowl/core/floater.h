@@ -50,34 +50,10 @@ class Floater : public Foundation {
     /** @brief Destructor. */
     ~Floater();
 
-    /**
-     * @brief Prestep for floater, called before elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for floater, called after elastodynamic stepping.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies env model to floater.
-     *
-     * @param[in] env_model env model affecting floater.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& soil_model, double time) override;
-    /**
-     * @brief Builds the floater (hydro and elasto part).
-     */
     void build() override;
 
     /**

@@ -44,38 +44,10 @@ class TurbineElasto : public ComponentElasto {
      */
     TurbineElasto();
 
-    /**
-     * @brief Presetup of turbine.
-     *
-     * @param[in] fraction Fraction of presetup phase, starting at 0.0 and ending at 1.0.
-     */
     virtual void presetup(double fraction) override;
-
-    /**
-     * @brief Builds the turbine.
-     *
-     * Calls build for each of the components of the turbine.
-     */
     void build() override;
-
-    /**
-     * @brief Translates the turbine.
-     *
-     * @param[in] translation_vector The 3D translation vector.
-     */
     virtual void translate(const seahowl::Vector3d& translation_vector) const override;
-
-    /**
-     * @brief Rotates the turbine.
-     *
-     * @param[in] translation_vector The angle of rotation (in radians).
-     * @param[in] axis The axis of rotation (3D vector).
-     */
     virtual void rotate(double angle, const seahowl::Vector3d& axis) const override;
-
-    /**
-     * @brief Returns the mass of the turbine.
-     */
     virtual double get_mass() const override;
 
   protected:

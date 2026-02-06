@@ -17,17 +17,7 @@ class WindModel : public FluidModel {
     /** @brief Direction of gravitational acceleration. */
     Vector3d direction_gravity{0.0, 0.0, -1.0};
 
-    /**
-     * @brief Returns true is the placement of the model (false otherwise).
-     *
-     * @param[in] position Position to assess whether inside model or not.
-     * @param[in] time Time of simulation.
-     */
     virtual bool is_inside(const Vector3d& position, double time = 0.0) const override;
-
-    /**
-     * @brief Returns air density.
-     */
     virtual double get_density_this(const Vector3d& position, double time) const override;
 };
 

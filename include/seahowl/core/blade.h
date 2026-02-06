@@ -52,34 +52,9 @@ class Blade : public ComponentElastoFluid {
     Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
           const std::shared_ptr<seahowl::fluid::aero::BladeAero> aero);
 
-    /**
-     * @brief Prestep for blade, called before elastodynamic stepping.
-     *
-     * Updates aero loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for blade, called after elastodynamic stepping.
-     *
-     * Updates aero positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Builds the blade (aero and elasto part).
-     *
-     * Sets the nodes and elements for elasto and aero components of the blade, as well as the aero->elasto mapping and
-     * elasto->aero mapping.
-     */
     virtual void build() override;
 
     /**

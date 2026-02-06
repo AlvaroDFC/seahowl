@@ -47,6 +47,9 @@ class RotorAero : public ComponentFluid {
     /** @brief Disk averaged wind speed. */
     Vector3d disk_averaged_wind_velocity{0.0, 0.0, 0.0};
 
+    /**
+     * @brief Initializes the rotor aerodynamic model.
+     */
     virtual void initialize() = 0;
     virtual void compute_env_loads(const env::EnvModel& env_model, double time) = 0;
 

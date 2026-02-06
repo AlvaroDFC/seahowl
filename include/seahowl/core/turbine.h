@@ -79,32 +79,8 @@ class Turbine : public ComponentDynamic {
      */
     void apply_control(double time, double dt);
 
-    /**
-     * @brief Prestep for turbine, called before elastodynamic stepping.
-     *
-     * Calls prestep on each of the components of the turbine.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for turbine, called after elastodynamic stepping.
-     *
-     * Applies step for the controller (potentially modifying loads with electrical torque and elasto positions due to
-     * blade pitching), and then calls poststep on each of the components of the turbine.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Builds the turbine.
-     *
-     * Calls build for each of the components of the turbine.
-     */
     virtual void build() override;
 
     /**
@@ -122,20 +98,7 @@ class Turbine : public ComponentDynamic {
      */
     double get_generator_rpm() const;
 
-    /**
-     * @brief Applies env model to turbine components.
-     *
-     * @param[in] env_model env model affecting turbine components.
-     * @param[in] time Time of simulation.
-     */
     virtual void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Applies soil model to turbine components.
-     *
-     * @param[in] env_model Soil model affecting turbine components.
-     * @param[in] time Time of simulation.
-     */
     virtual void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
 
   protected:

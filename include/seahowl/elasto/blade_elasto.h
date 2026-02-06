@@ -57,14 +57,34 @@ class BladeElasto : public virtual ComponentElasto {
      */
     virtual Vector3d get_blade_root_force() const;
 
+    /**
+     * @brief Returns dynamic entity at position along blade.
+     *
+     * @param[in] eta Normalized abscissa along blade element (eta in [-1, 1]).
+     * @param[in] element_index Index of blade element (default: 0).
+     */
     virtual EntityDynamicEigen get_entity_along_blade(double eta, int element_index = 0) const = 0;
 
+    /**
+     * @brief Accumulates load at position along blade.
+     *
+     * @param[in] load Force vector to accumulate.
+     * @param[in] moment Moment vector to accumulate.
+     * @param[in] element_index Index of blade element.
+     * @param[in] eta Normalized abscissa along blade element (eta in [-1, 1]).
+     * @param[in] offset Offset from given abscissa along longitudinal axis.
+     */
     virtual void accumulate_load_along_blade(const Vector3d& load,
                                              const Vector3d& moment,
                                              int element_index,
                                              double eta,
                                              const Vector3d& offset) = 0;
 
+    /**
+     * @brief Attaches blade root to a body (e.g. hub or rotor).
+     *
+     * @param[in] body Body to attach the blade to.
+     */
     virtual void attach_blade_to_body(const BodyElasto& body);
 
   protected:

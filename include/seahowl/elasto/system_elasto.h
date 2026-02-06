@@ -29,9 +29,6 @@ class SystemElasto : public ComponentElasto {
      * @brief Virtual destructor.
      */
     virtual ~SystemElasto() = default;
-    /**
-     * @brief Builds the component (to call before assemble).
-     */
     void build() override;
 
     /**
@@ -158,24 +155,8 @@ class SystemElasto : public ComponentElasto {
      */
     virtual void add(std::shared_ptr<TurbineElasto> turbine);
 
-    /**
-     * @brief Translates the system.
-     *
-     * @param[in] translation_vector The 3D translation vector.
-     */
     virtual void translate(const seahowl::Vector3d& translation_vector) const override;
-
-    /**
-     * @brief Rotates the system.
-     *
-     * @param[in] translation_vector The angle of rotation (in radians).
-     * @param[in] axis The axis of rotation (3D vector).
-     */
     virtual void rotate(double angle, const seahowl::Vector3d& axis) const override;
-
-    /**
-     * @brief Returns the mass of the system.
-     */
     virtual double get_mass() const override;
 
   protected:

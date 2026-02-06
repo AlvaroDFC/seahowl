@@ -557,6 +557,9 @@ class ActuatorRotation : public virtual Entity {
      */
     virtual bool is_fixed_actuator() const = 0;
 
+    /**
+     * @brief Initializes internal links of the actuator.
+     */
     virtual void initialize_links() = 0;
 
     void set_position(const Vector3d& position) override;

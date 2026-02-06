@@ -47,28 +47,8 @@ class Rotor : public ComponentDynamic {
      */
     Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::fluid::aero::RotorAero> aero);
 
-    /**
-     * @brief Prestep for Rotor, called before elastodynamic stepping.
-     *
-     * Calls prestep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for Rotor, called after elastodynamic stepping.
-     *
-     * Calls poststep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-    /**
-     * @brief Builds the Rotor and blades associated to it.
-     */
     void build() override;
 
   private:
@@ -107,42 +87,15 @@ class RotorNacelleAssembly : public ComponentDynamic {
     RotorNacelleAssembly(std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> elasto,
                          std::shared_ptr<seahowl::fluid::aero::RotorNacelleAssemblyAero> aero);
 
-    /**
-     * @brief Prestep for RNA, called before elastodynamic stepping.
-     *
-     * Calls prestep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for RNA, called after elastodynamic stepping.
-     *
-     * Calls poststep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to RNA.
-     * @param[in] env_model Environmental model affecting RNA.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
+    void build() override;
 
     /**
      * @brief Updates aero positions, rotations, velocities and accelerations from elasto component of the RNA.
      */
     void update_positions_aero();
-
-    /**
-     * @brief Builds the RNA and blades associated to it.
-     */
-    void build() override;
 
     /**
      * @brief Returns yaw error.

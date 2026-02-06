@@ -21,11 +21,6 @@ class WaveModel : public FluidModel {
     /** @brief Water depth. */
     double water_depth = 0.0;
 
-    /**
-     * @brief Returns whether position at time t in inside water.
-     * @param[in] position Position at which fluid velocity is extracted.
-     * @param[in] time Time of simulation.
-     */
     virtual bool is_inside(const Vector3d& position, double time) const override;
 
     /**

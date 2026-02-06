@@ -101,6 +101,12 @@ class ComponentDynamic {
     // Only for memory management, never accessed (reference to underlying object is accessed instead).
     std::shared_ptr<seahowl::fluid::ComponentFluid> fluid_ptr;
 
+    /**
+     * @brief Component-specific initialization, called by initialize().
+     *
+     * @param[in] time Time of the simulation (usually 0 at init).
+     * @param[in] dt Time step length.
+     */
     virtual void initialize_this(double time, double dt) = 0;
 };
 

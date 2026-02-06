@@ -80,6 +80,11 @@ class ComponentElasto {
 
   protected:
     bool is_assembled = false;
+    /**
+     * @brief Component-specific assembly logic, called by assemble().
+     *
+     * @param[in] system Elasto system to assemble into.
+     */
     virtual void assemble_this(SystemElasto& system) = 0;
 
   public:

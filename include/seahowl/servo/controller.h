@@ -109,29 +109,8 @@ class ControllerVariableTorque : public Controller {
      */
     ControllerVariableTorque();
 
-    /**
-     * @brief Stepping of controller.
-     *
-     * @param[in] time Time of simulation [s].
-     * @param[in] dt Time step length [s].
-     * @param[in] turbine Turbine that is controlled by this controller.
-     */
     virtual void step(double time, double dt, const seahowl::core::Turbine& turbine) override;
-
-    /**
-     * @brief Post-step for controller.
-     *
-     * @param[in] time Time of simulation [s].
-     * @param[in] dt Time step length [s].
-     * @param[in] turbine Turbine that is controlled by this controller.
-     */
     virtual void poststep(double time, double dt, const seahowl::core::Turbine& turbine) override;
-
-    /**
-     * @brief Returns electrical torque to apply.
-     *
-     * @return Electrical torque [Nm].
-     */
     virtual double get_torque_elec() const override;
 
     /**

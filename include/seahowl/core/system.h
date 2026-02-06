@@ -54,13 +54,6 @@ class System : public ComponentDynamic {
     System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::fluid::SystemFluid> fluid);
 
     void build() override;
-
-    /**
-     * @brief Prestep for system, called before elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void prestep(double time, double dt) override;
 
     /**
@@ -70,21 +63,8 @@ class System : public ComponentDynamic {
      */
     void step(double dt);
 
-    /**
-     * @brief Poststep for system, called after elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to system.
-     * @param[in] env_model Environmental model affecting system.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
 
     /**

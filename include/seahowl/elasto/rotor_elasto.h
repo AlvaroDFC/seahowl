@@ -80,18 +80,11 @@ class RotorElasto : public ComponentElasto {
      */
     RotorElasto();
 
-    /**
-     * @brief Builds the rotor.
-     */
     void build() override;
     virtual void presetup(double fraction) override;
     virtual void rotate(double angle, const Vector3d& axis) const override;
     virtual void translate(const Vector3d& translation_vector) const override;
     virtual double get_mass() const override;
-
-    /**
-     * @brief Resets accumulated loads.
-     */
     void reset_loads() override;
 
     /**
@@ -167,19 +160,11 @@ class RotorNacelleAssemblyElasto : public ComponentElasto {
     RotorNacelleAssemblyElasto(std::shared_ptr<seahowl::elasto::RotorElasto> rotor);
     ~RotorNacelleAssemblyElasto() = default;
 
-    /**
-     * @brief Builds the rotor.
-     */
     void build() override;
-
     virtual void presetup(double fraction) override;
-    void rotate(double angle, const Vector3d& axis) const override;     ///< @see ElastoComponent::rotate
-    void translate(const Vector3d& translation_vector) const override;  ///< @see ElastoComponent::translate
-    double get_mass() const override;                                   ///< @see ElastoComponent::get_mass
-
-    /**
-     * @brief Resets accumulated loads.
-     */
+    void rotate(double angle, const Vector3d& axis) const override;
+    void translate(const Vector3d& translation_vector) const override;
+    double get_mass() const override;
     void reset_loads() override;
 
     /**

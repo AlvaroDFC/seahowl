@@ -47,11 +47,6 @@ class LinearSoilModel : public SoilModel {
      */
     LinearSoilModel();
 
-    /**
-     * @brief Returns true is the placement of the model (false otherwise).
-     * @param[in] position Position to assess whether inside model or not.
-     * @param[in] time Time of simulation.
-     */
     virtual bool is_inside(const Vector3d& position, double time) const override;
 
     virtual Vector3d get_penetration_load(const EntityDynamic& entity,

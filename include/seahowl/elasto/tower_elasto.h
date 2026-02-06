@@ -29,9 +29,6 @@ class TowerElasto : public ComponentElastoFEA {
      */
     TowerElasto();
 
-    /**
-     * @brief Builds the blade (to call before assemble).
-     */
     void build() override;
 
     /**
@@ -54,9 +51,6 @@ class TowerElasto : public ComponentElastoFEA {
      */
     Vector3d get_tower_top_force() const;
 
-    /**
-     * @brief Resets accumulated loads at nodes of tower component.
-     */
     virtual void reset_loads() override;
 
   private:
