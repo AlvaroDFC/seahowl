@@ -106,6 +106,13 @@ add_custom_command(TARGET docs POST_BUILD
         ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
     COMMENT "Copying Doxygen HTML into MkDocs site"
 )
+
+# Remove target attributes from Doxygen HTML/SVG so links stay inside the MkDocs iframe
+add_custom_command(TARGET docs POST_BUILD
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/patch_doxygen_targets.py
+        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+    COMMENT "Patching Doxygen HTML/SVG for iframe compatibility"
+)
 if(SEAHOWL_ENABLE_PYTHON)
   add_dependencies(docs pyseahowl)
   # For MSVC IDE
