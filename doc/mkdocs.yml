@@ -89,6 +89,7 @@ nav:
   - Home: index.md
   - User Guide:
     - Install: INSTALL.md
+    - Using package: user-guide/using_package.md
     - Input files:
       - File hierarchy: user-guide/input-files/index.md
       - Main file: user-guide/input-files/main-file.md

@@ -84,5 +84,5 @@ Discretization can be specified in two ways:
 "elasto": [10]
 
 // Empty list: use discretization as described in file
-"elasto": [10]
+"elasto": []
 ```

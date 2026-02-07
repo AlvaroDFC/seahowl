@@ -797,7 +797,7 @@ install(DIRECTORY ${SEAHOWL_DATADIR}
         DESTINATION data)
 
 #copy the README.md file to the install directory
-install(FILES ${PROJECT_SOURCE_DIR}/doc/source/_user/using_package.md
+install(FILES ${PROJECT_SOURCE_DIR}/doc/source/user-guide/using_package.md
         DESTINATION .)
 #rename the using_package.md file to README.md
 install(CODE "

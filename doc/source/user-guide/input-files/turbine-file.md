@@ -94,7 +94,7 @@ Rotor configuration including blade type and discretization.
 Discretization can be specified as:
 - Array of floats: explicit normalized positions `[0.0, 0.1, ..., 1.0]`
 - Single integer in array: number of uniform elements `[49]`
-- Empty array: discretization from blade input file
+- Empty array: discretization from blade input file `[]`
 
 ### rotor.blades[]
 
@@ -134,7 +134,7 @@ Tower configuration.
 Discretization can be specified as:
 - Array of floats: explicit normalized positions `[0.0, 0.1, ..., 1.0]`
 - Single integer in array: number of uniform elements `[49]`
-- Empty array: discretization from tower input file
+- Empty array: discretization from tower input file `[]`
 
 ### tower.options
 
@@ -194,7 +194,7 @@ For offshore configurations with monopile or floating foundation.
 Discretization can be specified as:
 - Array of floats: explicit normalized positions `[0.0, 0.1, ..., 1.0]`
 - Single integer in array: number of uniform elements `[49]`
-- Empty array: discretization from monopile input file
+- Empty array: discretization from monopile input file `[]`
 
 
 ## Controller Examples
