@@ -12,7 +12,6 @@ theme:
     - search.highlight
     - search.suggest
     - toc.integrate
-    - toc.follow
     - content.code.annotate
     - content.code.copy
     - content.code.fold
@@ -20,18 +19,18 @@ theme:
     - palette.toggle
     - instant
   palette:
-    - scheme: default
-      primary: white
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch
-        name: Switch to dark mode
     - scheme: slate
       primary: white
       accent: indigo
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/toggle-switch
         name: Switch to light mode
+    - scheme: default
+      primary: white
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
 
 plugins:
   - include-markdown
@@ -53,6 +52,7 @@ plugins:
             separate_signature: true
             signature_crossrefs: true
             allow_inspection: true
+            inherited_members: true
           paths: ["build"]
 
 markdown_extensions:
