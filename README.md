@@ -3,6 +3,7 @@
 SEAHOWL is a time-domain multi-physics simulation framework written in C++ and primarily developed for wind turbine analysis.
 
 Main features of SEAHOWL:
+
 - **Monolithic coupling of structural dynamics** through Project Chrono for multibody and finite element problems
 - **Partitioned coupling for multi-physics** interaction for easy switching between individual physics solver
 - **Modular by design**, easily adaptable for innovative or non-conventional aeroelastic applications

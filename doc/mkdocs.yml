@@ -3,8 +3,8 @@ docs_dir: source
 site_dir: ../build/doc/source
 theme:
   name: material
-  logo: assets/logo.png
-  favicon: assets/logo.png
+  logo: assets/logo_totalenergies.png
+  favicon: assets/logo_totalenergies.png
   features:
     - navigation.tabs
     - navigation.top
@@ -98,6 +98,9 @@ nav:
       - Rna file: user-guide/input-files/rna-file.md
       - Floater file: user-guide/input-files/floater-file.md
       - Environment file: user-guide/input-files/environment-file.md
+    - Output files:
+      - Generic outputs: user-guide/output-files/output-generic.md
+      - Custom outputs: user-guide/output-files/output-custom.md
   - Dev Guide:
     - Contributing: CONTRIBUTING.md
     - Core workflow: dev-guide/core-workflow.md
