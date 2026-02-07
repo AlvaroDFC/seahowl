@@ -18,12 +18,12 @@ if(SEAHOWL_ENABLE_PYTHON)
   endif()
 
   if(NOT MKDOCS_EXECUTABLE)
-    message(WARNING "Can't build user's docs. mkdocs not found!")
+	  message(WARNING "Can't build SEAHOWL's docs. mkdocs not found!")
     return()
   endif()
 
-  set(MKDOCS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/user)
-  set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/user/site/index.html)
+  set(MKDOCS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+  set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/source/site/index.html)
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/bin/activate")

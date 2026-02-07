@@ -62,4 +62,4 @@ report:
       display_on_load: false
     parameter_page_mode :
       default_value : tabs
-  logo_file: ../../../../doc/source/_static/totalenergies_alpha.png
+  logo_file: ../../../../doc/source/assets/logo_totalenergies.png

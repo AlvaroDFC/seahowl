@@ -1,5 +1,5 @@
 site_name: SEAHOWL documentation
-docs_dir: user
+docs_dir: source
 site_dir: ../build/doc/source
 theme:
   name: material
