@@ -90,10 +90,25 @@ void initialize_pyseahowl_hydro(py::module& m_fluid) {
         .def(py::init<>())
         .def_property_readonly(
             "mooring_system", [](seahowl::hydro::FloaterHydro& floater) { return floater.mooring_system.get(); },
+            py::return_value_policy::reference_internal)
+        .def_property_readonly(
+            "body_main", [](seahowl::hydro::FloaterHydro& floater) { return floater.body_main.get(); },
             py::return_value_policy::reference_internal);
 
     // hydro/monopile_hydro.h
     py::class_<seahowl::hydro::MonopileHydro, std::shared_ptr<seahowl::hydro::MonopileHydro>, seahowl::aero::TowerAero,
                seahowl::hydro::FoundationFluid>(m_hydro, "MonopileHydro", pybind11::multiple_inheritance())
         .def(py::init<>());
+
+#ifdef HAVE_HYDRODYN
+    // hydro/hydrodyn_adapter.h
+    py::class_<seahowl::hydro::FloaterHydroDyn, std::shared_ptr<seahowl::hydro::FloaterHydroDyn>,
+               seahowl::hydro::FloaterHydro>(m_hydro, "FloaterHydroDyn")
+        .def(py::init<const std::string&>());
+
+    py::class_<seahowl::hydro::MonopileHydroDyn, std::shared_ptr<seahowl::hydro::MonopileHydroDyn>,
+               seahowl::hydro::MonopileHydro>(m_hydro, "MonopileHydroDyn")
+        .def(py::init<const std::string&>())
+        .def("set_seastate_infile", &seahowl::hydro::MonopileHydroDyn::set_seastate_infile);
+#endif
 }

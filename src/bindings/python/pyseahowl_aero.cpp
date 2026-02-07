@@ -12,6 +12,17 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
     // submodule
     auto m_aero = m_fluid.def_submodule("aero", "Aero submodule.");
 
+    // aero/reference_point_aero.h
+    py::class_<seahowl::aero::BladeReferencePointAero, std::shared_ptr<seahowl::aero::BladeReferencePointAero>>(
+        m_aero, "BladeReferencePointAero")
+        .def(py::init<>())
+        .def_readwrite("fraction", &seahowl::aero::BladeReferencePointAero::fraction)
+        .def_readwrite("coordinates", &seahowl::aero::BladeReferencePointAero::coordinates)
+        .def_readwrite("offset_aero", &seahowl::aero::BladeReferencePointAero::offset_aero)
+        .def_readwrite("chord", &seahowl::aero::BladeReferencePointAero::chord)
+        .def_readwrite("structural_twist", &seahowl::aero::BladeReferencePointAero::structural_twist)
+        .def_readwrite("airfoil_properties", &seahowl::aero::BladeReferencePointAero::airfoil_properties);
+
     // aero/blade_aero.h
     py::class_<seahowl::aero::BladeNodeAero, std::shared_ptr<seahowl::aero::BladeNodeAero>,
                seahowl::EntityDynamicEigen>(m_aero, "BladeNodeAero")
@@ -53,7 +64,10 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
         .def_readwrite("nodes", &seahowl::aero::BladeAero::nodes)
         .def_readonly("elements", &seahowl::aero::BladeAero::elements)
         .def_readwrite("azimuth0", &seahowl::aero::BladeAero::azimuth0)
-        .def_readwrite("pitch", &seahowl::aero::BladeAero::pitch);
+        .def_readwrite("pitch", &seahowl::aero::BladeAero::pitch)
+        .def_property_readonly(
+            "body_root", [](seahowl::aero::BladeAero& blade) { return blade.body_root.get(); },
+            py::return_value_policy::reference_internal);
 
     // aero/rotor_aero.h
     py::class_<seahowl::aero::RotorAero, std::shared_ptr<seahowl::aero::RotorAero>, seahowl::fluid::ComponentFluid>(
@@ -69,6 +83,22 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
         .def_readwrite("azimuth", &seahowl::aero::RotorAero::azimuth)
         .def_readwrite("pitch_collective", &seahowl::aero::RotorAero::pitch_collective)
         .def_readonly("disk_averaged_wind_velocity", &seahowl::aero::RotorAero::disk_averaged_wind_velocity);
+
+    py::class_<seahowl::aero::RotorAeroBEMT, std::shared_ptr<seahowl::aero::RotorAeroBEMT>, seahowl::aero::RotorAero>(
+        m_aero, "RotorAeroBEMT")
+        .def(py::init<seahowl::aero::TowerAero&>())
+        .def_readwrite("has_tip_loss", &seahowl::aero::RotorAeroBEMT::has_tip_loss)
+        .def_readwrite("has_hub_loss", &seahowl::aero::RotorAeroBEMT::has_hub_loss)
+        .def_readwrite("has_tower_shadow", &seahowl::aero::RotorAeroBEMT::has_tower_shadow)
+        .def("build", &seahowl::aero::RotorAeroBEMT::build)
+        .def("initialize", &seahowl::aero::RotorAeroBEMT::initialize);
+
+    py::class_<seahowl::aero::RotorAeroDisk, std::shared_ptr<seahowl::aero::RotorAeroDisk>, seahowl::aero::RotorAero>(
+        m_aero, "RotorAeroDisk")
+        .def(py::init<>())
+        .def_readwrite("disk_coefficients", &seahowl::aero::RotorAeroDisk::disk_coefficients)
+        .def("build", &seahowl::aero::RotorAeroDisk::build)
+        .def("initialize", &seahowl::aero::RotorAeroDisk::initialize);
 
     py::class_<seahowl::aero::RotorNacelleAssemblyAero, std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero>,
                seahowl::fluid::ComponentFluid>(m_aero, "RotorNacelleAssemblyAero")
@@ -86,15 +116,32 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
         .def_readwrite("discretized_points", &seahowl::aero::TowerAero::discretized_points)
         .def_readwrite("nodes", &seahowl::aero::TowerAero::nodes)
         .def_readonly("elements", &seahowl::aero::TowerAero::elements)
+        .def_readwrite("has_nodal_distributed_loads", &seahowl::aero::TowerAero::has_nodal_distributed_loads)
         .def_readwrite("use_MacCamyFuchs_correction", &seahowl::aero::TowerAero::use_MacCamyFuchs_correction)
         .def_readwrite("use_Cd_correction", &seahowl::aero::TowerAero::use_Cd_correction);
 
     // aero/reference_point_aero.h
     py::class_<seahowl::aero::TowerReferencePointAero, std::shared_ptr<seahowl::aero::TowerReferencePointAero>>(
         m_aero, "TowerReferencePointAero")
+        .def(py::init<>())
         .def_readwrite("coordinates", &seahowl::aero::TowerReferencePointAero::coordinates)
         .def_readwrite("fraction", &seahowl::aero::TowerReferencePointAero::fraction)
+        .def_readwrite("velocity", &seahowl::aero::TowerReferencePointAero::velocity)
+        .def_readwrite("rotation", &seahowl::aero::TowerReferencePointAero::rotation)
         .def_readwrite("diameter", &seahowl::aero::TowerReferencePointAero::diameter)
-        .def_readwrite("coefficients", &seahowl::aero::TowerReferencePointAero::coefficients)
-        .def(py::init<>());
+        .def_readwrite("coefficients", &seahowl::aero::TowerReferencePointAero::coefficients);
+
+#ifdef HAVE_AERODYN
+    // aero/aerodyn_adapter.h
+    py::class_<seahowl::aero::TurbineAeroDyn, std::shared_ptr<seahowl::aero::TurbineAeroDyn>,
+               seahowl::fluid::TurbineFluid>(m_aero, "TurbineAeroDyn")
+        .def(py::init<const std::string&>())
+        .def_readwrite("WrVTK", &seahowl::aero::TurbineAeroDyn::WrVTK)
+        .def_readwrite("WrVTK_Type", &seahowl::aero::TurbineAeroDyn::WrVTK_Type)
+        .def_readwrite("WrVTK_dt", &seahowl::aero::TurbineAeroDyn::WrVTK_dt);
+
+    py::class_<seahowl::aero::RotorAeroDyn, std::shared_ptr<seahowl::aero::RotorAeroDyn>, seahowl::aero::RotorAeroBEMT>(
+        m_aero, "RotorAeroDyn")
+        .def(py::init<seahowl::aero::TowerAero&>());
+#endif
 }

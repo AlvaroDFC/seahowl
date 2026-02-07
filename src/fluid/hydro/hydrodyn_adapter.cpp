@@ -396,6 +396,10 @@ FloaterHydroDyn::FloaterHydroDyn(const std::string& hydrodyn_filepath) {
     hydrodyn->set_hydrodyn_infile(hydrodyn_filepath);
 }
 
+void FloaterHydroDyn::set_seastate_infile(const std::string& seastate_infile) {
+    hydrodyn->set_seastate_infile(seastate_infile);
+}
+
 void FloaterHydroDyn::setup_environment(const env::EnvModel& env_model) {
     hydrodyn->setup_environment(env_model);
 }

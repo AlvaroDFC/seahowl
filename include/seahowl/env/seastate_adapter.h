@@ -27,8 +27,6 @@ class SeaStateAdapter : public WaveModel {
 
     std::string get_seastate_infile() const { return seastate_infile; }
 
-    void end();
-
     double get_water_level(const Vector3d& position, double time) const override;
 
     // double get_dyn_pressure(const Vector3d& position, double time) const;

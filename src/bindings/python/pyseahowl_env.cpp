@@ -110,6 +110,13 @@ void initialize_pyseahowl_env(py::module& m) {
                seahowl::env::WaveModel>(m_env, "WaveModelHydroChrono")
         .def(py::init<>());
 #endif
+#ifdef HAVE_SEASTATE
+    // env/seastate_adapter.h
+    py::class_<seahowl::env::SeaStateAdapter, std::shared_ptr<seahowl::env::SeaStateAdapter>, seahowl::env::WaveModel>(
+        m_env, "SeaStateAdapter")
+        .def(py::init<std::string>())
+        .def("get_seastate_infile", &seahowl::env::SeaStateAdapter::get_seastate_infile);
+#endif
 
     // env/soil_models.h
     py::class_<seahowl::env::SoilModel, std::shared_ptr<seahowl::env::SoilModel>, seahowl::env::Model>(m_env,

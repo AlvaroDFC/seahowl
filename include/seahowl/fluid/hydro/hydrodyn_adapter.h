@@ -53,6 +53,7 @@ class FloaterHydroDyn : public FloaterHydro {
   public:
     FloaterHydroDyn(const std::string& hydrodyn_filepath);
 
+    void set_seastate_infile(const std::string& seastate_infile);
     void setup_environment(const env::EnvModel& env_model) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
 

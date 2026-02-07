@@ -20,7 +20,9 @@ void initialize_pyseahowl_fluid(py::module& m) {
                                                                                                 "ComponentFluid")
         .def("build", &seahowl::fluid::ComponentFluid::build)
         .def("compute_env_loads", &seahowl::fluid::ComponentFluid::compute_env_loads)
-        .def("setup_environment", &seahowl::fluid::ComponentFluid::setup_environment);
+        .def("setup_environment", &seahowl::fluid::ComponentFluid::setup_environment)
+        .def("initialize", &seahowl::fluid::ComponentFluid::initialize)
+        .def_readwrite("discretization_fractions", &seahowl::fluid::ComponentFluid::discretization_fractions);
 
     // fluid/system_fluid.h
     py::class_<seahowl::fluid::SystemFluid, std::shared_ptr<seahowl::fluid::SystemFluid>,
