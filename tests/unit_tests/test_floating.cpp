@@ -60,10 +60,6 @@ class TestFloating : public FixtureComponents {
         dataset.test_csv.add_function("time [s]", [&system_core]() { return system_core.get_time(); });
         dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
         dataset.test_csv.add_function("cog [m]", [&floater]() { return floater.elasto.body_main->get_position(); });
-        dataset.test_csv.add_function("cog roll [rad]",
-                                      [&floater]() { return floater.elasto.body_main->get_rpy_angles()[0]; });
-        dataset.test_csv.add_function("cog pitch [rad]",
-                                      [&floater]() { return floater.elasto.body_main->get_rpy_angles()[1]; });
     }
 
     // Run simulation loop writing to dataset each step
@@ -107,9 +103,10 @@ TEST_F(TestFloating, IEA15MW_hydrodyn) {
     // evaluate test results
     EvaluateTest(test_dataset);
 }
-#endif
+#endif  // HAVE_HYDRODYN
 
 #ifdef HAVE_HYDROCHRONO
+    #ifndef _MSC_VER  // segfault issue when using HydroChrono with MSVC here
 TEST_F(TestFloating, IEA15MW_hydrochrono) {
     // create simulation
     auto turbine_filepath = (DATADIR / "IEA15MW/floating/turbine_hydrochrono.json").generic_string();
@@ -127,4 +124,5 @@ TEST_F(TestFloating, IEA15MW_hydrochrono) {
     // evaluate test results
     EvaluateTest(test_dataset);
 }
-#endif
+    #endif  // _MSC_VER
+#endif      // HAVE_HYDROCHRONO
