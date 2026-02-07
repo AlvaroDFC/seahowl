@@ -1,9 +1,14 @@
 import seahowl
+import pathlib
+
+# change filepaths accordingly
+# we set them relative to this script file for it to run from anywhere
+thispath = pathlib.Path(__file__).parent.resolve()  # path of this file
 
 # options
 turbine_filepath = (
-    "../../data/IEA15MW/onshore/turbine.json"  # change to actual filepath
-)
+    thispath / "../../../data/IEA15MW/onshore/turbine.json"
+)  # change to actual filepath
 output_folder = "./output"
 seahowl.set_log_level_global("info")  # log levels: critical, info, debug, warn, trace
 
@@ -19,7 +24,7 @@ simulation.outputs.set_output_folder(output_folder)
 
 # add turbine to system
 system_core = simulation.system_core
-seahowl.io.add_turbine_to_system_from_file(turbine_filepath, system_core)
+seahowl.io.add_turbine_to_system_from_file(str(turbine_filepath), system_core)
 turbine = system_core.turbines[0]
 
 # fix tower bottom nodes and statics step

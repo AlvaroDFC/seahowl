@@ -12,13 +12,13 @@ water_depth = 200.0
 system_core = simulation.system_core
 
 fluid_model = seahowl.env.StillWater()
-system_core.fluid_model = fluid_model
+system_core.env_model.add_model(fluid_model)
 fluid_model.density = 1025.0
 fluid_model.mean_water_level = mean_water_level
 fluid_model.water_depth = water_depth
 
 soil_model = seahowl.env.LinearSoilModel()
-system_core.soil_model = soil_model
+system_core.env_model.add_model(soil_model)
 soil_model.soil_position = mean_water_level - water_depth
 soil_model.soil_normal = np.array([0.0, 0.0, 1.0])
 soil_model.stiffness_normal = 1e6

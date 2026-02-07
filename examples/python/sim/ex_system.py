@@ -1,17 +1,25 @@
 import seahowl
+import pathlib
+
+# change filepaths accordingly
+# we set them relative to this script file for it to run from anywhere
+thispath = pathlib.Path(__file__).parent.resolve()  # path of this file
 
 # options
-filepath = "../../data/IEA15MW/onshore/main.json"  # change to actual filepath
+main_filepath = (
+    thispath / "../../../data/IEA15MW/onshore/main.json"
+)  # change to actual filepath
+
 dt = 0.05
 dt_output = 1.0
-t_end = 200.0
+t_end = 100.0
 t_output_next = 0.0
 
 # get system
 system_elasto = seahowl.elasto.SystemElastoChrono()
 system_aero = seahowl.fluid.SystemFluid()
 system_core = seahowl.core.System(system_elasto, system_aero)
-seahowl.io.populate_system_from_file(filepath, system_core)
+seahowl.io.populate_system_from_file(str(main_filepath), system_core)
 
 # statics
 system_elasto.do_statics(True, 10)
