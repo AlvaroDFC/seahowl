@@ -19,9 +19,9 @@ class TowerElasto : public ComponentElastoFEA {
     std::vector<TowerReferencePointElasto> reference_points;
     /** @brief List of discretized points (interpolated reference points) describing the tower properties. */
     std::vector<TowerReferencePointElasto> discretized_points;
-    /** @brief Height of the tower (absolute value above ground / sea water level). */
+    /** @brief Height of the tower (absolute value above ground / sea water level) [m] */
     double height = 0.0;
-    /** @brief Height of the base of the tower (absolute value above ground / sea water level). */
+    /** @brief Height of the base of the tower (absolute value above ground / sea water level) [m] */
     double base_height = 0.0;
 
     /**
@@ -29,39 +29,33 @@ class TowerElasto : public ComponentElastoFEA {
      */
     TowerElasto();
 
-    /**
-     * @brief Builds the blade (to call before assemble).
-     */
     void build() override;
 
     /**
-     * @brief Returns tower base moment (first node of first element of tower).
+     * @brief Returns tower base moment (first node of first element of tower) [Nm]
      */
     Vector3d get_tower_base_moment() const;
 
     /**
-     * @brief Returns tower base moment (second node of last element of tower).
+     * @brief Returns tower top moment (second node of last element of tower) [Nm]
      */
     Vector3d get_tower_top_moment() const;
 
     /**
-     * @brief Returns tower base force (first node of first element of tower).
+     * @brief Returns tower base force (first node of first element of tower) [N]
      */
     Vector3d get_tower_base_force() const;
 
     /**
-     * @brief Returns tower base force (second node of last element of tower).
+     * @brief Returns tower top force (second node of last element of tower) [N]
      */
     Vector3d get_tower_top_force() const;
 
-    /**
-     * @brief Resets accumulated loads at nodes of tower component.
-     */
     virtual void reset_loads() override;
 
   private:
     /**
-     * @brief Builds the blade with Timoshenko elements (lineic density, foreaft stiffness, sideside stiffness).
+     * @brief Builds the tower with Timoshenko elements (lineic density, foreaft stiffness, sideside stiffness).
      */
     void build_elements_tapered_timoshenko();
 };

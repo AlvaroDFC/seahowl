@@ -3,6 +3,7 @@
 // Third-party libraries
 #include <Eigen/Dense>
 
+/** @brief SEAHOWL library namespace. */
 namespace seahowl {
 
 /** @brief Pi constant. */
@@ -17,6 +18,7 @@ using Vector2d = Eigen::Vector2d;
 /** @brief Quaternion. */
 using Quaternion = Eigen::Quaterniond;
 
+/** @brief Angle-axis rotation representation. */
 using AngleAxisd = Eigen::AngleAxisd;
 
 }  // namespace seahowl

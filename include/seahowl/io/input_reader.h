@@ -11,12 +11,12 @@ namespace io {
 class InputReader {
   public:
     /**
-     * @brief Constructor
+     * @brief Constructor.
      * @param filepath Path to the input file.
      */
     InputReader(const std::string& filepath_) : filepath(filepath_) {}
     /**
-     * @brief Destructor
+     * @brief Destructor.
      */
     virtual ~InputReader() = default;
     /**

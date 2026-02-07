@@ -22,9 +22,6 @@ endif()
 
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
 
-# Add the cmake folder so the FindSphinx module is found
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
 # Retrieve date and time of build
 string(TIMESTAMP TODAY "%Y-%m-%d %H:%M:%S")
 set (SEAHOWL_BUILD_DATE ${TODAY})
@@ -213,6 +210,8 @@ set(SEAHOWL_COMMONS_SOURCES
     src/commons/utils.cpp
 )
 set(SEAHOWL_COMMONS_HEADERS
+    include/seahowl/seahowl.h
+    include/seahowl/commons.h
     include/seahowl/commons/numerics.h
     include/seahowl/commons/entities.h
     include/seahowl/commons/utils.h
@@ -234,6 +233,7 @@ set(SEAHOWL_CORE_SOURCES
     src/core/simulation.cpp
 )
 set(SEAHOWL_CORE_HEADERS
+    include/seahowl/core.h
     include/seahowl/core/reference_point.h
     include/seahowl/core/component.h
     include/seahowl/core/component_elasto_fluid.h
@@ -267,6 +267,7 @@ set(SEAHOWL_ELASTO_SOURCES
     src/elasto/chrono_adapters.cpp
 )
 set(SEAHOWL_ELASTO_HEADERS
+    include/seahowl/elasto.h
     include/seahowl/elasto/blade_elasto.h
     include/seahowl/elasto/entities_elasto.h
     include/seahowl/elasto/component_elasto.h
@@ -289,6 +290,7 @@ set(SEAHOWL_FLUID_SOURCES
     src/fluid/turbine_fluid.cpp
 )
 set(SEAHOWL_FLUID_HEADERS
+    include/seahowl/fluid.h
     include/seahowl/fluid/component_fluid.h
     include/seahowl/fluid/system_fluid.h
     include/seahowl/fluid/turbine_fluid.h
@@ -305,6 +307,7 @@ set(SEAHOWL_AERO_SOURCES
     src/fluid/aero/tower_aero.cpp
 )
 set(SEAHOWL_AERO_HEADERS
+    include/seahowl/aero.h
     include/seahowl/fluid/aero/airfoil.h
     include/seahowl/fluid/aero/bemt.h
     include/seahowl/fluid/aero/blade_aero.h
@@ -326,6 +329,7 @@ set(SEAHOWL_SERVO_SOURCES
     src/servo/controller_discon.cpp
 )
 set(SEAHOWL_SERVO_HEADERS
+    include/seahowl/servo.h
     include/seahowl/servo/controller.h
     include/seahowl/servo/controller_discon.h
 )
@@ -338,6 +342,7 @@ set(SEAHOWL_HYDRO_SOURCES
     src/fluid/hydro/floater_hydro.cpp
 )
 set(SEAHOWL_HYDRO_HEADERS
+    include/seahowl/hydro.h
     include/seahowl/fluid/hydro/morison.h
     include/seahowl/fluid/hydro/mooring_hydro.h
     include/seahowl/fluid/hydro/foundation_fluid.h
@@ -365,6 +370,7 @@ set(SEAHOWL_ENV_SOURCES
     src/env/soil_models.cpp
 )
 set(SEAHOWL_ENV_HEADERS
+    include/seahowl/env.h
     include/seahowl/env/model.h
     include/seahowl/env/list_model.h
     include/seahowl/env/fluid_list_model.h
@@ -399,6 +405,7 @@ set(SEAHOWL_IO_SOURCES
     src/io/input_handler.cpp
 )
 set(SEAHOWL_IO_HEADERS
+    include/seahowl/io.h
     include/seahowl/io/read_input.h
     include/seahowl/io/write_csv.h
     include/seahowl/io/read_rotor_perf.h
@@ -604,6 +611,7 @@ if (SEAHOWL_ENABLE_PYTHON)
         ${PYSEAHOWL_DIR}/pyseahowl.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_env.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_elasto.cpp
+        ${PYSEAHOWL_DIR}/pyseahowl_fluid.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_aero.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_hydro.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_servo.cpp
@@ -646,7 +654,7 @@ if (SEAHOWL_ENABLE_PYTHON)
             message(FATAL_ERROR "Failed to create virtual environment")
         endif()
 
-        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
+        set(CMD_PIP "pip install mkdocs mkdocs-material mkdocs-include-markdown-plugin pybind11-stubgen mkdocstrings[python] matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
         set(CMD_PRECOMMIT "pre-commit install")
 
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")

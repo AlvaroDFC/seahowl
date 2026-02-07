@@ -30,7 +30,7 @@ class SystemFluid : public ComponentFluid {
      * @brief Computes fluid loads on system.
      *
      * @param[in] env_model env model to use for applying fluid loads.
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     void compute_env_loads(const env::EnvModel& env_model, double time) override;
 

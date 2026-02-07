@@ -37,7 +37,7 @@ class System : public ComponentDynamic {
     std::deque<std::shared_ptr<Turbine>> turbines{};
     /** @brief Other dynamics components. */
     std::deque<std::shared_ptr<ComponentDynamic>> components{};
-    /** @brief environmental model. */
+    /** @brief Environmental model. */
     std::shared_ptr<seahowl::env::EnvModel> env_model;
     /** @brief System for elastodynamics. */
     seahowl::elasto::SystemElasto& elasto;
@@ -54,56 +54,36 @@ class System : public ComponentDynamic {
     System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::fluid::SystemFluid> fluid);
 
     void build() override;
-
-    /**
-     * @brief Prestep for system, called before elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void prestep(double time, double dt) override;
 
     /**
      * @brief Step for system, called for elastodynamic stepping.
      *
-     * @param[in] time Time of the simulation.
+     * @param[in] time Time of the simulation [s]
      */
     void step(double dt);
 
-    /**
-     * @brief Poststep for system, called after elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to system.
-     * @param[in] env_model Environmental model affecting system.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
 
     /**
-     * @brief Returns time of simulation.
+     * @brief Returns time of simulation [s]
      */
     double get_time() const;
 
     /**
      * @brief Sets time of simulation.
      *
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     void set_time(double time);
 
     /**
      * @brief Presimulation for system, called before simulation actually starts.
      *
-     * @param[in] duration Duration of presimulation.
-     * @param[in] dt Time step length.
+     * @param[in] duration Duration of presimulation [s]
+     * @param[in] dt Time step length [s]
      * @param[in] fix_towers Whether to fix tower bases or not.
      * @param[in] with_presetup Whether to do presetup or not.
      */
@@ -127,8 +107,8 @@ class System : public ComponentDynamic {
     /**
      * @brief Initialize system.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize_this(double time, double dt) override;
 };

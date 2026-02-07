@@ -37,8 +37,8 @@ class FloaterHydroChrono : public elasto::FloaterElasto {
     /**
      * @brief Initialize floater, called before starting the simulation.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize() override;
 

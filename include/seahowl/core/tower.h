@@ -22,7 +22,6 @@ namespace aero {
 class TowerAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -41,7 +40,7 @@ class Tower : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the tower. */
     seahowl::elasto::TowerElasto& elasto;
     /** @brief Aerodynamic model of the tower. */
-    seahowl::aero::TowerAero& aero;
+    seahowl::fluid::aero::TowerAero& aero;
 
     /**
      * @brief Instantiates tower for communication between elasto and aero components.
@@ -49,41 +48,11 @@ class Tower : public ComponentElastoFluid {
      * @param[in] elasto Elastodynamic tower model.
      * @param[in] aero Aerodynamic tower model.
      */
-    Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero);
+    Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::fluid::aero::TowerAero> aero);
 
-    /**
-     * @brief Prestep for tower, called before elastodynamic stepping.
-     *
-     * Updates aero loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for tower, called afetr elastodynamic stepping.
-     *
-     * Updates aero positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies env model to tower.
-     * @param[in] env_model Environmental model affecting tower.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Builds the tower (aero and elasto part).
-     *
-     * Sets the nodes and elements for elasto and aero components of the tower, as well as the aero->elasto mapping and
-     * elasto->aero mapping.
-     */
     void build() override;
 
     /**
@@ -116,8 +85,8 @@ class Tower : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

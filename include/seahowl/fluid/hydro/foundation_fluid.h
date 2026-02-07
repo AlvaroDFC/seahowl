@@ -6,7 +6,7 @@
 namespace seahowl {
 namespace fluid {
 
-/**@brief Hydrodynamic module */
+/** @brief Hydrodynamic module. */
 namespace hydro {
 
 class FoundationFluid : public virtual ComponentFluid {

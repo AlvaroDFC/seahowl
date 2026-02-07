@@ -114,7 +114,7 @@ void Mooring::update_loads_elasto() {
 }
 
 MooringSystem::MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
-                             std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro)
+                             std::shared_ptr<seahowl::fluid::hydro::MooringSystemHydro> hydro)
     : ComponentDynamic(elasto, hydro), elasto(*elasto), hydro(*hydro) {
     // initialize moorings
     auto it_hydro = hydro->moorings.begin();

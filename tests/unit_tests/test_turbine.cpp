@@ -165,7 +165,7 @@ TEST_F(TestTurbine, IEA15MW_target_rpm) {
     auto& system_core = *simulation.system_core;
     auto& turbine = *system_core.turbines[0];
     auto controller = std::make_shared<seahowl::servo::ControllerVariableTorque>();
-    controller->target_rpm = 2.0;
+    controller->set_target_rpm(2.0);
     turbine.controller = controller;
 
     // create test dataset
@@ -198,7 +198,7 @@ TEST_F(TestTurbine, IEA15MW_actuator_disk) {
 
     // add target controller
     auto controller = std::make_shared<seahowl::servo::ControllerVariableTorque>();
-    controller->target_rpm = 7.56;
+    controller->set_target_rpm(7.56);
     turbine.controller = controller;
 
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_IEA15MW_actuator_disk.csv").generic_string(),

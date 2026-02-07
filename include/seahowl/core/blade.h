@@ -23,7 +23,6 @@ namespace aero {
 class BladeAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -42,7 +41,7 @@ class Blade : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the blade. */
     seahowl::elasto::BladeElasto& elasto;
     /** @brief Aerodynamic model of the blade. */
-    seahowl::aero::BladeAero& aero;
+    seahowl::fluid::aero::BladeAero& aero;
 
     /**
      * @brief Instantiates blade for communication between elasto and aero components.
@@ -51,42 +50,17 @@ class Blade : public ComponentElastoFluid {
      * @param[in] aero Aerodynamic blade model.
      */
     Blade(const std::shared_ptr<seahowl::elasto::BladeElasto> elasto,
-          const std::shared_ptr<seahowl::aero::BladeAero> aero);
+          const std::shared_ptr<seahowl::fluid::aero::BladeAero> aero);
 
-    /**
-     * @brief Prestep for blade, called before elastodynamic stepping.
-     *
-     * Updates aero loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for blade, called after elastodynamic stepping.
-     *
-     * Updates aero positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Builds the blade (aero and elasto part).
-     *
-     * Sets the nodes and elements for elasto and aero components of the blade, as well as the aero->elasto mapping and
-     * elasto->aero mapping.
-     */
     virtual void build() override;
 
     /**
-     * @brief Applies pitch increment to the blade (i.e. rotates the blade around its longitudinal axis).
+     * @brief Applies pitch increment to the blade, rotating it around its longitudinal axis.
      *
-     * @param pitch_increment Pitch increment value (in radians).
+     * @param pitch_increment Pitch increment value [rad]
      */
     void apply_pitch_increment(double pitch_increment);
 
@@ -120,8 +94,8 @@ class Blade : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

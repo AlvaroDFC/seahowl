@@ -12,3 +12,6 @@
 #ifdef HAVE_INFLOWWIND
     #include "seahowl/env/inflowwind_adapter.h"
 #endif
+#ifdef HAVE_SEASTATE
+    #include "seahowl/env/seastate_adapter.h"
+#endif

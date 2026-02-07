@@ -1,62 +1,70 @@
 # ===================
-# SPHINX
+# MKDOCS
 # ===================
 
+
 if(SEAHOWL_ENABLE_PYTHON)
-  # Specify the path to the SPHINX installation
+  # Cherche l'exécutable mkdocs dans le système ou l'environnement virtuel
   if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(SPHINX_EXECUTABLE "${CMAKE_BINARY_DIR}/.venv/bin/sphinx-build")
+    find_program(MKDOCS_EXECUTABLE NAMES mkdocs PATHS "${CMAKE_BINARY_DIR}/.venv/bin" NO_DEFAULT_PATH)
+    if(NOT MKDOCS_EXECUTABLE)
+      find_program(MKDOCS_EXECUTABLE NAMES mkdocs)
+    endif()
   else()
-    set(SPHINX_EXECUTABLE "${CMAKE_BINARY_DIR}/.venv/Scripts/sphinx-build")
+    find_program(MKDOCS_EXECUTABLE NAMES mkdocs PATHS "${CMAKE_BINARY_DIR}/.venv/Scripts" NO_DEFAULT_PATH)
+    if(NOT MKDOCS_EXECUTABLE)
+      find_program(MKDOCS_EXECUTABLE NAMES mkdocs)
+    endif()
   endif()
 
-  find_package(Sphinx)
+  if(NOT MKDOCS_EXECUTABLE)
+	  message(WARNING "Can't build SEAHOWL's docs. mkdocs not found!")
+    return()
+  endif()
 
-  if(NOT Sphinx_FOUND)
-      message(WARNING "Can't build user's docs. Sphinx not found!")
-      return()
-  endif(NOT Sphinx_FOUND)
-
-  set(SPHINX_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
-  set(SPHINX_BUILD ${CMAKE_CURRENT_BINARY_DIR}/user)
-  set(SPHINX_INDEX_FILE ${SPHINX_BUILD}/index.html)
+  set(MKDOCS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+  set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/source/site/index.html)
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/bin/activate")
-          file(WRITE ${CMAKE_BINARY_DIR}/run_sphinx.sh
+          file(WRITE ${CMAKE_BINARY_DIR}/run_mkdocs.sh
           "#!/bin/bash\n"
           "export PYTHONPATH=${CMAKE_BINARY_DIR}:$PYTHONPATH\n"
           "source ${ACTIVATE_PY}\n"
-          "${SPHINX_EXECUTABLE} -a -b html ${SPHINX_SOURCE} ${SPHINX_BUILD}\n"
+          "# Generate stub files for pybind11 module (required for mkdocstrings)\n"
+          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR} 2>/dev/null || true\n"
+          "${MKDOCS_EXECUTABLE} build\n"
           )
-          set(FILE_SPHINX ${CMAKE_BINARY_DIR}/run_sphinx.sh)
-          set(LAUNCH_SPHINX bash)
+          set(FILE_MKDOCS ${CMAKE_BINARY_DIR}/run_mkdocs.sh)
+          set(LAUNCH_MKDOCS bash)
 
   else()
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/Scripts/activate")
-          file(WRITE ${CMAKE_BINARY_DIR}/run_sphinx.bat
+          file(WRITE ${CMAKE_BINARY_DIR}/run_mkdocs.bat
           "set PYTHONPATH=${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};%PYTHONPATH%\n"
           "call ${ACTIVATE_PY}\n"
-          "call ${SPHINX_EXECUTABLE} -a -b html ${SPHINX_SOURCE} ${SPHINX_BUILD}\n"
+          "REM Generate stub files for pybind11 module (required for mkdocstrings)\n"
+          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE} 2>nul\n"
+          "call ${MKDOCS_EXECUTABLE} build\n"
           )
-          set(FILE_SPHINX ${CMAKE_BINARY_DIR}/run_sphinx.bat)
-          set(LAUNCH_SPHINX cmd.exe /c)
+          set(FILE_MKDOCS ${CMAKE_BINARY_DIR}/run_mkdocs.bat)
+          set(LAUNCH_MKDOCS cmd.exe /c)
   endif()
 
   # Make the script executable
-  file(COPY ${FILE_SPHINX} DESTINATION ${CMAKE_BINARY_DIR})
-  file(CHMOD ${FILE_SPHINX} FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  file(COPY ${FILE_MKDOCS} DESTINATION ${CMAKE_BINARY_DIR})
+  file(CHMOD ${FILE_MKDOCS} FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
-  add_custom_command(OUTPUT ${SPHINX_INDEX_FILE}
-      COMMAND ${LAUNCH_SPHINX} ${FILE_SPHINX}
+  add_custom_command(OUTPUT ${MKDOCS_INDEX_FILE}
+      COMMAND ${LAUNCH_MKDOCS} ${FILE_MKDOCS}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${SPHINX_SOURCE} # Every source files
-      MAIN_DEPENDENCY ${SPHINX_SOURCE}/conf.py
-      COMMENT "Generating documentation with Sphinx"
+      DEPENDS ${MKDOCS_SOURCE} # Every source files
+      MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/mkdocs.yml
+      COMMENT "Generating documentation with MkDocs"
       VERBATIM
   )
 
-  add_custom_target(Sphinx DEPENDS pyseahowl ${SPHINX_SOURCE} ${SPHINX_INDEX_FILE})
+  add_custom_target(mkdocs DEPENDS pyseahowl ${MKDOCS_SOURCE} ${MKDOCS_INDEX_FILE})
 endif(SEAHOWL_ENABLE_PYTHON)
 # ===================
 # DOXYGEN
@@ -85,12 +93,26 @@ find_package(Doxygen
   endif (DOXYGEN_FOUND)
 
 if(SEAHOWL_ENABLE_PYTHON)
-  set(TARGET_DOC Sphinx doxygen)
+  set(TARGET_DOC mkdocs doxygen)
 else(SEAHOWL_ENABLE_PYTHON)
   set(TARGET_DOC doxygen)
 endif(SEAHOWL_ENABLE_PYTHON)
 
 add_custom_target(docs DEPENDS ${TARGET_DOC})
+
+add_custom_command(TARGET docs POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/build/doc/html
+        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+    COMMENT "Copying Doxygen HTML into MkDocs site"
+)
+
+# Remove target attributes from Doxygen HTML/SVG so links stay inside the MkDocs iframe
+add_custom_command(TARGET docs POST_BUILD
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/patch_doxygen_targets.py
+        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+    COMMENT "Patching Doxygen HTML/SVG for iframe compatibility"
+)
 if(SEAHOWL_ENABLE_PYTHON)
   add_dependencies(docs pyseahowl)
   # For MSVC IDE

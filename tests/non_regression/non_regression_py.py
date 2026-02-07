@@ -2,6 +2,7 @@ import os
 import unittest
 import subprocess
 import tempfile
+import pathlib
 
 from scilens import StandaloneTaskRunner
 from scilens.helpers.assets import Assets
@@ -91,7 +92,12 @@ class TestNonRegressionPy(unittest.TestCase):
 
             os.environ[ENV_PYTHONPATH] = VAL_PY_DIR
 
-            modifications = {'"./output"': f'"{VAL_DIR}"'}
+            script_dir = pathlib.Path(script_name).parent
+            print(script_name)
+            modifications = {
+                '"./output"': f'"{VAL_DIR}"',
+                "thispath /": f'pathlib.Path("{EXAMPLES_DIR}").parent.resolve() / "{script_dir}" /',
+            }
             clean_directory(VAL_DIR)
             run_modified_script(script_name, modifications)
 
@@ -114,14 +120,14 @@ class TestNonRegressionPy(unittest.TestCase):
             )
 
     def test_simulation(self):
-        script = os.path.join(EXAMPLES_DIR, "ex_simulation.py")
+        script = os.path.join(EXAMPLES_DIR, "sim/ex_simulation.py")
         description = (
             "Non regression Test for Seahowl for simulation case with duration 100s"
         )
         self._generic_test("python/simulation", script, description)
 
     def test_main(self):
-        script = os.path.join(EXAMPLES_DIR, "ex_main.py")
+        script = os.path.join(EXAMPLES_DIR, "sim/ex_main.py")
         description = (
             "Non regression Test for Seahowl for Onshore case with duration 100s"
         )

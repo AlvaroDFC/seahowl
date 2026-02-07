@@ -17,7 +17,7 @@ struct ReferencePointElasto;
 }  // namespace seahowl
 
 namespace seahowl {
-///@brief Elastodynamic model module
+/** @brief Elastodynamic model module. */
 namespace elasto {
 
 /**
@@ -61,7 +61,7 @@ class ComponentElasto {
     /**
      * @brief Rotates the component.
      *
-     * @param[in] translation_vector The angle of rotation (in radians).
+     * @param[in] angle The angle of rotation [rad]
      * @param[in] axis The axis of rotation (3D vector).
      */
     virtual void rotate(double angle, const Vector3d& axis) const = 0;
@@ -74,12 +74,17 @@ class ComponentElasto {
     virtual void translate(const Vector3d& translation_vector) const = 0;
 
     /**
-     * @brief Returns the mass of the component.
+     * @brief Returns the mass of the component [kg]
      */
     virtual double get_mass() const = 0;
 
   protected:
     bool is_assembled = false;
+    /**
+     * @brief Component-specific assembly logic, called by assemble().
+     *
+     * @param[in] system Elasto system to assemble into.
+     */
     virtual void assemble_this(SystemElasto& system) = 0;
 
   public:

@@ -12,7 +12,8 @@ using namespace seahowl::core;
 using namespace seahowl::elasto;
 using namespace seahowl::fluid::aero;
 
-Tower::Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto, std::shared_ptr<seahowl::aero::TowerAero> aero)
+Tower::Tower(std::shared_ptr<seahowl::elasto::TowerElasto> elasto,
+             std::shared_ptr<seahowl::fluid::aero::TowerAero> aero)
     : ComponentDynamic(elasto, aero), ComponentElastoFluid(elasto, aero), elasto(*elasto), aero(*aero) {}
 
 void Tower::initialize_this(double time, double dt) {

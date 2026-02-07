@@ -22,7 +22,6 @@ class MooringHydro;
 class MooringSystemHydro;
 }  // namespace hydro
 }  // namespace fluid
-namespace hydro = fluid::hydro;
 }  // namespace seahowl
 
 namespace seahowl {
@@ -41,7 +40,7 @@ class Mooring : public ComponentElastoFluid {
     /** @brief Elastodynamic model of the mooring. */
     seahowl::elasto::MooringElastoFEA& elasto;
     /** @brief Hydrodynamic model of the mooring. */
-    seahowl::hydro::MooringHydro& hydro;
+    seahowl::fluid::hydro::MooringHydro& hydro;
 
     /**
      * @brief Instantiates mooring for communication between elasto and hydro components.
@@ -50,56 +49,26 @@ class Mooring : public ComponentElastoFluid {
      * @param[in] hydro hydrodynamic mooring model.
      */
     Mooring(std::shared_ptr<seahowl::elasto::MooringElastoFEA> elasto,
-            std::shared_ptr<seahowl::hydro::MooringHydro> hydro);
+            std::shared_ptr<seahowl::fluid::hydro::MooringHydro> hydro);
 
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     void set_length(double length);
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     void set_diameter(double diameter);
 
-    /**
-     * @brief Prestep for mooring, called before elastodynamic stepping.
-     *
-     * Updates hydro loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for mooring, called afetr elastodynamic stepping.
-     *
-     * Updates hydro positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to mooring.
-     * @param[in] env_model Environmental model affecting mooring.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& soil_model, double time) override;
-    /**
-     * @brief Builds the mooring (hydro and elasto part).
-     *
-     * Sets the nodes and elements for elasto and hydro components of the mooring, as well as the hydro->elasto mapping
-     * and elasto->hydro mapping.
-     */
     void build() override;
 
     /**
@@ -134,8 +103,8 @@ class Mooring : public ComponentElastoFluid {
      *
      * Runs the preset and poststep once to make elasto and hydro components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };
@@ -145,7 +114,7 @@ class MooringSystem : public ComponentDynamic {
     /** @brief Elastodynamic model of the mooring system. */
     seahowl::elasto::MooringSystemElasto& elasto;
     /** @brief Hydrodynamic model of the mooring system. */
-    seahowl::hydro::MooringSystemHydro& hydro;
+    seahowl::fluid::hydro::MooringSystemHydro& hydro;
     /** @brief List of mooring lines. */
     std::deque<std::shared_ptr<Mooring>> moorings;
 
@@ -156,7 +125,7 @@ class MooringSystem : public ComponentDynamic {
      * @param[in] hydro hydrodynamic mooring system model.
      */
     MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
-                  std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro);
+                  std::shared_ptr<seahowl::fluid::hydro::MooringSystemHydro> hydro);
 
     /**
      * @brief Adds mooring to mooring system.
@@ -167,11 +136,6 @@ class MooringSystem : public ComponentDynamic {
 
     void prestep(double time, double dt) override;
     void poststep(double time, double dt) override;
-    /**
-     * @brief Applies environmental model to mooring system.
-     * @param[in] env_model Environmental model affecting mooring system.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
     void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
     void build() override;

@@ -9,12 +9,12 @@ namespace seahowl {
 namespace env {
 
 /**
- * @brief Base class for soil models
+ * @brief Base class for soil models.
  */
 class SoilModel : public Model {
   public:
     /**
-     * @brief Returns soil penetration load.
+     * @brief Returns soil penetration load [N]
      *
      * @param[in] entity Dynamic entity (potentially) penetrating soil.
      * @param[in] contact_area Contact area of entity penetrating soil.
@@ -26,11 +26,14 @@ class SoilModel : public Model {
 };
 
 /**
- * @brief Base class for soil models
+ * @brief Linear soil model with stiffness-based penetration resistance.
+ *
+ * Implements a simple linear soil model where penetration loads are proportional
+ * to penetration depth via normal and shear stiffness coefficients.
  */
 class LinearSoilModel : public SoilModel {
   public:
-    /** @brief Soil position. */
+    /** @brief Soil position [m] */
     double soil_position = 0.0;
     /** @brief Soil normal vector. */
     Vector3d soil_normal{0.0, 0.0, 1.0};
@@ -44,11 +47,6 @@ class LinearSoilModel : public SoilModel {
      */
     LinearSoilModel();
 
-    /**
-     * @brief Returns true is the placement of the model (false otherwise).
-     * @param[in] position Position to assess whether inside model or not.
-     * @param[in] time Time of simulation.
-     */
     virtual bool is_inside(const Vector3d& position, double time) const override;
 
     virtual Vector3d get_penetration_load(const EntityDynamic& entity,

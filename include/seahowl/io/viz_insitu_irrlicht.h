@@ -16,23 +16,8 @@ class VisualizationInSituIrrlicht : public VisualizationInSitu {
   public:
     VisualizationInSituIrrlicht();
 
-    /**
-     * @brief Initialization of in situ visualization for system.
-     *
-     * @param[in] system System to visualize.
-     */
     void initialize(seahowl::core::System& system) override;
-
-    /**
-     * @brief Initialization of in situ visualization for system.
-     *
-     * @param[in] system System to visualize.
-     */
     void initialize_elasto(seahowl::elasto::SystemElasto& system_elasto) override;
-
-    /**
-     * @brief Draw elements of systems (rigid bodies, FEA beams, etc).
-     */
     void draw() override;
 
   private:

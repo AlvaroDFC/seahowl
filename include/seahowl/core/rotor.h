@@ -23,20 +23,19 @@ class RotorNacelleAssemblyAero;
 class RotorAero;
 }  // namespace aero
 }  // namespace fluid
-namespace aero = fluid::aero;
 }  // namespace seahowl
 
 namespace seahowl {
 namespace core {
 /**
- * @brief Rotor
+ * @brief Rotor.
  */
 class Rotor : public ComponentDynamic {
   public:
     /** @brief Elastodynamic model of the Rotor. */
     seahowl::elasto::RotorElasto& elasto;
     /** @brief Aerodynamic model of the Rotor. */
-    seahowl::aero::RotorAero& aero;
+    seahowl::fluid::aero::RotorAero& aero;
     /** @brief Blades of the turbine. */
     std::vector<std::shared_ptr<seahowl::core::Blade>> blades;
 
@@ -46,30 +45,10 @@ class Rotor : public ComponentDynamic {
      * @param[in] elasto Elastodynamic Rotor model.
      * @param[in] aero Aerodynamic Rotor model.
      */
-    Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::aero::RotorAero> aero);
+    Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::fluid::aero::RotorAero> aero);
 
-    /**
-     * @brief Prestep for Rotor, called before elastodynamic stepping.
-     *
-     * Calls prestep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for Rotor, called after elastodynamic stepping.
-     *
-     * Calls poststep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-    /**
-     * @brief Builds the Rotor and blades associated to it.
-     */
     void build() override;
 
   private:
@@ -78,8 +57,8 @@ class Rotor : public ComponentDynamic {
      *
      * Runs preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };
@@ -95,7 +74,7 @@ class RotorNacelleAssembly : public ComponentDynamic {
     /** @brief Elastodynamic model of the RNA. */
     seahowl::elasto::RotorNacelleAssemblyElasto& elasto;
     /** @brief Aerodynamic model of the RNA. */
-    seahowl::aero::RotorNacelleAssemblyAero& aero;
+    seahowl::fluid::aero::RotorNacelleAssemblyAero& aero;
     /** @brief Rotor. */
     Rotor rotor;
 
@@ -106,34 +85,12 @@ class RotorNacelleAssembly : public ComponentDynamic {
      * @param[in] aero Aerodynamic RNA model.
      */
     RotorNacelleAssembly(std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> elasto,
-                         std::shared_ptr<seahowl::aero::RotorNacelleAssemblyAero> aero);
+                         std::shared_ptr<seahowl::fluid::aero::RotorNacelleAssemblyAero> aero);
 
-    /**
-     * @brief Prestep for RNA, called before elastodynamic stepping.
-     *
-     * Calls prestep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for RNA, called after elastodynamic stepping.
-     *
-     * Calls poststep for each blade.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to RNA.
-     * @param[in] env_model Environmental model affecting RNA.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
+    void build() override;
 
     /**
      * @brief Updates aero positions, rotations, velocities and accelerations from elasto component of the RNA.
@@ -141,14 +98,9 @@ class RotorNacelleAssembly : public ComponentDynamic {
     void update_positions_aero();
 
     /**
-     * @brief Builds the RNA and blades associated to it.
-     */
-    void build() override;
-
-    /**
-     * @brief Returns yaw error.
+     * @brief Returns yaw error [rad]
      *
-     * The yaw error is defined as the angle bteween the rotor disk normal vector to the rotor-disk-averaged relative
+     * The yaw error is defined as the angle between the rotor disk normal vector to the rotor-disk-averaged relative
      * wind velocity, both projected on global X-Y plane.
      */
     double get_yaw_error() const;
@@ -159,8 +111,8 @@ class RotorNacelleAssembly : public ComponentDynamic {
      *
      * Runs preset and poststep once to make elasto and aero components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
 };

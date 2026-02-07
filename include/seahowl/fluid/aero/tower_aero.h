@@ -20,7 +20,6 @@ class FluidModel;
 namespace seahowl {
 namespace fluid {
 
-/**@brief Aerodynamic module */
 namespace aero {
 
 /**

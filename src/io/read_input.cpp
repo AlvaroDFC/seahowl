@@ -20,6 +20,8 @@
 #include "seahowl/env/env_model.h"
 #include "seahowl/env/fluid_models.h"
 #include "seahowl/env/soil_models.h"
+#include "seahowl/env/wave_models.h"
+#include "seahowl/env/wind_models.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
@@ -462,7 +464,7 @@ std::shared_ptr<seahowl::servo::Controller> get_controller_discon_from_db(const 
 
     } else if (controller_db.type == "rpm") {
         auto controller_rpm = std::make_shared<seahowl::servo::ControllerVariableTorque>();
-        controller_rpm->target_rpm = controller_db.options.target_rpm;
+        controller_rpm->set_target_rpm(controller_db.options.target_rpm);
         controller = controller_rpm;
     }
     return controller;

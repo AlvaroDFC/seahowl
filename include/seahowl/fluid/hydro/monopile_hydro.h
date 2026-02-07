@@ -6,8 +6,6 @@
 
 namespace seahowl {
 namespace fluid {
-
-/**@brief HydroDynamic module */
 namespace hydro {
 
 /**

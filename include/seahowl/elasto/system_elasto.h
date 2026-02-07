@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace seahowl {
-///@brief Elastodynamic model module
 namespace elasto {
 
 /**
@@ -29,9 +28,6 @@ class SystemElasto : public ComponentElasto {
      * @brief Virtual destructor.
      */
     virtual ~SystemElasto() = default;
-    /**
-     * @brief Builds the component (to call before assemble).
-     */
     void build() override;
 
     /**
@@ -51,19 +47,19 @@ class SystemElasto : public ComponentElasto {
     /**
      * @brief Does an elasto step.
      *
-     * @param[in] dt Time step length.
+     * @param[in] dt Time step length [s]
      */
     virtual void step(double dt) = 0;
 
     /**
-     * @brief Returns time of simulation.
+     * @brief Returns time of simulation [s]
      */
     virtual double get_time() const = 0;
 
     /**
      * @brief Sets time of simulation.
      *
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     virtual void set_time(double time) = 0;
 
@@ -76,14 +72,14 @@ class SystemElasto : public ComponentElasto {
     virtual void do_statics(bool linear, int nonlinear_steps) = 0;
 
     /**
-     * @brief Returns gravitational acceleration.
+     * @brief Returns gravitational acceleration [m/s^2]
      */
     virtual Vector3d get_gravitational_acceleration() const = 0;
 
     /**
      * @brief Sets gravitational acceleration.
      *
-     * @param[in] gravitational_acceleration Gravitational acceleration.
+     * @param[in] gravitational_acceleration Gravitational acceleration [m/s^2]
      */
     virtual void set_gravitational_acceleration(const Vector3d& gravitational_acceleration) = 0;
 
@@ -158,24 +154,8 @@ class SystemElasto : public ComponentElasto {
      */
     virtual void add(std::shared_ptr<TurbineElasto> turbine);
 
-    /**
-     * @brief Translates the system.
-     *
-     * @param[in] translation_vector The 3D translation vector.
-     */
     virtual void translate(const seahowl::Vector3d& translation_vector) const override;
-
-    /**
-     * @brief Rotates the system.
-     *
-     * @param[in] translation_vector The angle of rotation (in radians).
-     * @param[in] axis The axis of rotation (3D vector).
-     */
     virtual void rotate(double angle, const seahowl::Vector3d& axis) const override;
-
-    /**
-     * @brief Returns the mass of the system.
-     */
     virtual double get_mass() const override;
 
   protected:
