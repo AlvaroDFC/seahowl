@@ -17,8 +17,10 @@ set(TEST_FILES
 	unit_tests/test_rotor.cpp
 	unit_tests/test_tower.cpp
 	unit_tests/test_turbine.cpp
+	unit_tests/test_monopile.cpp
 	unit_tests/test_controller.cpp
 	unit_tests/test_morison.cpp
+	unit_tests/test_floating.cpp
 	unit_tests/tools/test_framework_dataset.cpp
 	unit_tests/tools/csv.cpp
 	unit_tests/tools/get_env_var.cpp

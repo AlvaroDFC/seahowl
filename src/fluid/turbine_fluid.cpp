@@ -17,6 +17,14 @@ void TurbineFluid::build() {
     }
 }
 
+void TurbineAero::setup_environment(const env::EnvModel& env_model) {
+    rna->setup_environment(env_model);
+    tower->setup_environment(env_model);
+    if (foundation) {
+        foundation->setup_environment(env_model);
+    }
+}
+
 void TurbineFluid::initialize(double time, double dt) {}
 
 void TurbineFluid::compute_env_loads(const EnvModel& env_model, double time) {

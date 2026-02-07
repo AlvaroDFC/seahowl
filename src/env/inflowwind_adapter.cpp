@@ -39,6 +39,10 @@ void IfW_C_CalcOutput(double& Time_C,
                       char* ErrMsg_C);
 
 void IfW_C_End(int& ErrStat_C, char* ErrMsg_C);
+
+void IfW_C_GetFlowFieldPointer(void** FlowFieldPtr, int& ErrStat_C, char* ErrMsg_C);
+
+void IfW_C_SetFlowFieldPointer(void* FlowFieldPtr, int& ErrStat_C, char* ErrMsg_C);
 }
 
 /**
@@ -55,6 +59,8 @@ struct seahowl::env::InflowWindLib {
     void Init();
     void Calcul(double time, float* position, float* velocity);
     void End();
+    void* GetFlowFieldPointer();
+    void SetFlowFieldPointer(void* FlowFieldPtr);
 
   private:
     // Input file string
@@ -85,6 +91,7 @@ struct seahowl::env::InflowWindLib {
 
 InflowWindLib::~InflowWindLib() {
     delete[] OutputChannelValues;
+    End();
 }
 
 void InflowWindLib::SetIFWINFILE(std::string name) {
@@ -126,6 +133,18 @@ void InflowWindLib::Calcul(double time, float* position, float* velocity) {
 
 void InflowWindLib::End() {
     IfW_C_End(ErrStat, ErrMsg);
+    CheckError();
+}
+
+void* InflowWindLib::GetFlowFieldPointer() {
+    void* FlowFieldPtr;
+    IfW_C_GetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+    return FlowFieldPtr;
+}
+
+void InflowWindLib::SetFlowFieldPointer(void* FlowFieldPtr) {
+    IfW_C_SetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
     CheckError();
 }
 

@@ -8,3 +8,6 @@
 #ifdef HAVE_HYDROCHRONO
     #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 #endif
+#ifdef HAVE_HYDRODYN
+    #include "seahowl/fluid/hydro/hydrodyn_adapter.h"
+#endif

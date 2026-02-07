@@ -8,7 +8,9 @@ using namespace seahowl;
 using namespace seahowl::fluid::hydro;
 using namespace seahowl::env;
 
-FloaterHydro::FloaterHydro() : mooring_system(std::make_unique<MooringSystemHydro>()) {}
+FloaterHydro::FloaterHydro() : mooring_system(std::make_unique<MooringSystemHydro>()) {
+    body_main = std::make_unique<seahowl::EntityDynamicEigen>();
+}
 
 void FloaterHydro::build() {
     mooring_system->build();
@@ -16,4 +18,16 @@ void FloaterHydro::build() {
 
 void FloaterHydro::compute_env_loads(const EnvModel& env_model, double time) {
     mooring_system->compute_env_loads(env_model, time);
+}
+
+Vector3d FloaterHydro::get_force_hydro() {
+    return force_hydro;
+}
+
+Vector3d FloaterHydro::get_torque_hydro() {
+    return torque_hydro;
+}
+
+Eigen::Matrix<double, 6, 6> FloaterHydro::get_added_mass_matrix() {
+    return added_mass_matrix;
 }

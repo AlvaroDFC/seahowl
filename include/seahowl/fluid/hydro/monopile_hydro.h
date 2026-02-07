@@ -17,4 +17,5 @@ class MonopileHydro : public seahowl::aero::TowerAero, public virtual Foundation
 
 }  // namespace hydro
 }  // namespace fluid
+namespace hydro = fluid::hydro;
 }  // namespace seahowl

@@ -20,8 +20,6 @@
 #include "seahowl/env/env_model.h"
 #include "seahowl/env/fluid_models.h"
 #include "seahowl/env/soil_models.h"
-#include "seahowl/env/wave_models.h"
-#include "seahowl/env/wind_models.h"
 #include "seahowl/fluid/aero/airfoil.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
@@ -39,9 +37,15 @@
 #ifdef HAVE_INFLOWWIND
     #include "seahowl/env/inflowwind_adapter.h"
 #endif
+#ifdef HAVE_SEASTATE
+    #include "seahowl/env/seastate_adapter.h"
+#endif
 #ifdef HAVE_HYDROCHRONO
     #include "seahowl/elasto/chrono_adapters.h"
     #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
+#endif
+#ifdef HAVE_HYDRODYN
+    #include "seahowl/fluid/hydro/hydrodyn_adapter.h"
 #endif
 #ifdef HAVE_AERODYN
     #include "seahowl/fluid/aero/aerodyn_adapter.h"
@@ -344,7 +348,9 @@ std::shared_ptr<seahowl::elasto::RotorNacelleAssemblyElasto> get_rna_elasto_from
     return rna_elasto;
 }
 
-std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_reference_points_db(const TowerDb& tower_db) {
+std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_reference_points_db(
+    const TowerDb& tower_db,
+    bool has_external_fill_density = false) {
     // EXTRACT INFO
     std::vector<seahowl::elasto::TowerReferencePointElasto> reference_points;
 
@@ -361,8 +367,16 @@ std::vector<seahowl::elasto::TowerReferencePointElasto> get_tower_elasto_referen
         // general properties
         // shear set to false as it leads to issues when tower is not finely discretized (wrong nat. freq.)
         // its effect is usually small enough to be neglected here
+        auto fill_density = point_db.fill_density;
+        if (has_external_fill_density && fill_density != 0.0) {
+            fill_density = 0.0;
+            spdlog::warn(
+                "Tower/monopile point at ({}, {}, {}): setting fill density to 0.0 (handled externally with e.g. "
+                "HydroDyn).",
+                reference_point.coordinates[0], reference_point.coordinates[1], reference_point.coordinates[2]);
+        }
         reference_point.set_properties_cylinder(point_db.density, point_db.young_modulus, point_db.poisson_ratio,
-                                                point_db.diameter, point_db.thickness, false, point_db.fill_density);
+                                                point_db.diameter, point_db.thickness, false, fill_density);
 
         reference_point.damping_foreaft = point_db.damping_foreaft;
         reference_point.damping_sideside = point_db.damping_sideside;
@@ -461,12 +475,18 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
         // create monopile
         auto monopile_hydro = std::make_shared<seahowl::hydro::MonopileHydro>();
 
-        // aero
-        monopile_hydro->reference_points = get_tower_aero_reference_points_db(foundation_db.data_tower);
-        monopile_hydro->discretization_fractions = foundation_db.discretization.hydro;
-
         if (foundation_db.options.has_value()) {
             auto& options = foundation_db.options.value();
+            if (options.solver_hydro.has_value() && options.solver_hydro.value() == "hydrodyn") {
+#if SEAHOWL_HAVE_HYDRODYN
+                // replace monopile hydro with HydroDyn type
+                monopile_hydro =
+                    std::make_shared<seahowl::hydro::MonopileHydroDyn>(options.file_hydrodyn_path.generic_string());
+#else
+                throw std::runtime_error(
+                    "Trying to use HydroDyn for monopile but did not compile SEAHOWL with HydroDyn dependency.");
+#endif
+            }
             if (options.use_MacCamyFuchs_correction.has_value()) {
                 monopile_hydro->use_MacCamyFuchs_correction = options.use_MacCamyFuchs_correction.value();
             }
@@ -474,10 +494,26 @@ std::shared_ptr<seahowl::hydro::FoundationFluid> get_foundation_fluid_from_db(
                 monopile_hydro->use_Cd_correction = options.use_Cd_correction.value();
             }
         }
+
+        // hydro
+        monopile_hydro->reference_points = get_tower_aero_reference_points_db(foundation_db.data_tower);
+        monopile_hydro->discretization_fractions = foundation_db.discretization.hydro;
+
         foundation_fluid = monopile_hydro;
 
     } else if (foundation_db.type == "floater") {
+        Floaterdb floater_db = foundation_db.data_floater;
+
         auto floater_hydro = std::make_shared<seahowl::hydro::FloaterHydro>();
+        if (floater_db.type == "hydrodyn") {
+#ifdef HAVE_HYDRODYN
+            spdlog::info("Hydrodynamic model: HydroChrono.");
+            floater_hydro = std::make_shared<seahowl::hydro::FloaterHydroDyn>(
+                (foundation_db.data_floater.options_file_path).generic_string());
+#else
+            throw std::runtime_error("Trying to use HydroChrono but did not compile with HydroDyn dependency.");
+#endif
+        }
 
         if (foundation_db.file.has_value()) {
             for (const auto& mooring_db : foundation_db.data_floater.moorings) {
@@ -507,7 +543,16 @@ std::shared_ptr<seahowl::elasto::FoundationElasto> get_foundation_elasto_from_db
         // create monopile
         auto monopile_elasto = std::make_shared<seahowl::elasto::MonopileElasto>();
 
-        monopile_elasto->reference_points = get_tower_elasto_reference_points_db(foundation_db.data_tower);
+        bool has_external_fill_density = false;
+        if (foundation_db.options.has_value()) {
+            auto& options = foundation_db.options.value();
+            if (options.solver_hydro.has_value() && options.solver_hydro.value() == "hydrodyn") {
+                has_external_fill_density = true;
+            }
+        }
+
+        monopile_elasto->reference_points =
+            get_tower_elasto_reference_points_db(foundation_db.data_tower, has_external_fill_density);
         monopile_elasto->height = monopile_elasto->reference_points.back().coordinates.z();
         monopile_elasto->base_height = monopile_elasto->reference_points.front().coordinates.z();
         monopile_elasto->discretization_fractions = foundation_db.discretization.elasto;
@@ -679,7 +724,9 @@ std::shared_ptr<seahowl::core::Turbine> get_turbine_from_db(const TurbineDb& tur
     return turbine;
 }
 
-void populate_tower_elasto_from_file(const std::string& filepath, seahowl::elasto::TowerElasto& tower) {
+void populate_tower_elasto_from_file(const std::string& filepath,
+                                     seahowl::elasto::TowerElasto& tower,
+                                     bool has_external_fill_density) {
     TowerDb tower_db;
     InputHandler input_handler;
     try {
@@ -688,7 +735,7 @@ void populate_tower_elasto_from_file(const std::string& filepath, seahowl::elast
         throw std::runtime_error("Error reading in Tower file \"" + filepath + "\" -> " + std::string(e.what()));
     }
     tower_db = input_handler.reader->read_tower();
-    tower.reference_points = get_tower_elasto_reference_points_db(tower_db);
+    tower.reference_points = get_tower_elasto_reference_points_db(tower_db, has_external_fill_density);
     tower.height = tower.reference_points.back().coordinates.z();
     tower.base_height = tower.reference_points.front().coordinates.z();
 }
@@ -914,6 +961,19 @@ std::shared_ptr<seahowl::env::EnvModel> get_environmental_model_from_db(const En
             wave_Current_ptr->velocity_surface = sea_db.options.velocity_surface;
             wave_Current_ptr->velocity_seabed = sea_db.options.velocity_seabed;
             wave_model_ptr = std::move(wave_Current_ptr);
+        } else if (sea_db.type == "seastate") {
+            spdlog::info("Wave conditions: SeaState.");
+#ifdef HAVE_SEASTATE
+            std::string seastate_filepath;
+
+            seastate_filepath = (sea_db.options.file_seastate_path).generic_string();
+
+            auto seastate_model = std::make_unique<seahowl::env::SeaStateAdapter>(seastate_filepath);
+            wave_model_ptr = std::move(seastate_model);
+#else
+            throw std::runtime_error(
+                "SeaState module in CMAKE options should be enabled if sea type 'seastate' selected.");
+#endif
         } else {
             throw std::runtime_error(
                 "The input sea type is unknown. Please use the existing current types: still, current, HydroChrono.");

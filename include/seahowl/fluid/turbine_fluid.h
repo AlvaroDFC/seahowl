@@ -44,6 +44,8 @@ class TurbineFluid : public ComponentFluid {
      */
     TurbineFluid();
 
+    void setup_environment(const env::EnvModel& env_model) override;
+
     /**
      * @brief Builds turbine.
      */
