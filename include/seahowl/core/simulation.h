@@ -1,11 +1,13 @@
 #pragma once
 
-#include "seahowl/io/output_manager.h"
+// SEAHOWL headers
 #include "seahowl/core/system.h"
-#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/system_elasto.h"
-#include <seahowl/io/config_manager.h>
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/io/config_manager.h"
+#include "seahowl/io/output_manager.h"
 
+// Standard library
 #include <memory>
 #include <string>
 
@@ -23,6 +25,14 @@ class Simulation {
 
     Simulation();
 
+    // Enable move semantics
+    Simulation(Simulation&&) = default;
+    Simulation& operator=(Simulation&&) = default;
+
+    // Disable copy
+    Simulation(const Simulation&) = delete;
+    Simulation& operator=(const Simulation&) = delete;
+
     void populate_from_file(const std::string& filepath);
     void populate_from_config();
     void initialize_from_config();
@@ -33,7 +43,7 @@ class Simulation {
 
   private:
     std::shared_ptr<seahowl::elasto::SystemElasto> system_elasto;
-    std::shared_ptr<seahowl::aero::SystemAero> system_aero;
+    std::shared_ptr<seahowl::fluid::SystemFluid> system_fluid;
     int nstep = 0;
     double t_output_next = 0.0;
     std::string main_filepath;

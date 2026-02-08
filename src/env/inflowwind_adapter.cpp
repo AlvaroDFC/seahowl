@@ -1,11 +1,14 @@
 #include "seahowl/env/inflowwind_adapter.h"
 
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <fstream>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
 #include <filesystem>
+#include <fstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace seahowl::env;
 namespace fs = std::filesystem;
@@ -36,6 +39,10 @@ void IfW_C_CalcOutput(double& Time_C,
                       char* ErrMsg_C);
 
 void IfW_C_End(int& ErrStat_C, char* ErrMsg_C);
+
+void IfW_C_GetFlowFieldPointer(void** FlowFieldPtr, int& ErrStat_C, char* ErrMsg_C);
+
+void IfW_C_SetFlowFieldPointer(void* FlowFieldPtr, int& ErrStat_C, char* ErrMsg_C);
 }
 
 /**
@@ -52,13 +59,15 @@ struct seahowl::env::InflowWindLib {
     void Init();
     void Calcul(double time, float* position, float* velocity);
     void End();
+    void* GetFlowFieldPointer();
+    void SetFlowFieldPointer(void* FlowFieldPtr);
 
   private:
     // Input file string
     std::string IfWinputFileString;
 
     // Input file string length
-    int IfWinputFileStringLength;
+    int IfWinputFileStringLength = 0;
 
     int IfWinputFilePassed = 0;
 
@@ -66,7 +75,7 @@ struct seahowl::env::InflowWindLib {
     int NumWindPts = 1;
 
     // Time step
-    double DT;
+    double DT = 0.0;
 
     // Debug level
     int DebugLevel = 0;
@@ -82,6 +91,7 @@ struct seahowl::env::InflowWindLib {
 
 InflowWindLib::~InflowWindLib() {
     delete[] OutputChannelValues;
+    End();
 }
 
 void InflowWindLib::SetIFWINFILE(std::string name) {
@@ -126,7 +136,19 @@ void InflowWindLib::End() {
     CheckError();
 }
 
-InflowWindAdapter::InflowWindAdapter(std::string inflowwind_infile_) : inflowwind_infile(inflowwind_infile_) {
+void* InflowWindLib::GetFlowFieldPointer() {
+    void* FlowFieldPtr;
+    IfW_C_GetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+    return FlowFieldPtr;
+}
+
+void InflowWindLib::SetFlowFieldPointer(void* FlowFieldPtr) {
+    IfW_C_SetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+}
+
+InflowWindAdapter::InflowWindAdapter(const std::string& inflowwind_infile_) : inflowwind_infile(inflowwind_infile_) {
     spdlog::info("Using InflowWind.");
     pImpl.reset(new InflowWindLib);
     pImpl->SetIFWINFILE(inflowwind_infile);

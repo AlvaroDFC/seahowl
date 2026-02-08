@@ -1,19 +1,22 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+// SEAHOWL headers
 #include "seahowl/env/fluid_models.h"
 #include "seahowl/env/list_model.h"
+
+// Standard library
+#include <memory>
+#include <vector>
 
 namespace seahowl {
 namespace env {
 /**
- * @brief Class to store list of fluids
+ * @brief Class to store list of fluids.
  */
 class FluidListModel : public ListModel<FluidModel> {
   public:
     /**
-     * @brief Returns fluid density at given coordinates.
+     * @brief Returns fluid density at given coordinates [kg/m^3]
      *
      * @param[in] position Position at which fluid density is extracted.
      * @param[in] time Time of simulation.
@@ -21,7 +24,7 @@ class FluidListModel : public ListModel<FluidModel> {
     double get_density(const Vector3d& position, double time) const;
 
     /**
-     * @brief Returns fluid velocity at given coordinates.
+     * @brief Returns fluid velocity at given coordinates [m/s]
      *
      * @param[in] position Position at which fluid velocity is extracted.
      * @param[in] time Time of simulation.
@@ -29,7 +32,7 @@ class FluidListModel : public ListModel<FluidModel> {
     Vector3d get_velocity(const Vector3d& position, double time) const;
 
     /**
-     * @brief Returns fluid acceleration at given coordinates.
+     * @brief Returns fluid acceleration at given coordinates [m/s^2]
      *
      * @param[in] position Position at which fluid acceleration is extracted.
      * @param[in] time Time of simulation.
@@ -37,9 +40,9 @@ class FluidListModel : public ListModel<FluidModel> {
     Vector3d get_acceleration(const Vector3d& position, double time) const;
 
     /**
-     * @brief set ramp time for all fluid model.
-     * @param[in] start_time Start time of the ramp.
-     * @param[in] end_time End time of the ramp.
+     * @brief Sets ramp time for all fluid models.
+     * @param[in] start_time Start time of the ramp [s]
+     * @param[in] end_time End time of the ramp [s]
      */
     void set_ramp(double start_time, double end_time);
 };

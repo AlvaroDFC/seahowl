@@ -1,11 +1,14 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <deque>
-
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"  // for DiscretizationPoint
 #include "seahowl/core/component.h"
+#include "seahowl/core/component_elasto_fluid.h"
+
+// Standard library
+#include <deque>
+#include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {
@@ -13,10 +16,12 @@ namespace elasto {
 class MooringElastoFEA;
 class MooringSystemElasto;
 }  // namespace elasto
+namespace fluid {
 namespace hydro {
 class MooringHydro;
 class MooringSystemHydro;
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl
 
 namespace seahowl {
@@ -30,18 +35,12 @@ namespace core {
  * between the hydro and elasto components. The hydro loads are communicated to the elasto component in the prestep,
  * while the hydro positions are updated using the elasto positions in the poststep.
  */
-class Mooring : public ComponentDynamic {
+class Mooring : public ComponentElastoFluid {
   public:
     /** @brief Elastodynamic model of the mooring. */
     seahowl::elasto::MooringElastoFEA& elasto;
     /** @brief Hydrodynamic model of the mooring. */
-    seahowl::hydro::MooringHydro& hydro;
-    /** @brief Mapping of hydro nodes into elasto domain. */
-    std::vector<seahowl::DiscretizationPoint> mapping_hydro2elasto_nodes;
-    /** @brief Mapping of hydro elements (central point of elements) into elasto domain. */
-    std::vector<seahowl::DiscretizationPoint> mapping_hydro2elasto_elements;
-    /** @brief Mapping of elasto nodes into hydro domain. */
-    std::vector<seahowl::DiscretizationPoint> mapping_elasto2hydro;
+    seahowl::fluid::hydro::MooringHydro& hydro;
 
     /**
      * @brief Instantiates mooring for communication between elasto and hydro components.
@@ -50,56 +49,26 @@ class Mooring : public ComponentDynamic {
      * @param[in] hydro hydrodynamic mooring model.
      */
     Mooring(std::shared_ptr<seahowl::elasto::MooringElastoFEA> elasto,
-            std::shared_ptr<seahowl::hydro::MooringHydro> hydro);
+            std::shared_ptr<seahowl::fluid::hydro::MooringHydro> hydro);
 
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     void set_length(double length);
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     void set_diameter(double diameter);
 
-    /**
-     * @brief Prestep for mooring, called before elastodynamic stepping.
-     *
-     * Updates hydro loads on elasto component.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for mooring, called afetr elastodynamic stepping.
-     *
-     * Updates hydro positions from elasto component.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to mooring.
-     * @param[in] env_model Environmental model affecting mooring.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& soil_model, double time) override;
-    /**
-     * @brief Builds the mooring (hydro and elasto part).
-     *
-     * Sets the nodes and elements for elasto and hydro components of the mooring, as well as the hydro->elasto mapping
-     * and elasto->hydro mapping.
-     */
     void build() override;
 
     /**
@@ -107,14 +76,14 @@ class Mooring : public ComponentDynamic {
      *
      * @param[in] fractions Normalized discretization fractions within [0, 1].
      */
-    void set_discretization_elasto(std::vector<double> fractions);
+    void set_discretization_elasto(const std::vector<double>& fractions);
 
     /**
      * @brief Sets the discretization fractions to use when building the hydro part of the mooring.
      *
      * @param[in] fractions Normalized discretization fractions within [0, 1].
      */
-    void set_discretization_hydro(std::vector<double> fractions);
+    void set_discretization_hydro(const std::vector<double>& fractions);
 
     /**
      * @brief Updates hydro positions, rotations, velocities and accelerations from elasto component of the mooring.
@@ -134,20 +103,10 @@ class Mooring : public ComponentDynamic {
      *
      * Runs the preset and poststep once to make elasto and hydro components match.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     void initialize_this(double time, double dt) override;
-
-    /**
-     * @brief Computes the hydro->elasto mapping that is used when accumulating hydro loads on elasto component.
-     */
-    void compute_mapping_hydro2elasto();
-
-    /**
-     * @brief Computes the elasto->hydro mapping.
-     */
-    void compute_mapping_elasto2hydro();
 };
 
 class MooringSystem : public ComponentDynamic {
@@ -155,7 +114,7 @@ class MooringSystem : public ComponentDynamic {
     /** @brief Elastodynamic model of the mooring system. */
     seahowl::elasto::MooringSystemElasto& elasto;
     /** @brief Hydrodynamic model of the mooring system. */
-    seahowl::hydro::MooringSystemHydro& hydro;
+    seahowl::fluid::hydro::MooringSystemHydro& hydro;
     /** @brief List of mooring lines. */
     std::deque<std::shared_ptr<Mooring>> moorings;
 
@@ -166,7 +125,7 @@ class MooringSystem : public ComponentDynamic {
      * @param[in] hydro hydrodynamic mooring system model.
      */
     MooringSystem(std::shared_ptr<seahowl::elasto::MooringSystemElasto> elasto,
-                  std::shared_ptr<seahowl::hydro::MooringSystemHydro> hydro);
+                  std::shared_ptr<seahowl::fluid::hydro::MooringSystemHydro> hydro);
 
     /**
      * @brief Adds mooring to mooring system.
@@ -177,11 +136,6 @@ class MooringSystem : public ComponentDynamic {
 
     void prestep(double time, double dt) override;
     void poststep(double time, double dt) override;
-    /**
-     * @brief Applies environmental model to mooring system.
-     * @param[in] env_model Environmental model affecting mooring system.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
     void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
     void build() override;

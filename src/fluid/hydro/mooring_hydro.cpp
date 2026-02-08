@@ -1,13 +1,15 @@
 #include "seahowl/fluid/hydro/mooring_hydro.h"
 
-#include "seahowl/commons/utils.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+#include "seahowl/commons/utils.h"
 #include "seahowl/env/env_model.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 using seahowl::env::EnvModel;
 
 MooringHydro::MooringHydro() {

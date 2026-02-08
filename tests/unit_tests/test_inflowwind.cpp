@@ -1,16 +1,20 @@
+// Local test headers
 #include "fixture_components.h"
 
-#include <seahowl/commons/numerics.h>
-#include <seahowl/fluid/aero/turbine_aero.h>
-#include <seahowl/core/turbine.h>
-#include <seahowl/servo/controller.h>
-#include <seahowl/io/read_input.h>
-#include <seahowl/env/inflowwind_adapter.h>
-#include <seahowl/env/env_model.h>
-#include <seahowl/elasto/chrono_adapters.h>
+// SEAHOWL headers
+#include <seahowl/core.h>
+#include <seahowl/elasto.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+#include <seahowl/io.h>
+#include <seahowl/servo.h>
 
+// Third-party libraries
 #include <gtest/gtest.h>
-#include <filesystem>  // C++17
+
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;
@@ -20,6 +24,7 @@ using namespace seahowl::elasto;
 class TestInflowWind : public FixtureComponents {
   protected:
     TestInflowWind() : FixtureComponents() {
+        root_dir /= "test_inflowwind";
         ref_dir /= "test_inflowwind/ref";
         test_dir /= "test_inflowwind/test";
     }
@@ -74,14 +79,14 @@ TEST_F(TestInflowWind, rpm_initial_pitch) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_inflowwind_rpm_initial_pitch.csv").generic_string(),
                                        (test_dir / "test_inflowwind_rpm_initial_pitch.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto]() { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto]() { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
 
     while (time < 50.0) {
         // prestep
         // compute forces
         turbine.apply_control(time, dt);
-        turbine.aero.compute_env_loads(env_model, time);
+        turbine.fluid.compute_env_loads(env_model, time);
         // prestep (accumulates loads from aero to elasto)
         turbine.prestep(time, dt);
 

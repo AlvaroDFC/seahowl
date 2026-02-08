@@ -1,14 +1,19 @@
 #include "seahowl/io/config_manager.h"
-#include "seahowl/io/utils_io.h"
-#include "seahowl/io/command_parser.h"
 
-#include <vector>
+// SEAHOWL headers
+#include "seahowl/io/command_parser.h"
+#include "seahowl/io/utils_io.h"
+
+// Third-party libraries
+#include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <cctype>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <nlohmann/json.hpp>
-#include <spdlog/spdlog.h>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -22,8 +27,7 @@ class ConfigManagerImpl {
     std::map<std::string, SpecComputed> varspecs_;
     std::map<std::string, ValueComputed> vals_;
 
-    ConfigManagerImpl(const ConfigManagerOptions& options) {
-        options_ = options;
+    ConfigManagerImpl(const ConfigManagerOptions& options) : options_(options) {
         linearize(options_.variable_specs, "_");
     }
 
@@ -180,6 +184,8 @@ ConfigManager::ConfigManager() : ConfigManager(ConfigManagerOptions{}) {}
 ConfigManager::ConfigManager(const ConfigManagerOptions& options)
     : pimpl_(std::make_unique<ConfigManagerImpl>(options)) {}
 ConfigManager::~ConfigManager() = default;
+ConfigManager::ConfigManager(ConfigManager&&) noexcept = default;
+ConfigManager& ConfigManager::operator=(ConfigManager&&) noexcept = default;
 
 void ConfigManager::compute(int argc, char** argv) {
     pimpl_->load_defaults();

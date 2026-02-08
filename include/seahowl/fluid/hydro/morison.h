@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 
@@ -11,6 +12,7 @@ class EnvModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 
 struct HydroCoefficients {
@@ -31,25 +33,72 @@ struct HydroCoefficients {
     /** @brief Cd Correction for large cylinders, Flag. */
     bool use_Cd_correction = false;
 
+    /**
+     * @brief Multiplies all coefficients by a scalar factor.
+     *
+     * @param[in] factor Scalar multiplication factor.
+     * @return New HydroCoefficients with scaled values.
+     */
     HydroCoefficients operator*(const double factor) const;
+
+    /**
+     * @brief Adds two HydroCoefficients element-wise.
+     *
+     * @param[in] other HydroCoefficients to add.
+     * @return New HydroCoefficients with summed values.
+     */
     HydroCoefficients operator+(const HydroCoefficients& other) const;
 };
 
+/**
+ * @brief MacCamy and Fuchs correction table for large cylinder wave loads.
+ *
+ * Provides corrections to Morison equation coefficients for large diameter
+ * cylinders where diffraction effects become significant.
+ */
 class MacCamyFuchsTable {
-    /** @brief MacCamy and Fuchs Empirical Table for large cylinders */
   public:
+    /**
+     * @brief Constructor.
+     */
     MacCamyFuchsTable();
-    /** @brief Wave period */
+
+    /** @brief Wave peak period [s] */
     double wave_peak_period = 0.0;
-    /** @brief The MacCamy and Fuchs Empirical Table for large cylinders */
+    /** @brief Lookup table mapping diameter to Cm correction factor. */
     std::vector<std::pair<double, double>> MCFTable;
-    /** @brief Function to generate the MacCamy and Fuchs Empirical Table for large cylinders */
+
+    /**
+     * @brief Generates the MacCamy and Fuchs empirical correction table.
+     */
     void generateMacCamyFuchsTable();
-    /** @brief Function to interpolate, per each morison element, the MacCamy and Fuchs Cm coefficient */
+
+    /**
+     * @brief Interpolates the MacCamy and Fuchs Cm coefficient for a given diameter.
+     *
+     * @param[in] D Cylinder diameter [m]
+     * @return Corrected added mass coefficient Cm.
+     */
     double interpolateCmBinarySearch(double D);
-    /** @brief Function to interpolate, per each morison element, the coefficients to get the Cd */
+
+    /**
+     * @brief Performs linear interpolation on tabulated data.
+     *
+     * @param[in] x Value at which to interpolate.
+     * @param[in] xData Vector of x-coordinates.
+     * @param[in] yData Vector of y-coordinates.
+     * @return Interpolated y value.
+     */
     double interpolate(double x, const std::vector<double>& xData, const std::vector<double>& yData);
-    /** @brief Function to interpolate the Cd */
+
+    /**
+     * @brief Returns corrected drag coefficient for large cylinders.
+     *
+     * @param[in] diameter Cylinder diameter [m]
+     * @param[in] wave_period Wave period [s]
+     * @param[in] fluid_velocity Fluid velocity magnitude [m/s]
+     * @return Corrected drag coefficient Cd.
+     */
     double getCd(double diameter, double wave_period, double fluid_velocity);
 };
 extern MacCamyFuchsTable myMCFtable;
@@ -61,13 +110,13 @@ class MorisonNode : public EntityDynamicEigen {
   public:
     /** @brief Hydrodynamic coefficients. */
     HydroCoefficients coefficients;
-    /** @brief Load calculated at node. */
+    /** @brief Load calculated at node [N/m] */
     Vector3d load{0.0, 0.0, 0.0};
-    /** @brief Load from without component from structural acceleration. */
+    /** @brief Load from without component from structural acceleration [N/m] */
     Vector3d load_noacc{0.0, 0.0, 0.0};
     /** @brief Added mass matrix (actually linear density). */
     Eigen::Matrix<double, 6, 6> added_mass_matrix = Eigen::Matrix<double, 6, 6>::Zero();
-    /** @brief Diameter at node. */
+    /** @brief Diameter at node [m] */
     double diameter = 0.0;
 
     /**
@@ -75,6 +124,15 @@ class MorisonNode : public EntityDynamicEigen {
      */
     MorisonNode();
 
+    /**
+     * @brief Computes hydrodynamic loads from environmental model.
+     *
+     * Calculates Morison equation loads including drag, inertia, and added mass
+     * contributions based on the current wave/current conditions.
+     *
+     * @param[in] env_model Environmental model containing wave and current data.
+     * @param[in] time Current simulation time [s]
+     */
     void compute_env_loads(const env::EnvModel& env_model, double time);
 };
 
@@ -87,18 +145,24 @@ class MorisonElement {
     const MorisonNode& node1;
     /** @brief Second node of element. */
     const MorisonNode& node2;
-    /** @brief Length of element. */
+    /** @brief Length of element [m] */
     double length = 0.0;
 
+    /**
+     * @brief Constructor.
+     *
+     * @param[in] node1 First node of element.
+     * @param[in] node2 Second node of element.
+     */
     MorisonElement(const MorisonNode& node1, const MorisonNode& node2);
 
     /**
-     * @brief Returns integrated load at center of element.
+     * @brief Returns integrated load at center of element [N]
      */
     Vector3d get_load() const;
 
     /**
-     * @brief Returns integrated load (without component from structural acceleration) at center of element.
+     * @brief Returns integrated load (without component from structural acceleration) at center of element [N]
      */
     Vector3d get_load_noacc() const;
 
@@ -121,11 +185,11 @@ class MorisonElement {
 /** Morison plate (with normal along Z-axis). */
 class MorisonPlate : public EntityDynamicEigen {
   public:
-    /** @brief Diameter at node. */
+    /** @brief Diameter at node [m] */
     double diameter = 0.0;
     /** @brief Drag coefficient. */
     double drag_coefficient = 0.0;
-    /** @brief Load calculated at node. */
+    /** @brief Load calculated at node [N] */
     Vector3d load{0.0, 0.0, 0.0};
     /** @brief Whether normal direction is along positive or negative Z-axis. */
     bool reverse_direction = false;
@@ -135,8 +199,15 @@ class MorisonPlate : public EntityDynamicEigen {
      */
     MorisonPlate();
 
+    /**
+     * @brief Computes hydrodynamic loads on plate from environmental model.
+     *
+     * @param[in] env_model Environmental model containing wave and current data.
+     * @param[in] time Current simulation time [s]
+     */
     void compute_env_loads(const env::EnvModel& env_model, double time);
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

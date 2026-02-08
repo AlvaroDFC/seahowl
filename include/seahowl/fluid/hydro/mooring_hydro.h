@@ -1,13 +1,15 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/commons/entities.h"
 #include "seahowl/fluid/hydro/morison.h"
-#include "seahowl/commons/component_fluid.h"
+#include "seahowl/fluid/component_fluid.h"
 
-#include <vector>
+// Standard library
 #include <deque>
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {
@@ -17,8 +19,8 @@ class FluidModel;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 
-/**@brief Hydrodynamic module */
 namespace hydro {
 
 /**
@@ -26,17 +28,15 @@ namespace hydro {
  */
 class MooringHydro : public ComponentFluid {
   public:
-    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the hydro component. */
-    std::vector<double> discretization_fractions{};
     /** @brief Hydrodynamic coefficients. */
     HydroCoefficients coefficients;
     /** @brief Hydro nodes. */
     std::vector<hydro::MorisonNode> nodes;
     /** @brief Hydro elements. */
     std::vector<hydro::MorisonElement> elements;
-    /** @brief Position of the mooring line. */
+    /** @brief Position of the mooring line [m] */
     double diameter = 0.0;
-    /** @brief Length of the mooring line. */
+    /** @brief Length of the mooring line [m] */
     double length = 0.0;
 
     /**
@@ -47,14 +47,14 @@ class MooringHydro : public ComponentFluid {
     /**
      * @brief Sets length of the mooring line.
      *
-     * @param[in] length Length of the mooring line.
+     * @param[in] length Length of the mooring line [m]
      */
     void set_length(double length);
 
     /**
      * @brief Sets diameter of the mooring line.
      *
-     * @param[in] diameter Diameter of the mooring line.
+     * @param[in] diameter Diameter of the mooring line [m]
      */
     void set_diameter(double diameter);
 
@@ -101,4 +101,5 @@ class MooringSystemHydro : public ComponentFluid {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 }  // namespace seahowl

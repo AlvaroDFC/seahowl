@@ -1,59 +1,62 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+
+// Standard library
+#include <memory>
+#include <vector>
 
 namespace seahowl {
 namespace env {
 
 /**
- * @brief Class to store list of fluids
+ * @brief Class to store list of fluids.
  */
 template <typename T>
 class ListModel {
   public:
     /**
-     * @brief Adds a model to the list
-     * @param[in] model Model to add
+     * @brief Adds a model to the list.
+     * @param[in] model Model to add.
      */
     void add_model(const std::shared_ptr<T>& model);
 
     /**
-     * @brief Inserts a model to the list
-     * @param[in] model Model to insert
+     * @brief Inserts a model to the list.
+     * @param[in] model Model to insert.
      */
     template <typename U>
     void insert_model(const std::shared_ptr<T>& model);
 
     /**
-     * @brief Returns the list of models
-     * @return Vector of models
+     * @brief Returns the list of models.
+     * @return Vector of models.
      */
     const std::vector<std::shared_ptr<T>>& get_models() const;
 
     /**
-     * @brief Returns the fluid model
+     * @brief Returns the fluid model.
      * @param[in] position Position at which fluid model is extracted.
      * @param[in] time Time of simulation.
      */
     std::shared_ptr<T>& get_model(const Vector3d& position, double time);
 
     /**
-     * @brief Template function to access elements of a specific type in models
-     * @tparam U Type of the elements to access
-     * @return Vector of elements of type U
+     * @brief Template function to access elements of a specific type in models.
+     * @tparam U Type of the elements to access.
+     * @return Vector of elements of type U.
      */
     template <typename U>
     std::vector<std::shared_ptr<U>> get_models_of_type() const;
 
     /**
-     * @brief Returns true if there are models in the list
+     * @brief Returns true if there are models in the list.
      */
     bool has_model() const;
 
   protected:
-    /** @brief List of models */
+    /** @brief List of models. */
     std::vector<std::shared_ptr<T>> models;
 };
 
@@ -63,8 +66,8 @@ void ListModel<T>::add_model(const std::shared_ptr<T>& model) {
 }
 
 /**
- * @brief Inserts a model to the list
- * @param[in] model Model to insert
+ * @brief Inserts a model to the list.
+ * @param[in] model Model to insert.
  * @details
  * If the list is empty, just add the model.
  * If the model is of the same type as U, find the first element of type U and insert the model before it.

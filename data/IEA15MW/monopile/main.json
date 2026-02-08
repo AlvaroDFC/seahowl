@@ -21,7 +21,7 @@
     "gui": true
   },
   "environment": {
-    "file": "../env/env_waves_30m.json"
+    "file": "../env/env_waves_200m_seastate.json"
   },
   "turbines": [
     {

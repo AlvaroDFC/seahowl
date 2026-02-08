@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
 namespace seahowl {
@@ -11,7 +12,7 @@ namespace elasto {
  * All elasto reference point classes are derived from this class.
  */
 struct ReferencePointElasto {
-    /** @brief Coordinates of reference point. */
+    /** @brief Coordinates of reference point [m] */
     Vector3d coordinates{0.0, 0.0, 0.0};
     /** @brief Fraction (normalized abscissa along longitudinal axis of component) of reference point. */
     double fraction = 0.0;
@@ -35,15 +36,15 @@ struct ReferencePointElasto {
  * (0, 0, 0) is at the root of the blade.
  */
 struct BladeReferencePointElasto : ReferencePointElasto {
-    /** @brief Offset (x, y) for the center of elasticity of blade at reference point. */
+    /** @brief Offset (x, y) for the center of elasticity of blade at reference point [m] */
     Vector2d offset_elastic{0.0, 0.0};
-    /** @brief Offset (x, y) for the center of gravity of blade at reference point. */
+    /** @brief Offset (x, y) for the center of gravity of blade at reference point [m] */
     Vector2d offset_gravity{0.0, 0.0};
     /** @brief Stiffness matrix of blade at reference point. */
     Eigen::Matrix<double, 6, 6> stiffness_matrix = Eigen::Matrix<double, 6, 6>::Zero();
     /** @brief Mass matrix of blade at reference point. */
     Eigen::Matrix<double, 6, 6> mass_matrix = Eigen::Matrix<double, 6, 6>::Zero();
-    /** @brief Structural twist angle of blade at reference point. */
+    /** @brief Structural twist angle of blade at reference point [rad] */
     double structural_twist = 0.0;
     /** @brief Flapwise (bending and shear) stiffness-proportial damping coefficients at reference point.*/
     double damping_flapwise = 0.005;
@@ -69,7 +70,7 @@ struct BladeReferencePointElasto : ReferencePointElasto {
  * @brief Tower elasto reference point.
  */
 struct TowerReferencePointElasto : ReferencePointElasto {
-    /** @brief Lineic density of tower at reference point. */
+    /** @brief Lineic density of tower at reference point [kg/m] */
     double density = 0.0;
     /** @brief Axial stiffness of tower at reference point. */
     double stiffness_axial = 0.0;
@@ -109,11 +110,11 @@ struct TowerReferencePointElasto : ReferencePointElasto {
     /**
      * @brief Set properties for hollow cylinder.
      *
-     * @param[in] density Density of material (kg/m3).
-     * @param[in] young_modulus Young's modulus of material (Pa).
-     * @param[in] poisson_ratio Poisson ratio of material (-).
-     * @param[in] outer_diameter Outer diameter of cylinder (m).
-     * @param[in] thickness Thickness of cylinder (m).
+     * @param[in] density Density of material [kg/m^3]
+     * @param[in] young_modulus Young's modulus of material [Pa]
+     * @param[in] poisson_ratio Poisson ratio of material [-]
+     * @param[in] outer_diameter Outer diameter of cylinder [m]
+     * @param[in] thickness Thickness of cylinder [m]
      * @param[in] shear Whether to include shear or not.
      */
     void set_properties_cylinder(double density,

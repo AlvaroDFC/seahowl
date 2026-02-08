@@ -1,15 +1,11 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/env/wind_models.h>
-#include <seahowl/env/soil_models.h>
-#ifdef HAVE_INFLOWWIND
-    #include <seahowl/env/inflowwind_adapter.h>
-#endif
-#ifdef HAVE_HYDROCHRONO
-    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
-#endif
+// SEAHOWL headers
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
 
 namespace py = pybind11;
 
@@ -58,17 +54,18 @@ void initialize_pyseahowl_env(py::module& m) {
                                                                                                          "FluidModel")
         .def("get_velocity", &seahowl::env::FluidModel::get_velocity)
         .def("get_acceleration", &seahowl::env::FluidModel::get_acceleration)
-        .def("get_density", &seahowl::env::FluidModel::get_density);
+        .def("get_density", &seahowl::env::FluidModel::get_density)
+        .def("set_ramp", &seahowl::env::FluidModel::set_ramp);
 
     // env/wind_models.h
     py::class_<seahowl::env::WindModel, std::shared_ptr<seahowl::env::WindModel>, seahowl::env::FluidModel>(m_env,
                                                                                                             "WindModel")
-        .def_readwrite("air_density", &seahowl::env::WindModel::density);
+        .def_readwrite("air_density", &seahowl::env::WindModel::density)
+        .def_readwrite("direction_gravity", &seahowl::env::WindModel::direction_gravity);
     py::class_<seahowl::env::ShearedWind, std::shared_ptr<seahowl::env::ShearedWind>, seahowl::env::WindModel>(
         m_env, "ShearedWind")
         .def_readwrite("shear_coefficient", &seahowl::env::ShearedWind::shear_coefficient)
-        .def_readwrite("reference_height", &seahowl::env::ShearedWind::reference_height)
-        .def_readwrite("direction_gravity", &seahowl::env::ShearedWind::direction_gravity);
+        .def_readwrite("reference_height", &seahowl::env::ShearedWind::reference_height);
     py::class_<seahowl::env::ConstantWind, std::shared_ptr<seahowl::env::ConstantWind>, seahowl::env::ShearedWind>(
         m_env, "ConstantWind")
         .def(py::init<>())
@@ -112,6 +109,13 @@ void initialize_pyseahowl_env(py::module& m) {
     py::class_<seahowl::env::WaveModelHydroChrono, std::shared_ptr<seahowl::env::WaveModelHydroChrono>,
                seahowl::env::WaveModel>(m_env, "WaveModelHydroChrono")
         .def(py::init<>());
+#endif
+#ifdef HAVE_SEASTATE
+    // env/seastate_adapter.h
+    py::class_<seahowl::env::SeaStateAdapter, std::shared_ptr<seahowl::env::SeaStateAdapter>, seahowl::env::WaveModel>(
+        m_env, "SeaStateAdapter")
+        .def(py::init<std::string>())
+        .def("get_seastate_infile", &seahowl::env::SeaStateAdapter::get_seastate_infile);
 #endif
 
     // env/soil_models.h

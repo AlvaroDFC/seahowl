@@ -1,0 +1,54 @@
+{
+  "aero": {
+    "solver": "BEMT",
+    "options": {
+      "hub_loss": true,
+      "tip_loss": true,
+      "tower_shadow": true
+    }
+  },
+  "rotor": {
+    "type": "fpm",
+    "discretization": {
+      "elasto": [],
+      "aero": []
+    },
+    "pitch_actuator_dynamics": true,
+    "blades": [{
+      "file": "blade.json",
+      "initial_pitch": 0.0,
+      "precone": -3.0
+    }, {
+      "file": "blade.json",
+      "initial_pitch": 0.0,
+      "precone": -3.0
+    }, {
+      "file": "blade.json",
+      "initial_pitch": 0.0,
+      "precone": -3.0
+    }]
+  },
+  "rna": {
+    "initial_yaw": 0.0,
+    "file": "rna.json",
+    "yaw_actuator_dynamics": true
+  },
+  "tower": {
+    "discretization": {
+      "elasto": [],
+      "aero": []
+    },
+    "file": "tower.csv",
+    "options": {
+      "use_MacCamyFuchs_correction": false,
+      "use_Cd_correction": false
+    }
+  },
+  "controller": {
+    "type": "DISCON",
+    "options": {
+      "infile": "./controller/IEA-3.4-130-RWT_DISCON.IN",
+      "libfile": "./controller/libdiscon.so"
+    }
+  }
+}

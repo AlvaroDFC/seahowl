@@ -1,25 +1,47 @@
-#include <seahowl/fluid/aero/aerodyn_adapter.h>
+#include "seahowl/fluid/aero/aerodyn_adapter.h"
 
-#include <seahowl/fluid/aero/turbine_aero.h>
-#include <seahowl/fluid/aero/blade_aero.h>
-#include <seahowl/env/fluid_models.h>
-#include <seahowl/env/inflowwind_adapter.h>
+// SEAHOWL headers
+#include "seahowl/env/env_model.h"
+#include "seahowl/env/fluid_models.h"
+#include "seahowl/env/inflowwind_adapter.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/fluid/turbine_fluid.h"
 
-#include <stdexcept>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+// Standard library
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+using namespace seahowl::fluid::aero;
 using namespace seahowl::env;
+using seahowl::fluid::TurbineFluid;
 
 extern "C" {
 
 void ADI_C_PreInit(int& NumTurbines_C,
                    int& TransposeDCM_in,
                    int& PointLoadOutput_in,
+                   float& gravity_C,
+                   float& defFldDens_C,
+                   float& defKinVisc_C,
+                   float& defSpdSound_C,
+                   float& defPatm_C,
+                   float& defPvap_C,
+                   float& WtrDpth_C,
+                   float& MSL2SWL_C,
+                   int& MHK,
+                   int& externFlowField_in,
+                   char* OutVTKDir_C,
+                   int& WrVTK_in,
+                   int& WrVTK_inType,
+                   double& WrVTK_dt,
+                   float* VTKNacDim_in,
+                   float& VTKHubRad_in,
                    int& DebugLevel_in,
                    int& ErrStat_C,
                    char* ErrMsg_C);
@@ -78,24 +100,10 @@ void ADI_C_Init(int& ADinputFilePassed,
                 const char** IfWinputFileString_C,
                 int& IfWinputFileStringLength_C,
                 char* OutRootName_C,
-                char* OutVTKDir_C,
-                float& gravity_C,
-                float& defFldDens_C,
-                float& defKinVisc_C,
-                float& defSpdSound_C,
-                float& defPatm_C,
-                float& defPvap_C,
-                float& WtrDpth_C,
-                float& MSL2SWL_C,
                 int& InterpOrder_C,
                 double& DT_C,
                 double& TMax_C,
                 int& storeHHVel,
-                int& WrVTK_in,
-                int& WrVTK_inType,
-                double& WrVTK_dt,
-                float* VTKNacDim_in,
-                float& VTKHubRad_in,
                 int& wrOuts_C,
                 double& DT_Outs_C,
                 int& NumChannels_C,
@@ -109,12 +117,22 @@ void ADI_C_CalcOutput(double& Time_C, float* OutputChannelValues_C, int& ErrStat
 void ADI_C_UpdateStates(double& Time_C, double& TimeNext_C, int& ErrStat_C, char* ErrMsg_C);
 
 void ADI_C_End(int& ErrStat_C, char* ErrMsg_C);
+
+void ADI_C_GetFlowFieldPointer(void** FlowFieldPtr,  // out - pointer to wavefield data (fotran pointer converted to C
+                                                     // pointer.  Store as int* locally)
+                               int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                               char* ErrMsg_C);  // out - Message returned about error (empty if none)
+
+void ADI_C_SetFlowFieldPointer(void* FlowFieldPtr,  // in  - pointer to wavefield data - retrieved from a
+                                                    // GetFlowFieldPointer call. Stored as int* locally.
+                               int& ErrStat_C,   // out - Error status (0: none, 1: Info, 2: warn, 3: severe, 4: fatal)
+                               char* ErrMsg_C);  // out - Message returned about error (empty if none)
 }
 
 /**
  * @brief Aerodyn_InflowWind wrapping inferface
  */
-struct seahowl::aero::AeroDynInflowLib {
+struct seahowl::fluid::aero::AeroDynInflowLib {
     // Input file handling
     int ADinputFilePassed = 0;   // false: read input info from a primary input file; true: passing info from data
     int IfWinputFilePassed = 0;  // false: read input info from a primary input file; true: passing info from data
@@ -135,6 +153,9 @@ struct seahowl::aero::AeroDynInflowLib {
     void Update();
     void End();
 
+    void* GetFlowFieldPointer();
+    void SetFlowFieldPointer(void* FlowFieldPtr);
+
   public:
     // aerodynamic load computed on mesh point
     float* MeshFrc;
@@ -146,6 +167,7 @@ struct seahowl::aero::AeroDynInflowLib {
     // Input file string length
     int ADinputFileStringLength;
     int IfWinputFileStringLength;
+    int externFlowField = 0;  // 0 for using IfW inside ADI c-bind, 1 to pass pointer to external IfW instance
 
     int TurbineIsHAWT = 1;
     int NumTurbines = 1;
@@ -167,7 +189,6 @@ struct seahowl::aero::AeroDynInflowLib {
     char OutVTKDir[1024];
 
     // Initial environmental conditions
-    // bool MHK = false; //MHK turbine type switch -- disabled for now
     float gravity = 9.80665;       // Gravitational acceleration (m/s^2)
     float defFldDens = 1.225;      // Air density (kg/m^3)
     float defKinVisc = 1.464E-05;  // Kinematic viscosity of working fluid (m^2/s)
@@ -197,6 +218,7 @@ struct seahowl::aero::AeroDynInflowLib {
     int storeHHVel = 0;
     float* HHVel = new float[3]{0.0};
     int TransposeDCM = 0;
+    int MHK = 0;  // marine hydro-kinetic turbine (underwater turbine)
 
     // disk averaged velocity
     float* DiskAvgVel = new float[3]{0.0};
@@ -276,6 +298,7 @@ AeroDynInflowLib::~AeroDynInflowLib() {
     delete[] TurbOrigin;
     delete[] HHVel;
     delete[] DiskAvgVel;
+    End();
 }
 
 void AeroDynInflowLib::CheckError() {
@@ -342,17 +365,24 @@ void AeroDynInflowLib::Init() {
     const char* ADinputFile = ADinputFileString.c_str();
     const char* IfWinputFile = IfWinputFileString.c_str();
 
-    ADI_C_PreInit(NumTurbines, TransposeDCM, PointLoadOutput_in, DebugLevel_in, ErrStat, ErrMsg);
+    ADI_C_PreInit(NumTurbines, TransposeDCM, PointLoadOutput_in, gravity, defFldDens, defKinVisc, defSpdSound, defPatm,
+                  defPvap, WtrDpth, MSL2SWL, MHK, externFlowField, OutVTKDir, WrVTK, WrVTK_Type, WrVTK_dt, VTKNacDim,
+                  VTKHubRad, DebugLevel_in, ErrStat, ErrMsg);
     CheckError();
+
+    // FIXME: if using external flow field, set it here
+    // if (externFlowField == 1) {
+    //     SetFlowFieldPointer(FlowFieldPtr)
+    //     CheckError();
+    // }
 
     ADI_C_SetupRotor(iWT, TurbineIsHAWT, TurbOrigin, HubPos, HubOri, NacPos, NacOri, NumBlades, BldRootPos, BldRootOri,
                      NumMeshPts, MeshPos, MeshOri, MeshPtToBladeNum, ErrStat, ErrMsg);
     CheckError();
 
     ADI_C_Init(ADinputFilePassed, &ADinputFile, ADinputFileStringLength, IfWinputFilePassed, &IfWinputFile,
-               IfWinputFileStringLength, OutRootName, OutVTKDir, gravity, defFldDens, defKinVisc, defSpdSound, defPatm,
-               defPvap, WtrDpth, MSL2SWL, InterpOrder, DT, TMax, storeHHVel, WrVTK, WrVTK_Type, WrVTK_dt, VTKNacDim,
-               VTKHubRad, wrOuts, DT_Outs, NumChannels, OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
+               IfWinputFileStringLength, OutRootName, InterpOrder, DT, TMax, storeHHVel, wrOuts, DT_Outs, NumChannels,
+               OutputChannelNames, OutputChannelUnits, ErrStat, ErrMsg);
     CheckError();
 }
 
@@ -381,6 +411,18 @@ void AeroDynInflowLib::End() {
     CheckError();
 }
 
+void* AeroDynInflowLib::GetFlowFieldPointer() {
+    void* FlowFieldPtr;
+    ADI_C_GetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+    return FlowFieldPtr;
+}
+
+void AeroDynInflowLib::SetFlowFieldPointer(void* FlowFieldPtr) {
+    ADI_C_SetFlowFieldPointer(&FlowFieldPtr, ErrStat, ErrMsg);
+    CheckError();
+}
+
 AeroDynAdapter::AeroDynAdapter() {
     spdlog::debug("Initialising Aerodyn15 adapter");
     pImpl = std::make_unique<AeroDynInflowLib>();
@@ -400,14 +442,14 @@ void AeroDynAdapter::set_inflowwind_infile(const std::string& inflowwind_infile_
     pImpl->set_inflowwind_infile(inflowwind_infile_);
 }
 
-void AeroDynAdapter::initialize(double time, double dt, TurbineAero& turbine) {
+void AeroDynAdapter::initialize(double time, double dt, TurbineFluid& turbine) {
     pImpl->DT = dt;
     pImpl->set_time(time);
 
     // initialize arrays of interface
     int nblades = turbine.rna->rotor->blades.size();
     int npoints = 0;
-    for (auto& blade : turbine.rna->rotor->blades) {
+    for (const auto& blade : turbine.rna->rotor->blades) {
         npoints += blade->nodes.size();
     }
     pImpl->initialize_arrays(nblades, npoints);
@@ -419,8 +461,8 @@ void AeroDynAdapter::initialize(double time, double dt, TurbineAero& turbine) {
     // associate points to blade idx
     int idx_blade = 0;
     int idx_node = 0;  // Index into the MeshPttoBladeNum array [0:(total number of nodes on all blades)-1]
-    for (auto& blade : turbine.rna->rotor->blades) {
-        for (auto& node : blade->nodes) {
+    for (const auto& blade : turbine.rna->rotor->blades) {
+        for (const auto& node : blade->nodes) {
             pImpl->MeshPtToBladeNum[idx_node] = idx_blade + 1;
             idx_node += 1;
         }
@@ -433,7 +475,7 @@ void AeroDynAdapter::initialize(double time, double dt, TurbineAero& turbine) {
     pImpl->Init();
 }
 
-void AeroDynAdapter::compute_loads(double time, TurbineAero& turbine) {
+void AeroDynAdapter::compute_loads(double time, TurbineFluid& turbine) {
     pImpl->set_time(time);
     update_turbine_variables(turbine);
     pImpl->Update();
@@ -458,16 +500,16 @@ void AeroDynAdapter::end() {
     pImpl->End();
 }
 
-void AeroDynAdapter::update_turbine_variables(TurbineAero& turbine) {
+void AeroDynAdapter::update_turbine_variables(TurbineFluid& turbine) {
     update_hub_motion(turbine);
     update_nacelle_motion(turbine);
     update_roots_motion(turbine);
     update_mesh_motion(turbine);
 }
 
-void AeroDynAdapter::update_hub_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_hub_motion(TurbineFluid& turbine) {
     // Get the information about hub
-    auto& hub = turbine.rna->rotor->body_hub;
+    const auto& hub = turbine.rna->rotor->body_hub;
     auto hubPos = hub.get_position();
     auto hubOri = hub.get_rotation().toRotationMatrix();  // get a rotation matrix 3x3
     auto hubTranVel = hub.get_velocity();
@@ -488,9 +530,9 @@ void AeroDynAdapter::update_hub_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_nacelle_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_nacelle_motion(TurbineFluid& turbine) {
     // Get the information about nacelle
-    auto& nac = turbine.rna->body_nacelle;
+    const auto& nac = turbine.rna->body_nacelle;
     auto nacPos = nac.get_position();
     auto nacOri = nac.get_rotation().toRotationMatrix();  // get a rotation matrix 3x3
     auto nacTranVel = nac.get_velocity();
@@ -511,7 +553,7 @@ void AeroDynAdapter::update_nacelle_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_roots_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_roots_motion(TurbineFluid& turbine) {
     auto nblades = turbine.rna->rotor->blades.size();
     pImpl->NumBlades = nblades;
 
@@ -541,7 +583,7 @@ void AeroDynAdapter::update_roots_motion(TurbineAero& turbine) {
     }
 }
 
-void AeroDynAdapter::update_mesh_motion(TurbineAero& turbine) {
+void AeroDynAdapter::update_mesh_motion(TurbineFluid& turbine) {
     auto nblades = turbine.rna->rotor->blades.size();
     auto nMeshPerBlade = turbine.rna->rotor->blades[0]->nodes.size();
     auto nMesh = nMeshPerBlade * nblades;
@@ -580,6 +622,8 @@ TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile) : TurbineAero(
 }
 
 void TurbineAeroDyn::setup_environment(const env::EnvModel& env_model) {
+    TurbineAero::setup_environment(env_model);
+
     std::shared_ptr<InflowWindAdapter> inflow_wind_adapter;
     bool found_inflow_wind_model = false;
     for (auto fluid_model : env_model.fluid_models.get_models()) {
@@ -619,7 +663,6 @@ void TurbineAeroDyn::initialize(double time, double dt) {
     // VTK options for AeroDyn
     aerodyn.pImpl->WrVTK = WrVTK;
     aerodyn.pImpl->WrVTK_Type = WrVTK_Type;
-    aerodyn.pImpl->WrVTK_dt;
     aerodyn.pImpl->VTKHubRad = rna->rotor->hub_radius;
 
     // initialize AeroDyn adapter

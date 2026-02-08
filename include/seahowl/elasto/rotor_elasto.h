@@ -1,10 +1,12 @@
 #pragma once
 
-#include "seahowl/elasto/component_elasto.h"
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
+#include "seahowl/elasto/component_elasto.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {
@@ -22,15 +24,15 @@ namespace elasto {
  * @brief Hub properties.
  */
 struct HubProperties {
-    /** @brief Center of mass (COM/COG) position relative to rotor apex (in rotor reference frame). */
+    /** @brief Center of mass (COM/COG) position relative to rotor apex (in rotor reference frame) [m] */
     Vector3d position_from_apex{0.0, 0.0, 0.0};
-    /** @brief Mass of the hub. */
+    /** @brief Mass of the hub [kg] */
     double mass = 0.0;
-    /** @brief Inertia of the hub. */
+    /** @brief Inertia of the hub [kg.m^2] */
     Eigen::Matrix<double, 3, 3> inertia = Eigen::Matrix<double, 3, 3>::Zero();
-    /** @brief Overhang of the hub (horizontal distance from towertop). */
+    /** @brief Overhang of the hub (horizontal distance from towertop) [m] */
     double overhang = 0.0;
-    /** @brief Radius of hub (from hub apex to hub edge in rotor plane). */
+    /** @brief Radius of hub (from hub apex to hub edge in rotor plane) [m] */
     double radius = 0.0;
 };
 
@@ -38,13 +40,13 @@ struct HubProperties {
  * @brief Nacelle properties.
  */
 struct NacelleProperties {
-    /** @brief Center of mass (COM/COG) position from towertop (in towertop reference frame). */
+    /** @brief Center of mass (COM/COG) position from towertop (in towertop reference frame) [m] */
     Vector3d position_from_towertop{0.0, 0.0, 0.0};
-    /** @brief Mass of the nacelle. */
+    /** @brief Mass of the nacelle [kg] */
     double mass = 0.0;
-    /** @brief Inertia of the nacelle. */
+    /** @brief Inertia of the nacelle [kg.m^2] */
     Eigen::Matrix<double, 3, 3> inertia = Eigen::Matrix<double, 3, 3>::Zero();
-    /** @brief Yaw bearing mass. */
+    /** @brief Yaw bearing mass [kg] */
     double yaw_bearing_mass = 0.0;
 };
 
@@ -52,9 +54,9 @@ struct NacelleProperties {
  *@brief Shaft properties.
  */
 struct ShaftProperties {
-    /** @brief Tilt angle of the shaft (radians). */
+    /** @brief Tilt angle of the shaft [rad] */
     double tilt = 0.0;
-    /** @brief Distance of shaft axis from towertop. */
+    /** @brief Distance of shaft axis from towertop [m] */
     double distance_from_towertop = 0.0;
 };
 
@@ -67,10 +69,10 @@ class RotorElasto : public ComponentElasto {
 
     /** @brief Hub reference properties. */
     HubProperties hub;
-    /** @brief Blades precones (in radians). */
+    /** @brief Blades precones [rad] */
     std::vector<double> blade_precones;
 
-    /** @brief Collective pitch of blades (in radians). */
+    /** @brief Collective pitch of blades [rad] */
     double pitch_collective = 0;
 
     /**
@@ -78,39 +80,24 @@ class RotorElasto : public ComponentElasto {
      */
     RotorElasto();
 
-    /**
-     * @brief Builds the rotor.
-     */
     void build() override;
     virtual void presetup(double fraction) override;
     virtual void rotate(double angle, const Vector3d& axis) const override;
     virtual void translate(const Vector3d& translation_vector) const override;
     virtual double get_mass() const override;
-
-    /**
-     * @brief Resets accumulated loads.
-     */
     void reset_loads() override;
 
     /**
-     * @brief Applies pitch increment to all blades (i.e. rotates blades around their respective longitudinal axis).
+     * @brief Applies pitch increment to all blades, rotating them around their respective longitudinal axis.
      *
-     * @param[in] pitch_increment Pitch increment to apply (in radians).
+     * @param[in] pitch_increment Pitch increment to apply [rad]
      */
     void apply_collective_pitch_increment(double pitch_increment);
 
     /**
-     * @brief Applies pitch increment on a given blade (i.e. rotates the blade around its longitudinal axis).
-     *
-     * @param[in] pitch_increment Pitch increment to apply (in radians).
-     * @param[in] blade_index Index of blade to pitch (0, 1, or 2 for a 3-bladed turbine).
-     */
-    void apply_blade_pitch_increment(double pitch_increment, int blade_index);
-
-    /**
      * @brief Accumulates torque on the rotor.
      *
-     * @param[in] torque Torque to accumulate on axial axis of hub.
+     * @param[in] torque Torque to accumulate on axial axis of hub [Nm]
      */
     void accumulate_axial_torque(double torque);
 
@@ -126,7 +113,7 @@ class RotorElasto : public ComponentElasto {
  */
 class RotorNacelleAssemblyElasto : public ComponentElasto {
   public:
-    /** @brief Initial yaw of the RNA (in radians). */
+    /** @brief Initial yaw of the RNA [rad] */
     double yaw0 = 0.0;
 
     // RNA components
@@ -165,62 +152,54 @@ class RotorNacelleAssemblyElasto : public ComponentElasto {
     RotorNacelleAssemblyElasto(std::shared_ptr<seahowl::elasto::RotorElasto> rotor);
     ~RotorNacelleAssemblyElasto() = default;
 
-    /**
-     * @brief Builds the rotor.
-     */
     void build() override;
-
     virtual void presetup(double fraction) override;
-    void rotate(double angle, const Vector3d& axis) const override;     ///< @see ElastoComponent::rotate
-    void translate(const Vector3d& translation_vector) const override;  ///< @see ElastoComponent::translate
-    double get_mass() const override;                                   ///< @see ElastoComponent::get_mass
-
-    /**
-     * @brief Resets accumulated loads.
-     */
+    void rotate(double angle, const Vector3d& axis) const override;
+    void translate(const Vector3d& translation_vector) const override;
+    double get_mass() const override;
     void reset_loads() override;
 
     /**
-     * @brief Returns the RPM of the rotor.
+     * @brief Returns the RPM of the rotor [rpm]
      */
     double get_rpm() const;
 
     /**
-     * @brief Returns the axial torque of the rotor.
+     * @brief Returns the axial torque of the rotor [Nm]
      */
     double get_axial_torque() const;
 
     /**
-     * @brief Returns the axial thrust of the rotor.
+     * @brief Returns the axial thrust of the rotor [N]
      */
     double get_axial_thrust() const;
 
     /**
-     * @brief Returns azimuth of rotor.
+     * @brief Returns azimuth of rotor [rad]
      */
     double get_azimuth() const;
 
     /**
      * @brief Accumulates torque on the rotor.
      *
-     * @param[in] torque Torque to accumulate on axial axis of hub.
+     * @param[in] torque Torque to accumulate on axial axis of hub [Nm]
      */
     void accumulate_electrical_torque(double torque);
 
     /**
-     * @brief Returns the electrical torque applied on the rotor.
+     * @brief Returns the electrical torque applied on the rotor [Nm]
      */
     double get_electrical_torque() const;
 
     /**
-     * @brief Applies yaw increment to the RNA (i.e. rotates the RNA around its mounting points).
+     * @brief Applies yaw increment to the RNA, rotating it around its mounting points.
      *
-     * @param yaw_increment Yaw increment value (in radians).
+     * @param yaw_increment Yaw increment value [rad]
      */
     void apply_yaw_increment(double yaw_increment);
 
     /**
-     * @brief Returns current of the RNA.
+     * @brief Returns current yaw of the RNA [rad]
      */
     double get_yaw() const;
 
@@ -242,9 +221,9 @@ class RotorNacelleAssemblyElasto : public ComponentElasto {
     virtual void assemble_this(seahowl::elasto::SystemElasto& system) override;
 
   private:
-    /** @brief Accumulated Electrical torque on the rotor.*/
-    double torque_elec_accumulated;
-    /** @brief Whether the RNA is mounted (e.g. on a tower) or not. */
+    /** @brief Accumulated electrical torque on the rotor [Nm] */
+    double torque_elec_accumulated = 0.0;
+    /** @brief Whether the RNA is mounted (such as on a tower) or not. */
     bool is_mounted = false;
 };
 

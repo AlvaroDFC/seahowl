@@ -1,10 +1,15 @@
 #include "seahowl/io/command_parser.h"
+
+// SEAHOWL headers
 #include "seahowl/io/utils_io.h"
 
-#include <string_view>
-#include <stdexcept>
-#include <filesystem>
+// Third-party libraries
 #include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
+#include <stdexcept>
+#include <string_view>
 
 namespace fs = std::filesystem;
 using namespace seahowl::io::app;

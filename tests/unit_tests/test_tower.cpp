@@ -1,11 +1,16 @@
+// Local test headers
 #include "fixture_components.h"
 
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/commons/numerics.h>
-#include <seahowl/io/read_input.h>
+// SEAHOWL headers
+#include <seahowl/elasto.h>
+#include <seahowl/io.h>
 
+// Third-party libraries
 #include <gtest/gtest.h>
-#include <filesystem>  // C++17
+
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;
@@ -15,6 +20,7 @@ using namespace seahowl::elasto;
 class TestTower : public FixtureComponents {
   protected:
     TestTower() : FixtureComponents() {
+        root_dir /= "test_tower";
         ref_dir /= "test_tower/ref";
         test_dir /= "test_tower/test";
     }
@@ -35,7 +41,7 @@ TEST_F(TestTower, mass) {
     // test mass
     TestFrameworkDataset test_dataset_mass({false, (ref_dir / "test_tower_mass.csv").generic_string(),
                                             (test_dir / "test_tower_mass.test.csv").generic_string()});
-    test_dataset_mass.test_csv.add_function("mass (kg)", [&tower] { return tower.get_mass(); });
+    test_dataset_mass.test_csv.add_function("mass [kg]", [&tower] { return tower.get_mass(); });
     test_dataset_mass.test_csv.write_row();
     EvaluateTest(test_dataset_mass);
 }
@@ -56,8 +62,8 @@ TEST_F(TestTower, frequency) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_frequency.csv").generic_string(),
                                        (test_dir / "test_tower_frequency.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("top x (s)", [&tower] { return tower.nodes.back()->get_position().x(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("top x [m]", [&tower] { return tower.nodes.back()->get_position().x(); });
 
     // decay
     double dt = 0.01;
@@ -89,8 +95,8 @@ TEST_F(TestTower, frequency_json) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_frequency_json.csv").generic_string(),
                                        (test_dir / "test_tower_frequency_json.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("top x (s)", [&tower] { return tower.nodes.back()->get_position().x(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("top x [m]", [&tower] { return tower.nodes.back()->get_position().x(); });
 
     // decay
     double dt = 0.01;
@@ -149,8 +155,8 @@ TEST_F(TestTower, cylinder_frequency) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_cylinder_frequency.csv").generic_string(),
                                        (test_dir / "test_tower_cylinder_frequency.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("top x (s)", [&tower] { return tower.nodes.back()->get_position().x(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("top x [m]", [&tower] { return tower.nodes.back()->get_position().x(); });
 
     // decay
     double dt = 0.01;
@@ -207,8 +213,8 @@ TEST_F(TestTower, conical_frequency) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_tower_conical_frequency.csv").generic_string(),
                                        (test_dir / "test_tower_conical_frequency.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&system_elasto] { return system_elasto.get_time(); });
-    test_dataset.test_csv.add_function("top x (s)", [&tower] { return tower.nodes.back()->get_position().x(); });
+    test_dataset.test_csv.add_function("time [s]", [&system_elasto] { return system_elasto.get_time(); });
+    test_dataset.test_csv.add_function("top x [m]", [&tower] { return tower.nodes.back()->get_position().x(); });
 
     // decay
     double dt = 0.01;

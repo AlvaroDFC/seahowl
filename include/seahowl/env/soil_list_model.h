@@ -1,19 +1,22 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-#include "seahowl/env/soil_models.h"
+// SEAHOWL headers
 #include "seahowl/env/list_model.h"
+#include "seahowl/env/soil_models.h"
+
+// Standard library
+#include <memory>
+#include <vector>
 
 namespace seahowl {
 namespace env {
 /**
- * @brief Class to store list of soils
+ * @brief Class to store list of soils.
  */
 class SoilListModel : public ListModel<SoilModel> {
   public:
     /**
-     * @brief Returns soil penetration load.
+     * @brief Returns soil penetration load [N]
      *
      * @param[in] entity Dynamic entity (potentially) penetrating soil.
      * @param[in] contact_area Contact area of entity penetrating soil.

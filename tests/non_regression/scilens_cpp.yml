@@ -27,7 +27,7 @@ readers:
       curve_parser:
         name: "col_x"
         parameters:
-          x: ["time (s)", "fraction"]
+          x: ["time [s]", "time (s)", "fraction"]
       rows:
         line_start : 3
 compare:
@@ -62,4 +62,4 @@ report:
       display_on_load: false
     parameter_page_mode :
       default_value : tabs
-  logo_file: ../../../../doc/source/_static/totalenergies_alpha.png
+  logo_file: ../../../../doc/source/assets/logo_totalenergies.png

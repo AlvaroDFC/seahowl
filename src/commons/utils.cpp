@@ -1,11 +1,14 @@
 #include "seahowl/commons/utils.h"
 
-#include <string>
-#include <spdlog/spdlog.h>
+// Third-party libraries
 #include <spdlog/fmt/ostr.h>
-#include <iostream>
-#include <iomanip>
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <ctime>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
 bool seahowl::LOG_LEVEL_SET = false;
 
@@ -93,10 +96,10 @@ std::vector<seahowl::DiscretizationPoint> seahowl::get_indice_and_positions(
 double seahowl::bilinear_interpolation(const Eigen::MatrixXd& dataMatrix,
                                        const Eigen::VectorXd& x_list,
                                        const Eigen::VectorXd& y_list,
-                                       double y,
-                                       double x) {
+                                       double x,
+                                       double y) {
     // Find the four surrounding data points
-    int x0, y0 = -99;
+    int x0 = -99, y0 = -99;
     for (unsigned ii = 0; ii < x_list.size() - 1; ii++) {
         if (x >= x_list[ii] && x <= x_list[ii + 1])
             x0 = ii;
@@ -172,6 +175,12 @@ void print_banner() {
 #endif
 #ifdef SEAHOWL_HAVE_AERODYN
     spdlog::info("  |- AeroDyn: {}", (SEAHOWL_HAVE_AERODYN ? "yes" : "no"));
+#endif
+#ifdef SEAHOWL_HAVE_SEASTATE
+    spdlog::info("  |- SeaState: {}", (SEAHOWL_HAVE_SEASTATE ? "yes" : "no"));
+#endif
+#ifdef SEAHOWL_HAVE_HYDRODYN
+    spdlog::info("  |- HydroDyn: {}", (SEAHOWL_HAVE_HYDRODYN ? "yes" : "no"));
 #endif
 #ifdef SEAHOWL_HAVE_IRRLICHT
     spdlog::info("  |- Irrlicht: {}", (SEAHOWL_HAVE_IRRLICHT ? "yes" : "no"));

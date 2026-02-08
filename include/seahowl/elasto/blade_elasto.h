@@ -1,8 +1,9 @@
 #pragma once
 
+// SEAHOWL headers
+#include "seahowl/elasto/chrono_adapters.h"
 #include "seahowl/elasto/component_elasto.h"
 #include "seahowl/elasto/reference_point_elasto.h"
-#include "seahowl/elasto/chrono_adapters.h"
 
 namespace seahowl {
 namespace elasto {
@@ -18,16 +19,14 @@ class BladeElasto : public virtual ComponentElasto {
     std::unique_ptr<ActuatorRotation> actuator_pitch;
     /** @brief Link between blade and body (usually hub). */
     std::unique_ptr<Link> link_blade;
-    /** @brief Initial pitch of the blade (in radians). */
+    /** @brief Initial pitch of the blade [rad] */
     double pitch0 = 0.0;
-    /** @brief Initial azimuth of the blade relative to rotor azimuth (in radians). */
+    /** @brief Initial azimuth of the blade relative to rotor azimuth [rad] */
     double azimuth0 = 0.0;
-    /** @brief Precone of the blade (in radians). */
+    /** @brief Precone of the blade [rad] */
     double precone = 0.0;
     /** @brief List of reference points describing the blade properties along its longitudinal axis. */
     std::vector<BladeReferencePointElasto> reference_points;
-    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the FEA component. */
-    std::vector<double> discretization_fractions{};
 
     BladeElasto();
     ~BladeElasto() = default;
@@ -37,39 +36,59 @@ class BladeElasto : public virtual ComponentElasto {
     virtual double get_mass() const override;
 
     /**
-     * @brief Applies pitch increment to the blade (i.e. rotates the blade around its longitudinal axis).
+     * @brief Applies pitch increment to the blade, rotating it around its longitudinal axis.
      *
-     * @param pitch_increment Pitch increment value (in radians).
+     * @param pitch_increment Pitch increment value [rad]
      */
     virtual void apply_pitch_increment(double pitch_increment);
 
     /**
-     * @brief Returns current pitch of blade.
+     * @brief Returns current pitch of blade [rad]
      */
     double get_pitch() const;
 
     /**
-     * @brief Returns blade root moment.
+     * @brief Returns blade root moment [Nm]
      */
     virtual Vector3d get_blade_root_moment() const;
 
     /**
-     * @brief Returns blade root force.
+     * @brief Returns blade root force [N]
      */
     virtual Vector3d get_blade_root_force() const;
 
+    /**
+     * @brief Returns dynamic entity at position along blade.
+     *
+     * @param[in] eta Normalized abscissa along blade element (eta in [-1, 1]).
+     * @param[in] element_index Index of blade element (default: 0).
+     */
     virtual EntityDynamicEigen get_entity_along_blade(double eta, int element_index = 0) const = 0;
 
+    /**
+     * @brief Accumulates load at position along blade.
+     *
+     * @param[in] load Force vector to accumulate.
+     * @param[in] moment Moment vector to accumulate.
+     * @param[in] element_index Index of blade element.
+     * @param[in] eta Normalized abscissa along blade element (eta in [-1, 1]).
+     * @param[in] offset Offset from given abscissa along longitudinal axis.
+     */
     virtual void accumulate_load_along_blade(const Vector3d& load,
                                              const Vector3d& moment,
                                              int element_index,
                                              double eta,
                                              const Vector3d& offset) = 0;
 
+    /**
+     * @brief Attaches blade root to a body (such as hub or rotor).
+     *
+     * @param[in] body Body to attach the blade to.
+     */
     virtual void attach_blade_to_body(const BodyElasto& body);
 
   protected:
-    /** @brief Whether the blade is mounted (e.g. on a rotor) or not. */
+    /** @brief Whether the blade is mounted (such as on a rotor) or not. */
     bool is_mounted = false;
 
     virtual void assemble_this(SystemElasto& system) override;
@@ -92,7 +111,6 @@ class BladeElastoFEA : public BladeElasto, public ComponentElastoFEA {
     std::vector<BladeReferencePointElasto> discretized_points;
     /** @brief Whether the blade uses FPM or simple Timoshenko elements. */
     bool fpm_mode = false;
-    using BladeElasto::discretization_fractions;
 
     /**
      * @brief Constructor.
@@ -152,7 +170,7 @@ class BladeElastoRigid : public BladeElasto {
                                              const Vector3d& offset) override;
 
   private:
-    /** @brief Length of the blade. */
+    /** @brief Length of the blade [m] */
     double length = 0.0;
     /** @brief Body at the COG of the blade. */
     std::unique_ptr<BodyElastoChrono> body_cog;

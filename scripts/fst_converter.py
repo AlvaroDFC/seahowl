@@ -1034,10 +1034,7 @@ def convert_openfast_fst(filepath, save_directory=None, use_elastodyn_blade=Fals
                 "options": {"hub_loss": True, "tip_loss": True, "tower_shadow": True},
             },
             "rotor": {
-                "type": "fea",
-                "options": {
-                    "fpm": True,
-                },
+                "type": "fpm",
                 "discretization": {
                     "elasto": blade_json["discretization_elasto"],
                     "aero": blade_json["discretization_aero"],

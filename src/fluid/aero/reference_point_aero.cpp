@@ -1,10 +1,12 @@
 #include "seahowl/fluid/aero/reference_point_aero.h"
 
+// SEAHOWL headers
 #include "seahowl/fluid/aero/airfoil.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 BladeReferencePointAero::BladeReferencePointAero() {}
 
@@ -37,10 +39,8 @@ BladeReferencePointAero BladeReferencePointAero::operator+(const BladeReferenceP
     return new_point;
 };
 
-TowerReferencePointAero::TowerReferencePointAero() {
-    rotation = Quaternion(1.0, 0.0, 0.0, 0.0);
-    velocity = Vector3d(0.0, 0.0, 0.0);
-}
+TowerReferencePointAero::TowerReferencePointAero()
+    : rotation(Quaternion(1.0, 0.0, 0.0, 0.0)), velocity(Vector3d(0.0, 0.0, 0.0)) {}
 
 TowerReferencePointAero TowerReferencePointAero::operator*(const double factor) const {
     TowerReferencePointAero new_point = *this;

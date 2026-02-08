@@ -1,7 +1,7 @@
 #pragma once
 
-#include <seahowl/io/input_structures.h>
-#include <seahowl/io/input_reader.h>
+// SEAHOWL headers
+#include "seahowl/io/input_reader.h"
 
 namespace seahowl {
 namespace io {

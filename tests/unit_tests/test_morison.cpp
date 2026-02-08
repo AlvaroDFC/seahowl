@@ -1,15 +1,20 @@
+// Local test headers
 #include "fixture_components.h"
 
-#include <seahowl/fluid/hydro/morison.h>
-#include <seahowl/env/wave_models.h>
-#include <seahowl/core/simulation.h>
+// SEAHOWL headers
+#include <seahowl/core.h>
+#include <seahowl/env.h>
+#include <seahowl/fluid.h>
+
+// Third-party libraries
+#include <gtest/gtest.h>
 #ifdef HAVE_HYDROCHRONO
-    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
     #include <hydroc/hydro_forces.h>
 #endif
 
-#include <gtest/gtest.h>
-#include <filesystem>  // C++17
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;
@@ -18,6 +23,7 @@ using namespace seahowl;
 class TestMorison : public FixtureComponents {
   protected:
     TestMorison() : FixtureComponents() {
+        root_dir /= "test_morison";
         ref_dir /= "test_morison/ref";
         test_dir /= "test_morison/test";
     }
@@ -92,18 +98,18 @@ TEST_F(TestMorison, analytical_comparison) {
     // add functions to record values over time for the test
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_morison_analytical_comparison.csv").generic_string(),
                                        (test_dir / "test_morison_analytical_comparison.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&time_current] { return time_current; });
-    test_dataset.test_csv.add_function("fluid velocity (m/s)", [&wave_model, &time_current, &position] {
+    test_dataset.test_csv.add_function("time [s]", [&time_current] { return time_current; });
+    test_dataset.test_csv.add_function("fluid velocity [m/s]", [&wave_model, &time_current, &position] {
         return wave_model->get_velocity(position, time_current);
     });
-    test_dataset.test_csv.add_function("fluid acceleration (m/s2)", [&wave_model, &time_current, &position] {
+    test_dataset.test_csv.add_function("fluid acceleration [m/s^2]", [&wave_model, &time_current, &position] {
         return wave_model->get_acceleration(position, time_current);
     });
-    test_dataset.test_csv.add_function("load node1 (N/m)", [&node1] { return node1.load; });
-    test_dataset.test_csv.add_function("load node1 analytical (N/m)", [&load_analytical] { return load_analytical; });
-    test_dataset.test_csv.add_function("load node2 (N/m)", [&node2] { return node2.load; });
-    test_dataset.test_csv.add_function("load element (N)", [&element] { return element.get_load(); });
-    test_dataset.test_csv.add_function("load node3 (N/m)", [&node3] { return node3.load; });
+    test_dataset.test_csv.add_function("load node1 [N/m]", [&node1] { return node1.load; });
+    test_dataset.test_csv.add_function("load node1 analytical [N/m]", [&load_analytical] { return load_analytical; });
+    test_dataset.test_csv.add_function("load node2 [N/m]", [&node2] { return node2.load; });
+    test_dataset.test_csv.add_function("load element [N]", [&element] { return element.get_load(); });
+    test_dataset.test_csv.add_function("load node3 [N/m]", [&node3] { return node3.load; });
 
     while (time_current <= duration) {
         // compute loads
@@ -171,7 +177,7 @@ TEST_F(TestMorison, tower_morison) {
     auto tower_elasto = std::make_shared<seahowl::elasto::TowerElasto>();
     simulation.system_core->elasto.add(tower_elasto);
     auto tower_fluid = std::make_shared<seahowl::aero::TowerAero>();
-    simulation.system_core->aero.add(tower_fluid);
+    simulation.system_core->fluid.add(tower_fluid);
     auto tower = std::make_shared<seahowl::core::Tower>(tower_elasto, tower_fluid);
     simulation.system_core->add(tower);
     // properties
@@ -226,10 +232,10 @@ TEST_F(TestMorison, tower_morison) {
     // add functions to record values over time for the test
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_morison_tower.csv").generic_string(),
                                        (test_dir / "test_morison_tower.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("time (s)", [&simulation] { return simulation.system_core->get_time(); });
-    test_dataset.test_csv.add_function("tower base moment (N)",
+    test_dataset.test_csv.add_function("time [s]", [&simulation] { return simulation.system_core->get_time(); });
+    test_dataset.test_csv.add_function("tower base moment [N]",
                                        [&tower_elasto] { return tower_elasto->get_tower_base_moment(); });
-    test_dataset.test_csv.add_function("tower base force (N)",
+    test_dataset.test_csv.add_function("tower base force [N]",
                                        [&tower_elasto] { return tower_elasto->get_tower_base_force(); });
 
     simulation.system_core->elasto.do_statics(true, 10);
@@ -253,7 +259,7 @@ TEST_F(TestMorison, MCF_Table) {
     // Setup TestFwDataSet
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_morison_MCF_Table.csv").generic_string(),
                                        (test_dir / "test_morison_MCF_Table.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("Cm (-)", [&table_Y] { return table_Y; });
+    test_dataset.test_csv.add_function("Cm [-]", [&table_Y] { return table_Y; });
 
     seahowl::hydro::MacCamyFuchsTable mytable = seahowl::hydro::MacCamyFuchsTable();
     mytable.wave_peak_period = 10.0;
@@ -311,7 +317,7 @@ TEST_F(TestMorison, Cd_Table) {
 
     TestFrameworkDataset test_dataset({false, (ref_dir / "test_morison_Cd_Table.csv").generic_string(),
                                        (test_dir / "test_morison_Cd_Table.test.csv").generic_string()});
-    test_dataset.test_csv.add_function("Cd (-)", [&table_Cd] { return table_Cd; });
+    test_dataset.test_csv.add_function("Cd [-]", [&table_Cd] { return table_Cd; });
 
     seahowl::hydro::MacCamyFuchsTable mytable = seahowl::hydro::MacCamyFuchsTable();
     mytable.wave_peak_period = 10.0;

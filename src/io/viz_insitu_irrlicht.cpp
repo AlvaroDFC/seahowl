@@ -1,22 +1,25 @@
 #include "seahowl/io/viz_insitu_irrlicht.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/core/system.h"
 #include "seahowl/elasto/chrono_adapters.h"
 
+// Third-party libraries
 #include <chrono/physics/ChSystem.h>
 #include <chrono_irrlicht/ChVisualSystemIrrlicht.h>
-
 #include <spdlog/spdlog.h>
-#include <filesystem>  // C++17
+
+// Standard library
+#include <filesystem>
 
 namespace fs = std::filesystem;
 
 using seahowl::Vector3d;
 using namespace seahowl::io;
 
-VisualizationInSituIrrlicht::VisualizationInSituIrrlicht() {
-    application_irrlicht = chrono_types::make_shared<chrono::irrlicht::ChVisualSystemIrrlicht>();
+VisualizationInSituIrrlicht::VisualizationInSituIrrlicht()
+    : application_irrlicht(chrono_types::make_shared<chrono::irrlicht::ChVisualSystemIrrlicht>()) {
     application_irrlicht->SetWindowTitle("SEAHOWL");
     application_irrlicht->Initialize();
     application_irrlicht->SetCameraVertical(chrono::CameraVerticalDir::Z);

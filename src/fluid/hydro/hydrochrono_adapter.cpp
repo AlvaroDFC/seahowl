@@ -1,13 +1,14 @@
 #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 
+// SEAHOWL headers
 #include "seahowl/elasto/chrono_adapters.h"
 
-#include <hydroc/hydro_forces.h>
+// Third-party libraries
 #include <chrono/physics/ChBody.h>
-
+#include <hydroc/hydro_forces.h>
 #include <spdlog/spdlog.h>
 
-using namespace seahowl::hydro;
+using namespace seahowl::fluid::hydro;
 using namespace seahowl::env;
 
 FloaterHydroChrono::FloaterHydroChrono(){};
@@ -36,7 +37,7 @@ void FloaterHydroChrono::initialize() {
     hydrochrono_setter->AddWaves(waves);
 }
 
-void FloaterHydroChrono::set_h5_filepath(std::string filepath) {
+void FloaterHydroChrono::set_h5_filepath(const std::string& filepath) {
     h5_filepath = filepath;
 }
 
@@ -48,9 +49,7 @@ void FloaterHydroChrono::set_waves(std::shared_ptr<seahowl::env::WaveModelHydroC
     this->waves = waves->waves;
 };
 
-WaveModelHydroChrono::WaveModelHydroChrono() {
-    waves = std::make_shared<NoWave>();
-}
+WaveModelHydroChrono::WaveModelHydroChrono() : waves(std::make_shared<NoWave>()) {}
 
 seahowl::Vector3d WaveModelHydroChrono::get_velocity_this(const Vector3d& position, double time) const {
     if (is_inside(position, time)) {

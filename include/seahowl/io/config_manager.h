@@ -1,10 +1,10 @@
 #pragma once
 
-#include <string>
+// Standard library
 #include <map>
-#include <vector>
 #include <memory>
-// #include <optional>
+#include <string>
+#include <vector>
 
 namespace seahowl {
 namespace io {
@@ -69,6 +69,14 @@ class ConfigManager {
     ConfigManager();
     explicit ConfigManager(const ConfigManagerOptions& options);
     ~ConfigManager();
+
+    // Enable move semantics (defined in source file due to PIMPL)
+    ConfigManager(ConfigManager&&) noexcept;
+    ConfigManager& operator=(ConfigManager&&) noexcept;
+
+    // Disable copy
+    ConfigManager(const ConfigManager&) = delete;
+    ConfigManager& operator=(const ConfigManager&) = delete;
 
     /**
      * @brief Compute the configuration manager.

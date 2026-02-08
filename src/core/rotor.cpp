@@ -1,19 +1,23 @@
 #include "seahowl/core/rotor.h"
 
+// SEAHOWL headers
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/rotor_elasto.h"
 #include "seahowl/fluid/aero/blade_aero.h"
 #include "seahowl/fluid/aero/rotor_aero.h"
 
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
 #include <memory>
 #include <vector>
-#include <spdlog/spdlog.h>
 
 using namespace seahowl;
 using namespace seahowl::core;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
 Rotor::Rotor(std::shared_ptr<seahowl::elasto::RotorElasto> elasto, std::shared_ptr<seahowl::aero::RotorAero> aero)
     : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {

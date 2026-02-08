@@ -1,16 +1,21 @@
 #include "seahowl/io/input_reader_json.h"
+
+// SEAHOWL headers
 #include "seahowl/io/input_structures.h"
 
+// Third-party libraries
 #include <Eigen/Dense>
-#include <nlohmann/json.hpp>
 #include <nlohmann/detail/macro_scope.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <iostream>
+
+// Standard library
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -288,7 +293,7 @@ void from_json(const json& js, BladeDb& blade_db) {
     if (js.contains("global_variables")) {
         js_global_vars = js["global_variables"];
     }
-    for (auto& ref_point_json : js.at("reference_points")) {
+    for (const auto& ref_point_json : js.at("reference_points")) {
         ReferencePointBladeDb ref_point;
         from_json(ref_point_json, js_global_vars, ref_point);
         blade_db.reference_points.push_back(ref_point);
@@ -302,7 +307,6 @@ void from_json(const json& js, AirfoilDb& airfoil_db) {
 }
 
 std::vector<AirfoilDb> read_airfoil(const std::string& filepath_) {
-    AirfoilDb airfoil_db;
     try {
         json json_db = get_json(filepath_);
         return json_db.get<std::vector<AirfoilDb>>();
@@ -440,6 +444,11 @@ void from_json(const json& js, SeaOptionDb& options) {
         options.wave_stretching = js.at("wave_stretching").get<bool>();
     }
 }
+
+void from_json_seastate(const json& js, SeaOptionDb& options) {
+    options.file_seastate = js.at("file_seastate").get<std::string>();
+}
+
 void from_json_current(const json& js, SeaOptionDb& options) {
     options.type = to_lowercase(js.at("type").get<std::string>());
     options.direction = Eigen::Vector3d(js.at("direction")[0], js.at("direction")[1], js.at("direction")[2]);
@@ -456,6 +465,8 @@ void from_json(const json& js, SeaDb& sea) {
         sea.options = js.at("options").get<SeaOptionDb>();
     } else if (sea.type == "current") {
         from_json_current(js.at("options"), sea.options);
+    } else if (sea.type == "seastate") {
+        from_json_seastate(js.at("options"), sea.options);
     }
 }
 
@@ -509,6 +520,13 @@ EnvironmentDb InputReaderJson::read_environment() {
             env_db.wind.options.file_inflowwind_path = inflowwind_filepath;
             if (!fs::is_regular_file(inflowwind_filepath)) {
                 throw std::runtime_error("InflowWind file not found: " + inflowwind_filepath.u8string());
+            }
+        }
+        if (env_db.sea.has_value() && env_db.sea.value().type == "seastate") {
+            auto seastate_filepath = main_directory / env_db.sea.value().options.file_seastate;
+            env_db.sea.value().options.file_seastate_path = seastate_filepath;
+            if (!fs::is_regular_file(seastate_filepath)) {
+                throw std::runtime_error("SeaState file not found: " + seastate_filepath.u8string());
             }
         }
     } catch (const std::exception& e) {
@@ -590,6 +608,24 @@ void from_json(const json& js, TowerOptionsTurbineDb& options) {
     else
         spdlog::warn(
             "Drag Coefficient correction for tower/pile not defined in turbine.json, it is by default set to {}.", 0.0);
+
+    if (js.contains("solver_hydro")) {
+        options.solver_hydro = to_lowercase(js.at("solver_hydro").get<std::string>());
+
+        if (options.solver_hydro == "hydrodyn") {
+            if (js.contains("file_hydrodyn"))
+                options.file_hydrodyn = js.at("file_hydrodyn").get<std::string>();
+            else
+                throw std::runtime_error(
+                    "Must provide path to HydroDyn file when using monopile with HydroDyn solver.");
+
+            if (js.contains("file_seastate"))
+                options.file_seastate = js.at("file_seastate").get<std::string>();
+            else
+                throw std::runtime_error(
+                    "Must provide path to SeaState file when using monopile with HydroDyn solver.");
+        }
+    }
 }
 
 void from_json(const json& js, DiscretizationTowerTurbineDb& discretization) {
@@ -715,6 +751,15 @@ TurbineDb InputReaderJson::read_turbine() {
                 } else if (foundation_db.type == "monopile") {
                     filepath = foundation_db.file_path.generic_string();
                     foundation_db.data_tower = read_tower();
+
+                    if (foundation_db.options.has_value()) {
+                        auto& foundation_options = foundation_db.options.value();
+                        if (foundation_options.solver_hydro.has_value() &&
+                            foundation_options.solver_hydro.value() == "hydrodyn") {
+                            foundation_options.file_hydrodyn_path = main_directory / foundation_options.file_hydrodyn;
+                            foundation_options.file_seastate_path = main_directory / foundation_options.file_seastate;
+                        }
+                    }
                 }
             }
             if (foundation_db.type == "floater") {
@@ -734,7 +779,7 @@ TurbineDb InputReaderJson::read_turbine() {
             auto discon_filepath = main_directory / turbine_db.controller.options.infile;
             turbine_db.controller.options.infile_path = discon_filepath;
             if (!fs::is_regular_file(discon_filepath)) {
-                throw std::runtime_error(
+                spdlog::warn(
                     "DISCON: input file path for DISCON routine does not exist: " + discon_filepath.u8string() + ".");
             }
         }
@@ -742,7 +787,7 @@ TurbineDb InputReaderJson::read_turbine() {
             auto lib_filepath = main_directory / turbine_db.controller.options.libfile;
             turbine_db.controller.options.libfile_path = lib_filepath;
             if (!fs::is_regular_file(lib_filepath)) {
-                throw std::runtime_error(
+                spdlog::warn(
                     "DISCON: dynamic library path for DISCON routine does not exist: " + lib_filepath.u8string() + ".");
             }
         }

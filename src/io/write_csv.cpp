@@ -1,11 +1,15 @@
 #include "seahowl/io/write_csv.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
 #include <fstream>
 #include <string>
-#include <spdlog/spdlog.h>
-#include <filesystem>  // C++17
 
 using namespace seahowl::io;
 namespace fs = std::filesystem;
@@ -72,7 +76,10 @@ void CustomCSV::write_row() {
                     } else {
                         dim = "dim" + std::to_string(ivalue);
                     }
-                    size_t pos = function_pair.first.find("(");
+                    size_t pos = function_pair.first.find("[");
+                    if (pos == std::string::npos) {
+                        pos = function_pair.first.find("(");
+                    }
                     if (pos != std::string::npos) {
                         pos += header.size();
                         header.append(function_pair.first).insert(pos, dim + " ").append(",");

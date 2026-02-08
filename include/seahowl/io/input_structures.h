@@ -1,8 +1,11 @@
 #pragma once
 
-#include <seahowl/commons/numerics.h>
-#include <optional>
+// SEAHOWL headers
+#include "seahowl/commons/numerics.h"
+
+// Standard library
 #include <filesystem>
+#include <optional>
 
 namespace fs = std::filesystem;
 
@@ -10,7 +13,7 @@ namespace seahowl {
 namespace io {
 
 /**
- * @brief Structure for reference point in tower database
+ * @brief Structure for reference point in tower database.
  */
 struct ReferencePointTowerDb {
     Eigen::Vector3d position;
@@ -33,14 +36,14 @@ struct ReferencePointTowerDb {
 };
 
 /**
- * @brief Structure for tower database
+ * @brief Structure for tower database.
  */
 struct TowerDb {
     std::vector<ReferencePointTowerDb> reference_points;
 };
 
 /**
- * @brief Structure for airfoil database
+ * @brief Structure for airfoil database.
  */
 struct AirfoilDb {
     double reynolds_number;
@@ -49,7 +52,7 @@ struct AirfoilDb {
 };
 
 /**
- * * @brief Structure for reference point in blade database
+ * @brief Structure for reference point in blade database.
  */
 struct ReferencePointBladeDb {
     Eigen::Vector3d coordinates;
@@ -71,14 +74,14 @@ struct ReferencePointBladeDb {
 };
 
 /**
- * * @brief Structure for blade database
+ * @brief Structure for blade database.
  */
 struct BladeDb {
     std::vector<ReferencePointBladeDb> reference_points;
 };
 
 /**
- * @brief Structure for shaft database
+ * @brief Structure for shaft database.
  */
 struct ShaftDb {
     double tilt;
@@ -86,7 +89,7 @@ struct ShaftDb {
 };
 
 /**
- * @brief Structure for nacelle database
+ * @brief Structure for nacelle database.
  */
 struct NacelleDb {
     Eigen::Vector3d position_from_towertop;
@@ -96,7 +99,7 @@ struct NacelleDb {
 };
 
 /**
- * @brief Structure for drivetrain database
+ * @brief Structure for drivetrain database.
  */
 struct DrivetrainDb {
     double generator_inertia;
@@ -106,7 +109,7 @@ struct DrivetrainDb {
 };
 
 /**
- * @brief Structure for hub database
+ * @brief Structure for hub database.
  */
 struct HubDb {
     double radius;
@@ -117,7 +120,7 @@ struct HubDb {
 };
 
 /**
- * @brief Structure for RNA database
+ * @brief Structure for RNA database.
  */
 struct RnaDb {
     ShaftDb shaft;
@@ -127,7 +130,7 @@ struct RnaDb {
 };
 
 /**
- * @brief Structure for wind options
+ * @brief Structure for wind options.
  */
 struct WindOptionDb {
     // general wind options
@@ -147,7 +150,7 @@ struct WindOptionDb {
 };
 
 /**
- * @brief Structure for wind database
+ * @brief Structure for wind database.
  */
 struct WindDb {
     std::string type;
@@ -156,7 +159,7 @@ struct WindDb {
 };
 
 /**
- * @brief Structure for sea options
+ * @brief Structure for sea options.
  */
 struct SeaOptionDb {
     // wave options
@@ -180,10 +183,14 @@ struct SeaOptionDb {
     Eigen::Vector3d direction;
     double velocity_surface;
     double velocity_seabed;
+
+    // SeaState options
+    std::string file_seastate;    // relative path from input file
+    fs::path file_seastate_path;  // relative path from driver execution folder
 };
 
 /**
- * @brief Structure for sea database
+ * @brief Structure for sea database.
  */
 struct SeaDb {
     std::string type;
@@ -195,7 +202,7 @@ struct SeaDb {
 
 // Structure for soil options
 /**
- * @brief Structure for soil options
+ * @brief Structure for soil options.
  */
 struct SoilOptionDb {
     double stiffness_normal;
@@ -204,7 +211,7 @@ struct SoilOptionDb {
 };
 
 /**
- * @brief Structure for soil database
+ * @brief Structure for soil database.
  */
 struct SoilDb {
     std::string type;
@@ -212,7 +219,7 @@ struct SoilDb {
 };
 
 /**
- * @brief Structure for environment database
+ * @brief Structure for environment database.
  */
 struct EnvironmentDb {
     Eigen::Vector3d gravity;
@@ -224,7 +231,7 @@ struct EnvironmentDb {
 };
 
 /**
- * @brief Structure for aerodyn options in turbine database
+ * @brief Structure for aerodyn options in turbine database.
  */
 struct AeroOptionsTurbineDb {
     // AeroDyn options
@@ -242,7 +249,7 @@ struct AeroOptionsTurbineDb {
 };
 
 /**
- * @brief Structure for aerodyn options in turbine database
+ * @brief Structure for aerodyn options in turbine database.
  */
 struct AeroTurbineDb {
     std::string solver;
@@ -250,7 +257,7 @@ struct AeroTurbineDb {
 };
 
 /**
- * @brief Structure for discretization of turbine database
+ * @brief Structure for discretization of turbine database.
  */
 struct DiscretizationTurbineDb {
     std::vector<double> elasto;
@@ -258,7 +265,7 @@ struct DiscretizationTurbineDb {
 };
 
 /**
- * @brief Structure for blade in turbine database
+ * @brief Structure for blade in turbine database.
  */
 struct BladeTurbineDb {
     std::string file;
@@ -268,7 +275,7 @@ struct BladeTurbineDb {
 };
 
 /**
- * @brief Structure for rotor options in turbine database
+ * @brief Structure for rotor options in turbine database.
  */
 struct RotorOptionsTurbineDb {
     // disk (single body) options
@@ -278,7 +285,7 @@ struct RotorOptionsTurbineDb {
 };
 
 /**
- * @brief Structure for discretization of rotor turbine database
+ * @brief Structure for discretization of rotor turbine database.
  */
 struct DiscretizationRotorTurbineDb {
     std::vector<double> elasto;
@@ -286,7 +293,7 @@ struct DiscretizationRotorTurbineDb {
 };
 
 /**
- * @brief Structure for rotor turbine database
+ * @brief Structure for rotor turbine database.
  */
 struct RotorTurbineDb {
     std::string type;
@@ -297,7 +304,7 @@ struct RotorTurbineDb {
 };
 
 /**
- * @brief Structure for RNATurbine database
+ * @brief Structure for RNATurbine database.
  */
 struct RNATurbineDb {
     std::string file;
@@ -307,15 +314,22 @@ struct RNATurbineDb {
 };
 
 /**
- * @brief Structure for tower options in turbine database
+ * @brief Structure for tower options in turbine database.
  */
 struct TowerOptionsTurbineDb {
     std::optional<bool> use_MacCamyFuchs_correction;
     std::optional<bool> use_Cd_correction;
+    std::optional<std::string> solver_hydro;
+
+    // HydroDyn options
+    std::string file_hydrodyn;
+    fs::path file_hydrodyn_path;  // relative path from driver execution folder
+    std::string file_seastate;
+    fs::path file_seastate_path;  // relative path from driver execution folder
 };
 
 /**
- * @brief Structure for discretization of tower turbine database
+ * @brief Structure for discretization of tower turbine database.
  */
 struct DiscretizationTowerTurbineDb {
     std::vector<double> elasto;
@@ -323,7 +337,7 @@ struct DiscretizationTowerTurbineDb {
 };
 
 /**
- * @brief Structure for tower turbine database
+ * @brief Structure for tower turbine database.
  */
 struct TowerTurbineDb {
     DiscretizationTowerTurbineDb discretization;
@@ -333,7 +347,7 @@ struct TowerTurbineDb {
 };
 
 /**
- * @brief Structure for controller options in turbine database
+ * @brief Structure for controller options in turbine database.
  */
 struct ControllerOptionsTurbineDb {
     std::string infile = "";   // relative path from input file
@@ -346,7 +360,7 @@ struct ControllerOptionsTurbineDb {
 };
 
 /**
- * @brief Structure for controller turbine database
+ * @brief Structure for controller turbine database.
  */
 struct ControllerTurbineDb {
     std::string type;
@@ -354,7 +368,7 @@ struct ControllerTurbineDb {
 };
 
 /**
- * @brief Structure for discretization of foundation turbine database
+ * @brief Structure for discretization of foundation turbine database.
  */
 struct DiscretizationFoundationTurbineDb {
     std::vector<double> elasto;
@@ -362,7 +376,7 @@ struct DiscretizationFoundationTurbineDb {
 };
 
 /**
- * @brief Structure for body in floater database
+ * @brief Structure for body in floater database.
  */
 struct BodyFloaterdb {
     std::string name;
@@ -372,7 +386,7 @@ struct BodyFloaterdb {
 };
 
 /**
- * @brief Structure for discretization of floater database
+ * @brief Structure for discretization of floater database.
  */
 struct DiscretizationFloaterdb {
     std::vector<double> elasto;
@@ -380,7 +394,7 @@ struct DiscretizationFloaterdb {
 };
 
 /**
- * @brief Structure for mooring properties in floater database
+ * @brief Structure for mooring properties in floater database.
  */
 struct MooringPropertiesDb {
     double diameter;
@@ -394,7 +408,7 @@ struct MooringPropertiesDb {
 };
 
 /**
- * @brief Structure for mooring in floater database
+ * @brief Structure for mooring in floater database.
  */
 struct MooringFloaterdb {
     std::string connected_body_name;
@@ -411,7 +425,7 @@ struct MooringFloaterdb {
 };
 
 /**
- * @brief structure for floater database
+ * @brief Structure for floater database.
  */
 struct Floaterdb {
     std::string type;
@@ -426,7 +440,7 @@ struct Floaterdb {
 };
 
 /**
- * @brief structure for foundation turbine database
+ * @brief Structure for foundation turbine database.
  */
 struct FoundationTurbineDb {
     std::string type;
@@ -439,7 +453,7 @@ struct FoundationTurbineDb {
 };
 
 /**
- * @brief structure for turbine database
+ * @brief Structure for turbine database.
  */
 struct TurbineDb {
     AeroTurbineDb aero;
@@ -451,7 +465,7 @@ struct TurbineDb {
 };
 
 /**
- * @brief structure for statics in main database
+ * @brief Structure for statics in main database.
  */
 struct StaticsMainDb {
     bool linear_step;
@@ -459,7 +473,7 @@ struct StaticsMainDb {
 };
 
 /**
- * @brief structure for presimulation in main database
+ * @brief Structure for presimulation in main database.
  */
 struct PresimulationMainDb {
     double dt;
@@ -469,7 +483,7 @@ struct PresimulationMainDb {
 };
 
 /**
- * @brief structure for numerics in main database
+ * @brief Structure for numerics in main database.
  */
 struct NumericsMainDb {
     double dt;
@@ -479,7 +493,7 @@ struct NumericsMainDb {
 };
 
 /**
- * @brief structure for outputs in main database
+ * @brief Structure for outputs in main database.
  */
 struct OutputsMainDb {
     double dt;
@@ -490,7 +504,7 @@ struct OutputsMainDb {
 };
 
 /**
- * @brief structure for environment in main database
+ * @brief Structure for environment in main database.
  */
 struct EnvironmentMainDb {
     std::string file;
@@ -498,7 +512,7 @@ struct EnvironmentMainDb {
 };
 
 /**
- * @brief structure for turbine in main database
+ * @brief Structure for turbine in main database.
  */
 struct TurbineMainDb {
     std::string file;
@@ -508,7 +522,7 @@ struct TurbineMainDb {
 };
 
 /**
- * @brief structure for main database
+ * @brief Structure for main database.
  */
 struct MainDb {
     NumericsMainDb numerics;

@@ -1,11 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/io/viz_insitu.h"
 #include "seahowl/io/write_csv.h"
 #ifdef HAVE_VTK
     #include "seahowl/io/write_vtk.h"
 #endif
 
+// Standard library
 #include <memory>
 #include <string>
 
@@ -17,6 +19,7 @@ class System;
 }  // namespace seahowl
 
 namespace seahowl {
+/** @brief Input/output module (reading, writing, visualization). */
 namespace io {
 
 /** Class for managing simulation outputs (CSV, VTK, in situ, logs etc).
@@ -35,14 +38,14 @@ class OutputManager {
     /**
      * @brief Constructor.
      *
-     * @param system_core System from which the output manager grabs information.
+     * @param[in] system_core System from which the output manager grabs information.
      */
     OutputManager(seahowl::core::System& system_core);
 
     /**
      * @brief Sets main folder for outputs.
      *
-     * @param output_folder Path to output folder.
+     * @param[in] output_folder Path to output folder.
      */
     void set_output_folder(const std::string& output_folder);
 
@@ -62,7 +65,7 @@ class OutputManager {
     /**
      * @brief Outputs everything at current time step.
      *
-     * @param step Current step iteration (used for output names such as VTK).
+     * @param[in] step Current step iteration (used for output names such as VTK).
      */
     void output_all(int step);
 
@@ -74,7 +77,8 @@ class OutputManager {
     /**
      * @brief Adds and returns a reference to a new CustomCSV in the list of CSVs.
      *
-     * @param csv_filename Name (or path) of custom CSV, relative to output_folder.
+     * @param[in] csv_filepath Name (or path) of custom CSV, relative to output_folder.
+     * @return Reference to the newly created CustomCSV object.
      */
     seahowl::io::CustomCSV& create_new_csv(const std::string& csv_filepath);
 

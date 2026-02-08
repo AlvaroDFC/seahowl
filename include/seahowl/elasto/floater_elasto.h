@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/mooring_elasto.h"
 
+// Standard library
 #include <deque>
 #include <map>
 
@@ -20,7 +22,7 @@ namespace elasto {
 
 class FloaterElasto : public FoundationElasto {
   public:
-    /** @brief Link between foundation and entity (e.g. towerbase of turbine). */
+    /** @brief Link between foundation and entity (such as towerbase of turbine). */
     std::shared_ptr<seahowl::elasto::Link> link_floater_entity;
     /** @brief Mooring system of the floater. */
     std::shared_ptr<seahowl::elasto::MooringSystemElasto> mooring_system;
@@ -58,7 +60,7 @@ class FloaterElasto : public FoundationElasto {
     /**
      * @brief Adds fairlead to system.
      *
-     * @param[in] position Absolute position of fairlead.
+     * @param[in] position Absolute position of fairlead [m]
      * @param[in] connected_body_name Name of the body connected to the fairlead.
      */
     virtual void add_fairlead(const Vector3d& position, const std::string& connected_body_name);

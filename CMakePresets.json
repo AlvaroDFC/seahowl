@@ -17,6 +17,8 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "BUILD_TESTING": "ON",
+        "SEAHOWL_ENABLE_BUILD": "ON",
+        "SEAHOWL_ENABLE_TESTS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_MANIFEST_DIR": "${sourceDir}/external/vcpkg",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
@@ -44,12 +46,12 @@
       "inherits": "default",
       "displayName": "Full SEAHOWL installation",
       "cacheVariables": {
-        "SEAHOWL_ENABLE_BUILD": "ON",
-        "SEAHOWL_ENABLE_TESTS": "ON",
         "SEAHOWL_ENABLE_EXAMPLES": "ON",
         "SEAHOWL_ENABLE_PYTHON": "ON",
         "SEAHOWL_ENABLE_VIRTUALENV": "ON",
         "SEAHOWL_ENABLE_HYDROCHRONO": "ON",
+        "SEAHOWL_ENABLE_HYDRODYN": "ON",
+        "SEAHOWL_ENABLE_SEASTATE": "ON",
         "SEAHOWL_ENABLE_AERODYN": "ON",
         "SEAHOWL_ENABLE_INFLOWWIND": "ON",
         "SEAHOWL_ENABLE_IRRLICHT": "OFF",
@@ -99,17 +101,35 @@
       "displayName": "Full SEAHOWL installation with VTK and in situ visualization (Debug)"
     },
     {
+      "name": "all",
+      "inherits": "full_vtk",
+      "displayName": "SEAHOWL installation with all features",
+      "cacheVariables": {
+        "SEAHOWL_ENABLE_DOC": "ON"
+      }
+    },
+    {
+      "name": "all/debug",
+      "inherits": [
+        "debug",
+        "all"
+      ],
+      "displayName": "SEAHOWL installation with all features (Debug)"
+    },
+    {
       "name": "minimal",
       "displayName": "Minimal SEAHOWL installation",
       "inherits": "default",
       "cacheVariables": {
-        "SEAHOWL_ENABLE_BUILD": "ON",
-        "SEAHOWL_ENABLE_TESTS": "OFF",
         "SEAHOWL_ENABLE_EXAMPLES": "OFF",
         "SEAHOWL_ENABLE_PYTHON": "OFF",
+        "SEAHOWL_ENABLE_VIRTUALENV": "OFF",
         "SEAHOWL_ENABLE_HYDROCHRONO": "OFF",
+        "SEAHOWL_ENABLE_HYDRODYN": "OFF",
+        "SEAHOWL_ENABLE_SEASTATE": "OFF",
         "SEAHOWL_ENABLE_AERODYN": "OFF",
         "SEAHOWL_ENABLE_INFLOWWIND": "OFF",
+        "SEAHOWL_ENABLE_IRRLICHT": "OFF",
         "SEAHOWL_ENABLE_VTK": "OFF",
         "SEAHOWL_ENABLE_DOC": "OFF"
       }

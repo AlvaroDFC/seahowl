@@ -1,32 +1,34 @@
 #include "seahowl/core/turbine.h"
 
-#include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/fluid/aero/turbine_aero.h"
+// SEAHOWL headers
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/turbine_elasto.h"
+#include "seahowl/fluid/turbine_fluid.h"
 #include "seahowl/servo/controller.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl::core;
 using namespace seahowl::servo;
 using namespace seahowl::elasto;
-using namespace seahowl::aero;
+using namespace seahowl::fluid;
 
-Turbine::Turbine(std::shared_ptr<TurbineElasto> elasto, std::shared_ptr<TurbineAero> aero)
-    : ComponentDynamic(elasto, aero),
+Turbine::Turbine(std::shared_ptr<TurbineElasto> elasto, std::shared_ptr<TurbineFluid> fluid)
+    : ComponentDynamic(elasto, fluid),
       elasto(*elasto),
-      aero(*aero),
-      rna(elasto->rna, aero->rna),
-      tower(elasto->tower, aero->tower) {}
+      fluid(*fluid),
+      rna(elasto->rna, fluid->rna),
+      tower(elasto->tower, fluid->tower) {}
 
 void Turbine::initialize_this(double time, double dt) {
     rna.initialize(time, dt);
     tower.initialize(time, dt);
     controller->initialize(time, dt, *this);
 
-    aero.initialize(time, dt);
+    fluid.initialize(time, dt);
 
     if (foundation) {
         foundation->initialize(time, dt);
@@ -63,7 +65,7 @@ void Turbine::apply_control(double time, double dt) {
             }
         } else {
             // collective pitch for more than 3 blades or 0 blade (e.g. actuator disk)
-            for (auto& blade : rna.rotor.blades) {
+            for (const auto& blade : rna.rotor.blades) {
                 if (blade->elasto.actuator_pitch->is_fixed_actuator()) {
                     auto collective_pitch_increment =
                         controller->get_collective_pitch() - rna.elasto.rotor->pitch_collective;
@@ -131,7 +133,7 @@ void Turbine::poststep(double time, double dt) {
 
 void Turbine::build() {
     elasto.build();
-    aero.build();
+    fluid.build();
 }
 
 double Turbine::get_shaft_power() const {
@@ -163,7 +165,7 @@ double Turbine::get_generator_rpm() const {
 }
 
 void Turbine::apply_env_model(seahowl::env::EnvModel& env_model, double time) {
-    aero.compute_env_loads(env_model, time);
+    fluid.compute_env_loads(env_model, time);
 }
 
 void Turbine::apply_soil_model(seahowl::env::EnvModel& env_model, double time) {

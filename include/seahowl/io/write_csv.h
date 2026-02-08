@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
-#include <string>
-#include <map>
+// Standard library
 #include <functional>
+#include <map>
+#include <string>
 #include <vector>
 
 // forward declarations
@@ -70,7 +72,7 @@ class CustomCSV {
   private:
     /** @brief CSV filepath. */
     std::string csv_filepath = "";
-    /** @brief Paris of <header, function>. */
+    /** @brief Pairs of <header, function>. */
     std::vector<std::pair<std::string, std::function<std::vector<double>()>>> functions;
     /** @brief Whether the CSV has been initialized or not (outputs headers if false). */
     bool is_initialized = false;

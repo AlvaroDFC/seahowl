@@ -3,6 +3,7 @@
 // Disable inherits via dominance warning when there is multiple inheritance
 #pragma warning(disable : 4250)
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 
 namespace seahowl {
@@ -19,12 +20,12 @@ class Entity {
     /**
      * @brief Sets position of entity.
      *
-     * @param[in] position Position of entity.
+     * @param[in] position Position of entity [m]
      */
     virtual void set_position(const Vector3d& position) = 0;
 
     /**
-     * @brief Returns position of entity.
+     * @brief Returns position of entity [m]
      */
     virtual Vector3d get_position() const = 0;
 
@@ -41,7 +42,7 @@ class Entity {
     virtual Quaternion get_rotation() const = 0;
 
     /**
-     * @brief Returns RPY (roll-pitch-yaw) angles of entity.
+     * @brief Returns RPY (roll-pitch-yaw) angles of entity [rad]
      */
     virtual Vector3d get_rpy_angles() const;
 
@@ -65,7 +66,7 @@ class Entity {
     /**
      * @brief Rotates the entity.
      *
-     * @param[in] translation_vector The angle of rotation (in radians).
+     * @param[in] angle The angle of rotation [rad]
      * @param[in] axis The axis of rotation (3D vector).
      */
     void rotate(double angle, const Vector3d& axis);
@@ -86,7 +87,7 @@ class EntityDynamic : public virtual Entity {
     /**
      * @brief Sets velocity of entity.
      *
-     * @param[in] velocity Velocity of entity.
+     * @param[in] velocity Velocity of entity [m/s]
      */
     virtual void set_velocity(const Vector3d& velocity) = 0;
 
@@ -98,41 +99,41 @@ class EntityDynamic : public virtual Entity {
     /**
      * @brief Sets acceleration of entity.
      *
-     * @param[in] acceleration Acceleration of entity.
+     * @param[in] acceleration Acceleration of entity [m/s^2]
      */
     virtual void set_acceleration(const Vector3d& acceleration) = 0;
 
     /**
-     * @brief Returns acceleration of entity.
+     * @brief Returns acceleration of entity [m/s^2]
      */
     virtual Vector3d get_acceleration() const = 0;
 
     /**
      * @brief Sets rotational velocity of entity (global reference frame).
      *
-     * @param[in] rotational_velocity_global of entity.
+     * @param[in] rotational_velocity_global of entity [rad/s]
      */
     virtual void set_rotational_velocity(const Vector3d& rotational_velocity, bool is_local = true) = 0;
 
     /**
-     * @brief Returns rotational velocity of entity (global reference frame).
+     * @brief Returns rotational velocity of entity (global reference frame) [rad/s]
      */
     virtual Vector3d get_rotational_velocity(bool is_local = true) const = 0;
 
     /**
      * @brief Sets rotational acceleration of entity (global reference frame).
      *
-     * @param[in] rotational_acceleration_global of entity.
+     * @param[in] rotational_acceleration_global of entity [rad/s^2]
      */
     virtual void set_rotational_acceleration(const Vector3d& rotational_acceleration, bool is_local = true) = 0;
 
     /**
-     * @brief Returns rotational acceleration of entity (global reference frame).
+     * @brief Returns rotational acceleration of entity (global reference frame) [rad/s^2]
      */
     virtual Vector3d get_rotational_acceleration(bool is_local = true) const = 0;
 
     /**
-     * @brief Ensure a virtual destructor
+     * @brief Ensure a virtual destructor.
      */
     virtual ~EntityDynamic() = default;
 };
@@ -142,17 +143,17 @@ class EntityDynamic : public virtual Entity {
  */
 class EntityDynamicEigen : public EntityDynamic {
   protected:
-    /** @brief Position of entity. */
+    /** @brief Position of entity [m] */
     Vector3d position{0.0, 0.0, 0.0};
     /** @brief Rotation of entity. */
     Quaternion rotation{0.0, 0.0, 0.0, 0.0};
-    /** @brief Velocity of entity. */
+    /** @brief Velocity of entity [m/s] */
     Vector3d velocity{0.0, 0.0, 0.0};
-    /** @brief Acceleration of entity. */
+    /** @brief Acceleration of entity [m/s^2] */
     Vector3d acceleration{0.0, 0.0, 0.0};
-    /** @brief Rotational velocity of entity (in global reference frame). */
+    /** @brief Rotational velocity of entity (in global reference frame) [rad/s] */
     Vector3d rotational_velocity{0.0, 0.0, 0.0};
-    /** @brief Rotational acceleration of entity (in global reference frame). */
+    /** @brief Rotational acceleration of entity (in global reference frame) [rad/s^2] */
     Vector3d rotational_acceleration{0.0, 0.0, 0.0};
 
   public:

@@ -1,0 +1,78 @@
+﻿{
+  "type": "HydroDyn",
+  "options": {
+    "file": "./hydrodyn/IEA-15-240-RWT-UMaineSemi_HydroDyn.dat"
+  },
+  "position": [0.0, 0.0, -14.94],
+  "mass": 17839e3,
+  "inertia": [
+    [1.251e10, 0.0, 0.0],
+    [0.0, 1.251e10, 0.0],
+    [0.0, 0.0, 2.367e10]
+  ],
+  "damping_matrix": [
+    [9.225e5, 0.0, 0.0, 0.0, -8.918e6, 0.0],
+    [0.0, 9.225e5, 0.0, 8.918e6, 0.0, 0.0],
+    [0.0, 0.0, 2.296e6, 0.0, 0.0, 0.0],
+    [0.0, 8.918e6, 0.0, 1.676e10, 0.0, 0.0],
+    [-8.918e6, 0.0, 0.0, 0.0, 1.676e10, 0.0],
+    [0.0, 0.0, 0.0, 0.0, 0.0, 4.798e10]
+  ],
+  "bodies": [
+    {
+      "name": "body1",
+      "position": [0.0, 0.0, 0.0],
+      "mass": 0.0,
+      "inertia": [
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0]
+      ]
+    }
+  ],
+  "moorings": [
+    {
+      "connected_body_name": "body1",
+      "line_properties": "./mooring_properties.json",
+      "length": 850.0,
+      "discretization": {
+        "elasto": [10],
+        "hydro": [10]
+      },
+      "relative_fairlead": true,
+      "relative_anchor": false,
+      "fairlead_position": [-58.0, 0.0, 0.94],
+      "anchor_position": [-837.60, 0.0, -200.0],
+      "rotation_axis": [0.0, 0.0, 1.0],
+      "rotation_angle": 0.0
+    }, {
+      "connected_body_name": "body1",
+      "line_properties": "./mooring_properties.json",
+      "length": 850.0,
+      "discretization": {
+        "elasto": [10],
+        "hydro": [10]
+      },
+      "relative_fairlead": true,
+      "relative_anchor": false,
+      "fairlead_position": [-58.0, 0.0, 0.94],
+      "anchor_position": [-837.60, 0.0, -200.0],
+      "rotation_axis": [0.0, 0.0, 1.0],
+      "rotation_angle": 120.0
+    }, {
+      "connected_body_name": "body1",
+      "line_properties": "./mooring_properties.json",
+      "length": 850.0,
+      "discretization": {
+        "elasto": [10],
+        "hydro": [10]
+      },
+      "relative_fairlead": true,
+      "relative_anchor": false,
+      "fairlead_position": [-58.0, 0.0, 0.94],
+      "anchor_position": [-837.60, 0.0, -200.0],
+      "rotation_axis": [0.0, 0.0, 1.0],
+      "rotation_angle": 240.0
+    }
+  ]
+}

@@ -1,16 +1,18 @@
 #include "seahowl/fluid/aero/blade_aero.h"
 
+// SEAHOWL headers
 #include "seahowl/commons/utils.h"
-#include "seahowl/fluid/aero/reference_point_aero.h"
+#include "seahowl/env/env_model.h"
 #include "seahowl/fluid/aero/bemt.h"
+#include "seahowl/fluid/aero/reference_point_aero.h"
 
+// Third-party libraries
 #include <spdlog/spdlog.h>
 
 using namespace seahowl;
-using namespace seahowl::aero;
+using namespace seahowl::fluid::aero;
 
-BladeNodeAero::BladeNodeAero(BladeReferencePointAero& point) {
-    properties = point;
+BladeNodeAero::BladeNodeAero(const BladeReferencePointAero& point) : properties(point) {
     set_position(point.coordinates);
     set_velocity(Vector3d(0.0, 0.0, 0.0));
     set_acceleration(Vector3d(0.0, 0.0, 0.0));
@@ -58,9 +60,7 @@ Vector3d BladeElementAero::get_offset_aero_absolute() const {
     return 0.5 * (node1.get_offset_aero_absolute() + node2.get_offset_aero_absolute());
 }
 
-BladeAero::BladeAero() {
-    body_root = std::make_unique<EntityDynamicEigen>();
-}
+BladeAero::BladeAero() : body_root(std::make_unique<EntityDynamicEigen>()) {}
 
 void BladeAero::build() {
     // check that enough reference points were defined to create elements (at least 2)
@@ -102,7 +102,75 @@ void BladeAero::build() {
 }
 
 void BladeAero::compute_env_loads(const env::EnvModel& env_model, double time) {
-    throw std::runtime_error("Cannot compute fluid loads directly from BladeAero, call function from RotorAero.");
+    // iterate over blade nodes
+    for (auto& node : nodes) {
+        // node info
+        auto node_position = node.get_position();
+        auto node_rotation = node.get_rotation();
+        auto node_velocity = node.get_velocity();
+
+        // fluid density
+        double density = env_model.fluid_models.get_density(node_position, time);
+        // fluid velocity
+        auto wind_velocity = env_model.fluid_models.get_velocity(node_position, time);
+        // relative velocity
+        auto global_velocity = Vector3d(wind_velocity - node_velocity);
+
+        // axis of node in global frame
+        auto global_normal = node_rotation * Vector3d(1.0, 0.0, 0.0);
+        auto global_tangent = node_rotation * Vector3d(0.0, 1.0, 0.0);
+        auto global_axis = node_rotation * Vector3d(0.0, 0.0, 1.0);
+
+        // uninduced local velocity (2D)
+        // frame perpendicular to rotor disc
+        // x airfoil: tangential velocity (tangential to chord, pointing towards tail of airfoil) --> y IEC
+        // y airfoil: normal velocity (normal to chord, pointing up) --> x IEC
+        double local_velocity_normal0 = global_velocity.dot(global_normal);
+        double local_velocity_tangent0 = global_velocity.dot(global_tangent);
+        auto local_velocity_airfoil = Vector2d(local_velocity_tangent0, local_velocity_normal0);
+
+        double tol = 1e-6;
+        if (local_velocity_airfoil.norm() < tol) {
+            node.load = Vector3d(0.0, 0.0, 0.0);
+        } else {
+            // get angle of airfoil (pitch + twist + torsion) from plane of bent blade
+            // auto angle_airfoil = get_vector_angle_from_plane(node_normal, blade_tangent, -node_axis_projected);
+            auto angle_airfoil = 0.0;
+
+            // get coefficients from angle of attack
+            double phi = seahowl::aero::get_phi(local_velocity_airfoil);
+            double alpha = seahowl::aero::get_alpha_from_phi(phi, angle_airfoil);
+            auto coefficients =
+                seahowl::fluid::aero::get_aero_coefficients_from_alpha(alpha, node.properties.airfoil_properties);
+
+            // get drag and lift coefficients
+            auto cl = coefficients.lift;
+            auto cd = coefficients.drag;
+            auto cm = coefficients.moment;
+            // projected to local frame
+            double cos_phi = cos(phi);
+            double sin_phi = sin(phi);
+            double cn = cl * cos_phi + cd * sin_phi;
+            double ct = -cl * sin_phi + cd * cos_phi;
+
+            // calculate drag and lift force
+            auto vel = local_velocity_airfoil.norm();
+            auto chord = node.properties.chord;
+            auto load_n = 0.5 * density * vel * vel * chord * cn;
+            auto load_t = 0.5 * density * vel * vel * chord * ct;
+            auto moment = 0.5 * density * vel * vel * chord * chord * cm;
+
+            // transform from local to global load
+            node.load = global_normal * load_n + global_tangent * load_t;
+            node.moment = global_axis * moment;
+
+            // store info about fluid velocity
+            node.wind_velocity = wind_velocity;
+            node.wind_velocity_shadowed = wind_velocity;
+            node.relative_velocity_induced =
+                global_normal * local_velocity_airfoil.y() + global_tangent * local_velocity_airfoil.x();
+        }
+    }
 }
 
 void BladeAero::compute_distances_from_tip() {
@@ -127,7 +195,7 @@ void BladeAero::compute_radii(const Vector3d& hub_apex_position) {
 
 Vector3d BladeAero::get_average_wind_velocity() {
     auto average = Vector3d(0.0, 0.0, 0.0);
-    for (auto& node : nodes) {
+    for (const auto& node : nodes) {
         average += node.wind_velocity_shadowed;
     }
     average /= nodes.size();
@@ -136,7 +204,7 @@ Vector3d BladeAero::get_average_wind_velocity() {
 
 Vector3d BladeAero::get_total_load() {
     auto total = Vector3d(0.0, 0.0, 0.0);
-    for (auto& element : elements) {
+    for (const auto& element : elements) {
         total += element.get_load();
     }
     return total;

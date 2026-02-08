@@ -1,11 +1,13 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/core/component.h"
-#include "seahowl/core/turbine.h"  // @todo forward declare Turbine
+#include "seahowl/core/turbine.h"
 
+// Standard library
 #include <deque>
 
-// forward declarations
+// Forward declarations
 namespace seahowl {
 namespace env {
 class EnvModel;
@@ -13,9 +15,9 @@ class EnvModel;
 namespace servo {
 class Controller;
 }  // namespace servo
-namespace aero {
-class SystemAero;
-}  // namespace aero
+namespace fluid {
+class SystemFluid;
+}  // namespace fluid
 namespace elasto {
 class SystemElasto;
 }  // namespace elasto
@@ -35,12 +37,12 @@ class System : public ComponentDynamic {
     std::deque<std::shared_ptr<Turbine>> turbines{};
     /** @brief Other dynamics components. */
     std::deque<std::shared_ptr<ComponentDynamic>> components{};
-    /** @brief environmental model. */
+    /** @brief Environmental model. */
     std::shared_ptr<seahowl::env::EnvModel> env_model;
     /** @brief System for elastodynamics. */
     seahowl::elasto::SystemElasto& elasto;
-    /** @brief System for aerodynamics. */
-    seahowl::aero::SystemAero& aero;
+    /** @brief System for fluid dynamics. */
+    seahowl::fluid::SystemFluid& fluid;
     /**
      * @brief Constructor.
      *
@@ -49,59 +51,39 @@ class System : public ComponentDynamic {
      * @param[in] elasto Elastodynamic system.
      * @param[in] aero Aerodynamic system.
      */
-    System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::aero::SystemAero> aero);
+    System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::fluid::SystemFluid> fluid);
 
     void build() override;
-
-    /**
-     * @brief Prestep for system, called before elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void prestep(double time, double dt) override;
 
     /**
      * @brief Step for system, called for elastodynamic stepping.
      *
-     * @param[in] time Time of the simulation.
+     * @param[in] time Time of the simulation [s]
      */
     void step(double dt);
 
-    /**
-     * @brief Poststep for system, called after elastodynamic stepping.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     virtual void poststep(double time, double dt) override;
-
-    /**
-     * @brief Applies environmental model to system.
-     * @param[in] env_model Environmental model affecting system.
-     * @param[in] time Time of simulation.
-     */
     void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
     void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
 
     /**
-     * @brief Returns time of simulation.
+     * @brief Returns time of simulation [s]
      */
     double get_time() const;
 
     /**
      * @brief Sets time of simulation.
      *
-     * @param[in] time Time of simulation.
+     * @param[in] time Time of simulation [s]
      */
     void set_time(double time);
 
     /**
      * @brief Presimulation for system, called before simulation actually starts.
      *
-     * @param[in] duration Duration of presimulation.
-     * @param[in] dt Time step length.
+     * @param[in] duration Duration of presimulation [s]
+     * @param[in] dt Time step length [s]
      * @param[in] fix_towers Whether to fix tower bases or not.
      * @param[in] with_presetup Whether to do presetup or not.
      */
@@ -125,8 +107,8 @@ class System : public ComponentDynamic {
     /**
      * @brief Initialize system.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize_this(double time, double dt) override;
 };

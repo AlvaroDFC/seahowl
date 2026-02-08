@@ -1,6 +1,7 @@
 #pragma once
 
-#include <seahowl/io/input_structures.h>
+// SEAHOWL headers
+#include "seahowl/io/input_structures.h"
 
 namespace seahowl {
 namespace io {
@@ -10,12 +11,12 @@ namespace io {
 class InputReader {
   public:
     /**
-     * @brief Constructor
+     * @brief Constructor.
      * @param filepath Path to the input file.
      */
     InputReader(const std::string& filepath_) : filepath(filepath_) {}
     /**
-     * @brief Destructor
+     * @brief Destructor.
      */
     virtual ~InputReader() = default;
     /**

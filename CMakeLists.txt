@@ -7,7 +7,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # =================
 project(
     SEAHOWL
-    VERSION 0.11.0
+    VERSION 1.0.0
     DESCRIPTION "Servo-Elasto-Aero-Hydro Offshore Wind Lab"
     LANGUAGES CXX
 )
@@ -21,9 +21,6 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}/../Chrono/lib")
-
-# Add the cmake folder so the FindSphinx module is found
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 # Retrieve date and time of build
 string(TIMESTAMP TODAY "%Y-%m-%d %H:%M:%S")
@@ -48,11 +45,6 @@ else()
     set(SEAHOWL_GIT_HASH "N/A")
 endif()
 
-# set default SEAHOWL_DATADIR
-set(SEAHOWL_DATADIR_VALUE ${PROJECT_SOURCE_DIR}/data)
-message(STATUS "SEAHOWL_DATADIR set to: ${SEAHOWL_DATADIR_VALUE}")
-add_definitions(-DSEAHOWL_DATADIR="${SEAHOWL_DATADIR_VALUE}")
-
 # =============
 # OPTIONS
 # =============
@@ -67,6 +59,8 @@ option(SEAHOWL_ENABLE_EXAMPLES "Enable examples" ON)
 option(SEAHOWL_ENABLE_VTK "Enable VTK Library for output" OFF)
 option(SEAHOWL_ENABLE_AERODYN "Enable AeroDyn module" OFF)
 option(SEAHOWL_ENABLE_INFLOWWIND "Enable InflowWind module" OFF)
+option(SEAHOWL_ENABLE_HYDRODYN "Enable HydroDyn module" OFF)
+option(SEAHOWL_ENABLE_SEASTATE "Enable SeaState module" OFF)
 option(SEAHOWL_ENABLE_HYDROCHRONO "Enable HydroChrono library" OFF)
 
 
@@ -119,6 +113,28 @@ if(SEAHOWL_ENABLE_INFLOWWIND)
     add_definitions("-DHAVE_INFLOWWIND=1")
 endif(SEAHOWL_ENABLE_INFLOWWIND)
 
+# HydroDyn module
+if(SEAHOWL_ENABLE_HYDRODYN)
+    if(WIN32)
+        find_library(HYDRODYN_LIBRARY libhydrodyn_c_binding)
+    else()
+        find_library(HYDRODYN_LIBRARY hydrodyn_c_binding)
+    endif()
+    add_compile_definitions(SEAHOWL_HAVE_HYDRODYN=1)
+    add_definitions("-DHAVE_HYDRODYN=1")
+endif(SEAHOWL_ENABLE_HYDRODYN)
+
+# SeaState module
+if(SEAHOWL_ENABLE_SEASTATE)
+    if(WIN32)
+	find_library(SEASTATE_LIBRARY libseastate_c_binding)
+    else()
+	find_library(SEASTATE_LIBRARY seastate_c_binding)
+    endif()
+    add_compile_definitions(SEAHOWL_HAVE_SEASTATE=1)
+    add_definitions("-DHAVE_SEASTATE=1")
+endif(SEAHOWL_ENABLE_SEASTATE)
+
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(FATAL_ERROR "ONLY 64 BITS SUPPORTED")
 endif()
@@ -141,7 +157,12 @@ endif(SEAHOWL_ENABLE_HYDROCHRONO)
 if(SEAHOWL_ENABLE_PYTHON)
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
     find_package(pybind11 CONFIG REQUIRED)
+    add_definitions("-DHAVE_PYTHON=1")
 endif(SEAHOWL_ENABLE_PYTHON)
+
+IF(SEAHOWL_ENABLE_VIRTUALENV)
+     add_definitions("-DHAVE_ENV_PYTHON=1")
+endif()
 
 # --------------------------------------------------------------
 # Tweaks to disable some warnings with MSVC
@@ -172,8 +193,11 @@ endif()
 if(DEFINED ENV{SEAHOWL_DATADIR})
     set(SEAHOWL_DATADIR $ENV{SEAHOWL_DATADIR})
 else()
-    set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data/IEA15MW")
+    set(SEAHOWL_DATADIR "${PROJECT_SOURCE_DIR}/data")
 endif()
+
+message(STATUS "SEAHOWL_DATADIR set to: ${SEAHOWL_DATADIR}")
+add_definitions(-DSEAHOWL_DATADIR="${SEAHOWL_DATADIR}")
 
 # ================
 # CORE LIBRARY
@@ -186,9 +210,10 @@ set(SEAHOWL_COMMONS_SOURCES
     src/commons/utils.cpp
 )
 set(SEAHOWL_COMMONS_HEADERS
+    include/seahowl/seahowl.h
+    include/seahowl/commons.h
     include/seahowl/commons/numerics.h
     include/seahowl/commons/entities.h
-    include/seahowl/commons/component_fluid.h
     include/seahowl/commons/utils.h
 )
 source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS})
@@ -197,6 +222,7 @@ source_group(commons FILES ${SEAHOWL_COMMONS_SOURCES} ${SEAHOWL_COMMONS_HEADERS}
 set(SEAHOWL_CORE_SOURCES
     src/core/reference_point.cpp
     src/core/component.cpp
+    src/core/component_elasto_fluid.cpp
     src/core/rotor.cpp
     src/core/blade.cpp
     src/core/tower.cpp
@@ -207,8 +233,10 @@ set(SEAHOWL_CORE_SOURCES
     src/core/simulation.cpp
 )
 set(SEAHOWL_CORE_HEADERS
+    include/seahowl/core.h
     include/seahowl/core/reference_point.h
     include/seahowl/core/component.h
+    include/seahowl/core/component_elasto_fluid.h
     include/seahowl/core/blade.h
     include/seahowl/core/rotor.h
     include/seahowl/core/tower.h
@@ -239,6 +267,7 @@ set(SEAHOWL_ELASTO_SOURCES
     src/elasto/chrono_adapters.cpp
 )
 set(SEAHOWL_ELASTO_HEADERS
+    include/seahowl/elasto.h
     include/seahowl/elasto/blade_elasto.h
     include/seahowl/elasto/entities_elasto.h
     include/seahowl/elasto/component_elasto.h
@@ -255,26 +284,36 @@ set(SEAHOWL_ELASTO_HEADERS
 )
 source_group(elasto FILES ${SEAHOWL_ELASTO_SOURCES} ${SEAHOWL_ELASTO_HEADERS})
 
+# fluid (shared between aero and hydro)
+set(SEAHOWL_FLUID_SOURCES
+    src/fluid/system_fluid.cpp
+    src/fluid/turbine_fluid.cpp
+)
+set(SEAHOWL_FLUID_HEADERS
+    include/seahowl/fluid.h
+    include/seahowl/fluid/component_fluid.h
+    include/seahowl/fluid/system_fluid.h
+    include/seahowl/fluid/turbine_fluid.h
+)
+source_group(fluid FILES ${SEAHOWL_FLUID_SOURCES} ${SEAHOWL_FLUID_HEADERS})
+
 # aero
 set(SEAHOWL_AERO_SOURCES
-    src/fluid/aero/system_aero.cpp
     src/fluid/aero/airfoil.cpp
     src/fluid/aero/bemt.cpp
     src/fluid/aero/reference_point_aero.cpp
     src/fluid/aero/blade_aero.cpp
     src/fluid/aero/rotor_aero.cpp
     src/fluid/aero/tower_aero.cpp
-    src/fluid/aero/turbine_aero.cpp
 )
 set(SEAHOWL_AERO_HEADERS
+    include/seahowl/aero.h
     include/seahowl/fluid/aero/airfoil.h
     include/seahowl/fluid/aero/bemt.h
     include/seahowl/fluid/aero/blade_aero.h
     include/seahowl/fluid/aero/reference_point_aero.h
-    include/seahowl/fluid/aero/system_aero.h
     include/seahowl/fluid/aero/rotor_aero.h
     include/seahowl/fluid/aero/tower_aero.h
-    include/seahowl/fluid/aero/turbine_aero.h
 )
 if (SEAHOWL_ENABLE_AERODYN)
     list(APPEND SEAHOWL_AERO_SOURCES src/fluid/aero/aerodyn_adapter.cpp)
@@ -290,6 +329,7 @@ set(SEAHOWL_SERVO_SOURCES
     src/servo/controller_discon.cpp
 )
 set(SEAHOWL_SERVO_HEADERS
+    include/seahowl/servo.h
     include/seahowl/servo/controller.h
     include/seahowl/servo/controller_discon.h
 )
@@ -302,6 +342,7 @@ set(SEAHOWL_HYDRO_SOURCES
     src/fluid/hydro/floater_hydro.cpp
 )
 set(SEAHOWL_HYDRO_HEADERS
+    include/seahowl/hydro.h
     include/seahowl/fluid/hydro/morison.h
     include/seahowl/fluid/hydro/mooring_hydro.h
     include/seahowl/fluid/hydro/foundation_fluid.h
@@ -312,6 +353,10 @@ if(SEAHOWL_ENABLE_HYDROCHRONO)
     list(APPEND SEAHOWL_HYDRO_SOURCES src/fluid/hydro/hydrochrono_adapter.cpp)
     list(APPEND SEAHOWL_HYDRO_HEADERS include/seahowl/fluid/hydro/hydrochrono_adapter.h)
 endif(SEAHOWL_ENABLE_HYDROCHRONO)
+if (SEAHOWL_ENABLE_HYDRODYN)
+    list(APPEND SEAHOWL_AERO_SOURCES src/fluid/hydro/hydrodyn_adapter.cpp)
+    list(APPEND SEAHOWL_AERO_HEADERS include/seahowl/fluid/hydro/hydrodyn_adapter.h)
+endif(SEAHOWL_ENABLE_HYDRODYN)
 source_group(hydro FILES ${SEAHOWL_HYDRO_SOURCES} ${SEAHOWL_HYDRO_HEADERS})
 
 # env
@@ -325,6 +370,7 @@ set(SEAHOWL_ENV_SOURCES
     src/env/soil_models.cpp
 )
 set(SEAHOWL_ENV_HEADERS
+    include/seahowl/env.h
     include/seahowl/env/model.h
     include/seahowl/env/list_model.h
     include/seahowl/env/fluid_list_model.h
@@ -339,6 +385,10 @@ if (SEAHOWL_ENABLE_INFLOWWIND)
     list(APPEND SEAHOWL_ENV_SOURCES src/env/inflowwind_adapter.cpp)
     list(APPEND SEAHOWL_ENV_HEADERS include/seahowl/env/inflowwind_adapter.h)
 endif(SEAHOWL_ENABLE_INFLOWWIND)
+if (SEAHOWL_ENABLE_SEASTATE)
+    list(APPEND SEAHOWL_ENV_SOURCES src/env/seastate_adapter.cpp)
+    list(APPEND SEAHOWL_ENV_HEADERS include/seahowl/env/seastate_adapter.h)
+endif(SEAHOWL_ENABLE_SEASTATE)
 source_group(env FILES ${SEAHOWL_ENV_SOURCES} ${SEAHOWL_ENV_HEADERS})
 
 # io
@@ -355,6 +405,7 @@ set(SEAHOWL_IO_SOURCES
     src/io/input_handler.cpp
 )
 set(SEAHOWL_IO_HEADERS
+    include/seahowl/io.h
     include/seahowl/io/read_input.h
     include/seahowl/io/write_csv.h
     include/seahowl/io/read_rotor_perf.h
@@ -387,6 +438,8 @@ set(SEAHOWL_FILES
     ${SEAHOWL_CORE_HEADERS}
     ${SEAHOWL_ELASTO_SOURCES}
     ${SEAHOWL_ELASTO_HEADERS}
+    ${SEAHOWL_FLUID_SOURCES}
+    ${SEAHOWL_FLUID_HEADERS}
     ${SEAHOWL_AERO_SOURCES}
     ${SEAHOWL_AERO_HEADERS}
     ${SEAHOWL_SERVO_SOURCES}
@@ -429,6 +482,8 @@ target_compile_definitions(
     SEAHOWL_HAVE_VTK=$<BOOL:${SEAHOWL_ENABLE_VTK}>
     SEAHOWL_HAVE_AERODYN=$<BOOL:${SEAHOWL_ENABLE_AERODYN}>
     SEAHOWL_HAVE_INFLOWWIND=$<BOOL:${SEAHOWL_ENABLE_INFLOWWIND}>
+    SEAHOWL_HAVE_HYDRODYN=$<BOOL:${SEAHOWL_ENABLE_HYDRODYN}>
+    SEAHOWL_HAVE_SEASTATE=$<BOOL:${SEAHOWL_ENABLE_SEASTATE}>
     SEAHOWL_HAVE_IRRLICHT=$<BOOL:${SEAHOWL_ENABLE_IRRLICHT}>
     SEAHOWL_CMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
     SEAHOWL_NAME="${PROJECT_NAME}"
@@ -470,6 +525,14 @@ endif (SEAHOWL_ENABLE_AERODYN)
 if (SEAHOWL_ENABLE_INFLOWWIND)
     target_link_libraries(seahowl_core PRIVATE ${INFLOWWIND_LIBRARY})
 endif (SEAHOWL_ENABLE_INFLOWWIND)
+
+if (SEAHOWL_ENABLE_HYDRODYN)
+    target_link_libraries(seahowl_core PRIVATE ${HYDRODYN_LIBRARY})
+endif (SEAHOWL_ENABLE_HYDRODYN)
+
+if (SEAHOWL_ENABLE_SEASTATE)
+    target_link_libraries(seahowl_core PRIVATE ${SEASTATE_LIBRARY})
+endif (SEAHOWL_ENABLE_SEASTATE)
 
 if(SEAHOWL_ENABLE_IRRLICHT)
     # the following is needed when building with vcpkg (link stage)
@@ -548,6 +611,7 @@ if (SEAHOWL_ENABLE_PYTHON)
         ${PYSEAHOWL_DIR}/pyseahowl.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_env.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_elasto.cpp
+        ${PYSEAHOWL_DIR}/pyseahowl_fluid.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_aero.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_hydro.cpp
         ${PYSEAHOWL_DIR}/pyseahowl_servo.cpp
@@ -590,7 +654,7 @@ if (SEAHOWL_ENABLE_PYTHON)
             message(FATAL_ERROR "Failed to create virtual environment")
         endif()
 
-        set(CMD_PIP "pip install sphinx sphinx-rtd-theme matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
+        set(CMD_PIP "pip install mkdocs mkdocs-material mkdocs-include-markdown-plugin pybind11-stubgen mkdocstrings[python] matplotlib myst-parser pre-commit numpy pytest scilens scilens-compare")
         set(CMD_PRECOMMIT "pre-commit install")
 
         if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -627,11 +691,17 @@ if (VCPKG_APPLOCAL_DEPS)
     endif()
 
     set(LIBRARY_PATH "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib/${LIB_FILE_NAME}")
-    set(DESTINATION_PATH "${SEAHOWL_DATADIR}/base/controller")
+    set(DESTINATION_PATH_IEA15 "${SEAHOWL_DATADIR}/IEA15MW/base/controller")
+    set(DESTINATION_PATH_IEA34 "${SEAHOWL_DATADIR}/IEA34MW/controller")
+    set(DESTINATION_PATH_IEA10 "${SEAHOWL_DATADIR}/IEA10MW/controller")
 
     if(EXISTS ${LIBRARY_PATH})
-        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH})
-        file(RENAME "${DESTINATION_PATH}/${LIB_FILE_NAME}" "${DESTINATION_PATH}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA15})
+        file(RENAME "${DESTINATION_PATH_IEA15}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA15}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA34})
+        file(RENAME "${DESTINATION_PATH_IEA34}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA34}/libdiscon.so")
+        file(COPY ${LIBRARY_PATH} DESTINATION ${DESTINATION_PATH_IEA10})
+        file(RENAME "${DESTINATION_PATH_IEA10}/${LIB_FILE_NAME}" "${DESTINATION_PATH_IEA10}/libdiscon.so")
     else()
         message(WARNING "Library ${LIBRARY_PATH} does not exist.")
     endif()
@@ -665,8 +735,8 @@ if(SEAHOWL_ENABLE_PYTHON)
         file(WRITE ${FILE_INITPY}
             "#!/bin/bash\n"
             "SCRIPT_DIR=$(cd \"$(dirname \"\${BASH_SOURCE}\")\" && pwd)\n"
-            "sed -i 's|^prefix=.*|prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.11-config\"\n"
-            "sed -i 's|^exec_prefix=.*|exec_prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.11-config\"\n"
+            "sed -i 's|^prefix=.*|prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.12-config\"\n"
+            "sed -i 's|^exec_prefix=.*|exec_prefix=\"\$prefix_real\"|' \"$SCRIPT_DIR/python3/python3.12-config\"\n"
             "\"$SCRIPT_DIR/python3/python3\" -m virtualenv .venv \n"
             "CALL_DIR=$(pwd)\n"
             "source \"$CALL_DIR/.venv/bin/activate\"\n"
@@ -675,8 +745,8 @@ if(SEAHOWL_ENABLE_PYTHON)
         set(FILE_INITPY ${CMAKE_BINARY_DIR}/init_pyseahowl.bat)
         file(WRITE ${FILE_INITPY}
             "set SCRIPT_DIR=%~dp0\n"
-            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\") -replace '^prefix=.*', 'prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\"\"\n"
-            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\") -replace '^exec_prefix=.*', 'exec_prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.11-config\\\"\"\n"
+            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\") -replace '^prefix=.*', 'prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\"\"\n"
+            "powershell -Command \"(Get-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\") -replace '^exec_prefix=.*', 'exec_prefix=\\\"$prefix_real\\\"' | Set-Content \\\"%SCRIPT_DIR%python3\\python3.12-config\\\"\"\n"
             "\"%SCRIPT_DIR%python3/python.exe\" -m virtualenv \"%SCRIPT_DIR%.venv\"\n"
             "call \"%SCRIPT_DIR%.venv/Scripts/activate\"\n"
             "set PYTHONPATH=%SCRIPT_DIR%;%PYTHONPATH%\n"
@@ -727,7 +797,7 @@ install(DIRECTORY ${SEAHOWL_DATADIR}
         DESTINATION data)
 
 #copy the README.md file to the install directory
-install(FILES ${PROJECT_SOURCE_DIR}/doc/source/_user/using_package.md
+install(FILES ${PROJECT_SOURCE_DIR}/doc/source/user-guide/using_package.md
         DESTINATION .)
 #rename the using_package.md file to README.md
 install(CODE "

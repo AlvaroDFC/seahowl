@@ -1,34 +1,39 @@
 #include "seahowl/io/output_manager.h"
 
+// SEAHOWL headers
+#include "seahowl/core/blade.h"
+#include "seahowl/core/floater.h"
+#include "seahowl/core/monopile.h"
+#include "seahowl/core/system.h"
+#include "seahowl/core/turbine.h"
+#include "seahowl/elasto/blade_elasto.h"
+#include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/rotor_elasto.h"
+#include "seahowl/elasto/tower_elasto.h"
+#include "seahowl/elasto/turbine_elasto.h"
+#include "seahowl/env/env_model.h"
+#include "seahowl/env/fluid_models.h"
+#include "seahowl/env/wind_models.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/io/viz_insitu.h"
 #include "seahowl/io/write_csv.h"
 #include "seahowl/io/write_vtk.h"
-#include "seahowl/io/viz_insitu.h"
+#include "seahowl/servo/controller.h"
 #ifdef HAVE_IRRLICHT
     #include "seahowl/io/viz_insitu_irrlicht.h"
 #endif
 #ifdef HAVE_AERODYN
     #include "seahowl/fluid/aero/aerodyn_adapter.h"
 #endif
-#include "seahowl/core/system.h"
-#include "seahowl/core/turbine.h"
-#include "seahowl/core/blade.h"
-#include "seahowl/core/floater.h"
-#include "seahowl/core/monopile.h"
-#include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/elasto/tower_elasto.h"
-#include "seahowl/elasto/rotor_elasto.h"
-#include "seahowl/elasto/floater_elasto.h"
-#include "seahowl/fluid/aero/blade_aero.h"
-#include "seahowl/env/wind_models.h"
-#include "seahowl/env/fluid_models.h"
-#include "seahowl/servo/controller.h"
 
-#include <filesystem>  // C++17
-#include <sstream>
+// Third-party libraries
+#include <spdlog/spdlog.h>
+
+// Standard library
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
-#include <spdlog/spdlog.h>
+#include <sstream>
 
 using seahowl::PI;
 using namespace seahowl::io;
@@ -41,30 +46,26 @@ namespace fs = std::filesystem;
  * @param[in] turbine Turbine class from which variables are outputted.
  */
 void add_basic_turbine_info_to_csv(seahowl::io::CustomCSV& custom_csv, seahowl::core::Turbine& turbine) {
-    custom_csv.add_function("rpm (-)", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
-    custom_csv.add_function("power (W)", [&turbine]() { return turbine.get_generated_power(); });
-    custom_csv.add_function("pitch collective (rad)",
+    custom_csv.add_function("rpm [-]", [&turbine]() { return turbine.rna.elasto.get_rpm(); });
+    custom_csv.add_function("power [W]", [&turbine]() { return turbine.get_generated_power(); });
+    custom_csv.add_function("pitch collective [rad]",
                             [&turbine]() { return turbine.rna.elasto.rotor->pitch_collective; });
-    custom_csv.add_function("torque elec (Nm)", [&turbine]() { return turbine.controller->get_torque_elec(); });
-    custom_csv.add_function("axial thrust (N)", [&turbine]() { return turbine.rna.elasto.get_axial_thrust(); });
-    custom_csv.add_function("axial torque (Nm)", [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
-    custom_csv.add_function("rotor azimuth (rad)", [&turbine]() { return turbine.rna.elasto.get_azimuth(); });
-    custom_csv.add_function("tower base moment (Nm)",
+    custom_csv.add_function("torque elec [Nm]", [&turbine]() { return turbine.controller->get_torque_elec(); });
+    custom_csv.add_function("axial thrust [N]", [&turbine]() { return turbine.rna.elasto.get_axial_thrust(); });
+    custom_csv.add_function("axial torque [Nm]", [&turbine]() { return turbine.rna.elasto.get_axial_torque(); });
+    custom_csv.add_function("rotor azimuth [rad]", [&turbine]() { return turbine.rna.elasto.get_azimuth(); });
+    custom_csv.add_function("tower base moment [Nm]",
                             [&turbine]() { return turbine.tower.elasto.get_tower_base_moment(); });
-    custom_csv.add_function("tower base force (N)",
+    custom_csv.add_function("tower base force [N]",
                             [&turbine]() { return turbine.tower.elasto.get_tower_base_force(); });
-    custom_csv.add_function("tower top moment (Nm)",
+    custom_csv.add_function("tower top moment [Nm]",
                             [&turbine]() { return turbine.tower.elasto.get_tower_top_moment(); });
-    custom_csv.add_function("tower top force (N)", [&turbine]() { return turbine.tower.elasto.get_tower_top_force(); });
+    custom_csv.add_function("tower top force [N]", [&turbine]() { return turbine.tower.elasto.get_tower_top_force(); });
     for (size_t idx_blade = 0; idx_blade < turbine.rna.rotor.blades.size(); idx_blade++) {
         auto& blade = *turbine.rna.rotor.blades[idx_blade];
-        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " wind (m/s)",
-                                [&blade]() { return blade.aero.get_average_wind_velocity(); });
-        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " wind load (N)",
-                                [&blade]() { return blade.aero.get_total_load(); });
-        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " root moment (Nm)",
+        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " root moment [Nm]",
                                 [&blade]() { return blade.elasto.get_blade_root_moment(); });
-        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " azimuth (rad)", [&blade, &turbine]() {
+        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " azimuth [rad]", [&blade, &turbine]() {
             // check that blade_azimuth is between pi and -pi
             auto blade_azimuth = blade.elasto.azimuth0 + turbine.rna.elasto.get_azimuth();
             if (blade_azimuth < -PI || blade_azimuth > PI) {
@@ -72,20 +73,20 @@ void add_basic_turbine_info_to_csv(seahowl::io::CustomCSV& custom_csv, seahowl::
             }
             return blade_azimuth;
         });
-        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " pitch (rad)",
+        custom_csv.add_function("blade" + std::to_string(idx_blade + 1) + " pitch [rad]",
                                 [&blade]() { return blade.elasto.get_pitch(); });
     }
     if (turbine.foundation) {
         try {  // check if floater
             auto& floater = dynamic_cast<seahowl::core::Floater&>(*turbine.foundation);
             auto& floater_elasto = floater.elasto;
-            custom_csv.add_function("floater position (m)",
+            custom_csv.add_function("floater position [m]",
                                     [&floater_elasto]() { return floater_elasto.body_main->get_position(); });
-            custom_csv.add_function("floater rotation (rad)",
+            custom_csv.add_function("floater rotation [rad]",
                                     [&floater_elasto]() { return floater_elasto.body_main->get_rpy_angles(); });
             for (size_t idx_mooring = 0; idx_mooring < floater_elasto.mooring_system->moorings.size(); idx_mooring++) {
                 auto& mooring = *floater_elasto.mooring_system->moorings[idx_mooring];
-                custom_csv.add_function("mooring" + std::to_string(idx_mooring + 1) + " fairlead tension (N)",
+                custom_csv.add_function("fairlead" + std::to_string(idx_mooring + 1) + " tension [N]",
                                         [&mooring]() { return mooring.get_tension_fairlead(); });
             }
         } catch (const std::bad_cast& e) {
@@ -94,9 +95,9 @@ void add_basic_turbine_info_to_csv(seahowl::io::CustomCSV& custom_csv, seahowl::
         try {  // check if monopile
             auto& monopile = dynamic_cast<seahowl::core::Monopile&>(*turbine.foundation);
             auto& monopile_elasto = monopile.elasto;
-            custom_csv.add_function("monopile base moment (Nm)",
+            custom_csv.add_function("monopile base moment [Nm]",
                                     [&monopile_elasto]() { return monopile_elasto.get_tower_base_moment(); });
-            custom_csv.add_function("monopile base force (N)",
+            custom_csv.add_function("monopile base force [N]",
                                     [&monopile_elasto]() { return monopile_elasto.get_tower_base_force(); });
         } catch (const std::bad_cast& e) {
             // do nothing if no monopile
@@ -116,7 +117,7 @@ void OutputManager::preinitialize() {
         for (auto& turbine : system_core.turbines) {
             try {
                 // set VTK options if using AeroDyn
-                auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine->aero);
+                auto& turbine_aero = dynamic_cast<seahowl::aero::TurbineAeroDyn&>(turbine->fluid);
                 turbine_aero.WrVTK = 2;
                 turbine_aero.WrVTK_dt = dt_output;
             } catch (const std::bad_cast& e) {
@@ -168,9 +169,9 @@ void OutputManager::initialize() {
             auto& custom_csv = create_new_csv(csv_path);
             auto& system_core = this->system_core;
             auto& turbine = *system_core.turbines[idx_turbine];
-            custom_csv.add_function("time (s)", [system_core]() { return system_core.get_time(); });
+            custom_csv.add_function("time [s]", [system_core]() { return system_core.get_time(); });
             if (system_core.env_model->fluid_models.has_model()) {
-                custom_csv.add_function("wind (m/s)", [&system_core, &turbine]() {
+                custom_csv.add_function("wind speed hub [m/s]", [&system_core, &turbine]() {
                     return system_core.env_model->fluid_models.get_velocity(
                         turbine.rna.elasto.rotor->body_hub->get_position(), system_core.get_time());
                 });

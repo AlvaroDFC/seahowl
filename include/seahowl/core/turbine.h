@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/core/component.h"
+#include "seahowl/core/floater.h"
 #include "seahowl/core/rotor.h"
 #include "seahowl/core/tower.h"
-#include "seahowl/core/floater.h"
 
+// Standard library
 #include <vector>
 
 // forward declarations
@@ -16,18 +18,15 @@ class FluidModel;
 namespace servo {
 class Controller;
 }  // namespace servo
-namespace aero {
-class TurbineAero;
-}  // namespace aero
+namespace fluid {
+class TurbineFluid;
+}  // namespace fluid
 namespace elasto {
 class TurbineElasto;
 }  // namespace elasto
 }  // namespace seahowl
 
-/**@brief Seahowl base namespace */
 namespace seahowl {
-
-/**@brief Seahowl core module */
 namespace core {
 
 /**
@@ -41,8 +40,8 @@ class Turbine : public ComponentDynamic {
     //
     /** @brief Elastodynamic model of the turbine. */
     seahowl::elasto::TurbineElasto& elasto;
-    /** @brief Aerodynamic model of the turbine. */
-    seahowl::aero::TurbineAero& aero;
+    /** @brief Fluid model of the turbine. */
+    seahowl::fluid::TurbineFluid& fluid;
     /** @brief Rotor-nacelle assembly of the turbine. */
     RotorNacelleAssembly rna;
     /** @brief Tower of the turbine. */
@@ -69,70 +68,34 @@ class Turbine : public ComponentDynamic {
      * @param[in] elasto Elastodynamic turbine model.
      * @param[in] aero Aerodynamic turbine model.
      */
-    Turbine(std::shared_ptr<seahowl::elasto::TurbineElasto> elasto, std::shared_ptr<seahowl::aero::TurbineAero> aero);
+    Turbine(std::shared_ptr<seahowl::elasto::TurbineElasto> elasto,
+            std::shared_ptr<seahowl::fluid::TurbineFluid> fluid);
 
     /**
      * @brief Applies control to turbine.
      */
     void apply_control(double time, double dt);
 
-    /**
-     * @brief Prestep for turbine, called before elastodynamic stepping.
-     *
-     * Calls prestep on each of the components of the turbine.
-     *
-     * @param[in] time Time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void prestep(double time, double dt) override;
-
-    /**
-     * @brief Poststep for turbine, called after elastodynamic stepping.
-     *
-     * Applies step for the controller (potentially modifying loads with electrical torque and elasto positions due to
-     * blade pitching), and then calls poststep on each of the components of the turbine.
-     *
-     * @param[in] time Absolute time of the simulation.
-     * @param[in] dt Time step length.
-     */
     void poststep(double time, double dt) override;
-
-    /**
-     * @brief Builds the turbine.
-     *
-     * Calls build for each of the components of the turbine.
-     */
     virtual void build() override;
 
     /**
-     * @brief Returns shaft power.
+     * @brief Returns shaft power [W]
      */
     double get_shaft_power() const;
 
     /**
-     * @brief Returns generated power.
+     * @brief Returns generated power [W]
      */
     double get_generated_power() const;
 
     /**
-     * @brief Returns generator RPM.
+     * @brief Returns generator RPM [rpm]
      */
     double get_generator_rpm() const;
 
-    /**
-     * @brief Applies env model to turbine components.
-     *
-     * @param[in] env_model env model affecting turbine components.
-     * @param[in] time Time of simulation.
-     */
     virtual void apply_env_model(seahowl::env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Applies soil model to turbine components.
-     *
-     * @param[in] env_model Soil model affecting turbine components.
-     * @param[in] time Time of simulation.
-     */
     virtual void apply_soil_model(seahowl::env::EnvModel& env_model, double time) override;
 
   protected:
@@ -141,8 +104,8 @@ class Turbine : public ComponentDynamic {
      *
      * Calls init for each of its components.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize_this(double time, double dt) override;
 };

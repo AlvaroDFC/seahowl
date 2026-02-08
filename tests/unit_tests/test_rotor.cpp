@@ -1,12 +1,17 @@
+// Local test headers
 #include "fixture_components.h"
 
-#include <seahowl/elasto/chrono_adapters.h>
-#include <seahowl/elasto/blade_elasto.h>
-#include <seahowl/io/read_input.h>
+// SEAHOWL headers
+#include <seahowl/elasto.h>
+#include <seahowl/io.h>
 
+// Third-party libraries
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
-#include <filesystem>  // C++17
+
+// Standard library
+#include <filesystem>
+
 using std::filesystem::path;
 
 using namespace seahowl;
@@ -16,6 +21,7 @@ using namespace seahowl::elasto;
 class TestRotor : public FixtureComponents {
   protected:
     TestRotor() : FixtureComponents() {
+        root_dir /= "test_rotor";
         ref_dir /= "test_rotor/ref";
         test_dir /= "test_rotor/test";
     }
@@ -50,7 +56,7 @@ TEST_F(TestRotor, mass) {
     // test mass
     TestFrameworkDataset test_dataset_mass({false, (ref_dir / "test_rotor_mass.csv").generic_string(),
                                             (test_dir / "test_rotor_mass.test.csv").generic_string()});
-    test_dataset_mass.test_csv.add_function("mass (kg)", [&rna] { return rna.get_mass(); });
+    test_dataset_mass.test_csv.add_function("mass [kg]", [&rna] { return rna.get_mass(); });
     test_dataset_mass.test_csv.write_row();
     EvaluateTest(test_dataset_mass);
 }

@@ -212,8 +212,10 @@ make
 
 #### Physics
 
-- AeroDyn (v4.0.2): https://github.com/OpenFAST/openfast
-- InflowWind (v4.0.2): https://github.com/OpenFAST/openfast
+- AeroDyn (v4.2.0): https://github.com/OpenFAST/openfast
+- InflowWind (v4.2.0): https://github.com/OpenFAST/openfast
+- HydroDyn (v4.2.0): https://github.com/OpenFAST/openfast
+- SeaState (v4.2.0): https://github.com/OpenFAST/openfast
 - HydroChrono (v0.2.8): https://github.com/Project-SEA-Stack/HydroChrono
 
 #### Documentation

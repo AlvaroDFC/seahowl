@@ -1,10 +1,12 @@
 #pragma once
 
-#include <iostream>
-#include <cstring>
-#include <memory>
+// SEAHOWL headers
+#include "seahowl/env/wind_models.h"
 
-#include <seahowl/env/wind_models.h>
+// Standard library
+#include <cstring>
+#include <iostream>
+#include <memory>
 
 namespace seahowl {
 
@@ -29,15 +31,9 @@ class InflowWindAdapter : public WindModel {
 
     std::unique_ptr<InflowWindLib> pImpl;
 
-    /**
-     * @brief Returns true is the placement of the model (false otherwise).
-     *
-     * @param[in] position Position to assess whether inside model or not.
-     * @param[in] time Time of simulation.
-     */
     virtual bool is_inside(const Vector3d& position, double time = 0.0) const override;
 
-    InflowWindAdapter(std::string inflowwind_infile);
+    InflowWindAdapter(const std::string& inflowwind_infile);
     ~InflowWindAdapter();
 
     std::string get_inflowwind_infile() const { return inflowwind_infile; }

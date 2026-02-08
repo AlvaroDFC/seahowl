@@ -1,11 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/floater_elasto.h"
 #include "seahowl/elasto/entities_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
-#include "seahowl/elasto/floater_elasto.h"
 #include "seahowl/env/wave_models.h"
 
+// Standard library
 #include <string>
 
 // forward declarations for HydroChrono
@@ -20,6 +21,7 @@ class WaveModelHydroChrono;
 }  // namespace seahowl
 
 namespace seahowl {
+namespace fluid {
 namespace hydro {
 
 /**
@@ -35,8 +37,8 @@ class FloaterHydroChrono : public elasto::FloaterElasto {
     /**
      * @brief Initialize floater, called before starting the simulation.
      *
-     * @param[in] time Time of the simulation (usually 0 at init).
-     * @param[in] dt Time step length.
+     * @param[in] time Time of the simulation (usually 0 at init) [s]
+     * @param[in] dt Time step length [s]
      */
     virtual void initialize() override;
 
@@ -45,7 +47,7 @@ class FloaterHydroChrono : public elasto::FloaterElasto {
      *
      * @param[in] filepath Path to .h5 file.
      */
-    void set_h5_filepath(std::string filepath);
+    void set_h5_filepath(const std::string& filepath);
 
     /**
      * @brief Sets waves used to compute hydro loads on floater.
@@ -71,6 +73,7 @@ class FloaterHydroChrono : public elasto::FloaterElasto {
 };
 
 }  // namespace hydro
+}  // namespace fluid
 
 namespace env {
 

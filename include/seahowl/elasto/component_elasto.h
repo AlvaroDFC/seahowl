@@ -1,10 +1,12 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/entities_elasto.h"
 
-#include <vector>
+// Standard library
 #include <memory>
+#include <vector>
 
 // forward declarations
 namespace seahowl {
@@ -15,7 +17,7 @@ struct ReferencePointElasto;
 }  // namespace seahowl
 
 namespace seahowl {
-///@brief Elastodynamic model module
+/** @brief Elastodynamic model module. */
 namespace elasto {
 
 /**
@@ -59,7 +61,7 @@ class ComponentElasto {
     /**
      * @brief Rotates the component.
      *
-     * @param[in] translation_vector The angle of rotation (in radians).
+     * @param[in] angle The angle of rotation [rad]
      * @param[in] axis The axis of rotation (3D vector).
      */
     virtual void rotate(double angle, const Vector3d& axis) const = 0;
@@ -72,13 +74,22 @@ class ComponentElasto {
     virtual void translate(const Vector3d& translation_vector) const = 0;
 
     /**
-     * @brief Returns the mass of the component.
+     * @brief Returns the mass of the component [kg]
      */
     virtual double get_mass() const = 0;
 
   protected:
     bool is_assembled = false;
+    /**
+     * @brief Component-specific assembly logic, called by assemble().
+     *
+     * @param[in] system Elasto system to assemble into.
+     */
     virtual void assemble_this(SystemElasto& system) = 0;
+
+  public:
+    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1]. */
+    std::vector<double> discretization_fractions{};
 };
 
 /**
@@ -92,8 +103,6 @@ class ComponentElastoFEA : public virtual ComponentElasto {
     std::vector<std::shared_ptr<NodeElasto>> nodes;
     /** @brief Finite element beams. */
     std::vector<std::shared_ptr<ElementElasto>> elements;
-    /** @brief Discretization fractions (normalized abscissa) in the range [0, 1] to discretize the FEA component. */
-    std::vector<double> discretization_fractions{};
 
     /**
      * @brief Builds nodes for the elasto component based on reference points.

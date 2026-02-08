@@ -1,34 +1,41 @@
 #include "seahowl/core/system.h"
 
-#include "seahowl/elasto/system_elasto.h"
-#include "seahowl/fluid/aero/system_aero.h"
-#include "seahowl/elasto/mooring_elasto.h"
-#include "seahowl/elasto/turbine_elasto.h"
-#include "seahowl/fluid/aero/turbine_aero.h"
-#include "seahowl/env/wind_models.h"
-#include "seahowl/env/wave_models.h"
-#include "seahowl/env/soil_models.h"
-#include "seahowl/env/fluid_models.h"
+// SEAHOWL headers
 #include "seahowl/core/blade.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/floater_elasto.h"
+#include "seahowl/elasto/mooring_elasto.h"
+#include "seahowl/elasto/system_elasto.h"
+#include "seahowl/elasto/turbine_elasto.h"
+#include "seahowl/env/env_model.h"
+#include "seahowl/env/fluid_models.h"
+#include "seahowl/env/soil_models.h"
+#include "seahowl/env/wave_models.h"
+#include "seahowl/env/wind_models.h"
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/fluid/turbine_fluid.h"
 #ifdef HAVE_HYDROCHRONO
     #include "seahowl/fluid/hydro/hydrochrono_adapter.h"
 #endif
 
-#include <vector>
+// Third-party libraries
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
-#include <map>
+
+// Standard library
 #include <iostream>
+#include <map>
+#include <vector>
 
 using namespace seahowl::core;
 using namespace seahowl::env;
 
-System::System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto, std::shared_ptr<seahowl::aero::SystemAero> aero)
-    : ComponentDynamic(elasto, aero), elasto(*elasto), aero(*aero) {
-    env_model = std::make_shared<seahowl::env::EnvModel>();
-};
+System::System(std::shared_ptr<seahowl::elasto::SystemElasto> elasto,
+               std::shared_ptr<seahowl::fluid::SystemFluid> fluid)
+    : ComponentDynamic(elasto, fluid),
+      elasto(*elasto),
+      fluid(*fluid),
+      env_model(std::make_shared<seahowl::env::EnvModel>()){};
 
 void System::build() {
     // build all turbines
@@ -90,7 +97,7 @@ void System::initialize_this(double time, double dt) {
 
     // initialize all turbines
     for (auto& turbine : turbines) {
-        turbine->aero.setup_environment(*env_model);
+        turbine->fluid.setup_environment(*env_model);
         turbine->initialize(time, dt);
     }
     // initialize all extra components
@@ -242,7 +249,7 @@ void System::run_presimulation(double duration, double dt, bool fix_foundations,
 void System::add(std::shared_ptr<Turbine> turbine) {
     if (std::find(turbines.begin(), turbines.end(), turbine) == turbines.end()) {
         turbines.push_back(turbine);
-        aero.add(turbine->get_shared_fluid());
+        fluid.add(turbine->get_shared_fluid());
         elasto.add(turbine->get_shared_elasto());
     } else {
         spdlog::warn("Turbine already exists in the system, not adding again.");
@@ -252,7 +259,7 @@ void System::add(std::shared_ptr<Turbine> turbine) {
 void System::add(std::shared_ptr<ComponentDynamic> component) {
     if (std::find(components.begin(), components.end(), component) == components.end()) {
         components.push_back(component);
-        aero.add(component->get_shared_fluid());
+        fluid.add(component->get_shared_fluid());
         elasto.add(component->get_shared_elasto());
     } else {
         spdlog::warn("Components already exists in the system, not adding again.");

@@ -1,5 +1,6 @@
 #pragma once
 
+// SEAHOWL headers
 #include "seahowl/elasto/foundation_elasto.h"
 #include "seahowl/elasto/tower_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
@@ -17,7 +18,7 @@ class MonopileElasto : public TowerElasto, public virtual FoundationElasto {
   public:
     /** @brief Body of transition piece (TP). */
     std::unique_ptr<BodyElastoChrono> body_tp;
-    /** @brief Link between TP and entity (e.g. towerbase of turbine). */
+    /** @brief Link between TP and entity (such as towerbase of turbine). */
     std::unique_ptr<seahowl::elasto::Link> link_tp_entity;
     /** @brief Link between monopile and TP. */
     std::unique_ptr<seahowl::elasto::Link> link_tp_monopile;

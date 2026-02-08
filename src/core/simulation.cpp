@@ -1,20 +1,24 @@
 #include "seahowl/core/simulation.h"
 
+// SEAHOWL headers
+#include "seahowl/commons/utils.h"
 #include "seahowl/core/system.h"
-#include "seahowl/elasto/system_elasto.h"
 #include "seahowl/elasto/blade_elasto.h"
-#include "seahowl/fluid/aero/system_aero.h"
 #include "seahowl/elasto/chrono_adapters.h"
+#include "seahowl/elasto/system_elasto.h"
+#include "seahowl/fluid/system_fluid.h"
+#include "seahowl/io/output_manager.h"
 #include "seahowl/io/read_input.h"
 #include "seahowl/io/write_csv.h"
-#include "seahowl/io/output_manager.h"
-#include "seahowl/commons/utils.h"
 
-#include <fstream>
-#include <filesystem>  // C++17
+// Third-party libraries
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>
+
+// Standard library
+#include <filesystem>
+#include <fstream>
 
 using namespace seahowl::core;
 namespace fs = std::filesystem;
@@ -70,10 +74,10 @@ Simulation::Simulation()
                 },
                 ""},
            }},
-      }) {
-    system_elasto = std::make_shared<seahowl::elasto::SystemElastoChrono>();
-    system_aero = std::make_shared<seahowl::aero::SystemAero>();
-    system_core = std::make_unique<System>(system_elasto, system_aero);
+      }),
+      system_elasto(std::make_shared<seahowl::elasto::SystemElastoChrono>()),
+      system_fluid(std::make_shared<seahowl::fluid::SystemFluid>()) {
+    system_core = std::make_unique<System>(system_elasto, system_fluid);
     outputs = std::make_unique<seahowl::io::OutputManager>(*system_core);
 }
 
@@ -85,7 +89,6 @@ void Simulation::populate_from_file(const std::string& filepath) {
 
 void Simulation::populate_from_config() {
     spdlog::stopwatch sw_setup;
-    auto filepath = config.get_json_filepath();
 
     // timestepping
     dt = config.get_double("numerics.dt");

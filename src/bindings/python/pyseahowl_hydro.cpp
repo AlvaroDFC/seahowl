@@ -1,22 +1,17 @@
+// pybind11 headers
+#include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 
-#include <seahowl/commons/component_fluid.h>
-#include <seahowl/fluid/hydro/morison.h>
-#include <seahowl/fluid/hydro/mooring_hydro.h>
-#include <seahowl/fluid/hydro/foundation_fluid.h>
-#include <seahowl/fluid/hydro/floater_hydro.h>
-#include <seahowl/fluid/hydro/monopile_hydro.h>
-#ifdef HAVE_HYDROCHRONO
-    #include <seahowl/fluid/hydro/hydrochrono_adapter.h>
-#endif
+// SEAHOWL headers
+#include <seahowl/elasto.h>
+#include <seahowl/fluid.h>
 
 namespace py = pybind11;
 
-void initialize_pyseahowl_hydro(py::module& m) {
+void initialize_pyseahowl_hydro(py::module& m_fluid) {
     // submodule
-    auto m_hydro = m.def_submodule("hydro", "Hydro submodule.");
+    auto m_hydro = m_fluid.def_submodule("hydro", "Hydro submodule.");
 
 #ifdef HAVE_HYDROCHRONO
     py::class_<seahowl::hydro::FloaterHydroChrono, std::shared_ptr<seahowl::hydro::FloaterHydroChrono>,
@@ -46,11 +41,14 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def_readwrite("load", &seahowl::hydro::MorisonNode::load)
         .def_readwrite("load_noacc", &seahowl::hydro::MorisonNode::load_noacc)
         .def_readwrite("diameter", &seahowl::hydro::MorisonNode::diameter)
-        .def_readwrite("coefficients", &seahowl::hydro::MorisonNode::coefficients);
+        .def_readwrite("coefficients", &seahowl::hydro::MorisonNode::coefficients)
+        .def_readwrite("added_mass_matrix", &seahowl::hydro::MorisonNode::added_mass_matrix);
     py::class_<seahowl::hydro::MorisonElement, std::shared_ptr<seahowl::hydro::MorisonElement>>(m_hydro,
                                                                                                 "MorisonElement")
         .def(py::init<const seahowl::hydro::MorisonNode&, const seahowl::hydro::MorisonNode&>())
         .def("get_load", &seahowl::hydro::MorisonElement::get_load)
+        .def("get_load_noacc", &seahowl::hydro::MorisonElement::get_load_noacc)
+        .def("get_added_mass_matrix", &seahowl::hydro::MorisonElement::get_added_mass_matrix)
         .def("get_position", &seahowl::hydro::MorisonElement::get_position)
         .def("get_rotation", &seahowl::hydro::MorisonElement::get_rotation)
         .def_property_readonly("node1", [](seahowl::hydro::MorisonElement& element) { return &element.node1; })
@@ -66,8 +64,8 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def_readwrite("reverse_direction", &seahowl::hydro::MorisonPlate::reverse_direction);
 
     // hydro/mooring_hydro.h
-    py::class_<seahowl::hydro::MooringHydro, std::shared_ptr<seahowl::hydro::MooringHydro>, seahowl::ComponentFluid>(
-        m_hydro, "MooringHydro")
+    py::class_<seahowl::hydro::MooringHydro, std::shared_ptr<seahowl::hydro::MooringHydro>,
+               seahowl::fluid::ComponentFluid>(m_hydro, "MooringHydro")
         .def(py::init<>())
         .def_readwrite("discretization_fractions", &seahowl::hydro::MooringHydro::discretization_fractions)
         .def_readwrite("length", &seahowl::hydro::MooringHydro::length)
@@ -80,15 +78,11 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def("set_diameter", &seahowl::hydro::MooringHydro::set_diameter);
 
     py::class_<seahowl::hydro::MooringSystemHydro, std::shared_ptr<seahowl::hydro::MooringSystemHydro>,
-               seahowl::ComponentFluid>(m_hydro, "MooringSystemHydro")
+               seahowl::fluid::ComponentFluid>(m_hydro, "MooringSystemHydro")
         .def(py::init<>())
         .def_readonly("moorings", &seahowl::hydro::MooringSystemHydro::moorings)
         .def("add_mooring", &seahowl::hydro::MooringSystemHydro::add_mooring)
         .def("build", &seahowl::hydro::MooringSystemHydro::build);
-
-    // hydro/foundation_fluid.h
-    py::class_<seahowl::hydro::FoundationFluid, std::shared_ptr<seahowl::hydro::FoundationFluid>,
-               seahowl::ComponentFluid>(m_hydro, "FoundationFluid");
 
     // hydro/floater_hydro.h
     py::class_<seahowl::hydro::FloaterHydro, std::shared_ptr<seahowl::hydro::FloaterHydro>,
@@ -96,10 +90,25 @@ void initialize_pyseahowl_hydro(py::module& m) {
         .def(py::init<>())
         .def_property_readonly(
             "mooring_system", [](seahowl::hydro::FloaterHydro& floater) { return floater.mooring_system.get(); },
+            py::return_value_policy::reference_internal)
+        .def_property_readonly(
+            "body_main", [](seahowl::hydro::FloaterHydro& floater) { return floater.body_main.get(); },
             py::return_value_policy::reference_internal);
 
     // hydro/monopile_hydro.h
     py::class_<seahowl::hydro::MonopileHydro, std::shared_ptr<seahowl::hydro::MonopileHydro>, seahowl::aero::TowerAero,
                seahowl::hydro::FoundationFluid>(m_hydro, "MonopileHydro", pybind11::multiple_inheritance())
         .def(py::init<>());
+
+#ifdef HAVE_HYDRODYN
+    // hydro/hydrodyn_adapter.h
+    py::class_<seahowl::hydro::FloaterHydroDyn, std::shared_ptr<seahowl::hydro::FloaterHydroDyn>,
+               seahowl::hydro::FloaterHydro>(m_hydro, "FloaterHydroDyn")
+        .def(py::init<const std::string&>());
+
+    py::class_<seahowl::hydro::MonopileHydroDyn, std::shared_ptr<seahowl::hydro::MonopileHydroDyn>,
+               seahowl::hydro::MonopileHydro>(m_hydro, "MonopileHydroDyn")
+        .def(py::init<const std::string&>())
+        .def("set_seastate_infile", &seahowl::hydro::MonopileHydroDyn::set_seastate_infile);
+#endif
 }
