@@ -72,6 +72,7 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
     // aero/rotor_aero.h
     py::class_<seahowl::aero::RotorAero, std::shared_ptr<seahowl::aero::RotorAero>, seahowl::fluid::ComponentFluid>(
         m_aero, "RotorAero")
+        .def("build", &seahowl::aero::RotorAero::build)
         .def("initialize", &seahowl::aero::RotorAero::initialize)
         .def("compute_disk_averaged_wind_velocity", &seahowl::aero::RotorAero::compute_disk_averaged_wind_velocity)
         .def_readwrite("blades", &seahowl::aero::RotorAero::blades)
@@ -84,14 +85,15 @@ void initialize_pyseahowl_aero(py::module& m_fluid) {
         .def_readwrite("pitch_collective", &seahowl::aero::RotorAero::pitch_collective)
         .def_readonly("disk_averaged_wind_velocity", &seahowl::aero::RotorAero::disk_averaged_wind_velocity);
 
-    py::class_<seahowl::aero::RotorAeroBEMT, std::shared_ptr<seahowl::aero::RotorAeroBEMT>, seahowl::aero::RotorAero>(
-        m_aero, "RotorAeroBEMT")
+    py::class_<seahowl::aero::RotorAeroBET, std::shared_ptr<seahowl::aero::RotorAeroBET>, seahowl::aero::RotorAero>(
+        m_aero, "RotorAeroBET");
+
+    py::class_<seahowl::aero::RotorAeroBEMT, std::shared_ptr<seahowl::aero::RotorAeroBEMT>,
+               seahowl::aero::RotorAeroBET>(m_aero, "RotorAeroBEMT")
         .def(py::init<seahowl::aero::TowerAero&>())
         .def_readwrite("has_tip_loss", &seahowl::aero::RotorAeroBEMT::has_tip_loss)
         .def_readwrite("has_hub_loss", &seahowl::aero::RotorAeroBEMT::has_hub_loss)
-        .def_readwrite("has_tower_shadow", &seahowl::aero::RotorAeroBEMT::has_tower_shadow)
-        .def("build", &seahowl::aero::RotorAeroBEMT::build)
-        .def("initialize", &seahowl::aero::RotorAeroBEMT::initialize);
+        .def_readwrite("has_tower_shadow", &seahowl::aero::RotorAeroBEMT::has_tower_shadow);
 
     py::class_<seahowl::aero::RotorAeroDisk, std::shared_ptr<seahowl::aero::RotorAeroDisk>, seahowl::aero::RotorAero>(
         m_aero, "RotorAeroDisk")

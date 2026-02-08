@@ -8,7 +8,7 @@ The turbine file defines the overall turbine configuration, including rotor type
 turbine.json
 │
 ├── aero/                                  # Aerodynamics configuration
-│   ├── solver: string                     # "BEMT" or "AeroDyn"
+│   ├── solver: string                     # "BEMT", "BET", or "AeroDyn"
 │   └── options/                           # Solver-specific options
 │
 ├── rotor/                                 # Rotor configuration
@@ -53,7 +53,7 @@ Aerodynamics solver configuration.
 
 | Field | Type | Unit | Description |
 |-------|------|------|-------------|
-| `solver` | string | - | Aerodynamics solver: `"BEMT"` or `"AeroDyn"` |
+| `solver` | string | - | Aerodynamics solver: `"BEMT"`, `"BET"`, or `"AeroDyn"` |
 
 #### aero.options (BEMT)
 

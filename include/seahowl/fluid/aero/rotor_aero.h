@@ -26,6 +26,7 @@ namespace seahowl {
 namespace fluid {
 namespace aero {
 
+/** @brief Base class for rotor aerodynamic models. */
 class RotorAero : public ComponentFluid {
   public:
     /** @brief List of blades. */
@@ -61,7 +62,23 @@ class RotorAero : public ComponentFluid {
     virtual void compute_disk_averaged_wind_velocity(const env::EnvModel& fluid_model, double time);
 };
 
-class RotorAeroBEMT : public RotorAero {
+/** @brief Rotor aerodynamic model using Blade Element Theory (BET). */
+class RotorAeroBET : public RotorAero {
+  public:
+    RotorAeroBET();
+
+    virtual void build() override;
+    virtual void initialize() override;
+    virtual void compute_env_loads(const env::EnvModel& env_model, double time) override;
+
+    /**
+     * @brief Computes radius, distances from tip and hub, and chord solidity on all aero nodes of blades.
+     */
+    void compute_radii_distances_solidity();
+};
+
+/** @brief Rotor aerodynamic model using Blade Element Momentum Theory (BEMT). */
+class RotorAeroBEMT : public RotorAeroBET {
   public:
     /** @brief Reference to tower aero. */
     TowerAero& tower_ref;
@@ -77,23 +94,24 @@ class RotorAeroBEMT : public RotorAero {
     virtual void build() override;
     virtual void initialize() override;
     virtual void compute_env_loads(const env::EnvModel& env_model, double time) override;
-
-    /**
-     * @brief Computes radius, distances from tip and hub, and chord solidity on all aero nodes of blades.
-     */
-    void compute_radii_distances_solidity();
 };
 
-// The structure containing the coefficients for the rotor disk
+/** @brief Tabulated aerodynamic coefficients for the actuator disk rotor model. */
 struct DiskCoefficients {
-    // Member variables
+    /** @brief Thrust coefficient table indexed by pitch and TSR. */
     Eigen::MatrixXd thrust_coeff;
+    /** @brief Power coefficient table indexed by pitch and TSR. */
     Eigen::MatrixXd power_coeff;
+    /** @brief List of tip-speed ratio values for table interpolation. */
     Eigen::VectorXd tsr_list;
+    /** @brief List of pitch angle values for table interpolation [deg]. */
     Eigen::VectorXd pitch_list;
+
+    /** @brief Interpolates thrust and power coefficients from tables for a given TSR and pitch. */
     seahowl::Vector2d get_disk_coefficients_from_table(double TSR, double pitch);
 };
 
+/** @brief Rotor aerodynamic model using the actuator disk approach. */
 class RotorAeroDisk : public RotorAero {
   public:
     /** @brief The tables of actuator disk coefficients. */

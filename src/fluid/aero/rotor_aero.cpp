@@ -86,9 +86,9 @@ void RotorNacelleAssemblyAero::initialize() {
     rotor->initialize();
 }
 
-RotorAeroBEMT::RotorAeroBEMT(TowerAero& tower_ref) : tower_ref(tower_ref) {}
+RotorAeroBET::RotorAeroBET() {}
 
-void RotorAeroBEMT::build() {
+void RotorAeroBET::build() {
     // build blades
     for (auto& blade : blades) {
         blade->build();
@@ -105,12 +105,12 @@ void RotorAeroBEMT::build() {
     initialize();
 }
 
-void RotorAeroBEMT::initialize() {
+void RotorAeroBET::initialize() {
     // compute blade elements related values
     compute_radii_distances_solidity();
 }
 
-void RotorAeroBEMT::compute_radii_distances_solidity() {
+void RotorAeroBET::compute_radii_distances_solidity() {
     auto disk_normal = body_hub.get_rotation() * Vector3d(1.0, 0.0, 0.0);
     int nblades = blades.size();
 
@@ -134,6 +134,24 @@ void RotorAeroBEMT::compute_radii_distances_solidity() {
             node.chord_solidity = nblades * node.properties.chord / (2 * PI * node.radius);
         }
     }
+}
+
+void RotorAeroBET::compute_env_loads(const EnvModel& env_model, double time) {
+    compute_radii_distances_solidity();
+
+    for (const auto& blade : blades) {
+        blade->compute_env_loads(env_model, time);
+    }
+}
+
+RotorAeroBEMT::RotorAeroBEMT(TowerAero& tower_ref) : tower_ref(tower_ref) {}
+
+void RotorAeroBEMT::build() {
+    RotorAeroBET::build();
+}
+
+void RotorAeroBEMT::initialize() {
+    RotorAeroBET::initialize();
 }
 
 void RotorAeroBEMT::compute_env_loads(const EnvModel& env_model, double time) {

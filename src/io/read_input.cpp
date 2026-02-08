@@ -236,14 +236,18 @@ std::shared_ptr<seahowl::aero::BladeAero> get_blade_aero_from_db(const BladeTurb
 std::shared_ptr<seahowl::aero::RotorAero> get_rotor_aero_from_db(const TurbineDb& turbine_db,
                                                                  const seahowl::fluid::TurbineFluid& turbine_aero) {
     std::shared_ptr<seahowl::aero::RotorAero> rotor_aero;
-    if (turbine_db.aero.solver == "bemt") {
+
+    if (turbine_db.aero.solver == "bet") {
+        spdlog::info("Aerodynamic model: Blade Element Theory (BET).");
+        auto rotor_aero_bet = std::make_shared<seahowl::aero::RotorAeroBET>();
+        rotor_aero = rotor_aero_bet;
+    } else if (turbine_db.aero.solver == "bemt") {
         spdlog::info("Aerodynamic model: Blade Element Momentum Theory (BEMT).");
         auto rotor_aero_bemt = std::make_shared<seahowl::aero::RotorAeroBEMT>(*turbine_aero.tower);
         rotor_aero_bemt->has_hub_loss = turbine_db.aero.options.hub_loss;
         rotor_aero_bemt->has_tip_loss = turbine_db.aero.options.tip_loss;
         rotor_aero_bemt->has_tower_shadow = turbine_db.aero.options.tower_shadow;
         rotor_aero = rotor_aero_bemt;
-
     } else if (turbine_db.aero.solver == "disk") {
         spdlog::info("Aerodynamic model: Actuator Disk Theory.");
         if (turbine_db.rotor.type != "disk") {
