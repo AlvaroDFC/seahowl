@@ -1,2 +1,2 @@
-* Copyright (c) 2022-2025 TotalEnergies-SE
+* Copyright (c) 2022-2026 TotalEnergies-SE
 * All rights reserved
