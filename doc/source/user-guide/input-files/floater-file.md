@@ -43,7 +43,7 @@ floater.json
 
 | Field | Type | Unit | Description |
 |-------|------|------|-------------|
-| `type` | string | - | Hydrodynamics model: `"HydroChrono"` |
+| `type` | string | - | Hydrodynamics model: `"HydroChrono"` or `"HydroDyn"` |
 | `position` | [float, float, float] | m | Floater center of gravity (CoG) position |
 | `mass` | float | kg | Total floater mass |
 | `inertia` | 3x3 matrix | kg-m^2 | Inertia tensor about CoG |
@@ -56,6 +56,14 @@ floater.json
 | `file` | string | Path to HDF5 file containing BEM hydrodynamic data |
 
 The `.h5` file contains radiation/diffraction coefficients from a BEM solver (WAMIT, Nemoh, Capytaine, etc.).
+
+### options (HydroDyn)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `file` | string | Path to HydroDyn input file (.dat) |
+
+The `.dat` file follows the HydroDyn format and defines the hydrodynamic model, including potential flow coefficients, strip-theory members, and additional platform loading.
 
 ### bodies[]
 

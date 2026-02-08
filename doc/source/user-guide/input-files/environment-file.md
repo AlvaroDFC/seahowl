@@ -49,7 +49,7 @@ environment.json
 
 | Field | Type | Unit | Description |
 |-------|------|------|-------------|
-| `type` | string | - | Wave model: `"still"`, `"regular"`, `"irregular"` |
+| `type` | string | - | Wave model: `"still"`, `"regular"`, `"irregular"`, `"SeaState"` |
 | `water_density` | float | kg/m^3 | Water density |
 | `mean_water_level` | float | m | Still water level |
 | `water_depth` | float | m | Water depth from seabed to MWL |
@@ -152,7 +152,7 @@ No waves, calm sea surface.
 
 ### Regular Waves
 
-Monochromatic (single frequency) waves using Airy wave theory.
+Monochromatic (single frequency) waves using Airy wave theory through HydroChrono.
 
 ```json
 "sea": {
@@ -176,7 +176,7 @@ Monochromatic (single frequency) waves using Airy wave theory.
 
 ### Irregular Waves
 
-Random sea state using wave spectrum.
+Random sea state using wave spectrum through HydroChrono.
 
 ```json
 "sea": {
@@ -203,6 +203,26 @@ Random sea state using wave spectrum.
 | `gamma` | float | - | JONSWAP peak enhancement factor (typically 1.0-3.3) |
 | `wave_direction` | float | deg | Mean wave direction |
 | `seed` | int | - | Random seed for reproducibility |
+
+### SeaState
+
+SeaState reads a `.dat` input file that defines wave conditions, wave stretching, and other parameters following the SeaState format.
+
+```json
+"sea": {
+  "type": "seastate",
+  "water_density": 1025,
+  "mean_water_level": 0.0,
+  "water_depth": 200.0,
+  "options": {
+    "file_seastate": "SeaState_200m.dat"
+  }
+}
+```
+
+| Field | Type | Unit | Description |
+|-------|------|------|-------------|
+| `file_seastate` | string | - | Path to SeaState input file (.dat) |
 
 ---
 

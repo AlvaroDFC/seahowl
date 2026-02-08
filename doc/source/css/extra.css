@@ -25,3 +25,12 @@
 .doc-object:not(.doc-class):not(.doc-module) > .doc-heading > .headerlink {
     display: none;
 }
+
+/* Keep site name visible in header instead of replacing it with section title on scroll */
+.md-header__topic {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+}
+.md-header__topic + .md-header__topic {
+    display: none;
+}
