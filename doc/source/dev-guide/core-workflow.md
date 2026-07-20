@@ -103,7 +103,7 @@ flowchart LR
 
       %% Styles
       classDef fluidNode fill:#2196F3,stroke:#1565C0,color:#fff,stroke-width:2px
-      classDef coreNode fill:#333,stroke:#333,color:#fff,stroke-width:2px
+      classDef coreNode fill:#CFD8DC,stroke:#546E7A,color:#fff,stroke-width:2px
       classDef elastoNode fill:#FF9800,stroke:#E65100,color:#fff,stroke-width:2px
 
       class SystemFluid,TurbineFluid,RNAAero,RotorAero,BladeAero,TowerAero,FoundationFluid,MooringSystemHydro,MooringHydro fluidNode
@@ -113,11 +113,11 @@ flowchart LR
       style Fluid fill:none,stroke:#1565C0,stroke-width:2px,color:#1565C0
       style Elasto fill:none,stroke:#E65100,stroke-width:2px,color:#E65100
 
-      linkStyle 0,1,2,3,4,5,6,7,8 stroke:#333,stroke-width:2px
+      linkStyle 0,1,2,3,4,5,6,7,8 stroke:#546E7A,stroke-width:2px
       linkStyle 9,10,11,12,13,14,15,16 stroke:#1565C0,stroke-width:2px
       linkStyle 17,18,19,20,21,22,23,24 stroke:#FF9800,stroke-width:2px
-      linkStyle 25,26,27,28,29,30,31,32,33 stroke:#9C27B0,stroke-width:1px,stroke-dasharray:5 5
-      linkStyle 34,35,36,37,38,39,40,41,42 stroke:#E91E63,stroke-width:1px,stroke-dasharray:5 5
+      linkStyle 25,26,27,28,29,30,31,32,33 stroke:#9C27B0,stroke-width:2px,stroke-dasharray:5 5
+      linkStyle 34,35,36,37,38,39,40,41,42 stroke:#E91E63,stroke-width:2px,stroke-dasharray:5 5
 ```
 
 
@@ -173,4 +173,110 @@ Turbine::initialize()
 └── Foundation::initialize()
     └── MooringSystem::initialize()
         └── Mooring::initialize()
+```
+
+---
+
+## Standalone Components (`System::components`)
+
+In addition to turbines, a `System` holds a second collection — `System::components` — which contains
+`ComponentDynamic` instances that are **not attached to any turbine**. Every operation that `System`
+performs on turbines (build, initialize, prestep, poststep, apply\_env\_model, apply\_soil\_model) is also
+performed on this collection, in the same order.
+
+```cpp
+// system.h
+std::deque<std::shared_ptr<Turbine>>          turbines{};   // turbine-owned components
+std::deque<std::shared_ptr<ComponentDynamic>> components{}; // standalone components
+```
+
+This design covers structures that participate in the simulation loop but are independent of any
+turbine: shared mooring lines between platforms, isolated floaters, or standalone towers used in unit
+tests. Any concrete subclass of `ComponentDynamic` can be registered via `System::add(component)`.
+
+### Two-level registration
+
+Adding a standalone component requires registering it at three levels:
+
+```
+system_core->elasto.add(component->elasto)   ← registers FEA mesh / bodies with Chrono
+system_core->fluid.add(component->fluid)     ← registers hydro model with the fluid system
+system_core->add(component)                  ← registers core mediator in system.components
+```
+
+`System::add(component)` performs the fluid and elasto registrations internally, but raw Chrono
+bodies (fixed anchors, fairleads, etc.) must be added to `system_core->elasto` separately.
+
+---
+
+## Example: Standalone Mooring Line (`ex_mooring.cpp`)
+
+The `examples/cpp/ex_mooring.cpp` example demonstrates a complete standalone mooring line — no
+turbine involved. It also shows how raw Chrono bodies can be added to the elasto system alongside
+SEAHOWL domain components.
+
+### Setup sequence
+
+```
+1. Add environment models
+       system_core->env_model->add_model(StillWater)      ← hydrodynamics
+       system_core->env_model->add_model(LinearSoilModel) ← seabed contact
+
+2. Create and register raw attachment bodies (Chrono level)
+       fairlead = BodyElastoChrono()
+       system_core->elasto.add(fairlead)        ← directly into Chrono system
+       fairlead.set_position(...)
+       fairlead.set_fixed(true)
+
+       anchor = BodyElastoChrono()
+       system_core->elasto.add(anchor)
+       anchor.set_position(...)
+       anchor.set_fixed(true)
+
+3. Create the three-layer mooring object
+       mooring_elasto = MooringElastoFEA(fairlead, anchor)   ← FEA catenary beam
+       system_core->elasto.add(mooring_elasto)
+
+       mooring_hydro = MooringHydro()                        ← Morison hydro nodes
+       system_core->fluid.add(mooring_hydro)
+
+       mooring = Mooring(mooring_elasto, mooring_hydro)      ← core mediator
+       system_core->add(mooring)                             ← goes into system.components
+
+4. Set physical properties
+       mooring->elasto.stiffness_axial = 3270e6
+       mooring->hydro.coefficients.drag_normal = 2.0
+       mooring->set_length(850.0)
+       mooring->set_diameter(0.333)
+
+5. Build, initialize, presimulate
+       system_core->build()
+       simulation.initialize()
+       system_core->run_presimulation(100.0, 0.01, fix_foundations=true, presetup=true)
+       ↑ Presimulation is mandatory for moorings: the line starts at its straight
+         chord length and is incrementally stretched to its physical length.
+
+6. Run
+       while (true):
+           simulation.step()
+           mooring->elasto.fairlead_link->get_reaction_force()  ← read fairlead tension
+```
+
+### Component inheritance for `Mooring`
+
+```
+ComponentDynamic
+└── ComponentElastoFluid       ← holds elasto/fluid refs + elasto↔hydro mesh mappings
+    └── Mooring                ← core mediator
+         ├── elasto: MooringElastoFEA   ← FEA beam (Chrono ChBeamSectionCosserat)
+         └── hydro:  MooringHydro       ← Morison nodes (drag + added mass)
+```
+
+The `Mooring` prestep/poststep cycle follows the same elasto↔fluid exchange as all other
+components (see [poststep-state-update.md](poststep-state-update.md) and
+[prestep-env-loads.md](prestep-env-loads.md)):
+
+```
+prestep:  mooring->update_loads_elasto()    ← Morison hydro forces → FEA beam nodes
+poststep: mooring->update_positions_hydro() ← FEA deformed shape  → hydro node positions
 ```

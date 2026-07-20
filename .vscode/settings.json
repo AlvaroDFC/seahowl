@@ -12,5 +12,19 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp"
-    }
+    },
+    "files.exclude": {
+    "**/build": true,
+    "**/install": true,
+    "**/.git": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/install": true,
+    "**/external": true,
+    "**/third_party": true
+  },
+  "cmake.configureOnOpen": false,
+  "cmake.automaticReconfigure": false
+
 }

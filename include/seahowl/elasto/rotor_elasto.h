@@ -76,6 +76,14 @@ class RotorElasto : public ComponentElasto {
     double pitch_collective = 0;
 
     /**
+     * @brief Whether the rotor is a vertical-axis turbine (VAWT).
+     *
+     * When true, blades are placed with their span axis parallel to the rotor spin axis
+     * (offset radially by the hub radius) instead of radiating outward from it.
+     */
+    bool is_vertical_axis = false;
+
+    /**
      * @brief Constructor.
      */
     RotorElasto();

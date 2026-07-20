@@ -301,6 +301,8 @@ struct RotorTurbineDb {
     bool pitch_actuator_dynamics;
     std::vector<BladeTurbineDb> blades;
     RotorOptionsTurbineDb option;
+    /** @brief Vertical-axis turbine (VAWT): blades placed parallel to the spin axis instead of radial. */
+    bool vertical_axis = false;
 };
 
 /**

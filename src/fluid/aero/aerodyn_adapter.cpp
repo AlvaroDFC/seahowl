@@ -616,9 +616,10 @@ void AeroDynAdapter::update_mesh_motion(TurbineFluid& turbine) {
     }
 }
 
-TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile) : TurbineAero() {
+TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile, bool vertical_axis) : TurbineAero() {
     rna->rotor = std::make_shared<RotorAeroDyn>(*tower);
     aerodyn.set_aerodyn_infile(aerodyn_Infile);
+    is_vertical_axis = vertical_axis;
 }
 
 void TurbineAeroDyn::setup_environment(const env::EnvModel& env_model) {
@@ -664,6 +665,8 @@ void TurbineAeroDyn::initialize(double time, double dt) {
     aerodyn.pImpl->WrVTK = WrVTK;
     aerodyn.pImpl->WrVTK_Type = WrVTK_Type;
     aerodyn.pImpl->VTKHubRad = rna->rotor->hub_radius;
+    // vertical-axis turbine: tell AeroDyn this rotor is not a horizontal-axis turbine
+    aerodyn.pImpl->TurbineIsHAWT = is_vertical_axis ? 0 : 1;
 
     // initialize AeroDyn adapter
     aerodyn.initialize(time, dt, *this);

@@ -588,6 +588,10 @@ void from_json(const json& js, RotorTurbineDb& rotor) {
         rotor.pitch_actuator_dynamics = js.at("pitch_actuator_dynamics").get<bool>();
         rotor.blades = js.at("blades").get<std::vector<BladeTurbineDb>>();
     }
+    // optional: vertical-axis turbine flag (defaults to false = horizontal-axis)
+    if (js.contains("vertical_axis") && !js.at("vertical_axis").is_null()) {
+        rotor.vertical_axis = js.at("vertical_axis").get<bool>();
+    }
 }
 
 void from_json(const json& js, RNATurbineDb& rna) {

@@ -1,0 +1,33 @@
+{
+  "shaft": {
+    "tilt": 90.0,
+    "distance_from_towertop": 0.0
+  },
+  "nacelle": {
+    "position_from_towertop": [0.0, 0.0, 0.0],
+    "mass": 0.2,
+    "inertia": [
+      [0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.0],
+      [0.0, 0.0, 0.001]
+    ],
+    "yaw_bearing_mass": 0.05
+  },
+  "drivetrain": {
+    "generator_inertia": 0.0,
+    "gearbox_efficiency": 100.0,
+    "gearbox_ratio": 1.0,
+    "generator_efficiency": 100.0
+  },
+  "hub": {
+    "radius": 0.086,
+    "position_from_apex": [0.0, 0.0, 0.0],
+    "overhang": 0.0,
+    "mass": 0.1,
+    "inertia": [
+      [0.001, 0.0, 0.0],
+      [0.0, 0.0005, 0.0],
+      [0.0, 0.0, 0.0005]
+    ]
+  }
+}

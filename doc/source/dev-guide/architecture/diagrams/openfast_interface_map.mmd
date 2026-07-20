@@ -1,0 +1,78 @@
+flowchart TD
+
+    subgraph CONFIG["read_input.cpp — Object construction"]
+        direction TB
+        RI_IFW["InflowWindAdapter(infile)\nIfW_C_Init()"]
+        RI_SS["SeaStateAdapter(infile)\nSeaSt_C_Init()"]
+        RI_AD["TurbineAeroDyn(ad_infile)\nAeroDynAdapter created"]
+        RI_HD_F["FloaterHydroDyn(hd_infile)\nHydroDynAdapter created"]
+        RI_HD_M["MonopileHydroDyn(hd_infile)\nHydroDynAdapter created"]
+        RI_DC["ControllerDISCON(infile, libfile)\nDisconInterface created"]
+    end
+
+    subgraph INIT["System::initialize_this()"]
+        direction TB
+        SE["setup_environment(env_model)\nAeroDynAdapter::set_inflowwind_infile\nHydroDynAdapter::set_seastate_infile"]
+        INIT_AD["TurbineAeroDyn::initialize\nADI_C_PreInit\nADI_C_SetupRotor\nADI_C_Init"]
+        INIT_HD["FloaterHydroDyn / MonopileHydroDyn::initialize\nHydroDyn_C_Init"]
+        INIT_DC["ControllerDISCON::initialize\nDisconInterface::Init  dlopen DISCON .so/.dll"]
+        SE --> INIT_AD
+        SE --> INIT_HD
+        SE --> INIT_DC
+    end
+
+    subgraph PRESTEP["System::prestep — called every timestep"]
+        direction TB
+
+        subgraph CTRL["1 · apply_control"]
+            DC_IN["SEAHOWL → DISCON\nrotor/gen speed · azimuth · pitch angles\nblade root moments · tower-top accel\nyaw error · power · time · dt"]
+            DC_CALL["DisconInterface::Call\navrSWAP exchange"]
+            DC_OUT["DISCON → SEAHOWL\npitch demand · torque demand · yaw demand"]
+            DC_IN --> DC_CALL --> DC_OUT
+        end
+
+        subgraph AERO["2a · TurbineAeroDyn::compute_env_loads"]
+            AD_IN["SEAHOWL → AeroDyn\nhub pos/ori/vel/acc\nnacelle pos/ori/vel/acc\nblade-root pos/ori/vel/acc × N\nmesh-node pos/ori/vel/acc × N×M"]
+            AD_UPD["ADI_C_SetRotorMotion\nADI_C_UpdateStates"]
+            AD_CALC["ADI_C_CalcOutput\nADI_C_GetRotorLoads\nADI_C_GetDiskAvgVel"]
+            AD_OUT["AeroDyn → SEAHOWL\nMeshFrc 6×NumMeshPts\ndisk-averaged wind velocity"]
+            AD_IN --> AD_UPD --> AD_CALC --> AD_OUT
+        end
+
+        subgraph HYDRO["2b · FloaterHydroDyn / MonopileHydroDyn::compute_env_loads"]
+            HD_IN["SEAHOWL → HydroDyn\nnode pos roll/pitch/yaw\nnode vel · node acc"]
+            HD_UPD["HydroDyn_C_UpdateStates"]
+            HD_CALC["HydroDyn_C_CalcOutput_and_AddedMass"]
+            HD_OUT["HydroDyn → SEAHOWL\nNodeFrc 6×NumNodePts\nAdded-mass matrix 6N×6N"]
+            HD_IN --> HD_UPD --> HD_CALC --> HD_OUT
+        end
+
+        subgraph ONDEMAND["3 · On-demand fluid queries  BEMT · Morison · tower drag"]
+            IFW_Q["InflowWindAdapter::get_velocity_this\nIfW_C_CalcOutput\n← wind velocity 3-component"]
+            SS_Q["SeaStateAdapter::get_velocity_this\nSeaSt_C_GetFluidVelAcc\n← fluid vel · acc · in-water flag"]
+            SS_WL["SeaStateAdapter::get_water_level\nSeaSt_C_GetSurfElev\n← wave elevation"]
+        end
+    end
+
+    subgraph APPLY["Force application — back to elasto"]
+        AP_AERO["aero_node.load · aero_node.moment\nmapped to blade FEA nodes\nvia BladeAero → BladeElasto mesh mapping"]
+        AP_HYDRO_F["force_hydro · torque_hydro\nadded_mass_matrix  rotated to local frame\napplied to FloaterElasto body_main"]
+        AP_HYDRO_M["MorisonNode.load · added_mass_matrix\napplied to MonopileElasto distributed nodes"]
+        AP_CTRL["pitch setpoint → actuator constraint\ntorque setpoint → generator torque"]
+    end
+
+    subgraph STEP["System::step — Chrono DoStepDynamics"]
+        CH["Project Chrono structural integration\nno OpenFAST calls"]
+    end
+
+    subgraph POSTSTEP["System::poststep"]
+        PS["elasto positions → fluid domain\nno OpenFAST calls"]
+    end
+
+    CONFIG --> INIT
+    INIT --> PRESTEP
+    DC_OUT --> AP_CTRL
+    AD_OUT --> AP_AERO
+    HD_OUT --> AP_HYDRO_F
+    HD_OUT --> AP_HYDRO_M
+    PRESTEP --> STEP --> POSTSTEP

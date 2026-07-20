@@ -39,7 +39,7 @@ For convenience, you can add the environment variables for vcpkg to your `.bashr
 echo "export VCPKG_ROOT=$(pwd)" >> ~/.bashrc
 ```
 
-If you have issues with installing vcpkg, see [here](external/vcpkg/README.md) or refer to the official vcpkg documentation for setting it up on your environment.
+If you have issues with installing vcpkg, see the [vcpkg documentation](https://learn.microsoft.com/en-us/vcpkg/get_started/overview) or refer to the official vcpkg documentation for setting it up on your environment.
 
 #### Compiling source
 
@@ -177,7 +177,7 @@ cd external/bash
 ./dep-install.sh
 cd ../..
 ```
-See [here](external/bash/README.md) for more details about the bash install process and commands.
+See `external/bash/README.md` in the repository for more details about the bash install process and commands.
 
 ### Installing SEAHOWL
 

@@ -285,6 +285,8 @@ std::shared_ptr<seahowl::aero::RotorAero> get_rotor_aero_from_db(const TurbineDb
 
 std::shared_ptr<seahowl::elasto::RotorElasto> get_rotor_elasto_from_db(const TurbineDb& turbine_db) {
     auto rotor_elasto = std::make_shared<seahowl::elasto::RotorElasto>();
+    // vertical-axis turbine placement flag
+    rotor_elasto->is_vertical_axis = turbine_db.rotor.vertical_axis;
     // blades
     // only make blades if rotor type is not disk
     if (turbine_db.rotor.type != "disk") {
@@ -676,7 +678,8 @@ std::shared_ptr<seahowl::fluid::TurbineFluid> get_turbine_aero_from_db(const Tur
     if (turbine_db.aero.solver == "aerodyn") {
 #ifdef HAVE_AERODYN
         auto file_aerodyn_path = turbine_db.aero.options.file_aerodyn_path.generic_string();
-        turbine_aero = std::make_shared<seahowl::aero::TurbineAeroDyn>(file_aerodyn_path);
+        turbine_aero =
+            std::make_shared<seahowl::aero::TurbineAeroDyn>(file_aerodyn_path, turbine_db.rotor.vertical_axis);
 #endif
     } else {
         turbine_aero = std::make_shared<seahowl::fluid::TurbineFluid>();

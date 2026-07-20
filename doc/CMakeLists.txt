@@ -23,7 +23,7 @@ if(SEAHOWL_ENABLE_PYTHON)
   endif()
 
   set(MKDOCS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
-  set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/source/site/index.html)
+  set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/doc/html/source/index.html)
 
   if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/bin/activate")
@@ -41,10 +41,10 @@ if(SEAHOWL_ENABLE_PYTHON)
   else()
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/Scripts/activate")
           file(WRITE ${CMAKE_BINARY_DIR}/run_mkdocs.bat
-          "set PYTHONPATH=${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};%PYTHONPATH%\n"
+          "set PYTHONPATH=${CMAKE_BINARY_DIR};%PYTHONPATH%\n"
           "call ${ACTIVATE_PY}\n"
           "REM Generate stub files for pybind11 module (required for mkdocstrings)\n"
-          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE} 2>nul\n"
+          "pybind11-stubgen seahowl -o ${CMAKE_BINARY_DIR} 2>nul\n"
           "call ${MKDOCS_EXECUTABLE} build\n"
           )
           set(FILE_MKDOCS ${CMAKE_BINARY_DIR}/run_mkdocs.bat)
@@ -102,15 +102,15 @@ add_custom_target(docs DEPENDS ${TARGET_DOC})
 
 add_custom_command(TARGET docs POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/build/doc/html
-        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+        ${CMAKE_BINARY_DIR}/doc/html
+        ${CMAKE_BINARY_DIR}/doc/source/doxygen
     COMMENT "Copying Doxygen HTML into MkDocs site"
 )
 
 # Remove target attributes from Doxygen HTML/SVG so links stay inside the MkDocs iframe
 add_custom_command(TARGET docs POST_BUILD
     COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/patch_doxygen_targets.py
-        ${CMAKE_SOURCE_DIR}/build/doc/source/doxygen
+        ${CMAKE_BINARY_DIR}/doc/source/doxygen
     COMMENT "Patching Doxygen HTML/SVG for iframe compatibility"
 )
 if(SEAHOWL_ENABLE_PYTHON)

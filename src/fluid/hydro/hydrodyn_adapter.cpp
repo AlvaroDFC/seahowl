@@ -411,7 +411,7 @@ void FloaterHydroDyn::initialize(double time, double dt) {
 }
 
 void FloaterHydroDyn::compute_env_loads(const env::EnvModel& env_model, double time) {
-    FloaterHydro::compute_env_loads(env_model, time);
+    FloaterHydro::compute_env_loads(env_model, time);  // compute mooring forces if mooring system exists   
 
     std::vector<EntityDynamic*> bodies;
     bodies.push_back(body_main.get());

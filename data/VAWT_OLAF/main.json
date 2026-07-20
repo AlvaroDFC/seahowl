@@ -1,0 +1,33 @@
+{
+  "numerics": {
+    "dt": 0.01,
+    "duration": 0.4,
+    "statics": {
+      "linear_step": false,
+      "nonlinear_steps": 0
+    },
+    "presimulation": {
+      "dt": 0.01,
+      "duration": 0.0,
+      "presetup": false,
+      "fix_towers": true
+    }
+  },
+  "outputs": {
+    "dt": 0.0,
+    "folder": "./output/vawt",
+    "vtk": true,
+    "log_level": "info",
+    "gui": false
+  },
+  "environment": {
+    "file": "./env/env_water.json"
+  },
+  "turbines": [
+    {
+      "file": "./turbine.json",
+      "translation": [0, 0, 0],
+      "rotation": 0
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 site_name: SEAHOWL documentation
 docs_dir: source
-site_dir: ../build/doc/source
+site_dir: ../../build/doc/html/source
 theme:
   name: material
   logo: assets/logo_totalenergies.png
@@ -17,21 +17,22 @@ theme:
     - content.code.copy
     - content.code.fold
     - content.tabs.link
-    - palette.toggle
+    # - palette.toggle
     - instant
   palette:
-    - scheme: slate
-      primary: white
-      accent: indigo
-      toggle:
-        icon: material/toggle-switch
-        name: Switch to light mode
     - scheme: default
-      primary: white
-      accent: indigo
+      primary: blue
+      accent: deep orange
       toggle:
-        icon: material/toggle-switch-off-outline
+        icon: material/weather-night
         name: Switch to dark mode
+
+    - scheme: slate
+      primary: blue grey
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
 
 plugins:
   - include-markdown
@@ -54,7 +55,7 @@ plugins:
             signature_crossrefs: true
             allow_inspection: true
             inherited_members: true
-          paths: ["build"]
+          paths: ["../../build"]
 
 markdown_extensions:
   - toc:
@@ -107,6 +108,15 @@ nav:
     - Contributing: CONTRIBUTING.md
     - Core workflow: dev-guide/core-workflow.md
     - Simulation workflow: dev-guide/sim-workflow.md
+    - Prestep — Environmental loads: dev-guide/prestep-env-loads.md
+    - Poststep — State synchronization: dev-guide/poststep-state-update.md
+    - OpenFAST interface:
+      - Overview: dev-guide/architecture/seahowl_openfast_interface.md
+      - Module matrix: dev-guide/architecture/tables/openfast_module_matrix.md
+    - Chrono interface: dev-guide/architecture/seahowl_chrono_interface.md
+    - Vertical axis turbines: dev-guide/vertical-axis-turbines.md
+    - From SEAHOWL to SEA-Stack: dev-guide/from_seahowl_to_seastack.md
+    - SEA-Stack ↔ Chrono integration: dev-guide/seastack_chrono_integration.md
   - C++ API: api/cpp/cpp.md
   - Python API:
     - Modules: api/python/modules.md

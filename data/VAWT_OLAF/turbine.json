@@ -1,0 +1,48 @@
+{
+  "aero": {
+    "solver": "aerodyn",
+    "options": {
+      "file_aerodyn": "./aerodyn/AeroDyn.dat"
+    }
+  },
+  "rotor": {
+    "type": "fpm",
+    "vertical_axis": true,
+    "discretization": {
+      "elasto": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "aero": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    },
+    "pitch_actuator_dynamics": false,
+    "blades": [{
+      "file": "blade.json",
+      "initial_pitch": -6.0,
+      "precone": 0.0
+    }, {
+      "file": "blade.json",
+      "initial_pitch": -6.0,
+      "precone": 0.0
+    }]
+  },
+  "rna": {
+    "initial_yaw": 0.0,
+    "file": "rna.json",
+    "yaw_actuator_dynamics": false
+  },
+  "tower": {
+    "discretization": {
+      "elasto": [],
+      "aero": []
+    },
+    "file": "tower.csv",
+    "options": {
+      "use_MacCamyFuchs_correction": false,
+      "use_Cd_correction": false
+    }
+  },
+  "controller": {
+    "type": "rpm",
+    "options": {
+      "target_rpm": 0.0
+    }
+  }
+}

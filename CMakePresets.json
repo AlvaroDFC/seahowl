@@ -12,7 +12,7 @@
     {
       "name": "default",
       "displayName": "Default SEAHOWL installation",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/../build",
       "generator": "Ninja",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -21,13 +21,13 @@
         "SEAHOWL_ENABLE_TESTS": "ON",
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
         "VCPKG_MANIFEST_DIR": "${sourceDir}/external/vcpkg",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/../install"
       }
     },
     {
       "name": "debug",
       "hidden": true,
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/../build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -36,7 +36,7 @@
       "name": "default/debug",
       "inherits": "default",
       "displayName": "Default SEAHOWL installation (Debug)",
-      "binaryDir": "${sourceDir}/build/debug",
+      "binaryDir": "${sourceDir}/../build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
@@ -105,7 +105,8 @@
       "inherits": "full_vtk",
       "displayName": "SEAHOWL installation with all features",
       "cacheVariables": {
-        "SEAHOWL_ENABLE_DOC": "ON"
+        "SEAHOWL_ENABLE_DOC": "ON",
+        "SEAHOWL_ENABLE_VTK": "OFF"
       }
     },
     {
