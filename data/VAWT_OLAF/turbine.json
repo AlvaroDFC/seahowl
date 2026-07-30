@@ -42,7 +42,7 @@
   "controller": {
     "type": "rpm",
     "options": {
-      "target_rpm": 0.0
+      "target_rpm": 25
     }
   }
 }
