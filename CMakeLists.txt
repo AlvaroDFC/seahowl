@@ -514,9 +514,9 @@ if (SEAHOWL_ENABLE_HYDROCHRONO)
     target_link_libraries(seahowl_core PRIVATE HydroChrono::HydroChrono)
 endif (SEAHOWL_ENABLE_HYDROCHRONO)
 
-if(SEAHOWL_ENABLE_VTK)
+if(VTK_FOUND)
     target_link_libraries(seahowl_core PRIVATE VTK::CommonDataModel VTK::IOXML)
-endif(SEAHOWL_ENABLE_VTK)
+endif(VTK_FOUND)
 
 if (SEAHOWL_ENABLE_AERODYN)
     target_link_libraries(seahowl_core PRIVATE ${AERODYN_LIBRARY})
@@ -803,3 +803,13 @@ install(FILES ${PROJECT_SOURCE_DIR}/doc/source/user-guide/using_package.md
 install(CODE "
         file(RENAME \"${CMAKE_INSTALL_PREFIX}/using_package.md\" \"${CMAKE_INSTALL_PREFIX}/README.md\")
     ")
+
+if (WIN32)
+    add_custom_command(
+        TARGET seahowl_driver POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:seahowl_driver>
+            $<TARGET_FILE_DIR:seahowl_driver>
+        COMMAND_EXPAND_LISTS
+    )
+endif()

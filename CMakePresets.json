@@ -29,17 +29,17 @@
       "hidden": true,
       "binaryDir": "${sourceDir}/../build/debug",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/../install/debug"
       }
     },
     {
       "name": "default/debug",
-      "inherits": "default",
-      "displayName": "Default SEAHOWL installation (Debug)",
-      "binaryDir": "${sourceDir}/../build/debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
-      }
+      "inherits": [
+        "debug",
+        "default"
+      ],
+      "displayName": "Default SEAHOWL installation (Debug)"
     },
     {
       "name": "full",
@@ -89,7 +89,8 @@
       "displayName": "Full SEAHOWL installation with VTK and in situ visualization",
       "cacheVariables": {
         "SEAHOWL_ENABLE_IRRLICHT": "ON",
-        "SEAHOWL_ENABLE_VTK": "ON"
+        "SEAHOWL_ENABLE_VTK": "ON",
+        "VTK_DIR": "C:/Program Files/VTK/lib/cmake/vtk-9.6"
       }
     },
     {
@@ -105,8 +106,7 @@
       "inherits": "full_vtk",
       "displayName": "SEAHOWL installation with all features",
       "cacheVariables": {
-        "SEAHOWL_ENABLE_DOC": "ON",
-        "SEAHOWL_ENABLE_VTK": "OFF"
+        "SEAHOWL_ENABLE_DOC": "ON"
       }
     },
     {

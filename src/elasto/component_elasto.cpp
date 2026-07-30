@@ -243,7 +243,10 @@ std::vector<Vector3d> ComponentElastoFEA::get_nodes_rotational_accelerations() c
 std::vector<Vector3d> ComponentElastoFEA::get_nodes_loads() const {
     std::vector<Vector3d> loads;
     for (const auto& node : nodes) {
-        loads.push_back(node->get_force());
+        // total = external (native Chrono accumulator) + internal (SEAHOWL coupling accumulator);
+        // aero/hydro/soil coupling loads are applied via the internal accumulator only (see
+        // accumulate_element_load()), so get_force() alone would always read back zero.
+        loads.push_back(node->get_force_total());
     }
     return loads;
 }
