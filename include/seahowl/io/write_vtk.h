@@ -23,6 +23,13 @@ struct OutputMeshVTK {
     double dt = 0.0;
     std::string base = "";
 
+    // Reference (undeformed) root node position/rotation and per-node body-fixed offsets,
+    // captured once in initialize(). Used in write() to remove rigid-body motion from
+    // "Displacement" so it reflects elastic/flexible deformation only (global frame).
+    seahowl::Vector3d reference_root_position = seahowl::Vector3d::Zero();
+    seahowl::Quaternion reference_root_rotation = seahowl::Quaternion::Identity();
+    std::vector<seahowl::Vector3d> local_offsets;
+
     OutputMeshVTK(seahowl::elasto::ComponentElastoFEA& component);
     OutputMeshVTK(const OutputMeshVTK&);
     OutputMeshVTK(OutputMeshVTK&&) noexcept;

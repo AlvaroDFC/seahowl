@@ -35,11 +35,17 @@ OutputMeshVTK::OutputMeshVTK(const OutputMeshVTK& rhs) : component(rhs.component
     mesh = vtkUnstructuredGrid::New();
     mesh->ShallowCopy(rhs.mesh);
     base = rhs.base;
+    reference_root_position = rhs.reference_root_position;
+    reference_root_rotation = rhs.reference_root_rotation;
+    local_offsets = rhs.local_offsets;
 }
 OutputMeshVTK::OutputMeshVTK(OutputMeshVTK&& source) noexcept : component(source.component) {
     mesh = source.mesh;
     source.mesh = nullptr;
     base = source.base;
+    reference_root_position = source.reference_root_position;
+    reference_root_rotation = source.reference_root_rotation;
+    local_offsets = std::move(source.local_offsets);
 }
 
 OutputMeshVTK::~OutputMeshVTK() {
@@ -51,6 +57,17 @@ void OutputMeshVTK::initialize(const char* base_name) {
     base = base_name;
 
     auto coords = component.get_nodes_positions();
+    auto rotations = component.get_nodes_rotations();
+
+    // capture the undeformed reference configuration (root node) so write() can later remove
+    // rigid-body motion from "Displacement", leaving only the elastic/flexible residual.
+    reference_root_position = coords[0];
+    reference_root_rotation = rotations[0];
+    local_offsets.clear();
+    local_offsets.reserve(coords.size());
+    for (const auto& coord : coords) {
+        local_offsets.push_back(reference_root_rotation.inverse() * (coord - reference_root_position));
+    }
 
     auto points = vtkSmartPointer<vtkPoints>::New();
     points->SetDataTypeToDouble();
@@ -98,14 +115,26 @@ void OutputMeshVTK::write(double time, int time_step) const {
     memcpy(pDst0, &values0[0], sizeof(double) * values0.size() * 3);
     mesh->SetPoints(points);
 
+    // rotations (needed for the "Rotation" array below, and to predict rigid-body motion)
+    auto rotations = component.get_nodes_rotations();
+
+    // displacement = current position - rigid-body-predicted position (current root pose applied
+    // to the undeformed body-fixed offset), i.e. the elastic/flexible residual only, expressed in
+    // the global frame. Node 0 (root) is the rigid-body reference for the whole component.
+    const auto& current_root_position = values0[0];
+    const auto& current_root_rotation = rotations[0];
+    std::vector<Vector3d> displacements(values0.size());
+    for (std::size_t idx = 0; idx < values0.size(); ++idx) {
+        auto rigid_predicted = current_root_position + current_root_rotation * local_offsets[idx];
+        displacements[idx] = values0[idx] - rigid_predicted;
+    }
+
     // vectors
-    arrays_values.insert({"Displacement", component.get_nodes_positions()});
+    arrays_values.insert({"Displacement", displacements});
     arrays_values.insert({"Forces", component.get_nodes_loads()});
     arrays_values.insert({"Velocity", component.get_nodes_velocities()});
     arrays_values.insert({"Acceleration", component.get_nodes_accelerations()});
     arrays_values.insert({"Direction", component.get_nodes_directions()});
-
-    auto* initial_coords = static_cast<double*>(mesh->GetPoints()->GetVoidPointer(0));
 
     for (auto const& keyval : arrays_values) {
         auto& key = keyval.first;
@@ -115,20 +144,12 @@ void OutputMeshVTK::write(double time, int time_step) const {
         double* pDst = static_cast<double*>(arr->GetVoidPointer(0));
 
         memcpy(pDst, &val[0], sizeof(double) * val.size() * 3);
-
-        // remove initial coords for displacement
-        if (key == "Displacement") {
-            for (auto idx = 0; idx < 3 * val.size(); ++idx) {
-                pDst[idx] -= initial_coords[idx];
-            }
-        }
     }
 
     // quaternions
     auto arr = mesh->GetPointData()->GetArray("Rotation");
     double* pDst = static_cast<double*>(arr->GetVoidPointer(0));
-    auto values = component.get_nodes_rotations();
-    memcpy(pDst, &values[0], sizeof(double) * values.size() * 4);
+    memcpy(pDst, &rotations[0], sizeof(double) * rotations.size() * 4);
 
     {
         char fname[2048];
@@ -173,17 +194,19 @@ void OutputSystemVTK::initialize() {
 
         // moorings
         try {
-            auto& floater_core = dynamic_cast<seahowl::core::Floater&>(*turbine->foundation);
-            auto& floater = dynamic_cast<seahowl::elasto::FloaterElasto&>(floater_core.elasto);
-            for (auto [mooring_ptr, idx_mooring] = std::tuple{floater.mooring_system->moorings.begin(), 0};
-                 mooring_ptr != floater.mooring_system->moorings.end(); mooring_ptr++, idx_mooring++) {
-                auto& mooring = *mooring_ptr;
-                try {
-                    auto& post_mooring =
-                        vtk_meshes.emplace_back(dynamic_cast<seahowl::elasto::ComponentElastoFEA&>(*mooring));
-                    post_mooring.initialize((output_folder + "/mooring" + std::to_string(idx_mooring)).c_str());
-                } catch (const std::exception& e) {
-                    // do nothing if node component elasto EFA
+            if (turbine->foundation) {
+                auto& floater_core = dynamic_cast<seahowl::core::Floater&>(*turbine->foundation);
+                auto& floater = dynamic_cast<seahowl::elasto::FloaterElasto&>(floater_core.elasto);
+                for (auto [mooring_ptr, idx_mooring] = std::tuple{floater.mooring_system->moorings.begin(), 0};
+                     mooring_ptr != floater.mooring_system->moorings.end(); mooring_ptr++, idx_mooring++) {
+                    auto& mooring = *mooring_ptr;
+                    try {
+                        auto& post_mooring =
+                            vtk_meshes.emplace_back(dynamic_cast<seahowl::elasto::ComponentElastoFEA&>(*mooring));
+                        post_mooring.initialize((output_folder + "/mooring" + std::to_string(idx_mooring)).c_str());
+                    } catch (const std::exception& e) {
+                        // do nothing if node component elasto EFA
+                    }
                 }
             }
         } catch (const std::exception& e) {
