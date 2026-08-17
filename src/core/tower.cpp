@@ -37,6 +37,30 @@ void Tower::prestep(double time, double dt) {
 void Tower::poststep(double time, double dt) {
     // update position of aero points
     update_positions_aero();
+
+    // // --- DEBUG: tower base/top positions & top rotation, to diagnose static tilt ---
+    // if (!elasto.nodes.empty()) {
+    //     const auto& base = elasto.nodes.front()->get_position();
+    //     const auto& top  = elasto.nodes.back()->get_position();
+    //     Vector3d axis = (top - base);
+    //     double len = axis.norm();
+    //     // tilt = angle between tower axis and world +Z
+    //     double cos_tilt = (len > 1e-12) ? (axis.z() / len) : 1.0;
+    //     if (cos_tilt > 1.0) cos_tilt = 1.0;
+    //     if (cos_tilt < -1.0) cos_tilt = -1.0;
+    //     double tilt_deg = std::acos(cos_tilt) * 180.0 / PI;
+    //     // azimuth of tilt in world XY (0 = +X, 90 = +Y)
+    //     double tilt_dir_deg = std::atan2(axis.y(), axis.x()) * 180.0 / PI;
+
+    //     std::fprintf(stderr,
+    //                  "[TWR-DBG] t=%.4f base=(%.4f,%.4f,%.4f) top=(%.4f,%.4f,%.4f) "
+    //                  "len=%.4f tilt=%.4fdeg dir=%.2fdeg\n",
+    //                  time,
+    //                  base.x(), base.y(), base.z(),
+    //                  top.x(),  top.y(),  top.z(),
+    //                  len, tilt_deg, tilt_dir_deg);
+    //     std::fflush(stderr);
+    // }
 }
 
 void Tower::apply_env_model(seahowl::env::EnvModel& env_model, double time) {

@@ -272,6 +272,12 @@ struct BladeTurbineDb {
     BladeDb data;
     double initial_pitch;
     double precone;
+    /** @brief Optional override of the automatic azimuth distribution [deg].
+     *  If set, replaces the automatic ii * 360/nblades placement for this blade. */
+    std::optional<double> azimuth_override;
+    /** @brief If true, flip blade 180 deg around the spin axis (X) after span reorientation.
+     *  Use to represent the negative-z half of a two-sided VAWT blade as a separate positive-z half-blade. */
+    bool flip_span = false;
 };
 
 /**
@@ -303,8 +309,8 @@ struct RotorTurbineDb {
     RotorOptionsTurbineDb option;
     /** @brief Vertical-axis turbine (VAWT): blades placed parallel to the spin axis instead of radial. */
     bool vertical_axis = false;
-    /** @brief Initial rotor speed imposed at t=0 [rpm]; needed to kick-start rotors with near-zero self-starting aero
-     * torque (e.g. cross-flow VAWT). */
+    /** @brief marine hydrokinetic turbine (MHK): underwater turbine, 0=not MHK, 1=fixed MHK, 2=floating MHK */
+    int MHK = 0;
     double initial_rpm = 0.0;
 };
 
@@ -467,6 +473,8 @@ struct TurbineDb {
     TowerTurbineDb tower;
     ControllerTurbineDb controller;
     std::optional<FoundationTurbineDb> foundation;
+    /** @brief If true, tower is built pointing along +gravity (rotor below foundation/floater). */
+    bool invert_tower = false;
 };
 
 /**
@@ -524,6 +532,8 @@ struct TurbineMainDb {
     TurbineDb data;
     Eigen::Vector3d translation;
     double rotation;
+    /** @brief If true, tower points along +gravity (rotor below floater). */
+    bool invert_tower = false;
 };
 
 /**

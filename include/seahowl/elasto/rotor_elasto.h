@@ -98,6 +98,8 @@ class RotorElasto : public ComponentElasto {
     virtual double get_mass() const override;
     void reset_loads() override;
 
+    void apply_initial_rotation() const;
+
     /**
      * @brief Imposes the rigid-body rotational velocity corresponding to initial_rpm on the hub and all
      * blade (FEA) nodes, about the hub's current spin axis. Must be called after the rotor/hub have reached

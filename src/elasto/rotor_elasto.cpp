@@ -1,4 +1,5 @@
 #include "seahowl/elasto/rotor_elasto.h"
+#include <spdlog/spdlog.h>
 
 // SEAHOWL headers
 #include "seahowl/commons/numerics.h"
@@ -45,39 +46,36 @@ void RotorElasto::build() {
     for (int ii = 0; ii < nblades; ii++) {
         auto blade = blades[ii];
 
-        // rotations + translations
-        // blade root node is assumed to be originally at (0,0,0) and using IEC standard for coordinate system
         if (is_vertical_axis) {
-            // VERTICAL-AXIS TURBINE (VAWT):
-            // Reorient the blade span (local Z) to be PARALLEL to the hub spin axis (local X),
-            // instead of radial. This is applied BEFORE the radial offset, while the blade root
-            // (and, for FEA blades, all span nodes) still sit on the local Z axis at the origin,
-            // so the rotation only changes orientation (rotation * (0,0,0) = (0,0,0)) and re-points
-            // the span onto the X axis. Rotating about X afterwards leaves the span invariant while
-            // sweeping the radial offset around the spin axis for each blade.
-            // See doc/source/dev-guide/vertical-axis-turbines.md and VAWT_IMPLEMENTATION_PLAN.md.
+            // Reorient blade span (local Z) to spin axis (global X).
             blade->rotate(PI / 2.0, Vector3d(0.0, 1.0, 0.0));
-            // offset blade radially away from the spin axis (perpendicular), by hub radius
+            spdlog::debug("Flip span? {}", blade->flip_span);
+            // Optional 180-deg flip around X: reverses the span direction,
+            // making a positive-z half-blade represent the negative-z half of a full blade.
+            if (blade->flip_span) {
+                blade->rotate(PI, Vector3d(1.0, 0.0, 0.0)); // flip blade span
+                blade->rotate(PI, Vector3d(0.0, 0.0, 1.0)); // flip airfoil orientation
+            }
+
+            // Offset blade radially by hub radius.
             blade->translate(Vector3d(0.0, 0.0, hub.radius));
-            // NOTE: precone is intentionally not applied for VAWT blades.
-            double azimuth0 = ii * 2 * PI / nblades;
+
+            // Determine azimuth: use per-blade override if provided, otherwise auto-distribute.
+            double azimuth0 = (blade->azimuth_override >= 0.0)
+                                  ? blade->azimuth_override
+                                  : ii * 2.0 * PI / nblades;
             blade->azimuth0 = azimuth0;
-            // distribute blades around the spin axis (X); leaves the now-X-aligned span invariant
             blade->rotate(azimuth0, Vector3d(1.0, 0.0, 0.0));
         } else {
-            // HORIZONTAL-AXIS TURBINE (HAWT), original behavior:
-            // offset blade from hub apex
             blade->translate(Vector3d(0.0, 0.0, hub.radius));
-            // apply precone
-            blade->rotate(blade->precone, Vector3d(0.0, 1.0, 0.0));  // Y is the edge-wise axis for blade (IEC standard)
-            double azimuth0 = ii * 2 * PI / nblades;
+            blade->rotate(blade->precone, Vector3d(0.0, 1.0, 0.0));
+            double azimuth0 = (blade->azimuth_override >= 0.0)
+                                  ? blade->azimuth_override
+                                  : ii * 2.0 * PI / nblades;
             blade->azimuth0 = azimuth0;
-            // rotate blade around hub
-            blade->rotate(azimuth0,
-                          Vector3d(1.0, 0.0, 0.0));  // X is the axis pointing towards nacelle for blade (IEC standard)
+            blade->rotate(azimuth0, Vector3d(1.0, 0.0, 0.0));
         }
 
-        // update blade-hub constraint
         blade->attach_blade_to_body(*body_hub);
     }
 }

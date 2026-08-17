@@ -114,7 +114,7 @@ void populate_tower_aero_from_file(const std::string& filepath, seahowl::aero::T
  * @param[in] filepath Path of the file describing the tower.
  * @param[out] tower Tower to populate.
  */
-void populate_tower_from_file(const std::string& filepath, seahowl::core::Tower& tower);
+void populate_tower_from_file(const std::string& filepath, seahowl::core::Tower& tower, bool invert_tower = false);
 
 /**
  * @brief Populates RNA elasto given a file.

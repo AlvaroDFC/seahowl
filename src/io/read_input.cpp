@@ -67,6 +67,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include <algorithm>
 
 namespace fs = std::filesystem;
 using std::filesystem::path;
@@ -213,11 +214,14 @@ std::shared_ptr<seahowl::elasto::BladeElasto> get_blade_elasto_from_db(const Bla
     }
     blade_elasto->pitch0 = blade_db.initial_pitch * PI / 180.0;
     blade_elasto->precone = blade_db.precone * PI / 180.0;
-    // no precone if blade is rigid (assumed that blade is on rotor disc)
     if (rotor_db.type == "rigid") {
         blade_elasto->precone = 0.0;
     }
-    // pitch actuator dynamics
+    // azimuth override (convert deg to rad; -1 sentinel means automatic)
+    blade_elasto->azimuth_override =
+        blade_db.azimuth_override.has_value() ? blade_db.azimuth_override.value() * PI / 180.0 : -1.0;
+    blade_elasto->flip_span = blade_db.flip_span;
+
     blade_elasto->actuator_pitch->set_fixed_actuator(!rotor_db.pitch_actuator_dynamics);
     blade_elasto->reference_points = get_blade_elasto_reference_points_from_db(blade_db.data);
 
@@ -681,8 +685,8 @@ std::shared_ptr<seahowl::fluid::TurbineFluid> get_turbine_aero_from_db(const Tur
     if (turbine_db.aero.solver == "aerodyn") {
 #ifdef HAVE_AERODYN
         auto file_aerodyn_path = turbine_db.aero.options.file_aerodyn_path.generic_string();
-        turbine_aero =
-            std::make_shared<seahowl::aero::TurbineAeroDyn>(file_aerodyn_path, turbine_db.rotor.vertical_axis);
+        turbine_aero = std::make_shared<seahowl::aero::TurbineAeroDyn>(
+            file_aerodyn_path, turbine_db.rotor.vertical_axis, turbine_db.rotor.MHK);
 #endif
     } else {
         turbine_aero = std::make_shared<seahowl::fluid::TurbineFluid>();
@@ -765,7 +769,7 @@ void populate_tower_aero_from_file(const std::string& filepath, seahowl::aero::T
     tower.reference_points = get_tower_aero_reference_points_db(tower_db);
 }
 
-void populate_tower_from_file(const std::string& filepath, seahowl::core::Tower& tower) {
+void populate_tower_from_file(const std::string& filepath, seahowl::core::Tower& tower, bool invert_tower) {
     TowerDb tower_db;
     InputHandler input_handler;
     try {
@@ -778,10 +782,21 @@ void populate_tower_from_file(const std::string& filepath, seahowl::core::Tower&
 
     // elasto
     tower.elasto.reference_points = get_tower_elasto_reference_points_db(tower_db);
-    tower.elasto.height = tower.elasto.reference_points.back().coordinates.z();
-    tower.elasto.base_height = tower.elasto.reference_points.front().coordinates.z();
     // aero
     tower.aero.reference_points = get_tower_aero_reference_points_db(tower_db);
+
+    // Optional: build tower along -Z (rotor below floater) by flipping Z of every reference point.
+    if (invert_tower) {
+        for (auto& rp : tower.elasto.reference_points) {
+            rp.coordinates.z() = -rp.coordinates.z();
+        }
+        for (auto& rp : tower.aero.reference_points) {
+            rp.coordinates.z() = -rp.coordinates.z();
+        }
+    }
+
+    tower.elasto.height = tower.elasto.reference_points.back().coordinates.z();
+    tower.elasto.base_height = tower.elasto.reference_points.front().coordinates.z();
 }
 
 void populate_rna_elasto_from_db(const RnaDb& rna_db, seahowl::elasto::RotorNacelleAssemblyElasto& rna) {
@@ -1119,7 +1134,13 @@ void populate_system(const MainDb& main_db, seahowl::core::System& system_core) 
         auto& turbine = *system_core.turbines.back();
 
         // rotate turbine to align tower with gravity vector
-        auto v1 = Vector3d(-system_core.elasto.get_gravitational_acceleration()).normalized();
+        const Vector3d g = system_core.elasto.get_gravitational_acceleration();
+        Vector3d v1 = (turbine_db.invert_tower ? Vector3d(g) : Vector3d(-g)).normalized();
+        const auto p0 = turbine.tower.elasto.nodes[0]->get_position();
+        const auto p1 = turbine.tower.elasto.nodes[1]->get_position();
+        std::fprintf(stderr, "[ALIGN-DBG] g=(%.4f,%.4f,%.4f) p0=(%.4f,%.4f,%.4f) p1=(%.4f,%.4f,%.4f)\n", g.x(), g.y(),
+                     g.z(), p0.x(), p0.y(), p0.z(), p1.x(), p1.y(), p1.z());
+        std::fflush(stderr);
         auto v2 = (turbine.tower.elasto.nodes[1]->get_position() - turbine.tower.elasto.nodes[0]->get_position())
                       .normalized();
         auto rot_axis = v2.cross(v1);
@@ -1131,7 +1152,14 @@ void populate_system(const MainDb& main_db, seahowl::core::System& system_core) 
                                               : Vector3d(1.0, 0.0, 0.0);
         }
         rot_axis.normalize();
+        // std::fprintf(stderr,
+        //              "[ALIGN-DBG] invert=%d v1=(%.4f,%.4f,%.4f) v2=(%.4f,%.4f,%.4f) "
+        //              "axis=(%.4f,%.4f,%.4f) angle=%.4frad\n",
+        //              (int)turbine_db.invert_tower, v1.x(), v1.y(), v1.z(), v2.x(), v2.y(), v2.z(), rot_axis.x(),
+        //              rot_axis.y(), rot_axis.z(), rot_angle);
+        // std::fflush(stderr);
         turbine.elasto.rotate(rot_angle, rot_axis);
+
         // rotation around axis opposite to gravity (yaw)
         turbine.elasto.rotate(turbine_db.rotation * PI / 180.0,
                               Vector3d(-system_core.elasto.get_gravitational_acceleration()).normalized());

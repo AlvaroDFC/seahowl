@@ -556,6 +556,13 @@ void from_json(const json& js, BladeTurbineDb& blade) {
     blade.file = js.at("file").get<std::string>();
     blade.initial_pitch = js.at("initial_pitch").get<double>();
     blade.precone = js.at("precone").get<double>();
+    if (js.contains("azimuth_override") && !js.at("azimuth_override").is_null()) {
+        blade.azimuth_override = js.at("azimuth_override").get<double>();
+    }
+    blade.flip_span = false;
+    if (js.contains("flip_span") && !js.at("flip_span").is_null()) {
+        blade.flip_span = js.at("flip_span").get<bool>();
+    }
 }
 
 void from_json(const json& js, RotorOptionsTurbineDb& options) {
@@ -591,6 +598,9 @@ void from_json(const json& js, RotorTurbineDb& rotor) {
     // optional: vertical-axis turbine flag (defaults to false = horizontal-axis)
     if (js.contains("vertical_axis") && !js.at("vertical_axis").is_null()) {
         rotor.vertical_axis = js.at("vertical_axis").get<bool>();
+    }
+    if (js.contains("MHK") && !js.at("MHK").is_null()) {
+        rotor.MHK = js.at("MHK").get<int>();
     }
     // optional: initial rotor speed [rpm], to kick-start rotors with near-zero self-starting aero torque
     if (js.contains("initial_rpm") && !js.at("initial_rpm").is_null()) {
@@ -965,6 +975,10 @@ void from_json(const json& js, TurbineMainDb& turbine) {
     turbine.file = js.at("file").get<std::string>();
     turbine.translation = Eigen::Vector3d(js.at("translation")[0], js.at("translation")[1], js.at("translation")[2]);
     turbine.rotation = js.at("rotation").get<double>();
+    turbine.invert_tower = false;
+    if (js.contains("invert_tower") && !js.at("invert_tower").is_null()) {
+        turbine.invert_tower = js.at("invert_tower").get<bool>();
+    }
 }
 
 void from_json(const json& js, MainDb& config) {
