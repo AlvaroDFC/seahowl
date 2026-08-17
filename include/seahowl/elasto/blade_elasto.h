@@ -25,6 +25,12 @@ class BladeElasto : public virtual ComponentElasto {
     double azimuth0 = 0.0;
     /** @brief Precone of the blade [rad] */
     double precone = 0.0;
+    /** @brief Optional azimuth override [rad]. If set (>= 0), replaces automatic equal distribution. */
+    double azimuth_override = -1.0;   // sentinel: -1 means "use automatic"
+    /** @brief If true, flip blade 180 deg around spin axis (X) during VAWT build. */
+    bool flip_span = false;
+    /** @brief Normalized abscissa (in [0,1]) of the hub attachment along the blade. */
+    double fraction_root = 0.0;
     /** @brief List of reference points describing the blade properties along its longitudinal axis. */
     std::vector<BladeReferencePointElasto> reference_points;
 

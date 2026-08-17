@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+
 using namespace seahowl::fluid::aero;
 using namespace seahowl::env;
 using seahowl::fluid::TurbineFluid;
@@ -511,7 +512,11 @@ void AeroDynAdapter::update_hub_motion(TurbineFluid& turbine) {
     // Get the information about hub
     const auto& hub = turbine.rna->rotor->body_hub;
     auto hubPos = hub.get_position();
+    //fprintf(stderr, "Hub pos: %f, %f, %f\n", hubPos[0], hubPos[1], hubPos[2]);
     auto hubOri = hub.get_rotation().toRotationMatrix();  // get a rotation matrix 3x3
+    //fprintf(stderr, "Hub origin: %f, %f, %f\n", hubOri(0, 0), hubOri(1, 0), hubOri(2, 0));
+    //fprintf(stderr, "Hub origin: %f, %f, %f\n", hubOri(0, 1), hubOri(1, 1), hubOri(2, 1));
+    //fprintf(stderr, "Hub origin: %f, %f, %f\n", hubOri(0, 2), hubOri(1, 2), hubOri(2, 2));
     auto hubTranVel = hub.get_velocity();
     auto hubRotVel = hub.get_rotational_velocity(false);  // in global frame
     auto hubTranAcc = hub.get_acceleration();
@@ -616,10 +621,11 @@ void AeroDynAdapter::update_mesh_motion(TurbineFluid& turbine) {
     }
 }
 
-TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile, bool vertical_axis) : TurbineAero() {
+TurbineAeroDyn::TurbineAeroDyn(const std::string& aerodyn_Infile, bool vertical_axis, int MHK) : TurbineAero() {
     rna->rotor = std::make_shared<RotorAeroDyn>(*tower);
     aerodyn.set_aerodyn_infile(aerodyn_Infile);
     is_vertical_axis = vertical_axis;
+    is_MHK = MHK;
 }
 
 void TurbineAeroDyn::setup_environment(const env::EnvModel& env_model) {
@@ -667,6 +673,8 @@ void TurbineAeroDyn::initialize(double time, double dt) {
     aerodyn.pImpl->VTKHubRad = rna->rotor->hub_radius;
     // vertical-axis turbine: tell AeroDyn this rotor is not a horizontal-axis turbine
     aerodyn.pImpl->TurbineIsHAWT = is_vertical_axis ? 0 : 1;
+    // MHK turbine: tell AeroDyn if this rotor is an MHK system (0=No, 1=fixed MHK, 2=floating MHK)
+    aerodyn.pImpl->MHK = is_MHK;
 
     // initialize AeroDyn adapter
     aerodyn.initialize(time, dt, *this);

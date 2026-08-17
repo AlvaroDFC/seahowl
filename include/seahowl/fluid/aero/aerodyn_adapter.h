@@ -69,8 +69,10 @@ class TurbineAeroDyn : public TurbineAero {
     double WrVTK_dt = 0.0;
     /** @brief Whether the turbine is a vertical-axis turbine (sets AeroDyn TurbineIsHAWT=0). */
     bool is_vertical_axis = false;
+    /** @brief Whether the turbine is a MHK turbine (sets AeroDyn MHK) */
+    int is_MHK = 0;
 
-    TurbineAeroDyn(const std::string& aerodyn_Infile, bool vertical_axis = false);
+    TurbineAeroDyn(const std::string& aerodyn_Infile, bool vertical_axis = false, int MHK = 0);
     void setup_environment(const env::EnvModel& env_model) override;
     void initialize(double time, double dt) override;
     void compute_env_loads(const env::EnvModel& env_model, double time) override;

@@ -83,6 +83,8 @@ class RotorElasto : public ComponentElasto {
      */
     bool is_vertical_axis = false;
 
+    double initial_rpm = 0.0;
+
     /**
      * @brief Constructor.
      */
@@ -94,6 +96,8 @@ class RotorElasto : public ComponentElasto {
     virtual void translate(const Vector3d& translation_vector) const override;
     virtual double get_mass() const override;
     void reset_loads() override;
+
+    void apply_initial_rotation() const;
 
     /**
      * @brief Applies pitch increment to all blades, rotating them around their respective longitudinal axis.

@@ -29,6 +29,7 @@
 #include <memory>
 #include <typeinfo>
 #include <vector>
+#include <cstdio>
 
 // default mass value for checking if ChBody mass was set.
 const double MASS_NOTSET_VALUE = -1.2345e-12;
@@ -366,6 +367,10 @@ BodyElastoChrono::BodyElastoChrono()
     set_mass(MASS_NOTSET_VALUE);
     set_inertia_diagonal(Vector3d(MASS_NOTSET_VALUE, MASS_NOTSET_VALUE, MASS_NOTSET_VALUE));
     chloadcontainer->Add(chloads_internals);
+
+    // Set unique name
+    static int s_body_counter = 0;
+    chobj->SetName(std::string("Body_ctor_") + std::to_string(s_body_counter++));
 }
 
 void BodyElastoChrono::set_mass(double mass) {
