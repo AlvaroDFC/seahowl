@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 
 // Standard library
+#include <iostream>
 #include <numeric>
 
 using namespace seahowl::elasto;

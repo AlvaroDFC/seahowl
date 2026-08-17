@@ -1,5 +1,11 @@
 // SEAHOWL headers
+#include "seahowl/core/blade.h"
+#include "seahowl/core/rotor.h"
 #include "seahowl/core/simulation.h"
+#include "seahowl/core/turbine.h"
+#include "seahowl/elasto/blade_elasto.h"
+#include "seahowl/fluid/aero/blade_aero.h"
+#include "seahowl/elasto/component_elasto.h"
 #include "seahowl/io/config_manager.h"
 #include "seahowl/io/read_input.h"
 

@@ -60,6 +60,7 @@
 #endif
 
 // Standard library
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -287,6 +288,8 @@ std::shared_ptr<seahowl::elasto::RotorElasto> get_rotor_elasto_from_db(const Tur
     auto rotor_elasto = std::make_shared<seahowl::elasto::RotorElasto>();
     // vertical-axis turbine placement flag
     rotor_elasto->is_vertical_axis = turbine_db.rotor.vertical_axis;
+    // initial rotor speed (kick-start for near-zero self-starting torque rotors)
+    rotor_elasto->initial_rpm = turbine_db.rotor.initial_rpm;
     // blades
     // only make blades if rotor type is not disk
     if (turbine_db.rotor.type != "disk") {
@@ -1120,13 +1123,23 @@ void populate_system(const MainDb& main_db, seahowl::core::System& system_core) 
         auto v2 = (turbine.tower.elasto.nodes[1]->get_position() - turbine.tower.elasto.nodes[0]->get_position())
                       .normalized();
         auto rot_axis = v2.cross(v1);
-        auto rot_angle = acos(v1.dot(v2));
+        auto rot_angle = acos(std::clamp(v1.dot(v2), -1.0, 1.0));
+        if (rot_axis.norm() < 1e-9) {
+            // v1 and v2 are (anti-)parallel: cross product cannot provide a rotation axis.
+            rot_axis = (rot_angle > PI / 2.0) ? (std::abs(v1.x()) < 0.9 ? Vector3d(1.0, 0.0, 0.0).cross(v1)
+                                                                        : Vector3d(0.0, 1.0, 0.0).cross(v1))
+                                              : Vector3d(1.0, 0.0, 0.0);
+        }
+        rot_axis.normalize();
         turbine.elasto.rotate(rot_angle, rot_axis);
         // rotation around axis opposite to gravity (yaw)
         turbine.elasto.rotate(turbine_db.rotation * PI / 180.0,
                               Vector3d(-system_core.elasto.get_gravitational_acceleration()).normalized());
         // translate turbine
         turbine.elasto.translate(turbine_db.translation);
+
+        // impose initial rotor speed now that the rotor has reached its final position/orientation
+        turbine.rna.rotor.elasto.apply_initial_rotation();
     }
 }
 

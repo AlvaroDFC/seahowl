@@ -303,6 +303,9 @@ struct RotorTurbineDb {
     RotorOptionsTurbineDb option;
     /** @brief Vertical-axis turbine (VAWT): blades placed parallel to the spin axis instead of radial. */
     bool vertical_axis = false;
+    /** @brief Initial rotor speed imposed at t=0 [rpm]; needed to kick-start rotors with near-zero self-starting aero
+     * torque (e.g. cross-flow VAWT). */
+    double initial_rpm = 0.0;
 };
 
 /**

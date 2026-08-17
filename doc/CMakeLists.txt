@@ -25,6 +25,12 @@ if(SEAHOWL_ENABLE_PYTHON)
   set(MKDOCS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/source)
   set(MKDOCS_INDEX_FILE ${CMAKE_BINARY_DIR}/doc/html/source/index.html)
 
+  # Glob every file under the MkDocs source tree so CMake/Ninja can detect
+  # individual file edits. Depending on the directory alone is not enough,
+  # since a directory's timestamp does not change when a file inside it is
+  # modified (only on add/remove), which prevented documentation rebuilds.
+  file(GLOB_RECURSE MKDOCS_SOURCE_FILES CONFIGURE_DEPENDS ${MKDOCS_SOURCE}/*)
+
   if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
           set(ACTIVATE_PY "${CMAKE_BINARY_DIR}/.venv/bin/activate")
           file(WRITE ${CMAKE_BINARY_DIR}/run_mkdocs.sh
@@ -58,13 +64,13 @@ if(SEAHOWL_ENABLE_PYTHON)
   add_custom_command(OUTPUT ${MKDOCS_INDEX_FILE}
       COMMAND ${LAUNCH_MKDOCS} ${FILE_MKDOCS}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      DEPENDS ${MKDOCS_SOURCE} # Every source files
+      DEPENDS ${MKDOCS_SOURCE_FILES} # Every source files
       MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/mkdocs.yml
       COMMENT "Generating documentation with MkDocs"
       VERBATIM
   )
 
-  add_custom_target(mkdocs DEPENDS pyseahowl ${MKDOCS_SOURCE} ${MKDOCS_INDEX_FILE})
+  add_custom_target(mkdocs DEPENDS pyseahowl ${MKDOCS_SOURCE_FILES} ${MKDOCS_INDEX_FILE})
 endif(SEAHOWL_ENABLE_PYTHON)
 # ===================
 # DOXYGEN

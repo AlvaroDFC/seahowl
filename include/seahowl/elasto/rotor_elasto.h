@@ -83,6 +83,9 @@ class RotorElasto : public ComponentElasto {
      */
     bool is_vertical_axis = false;
 
+    /** @brief Initial rotor speed to impose at t=0 [rpm]. Zero (default) leaves the rotor at rest. */
+    double initial_rpm = 0.0;
+
     /**
      * @brief Constructor.
      */
@@ -94,6 +97,13 @@ class RotorElasto : public ComponentElasto {
     virtual void translate(const Vector3d& translation_vector) const override;
     virtual double get_mass() const override;
     void reset_loads() override;
+
+    /**
+     * @brief Imposes the rigid-body rotational velocity corresponding to initial_rpm on the hub and all
+     * blade (FEA) nodes, about the hub's current spin axis. Must be called after the rotor/hub have reached
+     * their final position and orientation (i.e. after all assembly-level tilt/alignment rotations).
+     */
+    void apply_initial_rotation() const;
 
     /**
      * @brief Applies pitch increment to all blades, rotating them around their respective longitudinal axis.

@@ -592,6 +592,10 @@ void from_json(const json& js, RotorTurbineDb& rotor) {
     if (js.contains("vertical_axis") && !js.at("vertical_axis").is_null()) {
         rotor.vertical_axis = js.at("vertical_axis").get<bool>();
     }
+    // optional: initial rotor speed [rpm], to kick-start rotors with near-zero self-starting aero torque
+    if (js.contains("initial_rpm") && !js.at("initial_rpm").is_null()) {
+        rotor.initial_rpm = js.at("initial_rpm").get<double>();
+    }
 }
 
 void from_json(const json& js, RNATurbineDb& rna) {

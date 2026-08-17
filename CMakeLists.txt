@@ -621,6 +621,7 @@ if (SEAHOWL_ENABLE_PYTHON)
 	target_compile_features(pyseahowl PRIVATE cxx_std_17)
     target_link_libraries(pyseahowl PRIVATE seahowl_core pybind11::embed)
     target_compile_options(pyseahowl PRIVATE ${CHRONO_CXX_FLAGS})
+    target_link_options(pyseahowl PRIVATE ${CHRONO_LINKER_FLAGS})
     set_target_properties(pyseahowl PROPERTIES OUTPUT_NAME seahowl)
 
 

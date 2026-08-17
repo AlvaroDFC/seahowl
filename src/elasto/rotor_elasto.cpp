@@ -4,6 +4,7 @@
 #include "seahowl/commons/numerics.h"
 #include "seahowl/elasto/blade_elasto.h"
 #include "seahowl/elasto/chrono_adapters.h"
+#include "seahowl/elasto/component_elasto.h"
 
 using seahowl::elasto::BladeElasto;
 using seahowl::elasto::RotorElasto;
@@ -78,6 +79,32 @@ void RotorElasto::build() {
 
         // update blade-hub constraint
         blade->attach_blade_to_body(*body_hub);
+    }
+}
+
+void RotorElasto::apply_initial_rotation() const {
+    if (initial_rpm == 0.0) {
+        return;
+    }
+    double omega = initial_rpm * 2.0 * PI / 60.0;
+    // spin axis is the hub's local X axis (IEC convention), expressed in the global frame
+    Vector3d spin_axis = body_hub->get_rotation() * Vector3d(1.0, 0.0, 0.0);
+    Vector3d omega_vector = omega * spin_axis;
+    Vector3d hub_position = body_hub->get_position();
+
+    body_hub->set_rotational_velocity(omega_vector, false);
+
+    // impose consistent rigid-body rotation velocity on every FEA blade node (v = omega x r),
+    // so the flexible blades start already "in sync" with the hub instead of relying on the
+    // hub-blade constraint to reconcile a sudden velocity mismatch.
+    for (auto& blade : blades) {
+        if (auto* fea = dynamic_cast<seahowl::elasto::ComponentElastoFEA*>(blade.get())) {
+            for (auto& node : fea->nodes) {
+                auto r = node->get_position() - hub_position;
+                node->set_velocity(omega_vector.cross(r));
+                node->set_rotational_velocity(omega_vector, false);
+            }
+        }
     }
 }
 
